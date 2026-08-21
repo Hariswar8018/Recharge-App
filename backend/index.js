@@ -11,6 +11,11 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Health Check Route
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 // Middleware: Verify x-app-token header
 const verifyAppToken = (req, res, next) => {
   const appToken = req.headers['x-app-token'];
