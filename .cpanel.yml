@@ -1,15 +1,9 @@
 ---
 deployment:
   tasks:
-    # Use CloudLinux Node.js 20
-    - export PATH=/opt/alt/alt-nodejs20/root/usr/bin:$PATH
-
-    # Frontend
     - export DEPLOYPATH=/home/wpzumbof/public_html/
-    - cd /home/wpzumbof/repositories/Recharge-App/web_app && npm install && npm run build
     - /bin/cp -R /home/wpzumbof/repositories/Recharge-App/web_app/dist/. $DEPLOYPATH
 
-    # Backend
     - export BACKENDPATH=/home/wpzumbof/backend/
     - /bin/mkdir -p $BACKENDPATH
     - /bin/cp -R /home/wpzumbof/repositories/Recharge-App/backend/. $BACKENDPATH
