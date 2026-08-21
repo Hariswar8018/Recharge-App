@@ -1,15 +1,16 @@
 ---
 deployment:
   tasks:
-    # Node.js environment
     - export PATH=/opt/alt/alt-nodejs22/root/usr/bin:$PATH
+    - node --version
+    - npm --version
+    - free -h
+    - ulimit -a
 
-    # Vue.js frontend
     - export DEPLOYPATH=/home/wpzumbof/public_html/
     - cd /home/wpzumbof/repositories/Recharge-App/web_app && npm install && npm run build
     - /bin/cp -R /home/wpzumbof/repositories/Recharge-App/web_app/dist/. $DEPLOYPATH
 
-    # Node.js backend
     - export BACKENDPATH=/home/wpzumbof/backend/
     - /bin/mkdir -p $BACKENDPATH
     - /bin/cp -R /home/wpzumbof/repositories/Recharge-App/backend/. $BACKENDPATH
