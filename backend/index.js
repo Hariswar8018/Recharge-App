@@ -12,8 +12,11 @@ app.use(cors());
 app.use(express.json());
 
 // Health Check Route
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Recharge API is running'
+  });
 });
 
 // Middleware: Verify x-app-token header
