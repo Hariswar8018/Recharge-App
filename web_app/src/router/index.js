@@ -1,0 +1,47 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import LandingPage from '../views/LandingPage.vue'
+import AdminLogin from '../views/AdminLogin.vue'
+import AdminDashboard from '../views/AdminDashboard.vue'
+import AdminSettings from '../views/AdminSettings.vue'
+
+const routes = [
+  {
+    path: '/',
+    name: 'LandingPage',
+    component: LandingPage
+  },
+  {
+    path: '/admin-login',
+    name: 'AdminLogin',
+    component: AdminLogin
+  },
+  {
+    path: '/admin-dashboard',
+    name: 'AdminDashboard',
+    component: AdminDashboard,
+    meta: { requiresAdmin: true }
+  },
+  {
+    path: '/admin-settings',
+    name: 'AdminSettings',
+    component: AdminSettings,
+    meta: { requiresAdmin: true }
+  }
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
+
+// Route guard to check authentication
+router.beforeEach((to, from, next) => {
+  const isAdminToken = localStorage.getItem('adminToken')
+  if (to.matched.some(record => record.meta.requiresAdmin) && !isAdminToken) {
+    next('/admin-login')
+  } else {
+    next()
+  }
+})
+
+export default router
