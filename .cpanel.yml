@@ -1,0 +1,12 @@
+---
+deployment:
+  tasks:
+    # 1. Build and deploy Vue.js Web App to public_html
+    - export DEPLOYPATH=/home/wpzumbof/public_html
+    - cd web_app && npm install && npm run build
+    - /bin/cp -R dist/* $DEPLOYPATH
+
+    # 2. Deploy Node.js Backend to the backend app root folder
+    - export BACKENDPATH=/home/wpzumbof/backend
+    - /bin/mkdir -p $BACKENDPATH
+    - /bin/cp -R backend/* $BACKENDPATH
