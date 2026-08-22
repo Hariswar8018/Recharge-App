@@ -2,8 +2,8 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/wpzumbof/public_html/
-    - /bin/cp -R /home/wpzumbof/repositories/Recharge-App/web_app/dist/. $DEPLOYPATH
+    - /bin/cp -R /home/wpzumbof/repositories/Recharge/web_app/dist/. $DEPLOYPATH
 
     - export BACKENDPATH=/home/wpzumbof/backend/
     - /bin/mkdir -p $BACKENDPATH
-    - /bin/cp -R /home/wpzumbof/repositories/Recharge-App/backend/. $BACKENDPATH
+    - /bin/cp -R /home/wpzumbof/repositories/Recharge/backend/. $BACKENDPATH
