@@ -228,6 +228,8 @@ app.post('/api/payment/razorpay-sandbox', verifyAppToken, verifyUserToken, async
   } catch (err) {
     res.status(500).json({ error: 'Transaction failed' });
   }
+});
+
 // Scriza Telecom Recharge Callback Hook
 app.get('/api/payment/scriza-callback', async (req, res) => {
   const { payid, client_id, operator_ref, status } = req.query;

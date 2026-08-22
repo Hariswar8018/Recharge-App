@@ -30,7 +30,7 @@ const routes = [
     meta: { requiresAdmin: true }
   },
   {
-    path: '/contact-us',
+    path: '/contact',
     name: 'ContactUs',
     component: ContactUs
   },

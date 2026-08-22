@@ -531,7 +531,7 @@
           <div class="footer-links-grid">
             <div class="footer-col">
               <a href="#">ABOUT US</a>
-              <router-link to="/contact-us">CONTACT US</router-link>
+              <router-link to="/contact">CONTACT US</router-link>
               <a href="#">REFUND POLICY</a>
             </div>
             <div class="footer-col">
