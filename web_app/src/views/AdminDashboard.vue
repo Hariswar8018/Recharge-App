@@ -25,14 +25,22 @@
         <button @click="currentTab = 'teams'" class="menu-item" :class="{ active: currentTab === 'teams' }">
           <span class="icon">👥</span> User Teams
         </button>
+
+        <div class="menu-label">GLOBAL</div>
         <button @click="currentTab = 'notifications'" class="menu-item" :class="{ active: currentTab === 'notifications' }">
           <span class="icon">📢</span> Send Notification
+        </button>
+        <button @click="currentTab = 'uiux'" class="menu-item" :class="{ active: currentTab === 'uiux' }">
+          <span class="icon">🎨</span> UI / UX
+        </button>
+        <button @click="currentTab = 'shared_variable'" class="menu-item" :class="{ active: currentTab === 'shared_variable' }">
+          <span class="icon">🔗</span> Shared Variable
         </button>
         <button @click="currentTab = 'admins'" class="menu-item" :class="{ active: currentTab === 'admins' }">
           <span class="icon">🛡️</span> System Admins
         </button>
         <button @click="currentTab = 'settings'" class="menu-item" :class="{ active: currentTab === 'settings' }">
-          <span class="icon">⚙️</span> Settings
+          <span class="icon">⚙️</span> Change Password
         </button>
       </div>
 
@@ -45,11 +53,9 @@
 
     <!-- Main Section -->
     <div class="main-section">
-      <!-- Topbar Header (Unified with logout and message action) -->
+      <!-- Topbar Header -->
       <header class="topbar">
-        <div class="topbar-left-placeholder">
-          <!-- Left spacing to maintain layout since search bar is removed -->
-        </div>
+        <div class="topbar-left-placeholder"></div>
         <div class="topbar-actions">
           <span class="action-icon" @click="currentTab = 'notifications'" title="Send Broadcast Notification">✉️</span>
           
@@ -71,29 +77,30 @@
           <div class="breadcrumbs">Dashboard &gt; {{ tabTitle }}</div>
         </div>
 
-        <!-- System & API Operational Status Cards (Color borders & Refresh button) -->
+        <!-- Global Warning Banner for sensitive settings sections -->
+        <div v-if="isGlobalTab" class="global-warning-banner">
+          ⚠️ WARNING: Please perform all modifications in this section with full attention. Changing these global configurations impacts live app behavior and payment gateways immediately.
+        </div>
+
+        <!-- System & API Operational Status Cards -->
         <section v-if="currentTab === 'dashboard'" class="op-status-section-new">
           <div class="op-card-header-new">
             <h4>🖥️ Systems & API Operational Status</h4>
             <button @click="checkGatewayStatus" class="refresh-op-btn-new">🔄 Refresh Status</button>
           </div>
           <div class="op-grid-new">
-            <!-- Database Connection Card -->
             <div class="op-card-item" :class="gatewayStatus.database === 'Operational' ? 'green-card' : 'red-card'">
               <span class="op-lbl">Database Connection</span>
               <strong class="op-val">{{ gatewayStatus.database }}</strong>
             </div>
-            <!-- Recharge API Card -->
             <div class="op-card-item" :class="gatewayStatus.app_api === 'Operational' ? 'green-card' : 'red-card'">
               <span class="op-lbl">Recharge API Server</span>
               <strong class="op-val">{{ gatewayStatus.app_api }}</strong>
             </div>
-            <!-- Scriza Gateway Card -->
             <div class="op-card-item" :class="gatewayStatus.scriza_api && gatewayStatus.scriza_api.includes('Operational') ? 'green-card' : 'orange-card'">
               <span class="op-lbl">Scriza Gateway API</span>
               <strong class="op-val">{{ gatewayStatus.scriza_api }}</strong>
             </div>
-            <!-- Razorpay Gateway Card -->
             <div class="op-card-item" :class="gatewayStatus.razorpay_gateway && gatewayStatus.razorpay_gateway.includes('Operational') ? 'green-card' : 'orange-card'">
               <span class="op-lbl">Razorpay Gateway API</span>
               <strong class="op-val">{{ gatewayStatus.razorpay_gateway }}</strong>
@@ -101,14 +108,14 @@
           </div>
         </section>
 
-        <div v-if="loading && currentTab !== 'settings' && currentTab !== 'notifications'" class="loading-box">
+        <div v-if="loading && !['settings', 'notifications', 'uiux', 'shared_variable'].includes(currentTab)" class="loading-box">
           Loading dashboard content...
         </div>
 
         <div v-else class="tab-content-area">
           <!-- TAB 1: DASHBOARD -->
           <div v-if="currentTab === 'dashboard'" class="dashboard-panes">
-            <!-- Dashboard Analytics Grid (Rendered FIRST / above stats cards!) -->
+            <!-- Dashboard Analytics Grid -->
             <div class="analytics-grid">
               <!-- Left: Campaign Donut -->
               <div class="anal-card campaign-card">
@@ -116,11 +123,8 @@
                 <div class="donut-wrapper">
                   <svg viewBox="0 0 100 100" width="120" height="120" class="donut-svg">
                     <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f1f5f9" stroke-width="10" />
-                    <!-- 60% Open -->
                     <circle cx="50" cy="50" r="40" fill="transparent" stroke="#0052cc" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="100.4" />
-                    <!-- 26% Click -->
                     <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10b981" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="165.8" transform="rotate(216 50 50)" />
-                    <!-- 14% Bounced -->
                     <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ffab00" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="216.0" transform="rotate(310 50 50)" />
                   </svg>
                   <div class="donut-center">
@@ -146,16 +150,13 @@
                 </div>
                 <div class="line-chart-wrapper">
                   <svg viewBox="0 0 500 200" class="svg-chart">
-                    <!-- Grid Lines -->
                     <line x1="30" y1="20" x2="480" y2="20" stroke="#f1f5f9" stroke-width="1" />
                     <line x1="30" y1="60" x2="480" y2="60" stroke="#f1f5f9" stroke-width="1" />
                     <line x1="30" y1="100" x2="480" y2="100" stroke="#f1f5f9" stroke-width="1" />
                     <line x1="30" y1="140" x2="480" y2="140" stroke="#f1f5f9" stroke-width="1" />
                     <line x1="30" y1="170" x2="480" y2="170" stroke="#cbd5e1" stroke-width="2" />
-                    <!-- Two Polylines representing two lines -->
                     <polyline fill="none" stroke="#e2e8f0" stroke-width="3" points="30,150 100,140 170,135 240,110 310,130 380,95 450,110" />
                     <polyline fill="none" stroke="#0052cc" stroke-width="4" points="30,120 100,105 170,115 240,80 310,65 380,90 450,45" />
-                    <!-- Points -->
                     <circle cx="240" cy="80" r="4" fill="#0052cc" />
                     <circle cx="310" cy="65" r="4" fill="#0052cc" />
                   </svg>
@@ -190,9 +191,8 @@
               </div>
             </div>
 
-            <!-- Stats Grid (Rendered below analytics-grid charts!) -->
+            <!-- Stats Grid -->
             <div class="stats-grid">
-              <!-- Total Users -->
               <div class="nice-stat-card border-blue">
                 <div class="stat-body">
                   <div class="stat-left">
@@ -204,7 +204,6 @@
                 <div class="progress-bar bg-blue"></div>
               </div>
 
-              <!-- Main Wallet -->
               <div class="nice-stat-card border-green">
                 <div class="stat-body">
                   <div class="stat-left">
@@ -216,7 +215,6 @@
                 <div class="progress-bar bg-green"></div>
               </div>
 
-              <!-- Fund Wallet -->
               <div class="nice-stat-card border-purple">
                 <div class="stat-body">
                   <div class="stat-left">
@@ -228,7 +226,6 @@
                 <div class="progress-bar bg-purple"></div>
               </div>
 
-              <!-- Total Transactions -->
               <div class="nice-stat-card border-orange">
                 <div class="stat-body">
                   <div class="stat-left">
@@ -243,7 +240,6 @@
 
             <!-- Bottom Analytics Grid -->
             <div class="bottom-analytics">
-              <!-- Left: Sales Table -->
               <div class="anal-card sales-table-card">
                 <h3>Latest Transactions</h3>
                 <div class="table-container">
@@ -270,13 +266,11 @@
                 </div>
               </div>
 
-              <!-- Right: Region Sales Bar Chart (Indian States) -->
               <div class="anal-card region-card">
                 <h3>Top Indian States Sales</h3>
                 <div class="bar-chart-container">
                   <svg viewBox="0 0 400 150" class="svg-chart">
                     <line x1="20" y1="120" x2="380" y2="120" stroke="#cbd5e1" stroke-width="2" />
-                    <!-- Color Bars -->
                     <rect x="40" y="40" width="18" height="80" fill="#3b82f6" rx="3" />
                     <rect x="90" y="20" width="18" height="100" fill="#f59e0b" rx="3" />
                     <rect x="140" y="50" width="18" height="70" fill="#8b5cf6" rx="3" />
@@ -303,9 +297,9 @@
               <div class="table-header-row">
                 <h3>Registered Mobile App Users</h3>
                 <div class="pagination-controls">
-                  <button @click="changeUserPage(-1)" :disabled="userPage === 1" class="page-btn">&larr; Prev</button>
+                  <button @click="changeUserPage(-1)" :disabled="userPage === 1" class="page-btn page-nav-btn">&larr; Prev</button>
                   <span class="page-num">Page {{ userPage }}</span>
-                  <button @click="changeUserPage(1)" :disabled="users.length < 10" class="page-btn">Next &rarr;</button>
+                  <button @click="changeUserPage(1)" :disabled="users.length < 10" class="page-btn page-nav-btn">Next &rarr;</button>
                 </div>
               </div>
               <div class="table-container">
@@ -338,7 +332,7 @@
               </div>
             </div>
 
-            <!-- Slide-Over User details -->
+            <!-- Slide-Over User details (FIXED SCROLLING & overflow issues) -->
             <div v-if="selectedUser" class="slide-over-backdrop" @click="selectedUser = null">
               <div class="slide-over" @click.stop>
                 <div class="slide-header">
@@ -462,9 +456,9 @@
               <div class="table-header-row">
                 <h3>All Portal Transactions</h3>
                 <div class="pagination-controls">
-                  <button @click="changeTxnPage(-1)" :disabled="txnPage === 1" class="page-btn">&larr; Prev</button>
+                  <button @click="changeTxnPage(-1)" :disabled="txnPage === 1" class="page-btn page-nav-btn">&larr; Prev</button>
                   <span class="page-num">Page {{ txnPage }}</span>
-                  <button @click="changeTxnPage(1)" :disabled="allTransactions.length < 15" class="page-btn">Next &rarr;</button>
+                  <button @click="changeTxnPage(1)" :disabled="allTransactions.length < 15" class="page-btn page-nav-btn">Next &rarr;</button>
                 </div>
               </div>
               <div class="table-container">
@@ -528,95 +522,106 @@
             </div>
           </div>
 
+          <!-- TAB: UI/UX MANAGEMENT -->
+          <div v-if="currentTab === 'uiux'" class="uiux-pane">
+            <div class="settings-nice-card" style="max-width: 600px; margin: 0 auto;">
+              <h3>🎨 UI / UX Configuration</h3>
+              <p class="section-desc">Manage marquee text announcements and landing page infinite banner image links.</p>
+              <form @submit.prevent="handleSaveSystemSettings" class="settings-form">
+                <div class="nice-input-group">
+                  <label for="marqueeText">Homepage Scrolling Marquee Text</label>
+                  <input id="marqueeText" type="text" v-model="systemSettings.marquee_text" placeholder="Enter scrolling notice..." required />
+                </div>
+                <div class="nice-input-group">
+                  <label for="marqueeImages">Infinite Banner Marquee Images (comma-separated URLs)</label>
+                  <input id="marqueeImages" type="text" v-model="systemSettings.marquee_images" placeholder="e.g. /assets/image.png, /assets/image2.png" required />
+                </div>
+                <div v-if="systemError" class="error-msg">{{ systemError }}</div>
+                <div v-if="systemSuccess" class="success-msg">{{ systemSuccess }}</div>
+                <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn">
+                  <span v-if="loadingSystem">Saving Marquee UI Preferences...</span>
+                  <span v-else>Save UI/UX Configurations</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- TAB: SHARED VARIABLES -->
+          <div v-if="currentTab === 'shared_variable'" class="shared-variable-pane">
+            <div class="settings-nice-card" style="max-width: 600px; margin: 0 auto;">
+              <h3>🔗 Shared Variables & Gateway Keys</h3>
+              <p class="section-desc">Manage Razorpay keys, wallets constraints, and active modes.</p>
+              <form @submit.prevent="handleSaveSystemSettings" class="settings-form">
+                <div class="nice-input-group">
+                  <label for="minBalance">Minimum Wallet Balance (₹)</label>
+                  <input id="minBalance" type="number" step="0.01" v-model="systemSettings.min_wallet_balance" placeholder="e.g. 50.00" required />
+                </div>
+                <div class="nice-input-group">
+                  <label for="forceVersion">Force Android App Version</label>
+                  <input id="forceVersion" type="text" v-model="systemSettings.force_update_version" placeholder="e.g. 1.0.0" required />
+                </div>
+                <div class="nice-checkbox-group">
+                  <input id="maintenanceMode" type="checkbox" v-model="systemSettings.maintenance_mode_bool" />
+                  <label for="maintenanceMode">Enable Platform Maintenance Mode</label>
+                </div>
+                <div class="nice-input-group">
+                  <label for="scrizaMode">Scriza API Active Mode</label>
+                  <select id="scrizaMode" v-model="systemSettings.scriza_api_mode">
+                    <option value="simulation">Simulation Mode</option>
+                    <option value="production">Production Live Mode</option>
+                  </select>
+                </div>
+                <div class="nice-input-group">
+                  <label for="razorpayMode">Razorpay Checkout Gateway</label>
+                  <select id="razorpayMode" v-model="systemSettings.razorpay_api_mode">
+                    <option value="test">Test Payments Mode</option>
+                    <option value="live">Live Payments Mode</option>
+                  </select>
+                </div>
+                <div class="nice-input-group">
+                  <label for="razorpayKeyId">Razorpay Key ID</label>
+                  <input id="razorpayKeyId" type="text" v-model="systemSettings.razorpay_key_id" placeholder="Enter Razorpay Key ID" required />
+                </div>
+                <div class="nice-input-group">
+                  <label for="razorpayKeySecret">Razorpay Key Secret</label>
+                  <input id="razorpayKeySecret" type="password" v-model="systemSettings.razorpay_key_secret" placeholder="Enter Razorpay Key Secret" required />
+                </div>
+
+                <div v-if="systemError" class="error-msg">{{ systemError }}</div>
+                <div v-if="systemSuccess" class="success-msg">{{ systemSuccess }}</div>
+                <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn">
+                  <span v-if="loadingSystem">Saving Shared Variables...</span>
+                  <span v-else>Save System Preferences</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
           <!-- TAB: UNIFIED SETTINGS -->
           <div v-if="currentTab === 'settings'" class="settings-pane">
-            <div class="settings-grid-pane">
-              <!-- Change Password Card -->
-              <div class="settings-nice-card">
-                <h3>Change Admin Password</h3>
-                <p class="section-desc">Change the password used to access the administrator dashboard.</p>
-                <form @submit.prevent="handleChangePassword" class="settings-form">
-                  <div class="nice-input-group">
-                    <label for="oldPassword">Current Password</label>
-                    <input id="oldPassword" type="password" v-model="oldPassword" placeholder="Enter current password" required />
-                  </div>
-                  <div class="nice-input-group">
-                    <label for="newPassword">New Password</label>
-                    <input id="newPassword" type="password" v-model="newPassword" placeholder="Enter new password" required />
-                  </div>
-                  <div class="nice-input-group">
-                    <label for="confirmPassword">Confirm New Password</label>
-                    <input id="confirmPassword" type="password" v-model="confirmPassword" placeholder="Confirm new password" required />
-                  </div>
-                  <div v-if="passwordError" class="error-msg">{{ passwordError }}</div>
-                  <div v-if="passwordSuccess" class="success-msg">{{ passwordSuccess }}</div>
-                  <button type="submit" :disabled="loadingPassword" class="nice-save-btn">
-                    <span v-if="loadingPassword">Updating password...</span>
-                    <span v-else>Update Password</span>
-                  </button>
-                </form>
-              </div>
-
-              <!-- System Configuration Card -->
-              <div class="settings-nice-card">
-                <h3>System & Wallet Configurations</h3>
-                <p class="section-desc">Configure parameters, maintenance window modes, and Android updates.</p>
-                <form @submit.prevent="handleSaveSystemSettings" class="settings-form">
-                  <div class="nice-input-group">
-                    <label for="minBalance">Minimum Wallet Balance (₹)</label>
-                    <input id="minBalance" type="number" step="0.01" v-model="systemSettings.min_wallet_balance" placeholder="e.g. 50.00" required />
-                  </div>
-                  <div class="nice-input-group">
-                    <label for="forceVersion">Force Android App Version</label>
-                    <input id="forceVersion" type="text" v-model="systemSettings.force_update_version" placeholder="e.g. 1.0.0" required />
-                  </div>
-                  <div class="nice-checkbox-group">
-                    <input id="maintenanceMode" type="checkbox" v-model="systemSettings.maintenance_mode_bool" />
-                    <label for="maintenanceMode">Enable Platform Maintenance Mode</label>
-                  </div>
-                  <div class="nice-input-group">
-                    <label for="scrizaMode">Scriza API Active Mode</label>
-                    <select id="scrizaMode" v-model="systemSettings.scriza_api_mode">
-                      <option value="simulation">Simulation Mode (Simulate Callback)</option>
-                      <option value="production">Production Live Mode</option>
-                    </select>
-                  </div>
-                  <div class="nice-input-group">
-                    <label for="razorpayMode">Razorpay Checkout Gateway</label>
-                    <select id="razorpayMode" v-model="systemSettings.razorpay_api_mode">
-                      <option value="test">Test Payments Mode</option>
-                      <option value="live">Live Payments Mode</option>
-                    </select>
-                  </div>
-
-                  <!-- Razorpay Keys Configuration -->
-                  <div class="nice-input-group">
-                    <label for="razorpayKeyId">Razorpay Key ID</label>
-                    <input id="razorpayKeyId" type="text" v-model="systemSettings.razorpay_key_id" placeholder="Enter Razorpay Key ID" required />
-                  </div>
-                  <div class="nice-input-group">
-                    <label for="razorpayKeySecret">Razorpay Key Secret</label>
-                    <input id="razorpayKeySecret" type="password" v-model="systemSettings.razorpay_key_secret" placeholder="Enter Razorpay Key Secret" required />
-                  </div>
-
-                  <!-- Scrolling Marquees Configurations -->
-                  <div class="nice-input-group">
-                    <label for="marqueeText">Homepage Scrolling Marquee Text</label>
-                    <input id="marqueeText" type="text" v-model="systemSettings.marquee_text" placeholder="Enter scrolling notice..." required />
-                  </div>
-                  <div class="nice-input-group">
-                    <label for="marqueeImages">Infinite Banner Marquee Images (comma-separated URLs)</label>
-                    <input id="marqueeImages" type="text" v-model="systemSettings.marquee_images" placeholder="e.g. /assets/image.png, /assets/image2.png" required />
-                  </div>
-
-                  <div v-if="systemError" class="error-msg">{{ systemError }}</div>
-                  <div v-if="systemSuccess" class="success-msg">{{ systemSuccess }}</div>
-                  <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn">
-                    <span v-if="loadingSystem">Saving configuration...</span>
-                    <span v-else>Save System Preferences</span>
-                  </button>
-                </form>
-              </div>
+            <div class="settings-nice-card" style="max-width: 600px; margin: 0 auto;">
+              <h3>Change Admin Password</h3>
+              <p class="section-desc">Change the password used to access the administrator dashboard.</p>
+              <form @submit.prevent="handleChangePassword" class="settings-form">
+                <div class="nice-input-group">
+                  <label for="oldPassword">Current Password</label>
+                  <input id="oldPassword" type="password" v-model="oldPassword" placeholder="Enter current password" required />
+                </div>
+                <div class="nice-input-group">
+                  <label for="newPassword">New Password</label>
+                  <input id="newPassword" type="password" v-model="newPassword" placeholder="Enter new password" required />
+                </div>
+                <div class="nice-input-group">
+                  <label for="confirmPassword">Confirm New Password</label>
+                  <input id="confirmPassword" type="password" v-model="confirmPassword" placeholder="Confirm new password" required />
+                </div>
+                <div v-if="passwordError" class="error-msg">{{ passwordError }}</div>
+                <div v-if="passwordSuccess" class="success-msg">{{ passwordSuccess }}</div>
+                <button type="submit" :disabled="loadingPassword" class="nice-save-btn">
+                  <span v-if="loadingPassword">Updating password...</span>
+                  <span v-else>Update Password</span>
+                </button>
+              </form>
             </div>
           </div>
         </div>
@@ -696,13 +701,18 @@ export default {
         case 'transactions': return 'All Portal Transactions';
         case 'teams': return 'Downline Affiliate Networks';
         case 'notifications': return 'Broadcast Notification';
+        case 'uiux': return 'UI / UX Manager';
+        case 'shared_variable': return 'Shared System Variables';
         case 'admins': return 'System Administrator Staff';
-        case 'settings': return 'System Preferences & Settings';
+        case 'settings': return 'Change Password';
         default: return 'Management Console';
       }
     },
     pendingRequestsCount() {
       return this.fundRequests.filter(r => r.status === 'PENDING').length;
+    },
+    isGlobalTab() {
+      return ['notifications', 'uiux', 'shared_variable', 'admins'].includes(this.currentTab);
     }
   },
   watch: {
@@ -725,6 +735,8 @@ export default {
         this.fetchAdminsList();
       } else if (newTab === 'settings') {
         if (this.$route.path !== '/admin-settings') this.$router.push('/admin-settings');
+      } else if (newTab === 'uiux' || newTab === 'shared_variable') {
+        if (this.$route.path !== '/admin-settings') this.$router.push('/admin-settings');
         this.fetchSystemSettings();
       }
     },
@@ -740,7 +752,7 @@ export default {
   },
   methods: {
     syncTabFromPath() {
-      if (this.$route.path === '/admin-settings') {
+      if (this.$route.path === '/admin-settings' && !['uiux', 'shared_variable'].includes(this.currentTab)) {
         this.currentTab = 'settings';
       }
     },
@@ -1019,6 +1031,9 @@ export default {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
 .sidebar-brand {
@@ -1056,13 +1071,15 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .menu-label {
   font-size: 0.7rem;
   font-weight: bold;
   color: #62728c;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem 0.25rem;
   letter-spacing: 0.5px;
 }
 
@@ -1089,9 +1106,9 @@ export default {
 }
 
 .sidebar-footer {
-  margin-top: auto;
   padding: 1.5rem 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: #1e283d;
 }
 
 .logout-btn {
@@ -1099,7 +1116,7 @@ export default {
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.2);
   width: 100%;
-  padding: 0.6rem;
+  padding: 0.65rem;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
@@ -1220,6 +1237,19 @@ export default {
 .breadcrumbs {
   font-size: 0.8rem;
   color: #94a3b8;
+}
+
+/* Global Warning Banner */
+.global-warning-banner {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
 }
 
 /* Upgraded Operational status cards layout */
@@ -1632,7 +1662,7 @@ export default {
   font-weight: bold;
 }
 
-/* User Profile Drawer slide over */
+/* Slide-Over Drawer with ENABLED Scrolling */
 .slide-over-backdrop {
   position: fixed;
   top: 0;
@@ -1650,7 +1680,7 @@ export default {
   width: 100%;
   max-width: 400px;
   background: white;
-  height: 100%;
+  height: 100vh;
   box-shadow: -10px 0 30px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
@@ -1662,6 +1692,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .close-btn {
@@ -1677,6 +1708,8 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  flex: 1;
+  overflow-y: auto; /* Active scrolling enabled */
 }
 
 .profile-avatar-area {
@@ -1684,6 +1717,7 @@ export default {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .large-avatar {
@@ -1715,6 +1749,7 @@ export default {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  flex-shrink: 0;
 }
 
 .wallet-stat {
@@ -1776,6 +1811,53 @@ export default {
   cursor: pointer;
 }
 
+/* Visibility enhancements for Pagination controls */
+.table-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.page-nav-btn {
+  background: #2563eb !important;
+  color: white !important;
+  border: 1px solid #1d4ed8 !important;
+  padding: 0.45rem 1rem !important;
+  border-radius: 6px !important;
+  font-size: 0.85rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.page-nav-btn:hover {
+  background: #1d4ed8 !important;
+}
+
+.page-nav-btn:disabled {
+  background: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed !important;
+  box-shadow: none;
+}
+
+.page-num {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #3e5569;
+}
+
 .btn-approve {
   background: #10b981;
   color: white;
@@ -1807,14 +1889,8 @@ export default {
 /* Settings Tab Styling */
 .settings-grid-pane {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; /* Unified width */
   gap: 2rem;
-}
-
-@media (max-width: 1024px) {
-  .settings-grid-pane {
-    grid-template-columns: 1fr;
-  }
 }
 
 .settings-nice-card {
@@ -1823,6 +1899,7 @@ export default {
   padding: 2rem;
   box-shadow: 0 1px 15px rgba(0,0,0,0.02);
   border-top: 3px solid #3e5569;
+  box-sizing: border-box;
 }
 
 .settings-nice-card h3 {
