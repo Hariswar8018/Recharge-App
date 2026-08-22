@@ -28,25 +28,6 @@
       </div>
     </div>
 
-    <!-- Top Action bar (Very top right below header) -->
-    <div class="top-action-bar">
-      <div class="top-action-content">
-        <div class="playstore-download-info">
-          <svg class="playstore-mini-icon" viewBox="0 0 24 24" width="24" height="24">
-            <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#00e676"/>
-            <path d="M17.15,11.3,14.65,9.83l-3.32,3.32,3.32,3.32,2.5-1.47A1.15,1.15,0,0,0,17.15,11.3Z" fill="#ffeb3b"/>
-            <path d="M3.24,4.41l8.09,8.09L3.24,20.59a1,1,0,0,1-.24-.69V5.1A1,1,0,0,1,3.24,4.41Z" fill="#2196f3"/>
-            <path d="M11.33,12.5l8.09,8.09a1,1,0,0,1-.69.24H5.1a1,1,0,0,1-.69-.24Z" fill="#f44336"/>
-          </svg>
-          <span class="download-text">Get our mobile application directly from Google Play Store!</span>
-          <a href="#" class="top-mini-btn download-link">Download Now</a>
-        </div>
-        <div class="admin-portal-access">
-          <span class="portal-text font-bold">Authorized Personnel:</span>
-          <router-link to="/admin-login" class="top-mini-btn portal-link">Access Panel &rarr;</router-link>
-        </div>
-      </div>
-    </div>
 
     <!-- Main Hero Section (Action-packed) -->
     <section class="hero-section" id="hero">
@@ -614,6 +595,13 @@ export default {
   },
   methods: {
     async fetchLandingInfo() {
+      const defaultLogos = [
+        'https://upload.wikimedia.org/wikipedia/commons/5/50/Reliance_Jio_Logo.svg',
+        'https://upload.wikimedia.org/wikipedia/commons/e/e5/Bharti_Airtel_Logo.svg',
+        'https://upload.wikimedia.org/wikipedia/commons/d/d4/Vodafone_Idea_logo.svg',
+        'https://upload.wikimedia.org/wikipedia/commons/e/ec/BSNL_logo.svg',
+        'https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg'
+      ];
       try {
         const response = await fetch('https://api.srdigitalseva.com/api/landing-info');
         const data = await response.json();
@@ -622,14 +610,13 @@ export default {
         }
         if (data.marquee_images) {
           const list = data.marquee_images.split(',').map(s => s.trim()).filter(Boolean);
-          // Duplicate list for infinite scrolling strip effect
           this.marqueeImages = [...list, ...list, ...list, ...list, ...list];
         } else {
-          this.marqueeImages = [this.bannerImg, this.bannerImg, this.bannerImg, this.bannerImg];
+          this.marqueeImages = [...defaultLogos, ...defaultLogos, ...defaultLogos];
         }
       } catch (e) {
         console.error('Error fetching landing info', e);
-        this.marqueeImages = [this.bannerImg, this.bannerImg, this.bannerImg, this.bannerImg];
+        this.marqueeImages = [...defaultLogos, ...defaultLogos, ...defaultLogos];
       }
     },
     scrollTo(id) {

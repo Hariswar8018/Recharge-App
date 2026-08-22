@@ -137,7 +137,7 @@ async function initDb() {
           ['razorpay_key_id', 'rzp_test_dummyKey123'],
           ['razorpay_key_secret', 'dummySecretKey789'],
           ['marquee_text', 'Welcome to SR Digital Seva! Enjoy high commission margins on DTH and Mobile recharges. Fast wallet loads enabled via UPI.'],
-          ['marquee_images', '/assets/image.png']
+          ['marquee_images', 'https://upload.wikimedia.org/wikipedia/commons/5/50/Reliance_Jio_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/e5/Bharti_Airtel_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/d/d4/Vodafone_Idea_logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/ec/BSNL_logo.svg,https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg']
         ]
       ]);
       console.log('Default system settings seeded.');
