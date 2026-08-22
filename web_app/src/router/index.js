@@ -3,6 +3,8 @@ import LandingPage from '../views/LandingPage.vue'
 import AdminLogin from '../views/AdminLogin.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
 import AdminSettings from '../views/AdminSettings.vue'
+import ContactUs from '../views/ContactUs.vue'
+import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 
 const routes = [
   {
@@ -26,6 +28,16 @@ const routes = [
     name: 'AdminSettings',
     component: AdminSettings,
     meta: { requiresAdmin: true }
+  },
+  {
+    path: '/contact-us',
+    name: 'ContactUs',
+    component: ContactUs
+  },
+  {
+    path: '/privacy-policy',
+    name: 'PrivacyPolicy',
+    component: PrivacyPolicy
   }
 ]
 

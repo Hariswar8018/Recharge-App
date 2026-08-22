@@ -260,12 +260,12 @@
           <div class="footer-links-grid">
             <div class="footer-col">
               <a href="#">ABOUT US</a>
-              <a href="#">CONTACT US</a>
+              <router-link to="/contact-us">CONTACT US</router-link>
               <a href="#">REFUND POLICY</a>
             </div>
             <div class="footer-col">
               <a href="#">FAQs</a>
-              <a href="#">PRIVACY POLICY</a>
+              <router-link to="/privacy-policy">PRIVACY POLICY</router-link>
               <a href="#">TERMS & CONDITIONS</a>
             </div>
           </div>
@@ -1054,6 +1054,10 @@ export default {
   }
   .security-content {
     margin-left: 0;
+    text-align: center;
+    background: rgba(0, 34, 68, 0.65);
+    padding: 1.5rem;
+    border-radius: 16px;
   }
   .download-grid,
   .faq-grid,
