@@ -1,15 +1,11 @@
 ---
 deployment:
   tasks:
-    - export REPOPATH=/home/wpzumbof/repositories/Recharge
+    - export REPOPATH=/home/wpzumbof/repositories/Recharge-App
     - export WEBPATH=/home/wpzumbof/public_html
     - export BACKENDPATH=/home/wpzumbof/backend
-    - export NPM=/home/wpzumbof/nodevenv/backend/20/bin/npm
 
-    # Build Vue frontend
-    - /bin/bash -c "cd $REPOPATH/web_app && $NPM ci --include=dev && $NPM run build"
-
-    # Deploy Vue frontend
+    # Deploy pre-built Vue frontend
     - /bin/mkdir -p $WEBPATH
     - /bin/cp -R $REPOPATH/web_app/dist/. $WEBPATH/
 
