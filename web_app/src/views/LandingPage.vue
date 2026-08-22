@@ -372,13 +372,13 @@
           <!-- QR Area -->
           <div class="qr-panel">
             <div class="qr-container">
-              <!-- Simulated QR Code -->
+              <!-- Real QR Code -->
               <div class="qr-code">
-                <div class="qr-pattern"></div>
+                <img :src="qrScanImg" style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px;" alt="Scan to Download Android App" />
               </div>
               <p class="qr-caption">Scan the QR code to Download our app now</p>
               <!-- Google Play Badge -->
-              <a href="#" class="play-badge">
+              <a href="https://play.google.com/store/apps/details?id=com.app.earnfarm" target="_blank" class="play-badge">
                 <svg class="play-icon" viewBox="0 0 24 24" width="20" height="20">
                   <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#fff"/>
                 </svg>
