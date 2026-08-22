@@ -64,9 +64,13 @@
 
         <!-- QR Code for Download -->
         <div class="qr-download-container">
-          <img :src="qrScanImg" class="qr-scan-img" alt="Scan to Download Android App" />
+          <div class="qr-wrapper-badge">
+            <img :src="qrScanImg" class="qr-scan-img" alt="Scan to Download Android App" />
+            <span class="qr-icon-overlay">📱</span>
+          </div>
           <div class="qr-scan-text">
-            <strong>Scan to Download App</strong>
+            <span class="qr-text-tag">⚡ DIRECT DOWNLOAD</span>
+            <strong>Scan the QR code to Download our app now</strong>
             <span>Direct Android package install</span>
           </div>
         </div>
@@ -925,6 +929,25 @@ export default {
   border: 1px solid rgba(0, 82, 204, 0.15);
   width: fit-content;
 }
+.qr-wrapper-badge {
+  position: relative;
+  display: inline-block;
+}
+.qr-icon-overlay {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: #2563eb;
+  font-size: 0.65rem;
+  padding: 2px;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid white;
+}
 .qr-scan-img {
   width: 56px;
   height: 56px;
@@ -938,6 +961,13 @@ export default {
   flex-direction: column;
   color: #1e293b;
   text-align: left;
+}
+.qr-text-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #2563eb;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.15rem;
 }
 .qr-scan-text strong {
   font-size: 0.9rem;
