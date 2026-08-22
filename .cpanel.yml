@@ -1,9 +1,20 @@
 ---
 deployment:
   tasks:
+    # -------------------------
+    # Frontend
+    # -------------------------
+    - export WEBPATH=/home/wpzumbof/repositories/Recharge/web_app
     - export DEPLOYPATH=/home/wpzumbof/public_html/
-    - /bin/cp -R /home/wpzumbof/repositories/Recharge/web_app/dist/. $DEPLOYPATH
 
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/bash -c "cd $WEBPATH && npm install --include=dev && npm run build"
+    - /bin/cp -R $WEBPATH/dist/. $DEPLOYPATH
+
+    # -------------------------
+    # Backend
+    # -------------------------
     - export BACKENDPATH=/home/wpzumbof/backend/
+
     - /bin/mkdir -p $BACKENDPATH
     - /bin/cp -R /home/wpzumbof/repositories/Recharge/backend/. $BACKENDPATH
