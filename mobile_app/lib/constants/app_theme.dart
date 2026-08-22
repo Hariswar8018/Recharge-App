@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-
+import '../api.dart';
 class AppTheme {
   // Global background image asset string. 
   // The user can replace this empty string or mock asset path with their real background asset path later!
   static const String globalBackgroundImageAsset = "assets/image.png";
 
   // API Config
-  static const String apiBaseUrl = "https://api.srdigitalseva.com"; 
-  static const String appToken = "my_secure_app_token_123";
+  static const String apiBaseUrl = Api.apiBaseUrl; 
+  static const String appToken = Api.appToken;
 
   // App Palette (Mirroring screenshots)
   static const Color primaryBlue = Color(0xFF0052CC);

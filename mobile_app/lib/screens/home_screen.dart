@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants/app_theme.dart';
 import '../services/api_service.dart';
+import '../api.dart';
+import '../widgets/background_container.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,10 +21,25 @@ class _HomeScreenState extends State<HomeScreen> {
   String _status = "ACTIVE";
   bool _isLoading = true;
 
+  late Razorpay _razorpay;
+  String _activePaymentService = "";
+
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
+
+    // Initialize Razorpay SDK
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear(); // Clear listeners
+    super.dispose();
   }
 
   Future<void> _loadUserProfile() async {
@@ -54,80 +73,104 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.pushReplacementNamed(context, '/login');
   }
 
-  // Simulated Razorpay Sandbox checkout for bill recharges
-  void _triggerServicePayment(String serviceName) {
+  // --- RAZORPAY HANDLERS ---
+
+  void _triggerRazorpayCheckout(String serviceName) {
+    _activePaymentService = serviceName;
+    
+    var options = {
+      'key': Api().razorpayapi_key,
+      'amount': 10000, // Amount in paise (10000 paise = 100 INR)
+      'name': 'SR Digital Seva',
+      'description': '$serviceName Bill Payment',
+      'prefill': {
+        'contact': '8888888888',
+        'email': 'test@razorpay.com'
+      },
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      debugPrint("Error opening Razorpay: $e");
+    }
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    setState(() => _isLoading = true);
+
+    // Sync sandbox payment: deduct ₹100 from Main Wallet in backend
+    await ApiService.triggerRazorpaySandboxPayment(-100.0, "$_activePaymentService Recharge", "MAIN");
+    await _loadUserProfile();
+
+    setState(() => _isLoading = false);
+
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: const [
-            Icon(Icons.payment, color: AppTheme.primaryBlue),
+            Icon(Icons.check_circle, color: Colors.green),
             SizedBox(width: 8),
-            Text("Razorpay Sandbox", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text("Payment Success", style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Simulate payment for $serviceName recharge."),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(8)),
-              child: const Text("Test API Key: rzp_test_dummy", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange)),
-            ),
-            const SizedBox(height: 12),
-            const Text("Amount: ₹ 100.00", style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
+        content: Text(
+          "Recharge payment of ₹100.00 completed successfully via Razorpay Sandbox.\n\nBill payment api not integrated.\nTxn ID: ${response.paymentId}",
+          style: const TextStyle(height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.red)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              setState(() => _isLoading = true);
-              
-              // Perform a simulated sandbox payment decrementing ₹100 from Main Wallet
-              await ApiService.triggerRazorpaySandboxPayment(-100.0, "$serviceName Recharge", "MAIN");
-              await _loadUserProfile();
-              
-              setState(() => _isLoading = false);
-              
-              if (!mounted) return;
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  title: Row(
-                    children: const [
-                      Icon(Icons.check_circle, color: Colors.green),
-                      SizedBox(width: 8),
-                      Text("Payment Success", style: TextStyle(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  content: const Text(
-                    "Recharge payment of ₹100.00 completed successfully via Razorpay Sandbox.\n\nBill payment api not integrated.",
-                    style: TextStyle(height: 1.4),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
-                    )
-                  ],
-                ),
-              );
-            },
-            child: const Text("Simulate Pay"),
-          ),
+            child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
+          )
         ],
       ),
     );
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.error_outline, color: Colors.red),
+            SizedBox(width: 8),
+            Text("Payment Failed", style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text("Error Code: ${response.code}\nDescription: ${response.message}"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint("External Wallet Selected: ${response.walletName}");
+  }
+
+  // --- URL LAUNCHER HELPER ---
+  Future<void> _openWebUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $urlString');
+      }
+    } catch (e) {
+      debugPrint("Error launching URL: $e");
+    }
   }
 
   @override
@@ -135,56 +178,100 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            UserAccountsDrawerHeader(
-              decoration: const BoxDecoration(color: AppTheme.primaryBlue),
-              accountName: Text(_fullName, style: const TextStyle(fontWeight: FontWeight.bold)),
-              accountEmail: const Text(""),
-              currentAccountPicture: const CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Icon(Icons.person, color: AppTheme.primaryBlue, size: 40),
+        elevation: 16,
+        child: Container(
+          color: Colors.white,
+          child: Column(
+            children: [
+              // Professional Drawer Header
+              UserAccountsDrawerHeader(
+                margin: EdgeInsets.zero,
+                decoration: const BoxDecoration(
+                  gradient: AppTheme.blueGradient,
+                ),
+                accountName: Text(
+                  _fullName,
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white),
+                ),
+                accountEmail: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.verified, color: Colors.greenAccent, size: 14),
+                      const SizedBox(width: 4),
+                      Text("Status: $_status", style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                currentAccountPicture: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2.5),
+                  ),
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, color: AppTheme.primaryBlue, size: 44),
+                  ),
+                ),
               ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home, color: AppTheme.primaryBlue),
-              title: const Text("Home"),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 0);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.business_center, color: AppTheme.primaryBlue),
-              title: const Text("Business"),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 1);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.group, color: AppTheme.primaryBlue),
-              title: const Text("Team"),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 2);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person, color: AppTheme.primaryBlue),
-              title: const Text("Profile"),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 3);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text("Logout"),
-              onTap: _handleLogout,
-            ),
-          ],
+
+              // Drawer Menu Options
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    _buildDrawerItem(Icons.home_outlined, "Home Portal", () {
+                      Navigator.pop(context);
+                      setState(() => _currentIndex = 0);
+                    }),
+                    _buildDrawerItem(Icons.business_center_outlined, "Business Hub", () {
+                      Navigator.pop(context);
+                      setState(() => _currentIndex = 1);
+                    }),
+                    _buildDrawerItem(Icons.group_outlined, "Team Network", () {
+                      Navigator.pop(context);
+                      setState(() => _currentIndex = 2);
+                    }),
+                    _buildDrawerItem(Icons.person_outline, "My Profile", () {
+                      Navigator.pop(context);
+                      setState(() => _currentIndex = 3);
+                    }),
+                    const Divider(color: AppTheme.cardLightBlue, thickness: 1.5, indent: 16, endIndent: 16),
+                    _buildDrawerItem(Icons.help_outline, "About Seva Kendram", () {
+                      Navigator.pop(context);
+                      _openWebUrl("https://srdigitalseva.com");
+                    }),
+                    _buildDrawerItem(Icons.support_agent_outlined, "Customer Support", () {
+                      Navigator.pop(context);
+                      _openWebUrl("https://srdigitalseva.com/contact");
+                    }),
+                  ],
+                ),
+              ),
+
+              // Sign Out at Bottom
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: ElevatedButton.icon(
+                  onPressed: _handleLogout,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade50,
+                    foregroundColor: Colors.red,
+                    elevation: 0,
+                    minimumSize: const Size(double.infinity, 48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.logout),
+                  label: const Text("Sign Out", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              )
+            ],
+          ),
         ),
       ),
       appBar: AppBar(
@@ -263,8 +350,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: _buildTabContent(),
+                  child: BackgroundContainer(
+                    child: SingleChildScrollView(
+                      child: _buildTabContent(),
+                    ),
                   ),
                 ),
               ],
@@ -288,6 +377,14 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: AppTheme.primaryBlue),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textDarkBlue)),
+      onTap: onTap,
     );
   }
 
@@ -467,7 +564,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildServiceGridItem(IconData icon, String label, Color color) {
     return InkWell(
-      onTap: () => _triggerServicePayment(label),
+      onTap: () => _triggerRazorpayCheckout(label),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -939,8 +1036,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildProfileMenuOption(Icons.person, "Manage Profile", "Update your personal details"),
                 _buildProfileMenuOption(Icons.security, "Password & Security", "Change password and secure your account"),
                 _buildProfileMenuOption(Icons.notifications_active, "Notifications", "Manage your notification preferences"),
-                _buildProfileMenuOption(Icons.info, "About Us", "Know more about SR Digital Seva Kendram"),
-                _buildProfileMenuOption(Icons.help_center, "Support", "Help & support center"),
+                _buildProfileMenuOption(Icons.info, "About Us", "Know more about SR Digital Seva Kendram", onTap: () => _openWebUrl("https://srdigitalseva.com")),
+                _buildProfileMenuOption(Icons.help_center, "Support", "Help & support center", onTap: () => _openWebUrl("https://srdigitalseva.com/contact")),
                 _buildProfileMenuOption(Icons.power_settings_new, "Log out", "Sign out from your account", isLogout: true),
               ],
             ),
@@ -963,7 +1060,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProfileMenuOption(IconData icon, String title, String subtitle, {bool isLogout = false}) {
+  Widget _buildProfileMenuOption(IconData icon, String title, String subtitle, {bool isLogout = false, VoidCallback? onTap}) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
@@ -976,7 +1073,7 @@ class _HomeScreenState extends State<HomeScreen> {
       title: Text(title, style: TextStyle(color: isLogout ? Colors.red : AppTheme.textDarkBlue, fontWeight: FontWeight.bold, fontSize: 13)),
       subtitle: Text(subtitle, style: const TextStyle(color: AppTheme.textGray, fontSize: 10)),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
-      onTap: isLogout ? _handleLogout : () {},
+      onTap: onTap ?? (isLogout ? _handleLogout : () {}),
     );
   }
 }

@@ -23,7 +23,7 @@ mobile_app/ios/Flutter/Generated.xcconfig
 mobile_app/ios/Flutter/app.flx
 mobile_app/ios/Flutter/flutter_assets/
 mobile_app/ios/Flutter/flutter_export_environment.sh
-
+mobile_app/lib/api.dart
 # IDE and general files
 .vscode/
 .idea/
