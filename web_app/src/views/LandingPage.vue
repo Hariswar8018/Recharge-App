@@ -5,20 +5,42 @@
       <div class="header-content">
         <div class="logo-area" @click="scrollTo('hero')">
           <div class="zap-logo">
-            <span class="logo-bold">RECHARGE</span>
-            <span class="logo-italic">ZAP</span>
+            <span class="logo-bold">SR DIGITAL SEVA</span>
+            <span class="logo-italic">KENDRAM</span>
           </div>
         </div>
         <nav class="nav-links">
           <a href="#about" @click.prevent="scrollTo('about')">About Us</a>
+          <a href="#steps" @click.prevent="scrollTo('steps')">How It Works</a>
           <a href="#faq" @click.prevent="scrollTo('faq')">FAQs</a>
           <a href="#contact" @click.prevent="scrollTo('contact')">Contact Us</a>
-          <router-link to="/admin-login" class="nav-btn admin-login-btn">Sign In</router-link>
+          <router-link to="/admin-login" class="nav-btn admin-login-btn">Admin Login</router-link>
         </nav>
       </div>
     </header>
 
-    <!-- Hero / Content Area -->
+    <!-- Top Action bar (Very top right below header) -->
+    <div class="top-action-bar">
+      <div class="top-action-content">
+        <div class="playstore-download-info">
+          <!-- Play Store Icon SVG -->
+          <svg class="playstore-mini-icon" viewBox="0 0 24 24" width="24" height="24">
+            <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#00e676"/>
+            <path d="M17.15,11.3,14.65,9.83l-3.32,3.32,3.32,3.32,2.5-1.47A1.15,1.15,0,0,0,17.15,11.3Z" fill="#ffeb3b"/>
+            <path d="M3.24,4.41l8.09,8.09L3.24,20.59a1,1,0,0,1-.24-.69V5.1A1,1,0,0,1,3.24,4.41Z" fill="#2196f3"/>
+            <path d="M11.33,12.5l8.09,8.09a1,1,0,0,1-.69.24H5.1a1,1,0,0,1-.69-.24Z" fill="#f44336"/>
+          </svg>
+          <span class="download-text">Download our official Android App from Google Play Store!</span>
+          <a href="#" class="top-mini-btn download-link">Download App</a>
+        </div>
+        <div class="admin-portal-access">
+          <span class="portal-text font-bold">Management Portal:</span>
+          <router-link to="/admin-login" class="top-mini-btn portal-link">Login to Admin Panel &rarr;</router-link>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
     <main class="main-content" id="hero">
       <!-- Exciting Deals Banner -->
       <section class="banner-section">
@@ -54,7 +76,7 @@
       </section>
 
       <!-- Trust Badges & Customer Banner -->
-      <section class="trust-section" id="about">
+      <section class="trust-section">
         <div class="brand-logos">
           <!-- Mastercard -->
           <div class="brand-logo-card">
@@ -81,9 +103,66 @@
         <div class="customer-trust">
           <h2 class="trust-title">Trusted by 8 Lakh+ happy customers</h2>
           <div class="trust-underline"></div>
-          <button class="cta-primary-btn" @click="scrollTo('contact')">
+          <button class="cta-primary-btn" @click="scrollTo('steps')">
             Recharge & Pay Bills &rarr;
           </button>
+        </div>
+      </section>
+
+      <!-- restored: Features Section -->
+      <section id="about" class="about-section">
+        <div class="section-header">
+          <h2>Why Choose SR Digital Seva?</h2>
+          <p>Providing the most reliable digital payment experience across the nation.</p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🛡️</div>
+            <h3>Bank-Grade Security</h3>
+            <p>Every transaction is protected by end-to-end encryption, multi-factor authorization, and real-time fraud monitoring.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Lightning Fast Settlement</h3>
+            <p>Get instant recharges and automatic receipt generation. Zero delays, 100% confirmation rate.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💸</div>
+            <h3>Affiliate Earnings</h3>
+            <p>Grow your income by inviting team members. Earn commissions on every bill payment made within your group.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">☎️</div>
+            <h3>24/7 Dedicated Support</h3>
+            <p>Our global assistance team is always online to help resolve payment inquiries and account issues.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- restored: Steps Section -->
+      <section id="steps" class="steps-section">
+        <div class="section-header">
+          <h2>Start Recharging in 3 Simple Steps</h2>
+          <p>Download our Android application and configure your secure account today.</p>
+        </div>
+        <div class="steps-container">
+          <div class="step-card">
+            <div class="step-num">01</div>
+            <h3>Create an Account</h3>
+            <p>Download our official Android app from the Google Play Store, sign up with your email, mobile number, and set up your password.</p>
+          </div>
+          <div class="step-arrow">➔</div>
+          <div class="step-card">
+            <div class="step-num">02</div>
+            <h3>Load Wallet Balance</h3>
+            <p>Easily top up your digital wallet using various payment methods including UPI, cards, and net banking.</p>
+          </div>
+          <div class="step-arrow">➔</div>
+          <div class="step-card">
+            <div class="step-num">03</div>
+            <h3>Recharge & Pay Bills</h3>
+            <p>Select your service, fill in the consumer details, and settle the payment instantly from your wallet balance.</p>
+          </div>
         </div>
       </section>
 
@@ -243,8 +322,8 @@
         <div class="footer-top">
           <div class="footer-left">
             <div class="zap-logo white-text">
-              <span class="logo-bold">RECHARGE</span>
-              <span class="logo-italic">ZAP</span>
+              <span class="logo-bold">SR DIGITAL SEVA</span>
+              <span class="logo-italic">KENDRAM</span>
             </div>
             <a href="#" class="play-badge footer-badge">
               <svg class="play-icon" viewBox="0 0 24 24" width="20" height="20">
@@ -274,7 +353,7 @@
         <div class="footer-divider"></div>
 
         <div class="footer-bottom">
-          <p class="copyright">&copy; 2026 RechargeZap, All Rights Reserved</p>
+          <p class="copyright">&copy; 2026 SR Digital Seva Kendram, All Rights Reserved</p>
           <div class="security-badges">
             <div class="sec-badge">🔒 SSL Secure</div>
             <div class="sec-badge">Verified by VISA</div>
@@ -304,7 +383,7 @@ export default {
       activeFaq: null,
       faqs: [
         {
-          question: 'What Payment Methods Are Available for Mobile Recharges on RechargeZap?',
+          question: 'What Payment Methods Are Available for Mobile Recharges on SR Digital Seva?',
           answer: 'We support all major payment networks including Credit/Debit Cards (Visa, Mastercard, RuPay), UPI (BHIM, Google Pay, PhonePe, Paytm), and major Net Banking providers to guarantee a seamless transaction experience.'
         },
         {
@@ -438,6 +517,75 @@ export default {
   transform: translateY(-1px);
 }
 
+/* Top Action Bar */
+.top-action-bar {
+  background: #ffab00;
+  color: #002244;
+  padding: 0.75rem 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.top-action-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.playstore-download-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.download-text {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.top-mini-btn {
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.download-link {
+  background: #002244;
+  color: #ffffff;
+}
+
+.download-link:hover {
+  background: #001122;
+}
+
+.portal-link {
+  background: #0052cc;
+  color: #ffffff;
+}
+
+.portal-link:hover {
+  background: #004099;
+}
+
+.admin-portal-access {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.portal-text {
+  font-size: 0.9rem;
+}
+
 /* Main Content */
 .main-content {
   width: 100%;
@@ -455,7 +603,7 @@ export default {
 
 .deals-banner {
   background: #ffffff;
-  border: 1px solid #1e293b;
+  border: 1px solid #e2e8f0;
   border-radius: 24px;
   padding: 3rem 2rem;
   display: flex;
@@ -634,6 +782,123 @@ export default {
 
 .cta-primary-btn:hover {
   background: #004099;
+}
+
+/* Features Section */
+.about-section {
+  padding: 5rem 0;
+  border-top: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  font-size: 2.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.75rem;
+}
+
+.feature-card p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Steps Section */
+.steps-section {
+  padding: 5rem 0;
+  border-top: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 4rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.section-header h2 {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 1rem;
+}
+
+.section-header p {
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+.steps-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.step-card {
+  background: white;
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  flex: 1;
+  min-width: 250px;
+  position: relative;
+  text-align: center;
+}
+
+.step-num {
+  font-size: 3rem;
+  font-weight: 900;
+  color: rgba(0, 82, 204, 0.1);
+  position: absolute;
+  top: 10px;
+  right: 15px;
+}
+
+.step-card h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 1rem;
+}
+
+.step-card p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.step-arrow {
+  font-size: 1.5rem;
+  color: #0052cc;
 }
 
 /* Download App Section */
@@ -1049,6 +1314,15 @@ export default {
     justify-content: center;
     gap: 1rem;
   }
+  .top-action-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  .playstore-download-info,
+  .admin-portal-access {
+    justify-content: center;
+  }
   .security-banner {
     padding: 3rem 1.5rem;
   }
@@ -1058,6 +1332,12 @@ export default {
     background: rgba(0, 34, 68, 0.65);
     padding: 1.5rem;
     border-radius: 16px;
+  }
+  .steps-container {
+    flex-direction: column;
+  }
+  .step-arrow {
+    transform: rotate(90deg);
   }
   .download-grid,
   .faq-grid,
