@@ -330,6 +330,51 @@ app.post('/api/admin/change-password', async (req, res) => {
   }
 });
 
+// GET Admin System Settings
+app.get('/api/admin/settings', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    const settingsRows = await query('SELECT * FROM system_settings');
+    const settings = {};
+    settingsRows.forEach(row => {
+      settings[row.key_name] = row.val_value;
+    });
+
+    res.json(settings);
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// UPDATE Admin System Settings
+app.post('/api/admin/settings', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    const updates = req.body; // key-value pairs
+    for (const [key, val] of Object.entries(updates)) {
+      await query(
+        'INSERT INTO system_settings (key_name, val_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE val_value = ?',
+        [key, String(val), String(val)]
+      );
+    }
+    res.json({ message: 'System settings updated successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update system settings' });
+  }
+});
+
 // Admin Dashboard stats & users list (Supports Redis caching and pagination)
 app.get('/api/admin/dashboard', async (req, res) => {
   const authHeader = req.headers['authorization'];

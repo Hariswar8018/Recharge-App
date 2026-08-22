@@ -88,6 +88,14 @@ async function initDb() {
       ) ENGINE=InnoDB;
     `);
 
+    // System Settings Table
+    await query(`
+      CREATE TABLE IF NOT EXISTS system_settings (
+        key_name VARCHAR(50) PRIMARY KEY,
+        val_value VARCHAR(255) NOT NULL
+      ) ENGINE=InnoDB;
+    `);
+
     // Seed Admin users (haris@gmail.com & earnfarm99@gmail.com with password 123456)
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync('123456', salt);
@@ -108,6 +116,21 @@ async function initDb() {
         ['Earnfarm Admin', 'earnfarm99@gmail.com', '1111111111', passwordHash, 'admin']
       );
       console.log('Earnfarm Admin user seeded.');
+    }
+
+    // Seed default system settings
+    const settings = await query('SELECT * FROM system_settings');
+    if (settings.length === 0) {
+      await query('INSERT INTO system_settings (key_name, val_value) VALUES ?', [
+        [
+          ['min_wallet_balance', '50.00'],
+          ['maintenance_mode', 'false'],
+          ['force_update_version', '1.0.0'],
+          ['scriza_api_mode', 'simulation'],
+          ['razorpay_api_mode', 'test']
+        ]
+      ]);
+      console.log('Default system settings seeded.');
     }
 
     // Seed initial dummy transactions for visual display if table is empty
