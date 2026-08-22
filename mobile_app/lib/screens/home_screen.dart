@@ -11,8 +11,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  String _fullName = "Rajesh Reddy"; // Dynamic name fallback
-  double _walletBalance = 6700.00;
+  String _fullName = "Rajesh Reddy";
+  double _mainWalletBalance = 6700.00;
+  double _fundWalletBalance = 0.00;
   String _status = "ACTIVE";
   bool _isLoading = true;
 
@@ -28,7 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final user = response['user'];
       setState(() {
         _fullName = user['fullName'] ?? "Rajesh Reddy";
-        _walletBalance = (user['walletBalance'] as num?)?.toDouble() ?? 6700.00;
+        _mainWalletBalance = parseDouble(user['main_wallet_balance']) ?? 6700.00;
+        _fundWalletBalance = parseDouble(user['fund_wallet_balance']) ?? 0.00;
         _status = user['status'] ?? "ACTIVE";
         _isLoading = false;
       });
@@ -39,10 +41,93 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  double? parseDouble(dynamic val) {
+    if (val == null) return null;
+    if (val is num) return val.toDouble();
+    if (val is String) return double.tryParse(val);
+    return null;
+  }
+
   void _handleLogout() async {
     await ApiService.logout();
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  // Simulated Razorpay Sandbox checkout for bill recharges
+  void _triggerServicePayment(String serviceName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.payment, color: AppTheme.primaryBlue),
+            SizedBox(width: 8),
+            Text("Razorpay Sandbox", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Simulate payment for $serviceName recharge."),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: Colors.amber.shade50, borderRadius: BorderRadius.circular(8)),
+              child: const Text("Test API Key: rzp_test_dummy", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange)),
+            ),
+            const SizedBox(height: 12),
+            const Text("Amount: ₹ 100.00", style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel", style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() => _isLoading = true);
+              
+              // Perform a simulated sandbox payment decrementing ₹100 from Main Wallet
+              await ApiService.triggerRazorpaySandboxPayment(-100.0, "$serviceName Recharge", "MAIN");
+              await _loadUserProfile();
+              
+              setState(() => _isLoading = false);
+              
+              if (!mounted) return;
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: Row(
+                    children: const [
+                      Icon(Icons.check_circle, color: Colors.green),
+                      SizedBox(width: 8),
+                      Text("Payment Success", style: TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  content: const Text(
+                    "Recharge payment of ₹100.00 completed successfully via Razorpay Sandbox.\n\nBill payment api not integrated.",
+                    style: TextStyle(height: 1.4),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
+                    )
+                  ],
+                ),
+              );
+            },
+            child: const Text("Simulate Pay"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -157,7 +242,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
           : Column(
               children: [
-                // Marquee Announcement Bar
                 Container(
                   width: double.infinity,
                   color: AppTheme.cardLightBlue.withOpacity(0.5),
@@ -178,8 +262,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-
-                // Switch Tab body
                 Expanded(
                   child: SingleChildScrollView(
                     child: _buildTabContent(),
@@ -230,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Wallet card
+          // Separate Wallets Displays (Main Wallet & Fund Wallet)
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -244,43 +326,43 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("Your Wallet Balance", style: TextStyle(color: AppTheme.textGray, fontSize: 12, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 6),
-                    Text(
-                      "₹ ${_walletBalance.toStringAsFixed(2)}",
-                      style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 22, fontWeight: FontWeight.w900),
-                    ),
-                  ],
+                // Main Wallet Column
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Main/Income Wallet", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Text(
+                        "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
+                        style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 16, fontWeight: FontWeight.w900),
+                      ),
+                    ],
+                  ),
                 ),
                 Container(width: 1.5, height: 40, color: AppTheme.cardLightBlue),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("User Status", style: TextStyle(color: AppTheme.textGray, fontSize: 12, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
+                const SizedBox(width: 12),
+                // Fund Wallet Column
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Fund Wallet", style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Text(
+                        "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
+                        style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 16, fontWeight: FontWeight.w900),
                       ),
-                      child: Text(
-                        _status,
-                        style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                )
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
 
           const SizedBox(height: 16),
 
-          // Actions
+          // Actions Row: Add Money, Subscribe, Cashout
           Container(
             decoration: BoxDecoration(
               color: AppTheme.primaryBlue,
@@ -290,7 +372,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildActionButton(Icons.account_balance_wallet, "Add Money"),
+                InkWell(
+                  onTap: () => Navigator.pushNamed(context, '/fund-request'),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.account_balance_wallet, color: Colors.white, size: 18),
+                      SizedBox(width: 6),
+                      Text("Add Money", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                    ],
+                  ),
+                ),
                 Container(width: 1, height: 24, color: Colors.white24),
                 _buildActionButton(Icons.stars, "Subscribe"),
                 Container(width: 1, height: 24, color: Colors.white24),
@@ -301,7 +392,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 24),
 
-          // Grid menu
+          // Services Grid (Prepaid, Electricity, etc.)
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -310,20 +401,20 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSpacing: 16,
             childAspectRatio: 0.9,
             children: [
-              _buildGridItem(Icons.phone_android, "Prepaid", Colors.blue),
-              _buildGridItem(Icons.electric_bolt, "Electricity", Colors.orange),
-              _buildGridItem(Icons.settings_input_hdmi, "DTH", Colors.purple),
-              _buildGridItem(Icons.directions_car, "FastTag", Colors.teal),
-              _buildGridItem(Icons.security, "Insurance", Colors.indigo),
-              _buildGridItem(Icons.water_drop, "Water Bill", Colors.lightBlue),
-              _buildGridItem(Icons.receipt, "Postpaid", Colors.brown),
-              _buildGridItem(Icons.apps, "More", Colors.grey),
+              _buildServiceGridItem(Icons.phone_android, "Prepaid", Colors.blue),
+              _buildServiceGridItem(Icons.electric_bolt, "Electricity", Colors.orange),
+              _buildServiceGridItem(Icons.settings_input_hdmi, "DTH", Colors.purple),
+              _buildServiceGridItem(Icons.directions_car, "FastTag", Colors.teal),
+              _buildServiceGridItem(Icons.security, "Insurance", Colors.indigo),
+              _buildServiceGridItem(Icons.water_drop, "Water Bill", Colors.lightBlue),
+              _buildServiceGridItem(Icons.receipt, "Postpaid", Colors.brown),
+              _buildServiceGridItem(Icons.apps, "More", Colors.grey),
             ],
           ),
 
           const SizedBox(height: 24),
 
-          // Transactions
+          // Transaction History List
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -374,25 +465,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGridItem(IconData icon, String label, Color color) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
-            shape: BoxShape.circle,
+  Widget _buildServiceGridItem(IconData icon, String label, Color color) {
+    return InkWell(
+      onTap: () => _triggerServicePayment(label),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 24),
           ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.w600, fontSize: 11),
-          textAlign: TextAlign.center,
-        ),
-      ],
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.w600, fontSize: 11),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -447,7 +541,6 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Income Growth Card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -471,7 +564,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 4),
                         const Text("You've earned", style: TextStyle(color: Colors.white, fontSize: 15)),
                         const SizedBox(height: 4),
-                        Text(
+                        const Text(
                           "₹ 0.00",
                           style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900),
                         ),
@@ -485,10 +578,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
+                  child: const LinearProgressIndicator(
                     value: 0.0,
                     backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     minHeight: 6,
                   ),
                 ),
@@ -506,7 +599,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          // Grid Cards of stats
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -524,7 +616,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          // Refer App Card
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
             decoration: BoxDecoration(
@@ -539,13 +630,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
+                    children: const [
+                      Text(
                         "Refer App Earn ₹ 300.00",
                         style: TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
-                      const SizedBox(height: 2),
-                      const Text(
+                      SizedBox(height: 2),
+                      Text(
                         "Each Referral",
                         style: TextStyle(color: AppTheme.textGray, fontSize: 11),
                       ),
@@ -608,7 +699,6 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Team Growth Progress Card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -627,12 +717,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("TEAM GROWTH", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                        const SizedBox(height: 8),
-                        const Text("Current Team", style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 4),
-                        const Text("99", style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)),
+                      children: const [
+                        Text("TEAM GROWTH", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                        SizedBox(height: 8),
+                        Text("Current Team", style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                        SizedBox(height: 4),
+                        Text("99", style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)),
                       ],
                     ),
                     const Icon(Icons.hub_outlined, color: Colors.white38, size: 54),
@@ -643,10 +733,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
+                  child: const LinearProgressIndicator(
                     value: 99 / 126,
                     backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     minHeight: 6,
                   ),
                 ),
@@ -664,7 +754,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          // Team Level Growth Table
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -673,7 +762,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               children: [
-                // Table Header
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: const BoxDecoration(
@@ -690,7 +778,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                // Table Rows
                 _buildTeamRow("1", "2", "₹ 100", "₹ 200"),
                 _buildTeamRow("2", "4", "₹ 100", "₹ 400"),
                 _buildTeamRow("3", "8", "₹ 100", "₹ 800"),
@@ -698,7 +785,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildTeamRow("5", "32", "₹ 100", "₹ 3,200"),
                 _buildTeamRow("6", "64", "₹ 100", "₹ 6,400"),
 
-                // Total Summary Row
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                   decoration: BoxDecoration(
@@ -731,7 +817,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          // Level badge
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
@@ -762,7 +847,6 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Profile Details Header Card
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -776,7 +860,6 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
-                    // Avatar
                     Container(
                       width: 64,
                       height: 64,
@@ -784,7 +867,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: const Icon(Icons.person, color: AppTheme.primaryBlue, size: 40),
                     ),
                     const SizedBox(width: 16),
-                    // Name & ID
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -799,7 +881,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
                           ),
                           const SizedBox(height: 6),
-                          // Active status badge
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
@@ -818,14 +899,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    // Shield security watermark
                     Icon(Icons.verified_user, color: Colors.white.withOpacity(0.12), size: 54),
                   ],
                 ),
 
                 const SizedBox(height: 20),
 
-                // Sub-Metrics card (Total Income, Team Size, Global Income)
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
                   decoration: BoxDecoration(
@@ -835,11 +914,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildProfileSubMetric("Total Income", "₹ 6,700.00", Icons.account_balance_wallet),
+                      _buildProfileSubMetric("Main Balance", "₹ ${_mainWalletBalance.toStringAsFixed(2)}", Icons.account_balance_wallet),
                       Container(width: 1, height: 36, color: AppTheme.cardLightBlue),
                       _buildProfileSubMetric("Team Size", "99", Icons.group),
                       Container(width: 1, height: 36, color: AppTheme.cardLightBlue),
-                      _buildProfileSubMetric("Global Income", "₹ 6,400.00", Icons.language),
+                      _buildProfileSubMetric("Fund Balance", "₹ ${_fundWalletBalance.toStringAsFixed(2)}", Icons.wallet_giftcard),
                     ],
                   ),
                 )
@@ -849,7 +928,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          // Menu list settings card options
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -880,7 +958,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 6),
         Text(label, style: const TextStyle(color: AppTheme.textGray, fontSize: 10, fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 13, fontWeight: FontWeight.w900)),
+        Text(value, style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 12, fontWeight: FontWeight.w900)),
       ],
     );
   }

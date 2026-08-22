@@ -115,4 +115,58 @@ class ApiService {
       return {'success': false, 'error': 'Connection error: Could not connect to server'};
     }
   }
+
+  // Submit deposit request for approval
+  static Future<Map<String, dynamic>> submitFundRequest(double amount) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/fund/request'),
+        headers: await _getHeaders(requireAuth: true),
+        body: jsonEncode({'amount': amount}),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 201) {
+        return {'success': true, 'message': decoded['message']};
+      } else {
+        return {'success': false, 'error': decoded['error'] ?? 'Request failed'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Connection error'};
+    }
+  }
+
+  // Fetch user's deposit requests
+  static Future<List<dynamic>> getFundRequests() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/fund/requests'),
+        headers: await _getHeaders(requireAuth: true),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  // Trigger Razorpay sandbox payment simulation on successful payment
+  static Future<Map<String, dynamic>> triggerRazorpaySandboxPayment(
+      double amount, String serviceType, String walletType) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/payment/razorpay-sandbox'),
+        headers: await _getHeaders(requireAuth: true),
+        body: jsonEncode({
+          'amount': amount,
+          'serviceType': serviceType,
+          'walletType': walletType,
+        }),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': decoded['message']};
+      }
+    } catch (_) {}
+    return {'success': false, 'error': 'Server sync failed'};
+  }
 }

@@ -6,7 +6,7 @@ class AppTheme {
   static const String globalBackgroundImageAsset = "assets/image.png";
 
   // API Config
-  static const String apiBaseUrl = "http://10.0.2.2:5000"; // Default Android emulator localhost URL
+  static const String apiBaseUrl = "https://api.srdigitalseva.com"; 
   static const String appToken = "my_secure_app_token_123";
 
   // App Palette (Mirroring screenshots)
