@@ -42,7 +42,7 @@
 
         <div class="hero-cta-buttons">
           <!-- Play Store Link -->
-          <a href="#" class="hero-cta-btn playstore-btn">
+          <a href="https://play.google.com/store/apps/details?id=com.app.earnfarm" target="_blank" class="hero-cta-btn playstore-btn">
             <svg class="playstore-svg" viewBox="0 0 24 24" width="28" height="28">
               <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#fff"/>
             </svg>
@@ -60,6 +60,15 @@
               <span class="lbl-large">Admin Dashboard</span>
             </div>
           </router-link>
+        </div>
+
+        <!-- QR Code for Download -->
+        <div class="qr-download-container">
+          <img :src="qrScanImg" class="qr-scan-img" alt="Scan to Download Android App" />
+          <div class="qr-scan-text">
+            <strong>Scan to Download App</strong>
+            <span>Direct Android package install</span>
+          </div>
         </div>
 
         <div class="hero-stats-mini">
@@ -554,12 +563,14 @@
 
 <script>
 import bannerImg from '../assets/image.png';
+import qrScanImg from '../assets/scan.jpg';
 
 export default {
   name: 'LandingPage',
   data() {
     return {
       bannerImg,
+      qrScanImg,
       marqueeText: 'Welcome to SR Digital Seva! Enjoy instant recharges, utility bill payments, and robust commission margins.',
       marqueeImages: [],
       contactForm: {
@@ -900,6 +911,42 @@ export default {
   color: #475569;
   line-height: 1.6;
   margin: 0 0 2.5rem;
+}
+
+.qr-download-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: -1.5rem;
+  margin-bottom: 2.5rem;
+  background: rgba(0, 82, 204, 0.05);
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 82, 204, 0.15);
+  width: fit-content;
+}
+.qr-scan-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 2px solid white;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+.qr-scan-text {
+  display: flex;
+  flex-direction: column;
+  color: #1e293b;
+  text-align: left;
+}
+.qr-scan-text strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+.qr-scan-text span {
+  font-size: 0.75rem;
+  color: #475569;
 }
 
 .hero-cta-buttons {
