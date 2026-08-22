@@ -19,6 +19,15 @@
           <span class="icon">📥</span> Fund Requests
           <span v-if="pendingRequestsCount > 0" class="badge-count">{{ pendingRequestsCount }}</span>
         </button>
+        <button @click="currentTab = 'transactions'" class="menu-item" :class="{ active: currentTab === 'transactions' }">
+          <span class="icon">📈</span> All Transactions
+        </button>
+        <button @click="currentTab = 'teams'" class="menu-item" :class="{ active: currentTab === 'teams' }">
+          <span class="icon">👥</span> User Teams
+        </button>
+        <button @click="currentTab = 'notifications'" class="menu-item" :class="{ active: currentTab === 'notifications' }">
+          <span class="icon">📢</span> Send Notification
+        </button>
         <button @click="currentTab = 'admins'" class="menu-item" :class="{ active: currentTab === 'admins' }">
           <span class="icon">🛡️</span> System Admins
         </button>
@@ -43,7 +52,7 @@
           <input type="text" placeholder="Search..." />
         </div>
         <div class="topbar-actions">
-          <span class="action-icon">🇺🇸</span>
+          <span class="action-icon">🇮🇳</span>
           <span class="action-icon">✉️</span>
           <div class="notification-bell">
             <span class="action-icon">🔔</span>
@@ -97,7 +106,7 @@
           </div>
         </section>
 
-        <div v-if="loading && currentTab !== 'settings'" class="loading-box">
+        <div v-if="loading && currentTab !== 'settings' && currentTab !== 'notifications'" class="loading-box">
           Loading dashboard content...
         </div>
 
@@ -123,7 +132,7 @@
                 <div class="stat-body">
                   <div class="stat-left">
                     <span class="icon-indicator">💼</span>
-                    <span class="stat-card-title">Main Wallet Balance</span>
+                    <span class="stat-card-title">Main Wallet</span>
                   </div>
                   <span class="stat-card-val">₹{{ stats.totalMainWallet.toLocaleString('en-IN') }}</span>
                 </div>
@@ -135,7 +144,7 @@
                 <div class="stat-body">
                   <div class="stat-left">
                     <span class="icon-indicator">📥</span>
-                    <span class="stat-card-title">Fund Wallet Balance</span>
+                    <span class="stat-card-title">Fund Wallet</span>
                   </div>
                   <span class="stat-card-val">₹{{ stats.totalFundWallet.toLocaleString('en-IN') }}</span>
                 </div>
@@ -147,7 +156,7 @@
                 <div class="stat-body">
                   <div class="stat-left">
                     <span class="icon-indicator">📈</span>
-                    <span class="stat-card-title">Total Transactions</span>
+                    <span class="stat-card-title">Total Txns</span>
                   </div>
                   <span class="stat-card-val">{{ stats.totalTransactions }}</span>
                 </div>
@@ -266,9 +275,9 @@
                 </div>
               </div>
 
-              <!-- Right: Region Sales Bar Chart -->
+              <!-- Right: Region Sales Bar Chart (Indian States) -->
               <div class="anal-card region-card">
-                <h3>Top Region Sales</h3>
+                <h3>Top Indian States Sales</h3>
                 <div class="bar-chart-container">
                   <svg viewBox="0 0 400 150" class="svg-chart">
                     <line x1="20" y1="120" x2="380" y2="120" stroke="#cbd5e1" stroke-width="2" />
@@ -282,12 +291,10 @@
                   </svg>
                   <div class="region-stats">
                     <div>
-                      <span class="green-text font-bold">+23%</span>
-                      <strong>United States</strong>
+                      <span class="green-text font-bold">Uttar Pradesh (+23%)</span>
                     </div>
                     <div>
-                      <span class="blue-text font-bold">+0.5%</span>
-                      <strong>Europe</strong>
+                      <span class="blue-text font-bold">Maharashtra (+8.4%)</span>
                     </div>
                   </div>
                 </div>
@@ -454,7 +461,79 @@
             </div>
           </div>
 
-          <!-- TAB 5: UNIFIED SETTINGS -->
+          <!-- NEW TAB: ALL TRANSACTIONS -->
+          <div v-if="currentTab === 'transactions'" class="transactions-pane">
+            <div class="table-card">
+              <div class="table-header-row">
+                <h3>All Portal Transactions</h3>
+                <div class="pagination-controls">
+                  <button @click="changeTxnPage(-1)" :disabled="txnPage === 1" class="page-btn">&larr; Prev</button>
+                  <span class="page-num">Page {{ txnPage }}</span>
+                  <button @click="changeTxnPage(1)" :disabled="allTransactions.length < 15" class="page-btn">Next &rarr;</button>
+                </div>
+              </div>
+              <div class="table-container">
+                <table class="nice-table">
+                  <thead>
+                    <tr>
+                      <th>Txn ID</th>
+                      <th>User ID</th>
+                      <th>Wallet Type</th>
+                      <th>Amount</th>
+                      <th>Type</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="txn in allTransactions" :key="txn.id">
+                      <td>#{{ txn.id }}</td>
+                      <td>#{{ txn.user_id }}</td>
+                      <td><span class="lbl-wallet" :class="txn.wallet_type.toLowerCase()">{{ txn.wallet_type }}</span></td>
+                      <td class="font-bold">{{ txn.amount }}</td>
+                      <td>{{ txn.type }}</td>
+                      <td>{{ txn.date }}</td>
+                      <td><span class="nice-badge-success">{{ txn.status }}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- NEW TAB: TEAMS VIEW -->
+          <div v-if="currentTab === 'teams'" class="teams-pane">
+            <div class="table-card" style="text-align: center; padding: 4rem;">
+              <h2>👥 Downline Networks & Teams</h2>
+              <p style="color: #94a3b8; margin-top: 1rem;">No active affiliate downline teams registered yet. User networks and downline trees will list here dynamically as users register partners.</p>
+            </div>
+          </div>
+
+          <!-- NEW TAB: BROADCAST NOTIFICATION -->
+          <div v-if="currentTab === 'notifications'" class="notifications-pane">
+            <div class="settings-nice-card" style="max-width: 600px; margin: 0 auto;">
+              <h3>📢 Send Push Notification</h3>
+              <p class="section-desc">Broadcast a message system-wide. Users will see it in their Android App dashboard.</p>
+              <form @submit.prevent="handleSendNotification" class="settings-form">
+                <div class="nice-input-group">
+                  <label for="notifTitle">Notification Title</label>
+                  <input id="notifTitle" type="text" v-model="notifTitle" placeholder="e.g. Server Maintenance Notice" required />
+                </div>
+                <div class="nice-input-group">
+                  <label for="notifMessage">Message Body</label>
+                  <textarea id="notifMessage" v-model="notifMessage" rows="5" placeholder="Enter broadcast details..." style="padding: 0.65rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc;" required></textarea>
+                </div>
+                <div v-if="notifError" class="error-msg">{{ notifError }}</div>
+                <div v-if="notifSuccess" class="success-msg">{{ notifSuccess }}</div>
+                <button type="submit" :disabled="sendingNotif" class="nice-save-btn bg-blue-btn">
+                  <span v-if="sendingNotif">Broadcasting...</span>
+                  <span v-else>Send Broadcast Notification</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- TAB 5: UNIFIED SETTINGS (UPGRADED WITH RAZORPAY KEYS AND MARQUEES) -->
           <div v-if="currentTab === 'settings'" class="settings-pane">
             <div class="settings-grid-pane">
               <!-- Change Password Card -->
@@ -514,6 +593,27 @@
                       <option value="live">Live Payments Mode</option>
                     </select>
                   </div>
+
+                  <!-- Razorpay Keys Configuration -->
+                  <div class="nice-input-group">
+                    <label for="razorpayKeyId">Razorpay Key ID</label>
+                    <input id="razorpayKeyId" type="text" v-model="systemSettings.razorpay_key_id" placeholder="Enter Razorpay Key ID" required />
+                  </div>
+                  <div class="nice-input-group">
+                    <label for="razorpayKeySecret">Razorpay Key Secret</label>
+                    <input id="razorpayKeySecret" type="password" v-model="systemSettings.razorpay_key_secret" placeholder="Enter Razorpay Key Secret" required />
+                  </div>
+
+                  <!-- Scrolling Marquees Configurations -->
+                  <div class="nice-input-group">
+                    <label for="marqueeText">Homepage Scrolling Marquee Text</label>
+                    <input id="marqueeText" type="text" v-model="systemSettings.marquee_text" placeholder="Enter scrolling notice..." required />
+                  </div>
+                  <div class="nice-input-group">
+                    <label for="marqueeImages">Infinite Banner Marquee Images (comma-separated URLs)</label>
+                    <input id="marqueeImages" type="text" v-model="systemSettings.marquee_images" placeholder="e.g. /assets/image.png, /assets/image2.png" required />
+                  </div>
+
                   <div v-if="systemError" class="error-msg">{{ systemError }}</div>
                   <div v-if="systemSuccess" class="success-msg">{{ systemSuccess }}</div>
                   <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn">
@@ -546,11 +646,13 @@ export default {
         totalTransactions: 0
       },
       transactions: [],
+      allTransactions: [],
       users: [],
       fundRequests: [],
       adminsList: [],
       selectedUser: null,
       userPage: 1,
+      txnPage: 1,
       loading: true,
       error: '',
       gatewayStatus: {
@@ -566,6 +668,12 @@ export default {
       passwordError: '',
       passwordSuccess: '',
       loadingPassword: false,
+      // Notifications states
+      notifTitle: '',
+      notifMessage: '',
+      notifSuccess: '',
+      notifError: '',
+      sendingNotif: false,
       // System settings states
       loadingSystem: false,
       systemError: '',
@@ -576,7 +684,11 @@ export default {
         maintenance_mode_bool: false,
         force_update_version: '1.0.0',
         scriza_api_mode: 'simulation',
-        razorpay_api_mode: 'test'
+        razorpay_api_mode: 'test',
+        razorpay_key_id: '',
+        razorpay_key_secret: '',
+        marquee_text: '',
+        marquee_images: ''
       }
     }
   },
@@ -586,6 +698,9 @@ export default {
         case 'dashboard': return 'Dashboard Overview';
         case 'users': return 'Mobile Portal Users';
         case 'requests': return 'Deposit Requests Approval';
+        case 'transactions': return 'All Portal Transactions';
+        case 'teams': return 'Downline Affiliate Networks';
+        case 'notifications': return 'Broadcast Notification';
         case 'admins': return 'System Administrator Staff';
         case 'settings': return 'System Preferences & Settings';
         default: return 'Management Console';
@@ -607,6 +722,9 @@ export default {
       } else if (newTab === 'requests') {
         if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
         this.fetchFundRequests();
+      } else if (newTab === 'transactions') {
+        if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
+        this.fetchAllTransactions();
       } else if (newTab === 'admins') {
         if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
         this.fetchAdminsList();
@@ -688,6 +806,20 @@ export default {
         this.loading = false;
       }
     },
+    async fetchAllTransactions() {
+      this.loading = true;
+      const token = localStorage.getItem('adminToken');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/transactions?page=${this.txnPage}&limit=15`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        this.allTransactions = await response.json();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.loading = false;
+      }
+    },
     async fetchFundRequests() {
       const token = localStorage.getItem('adminToken');
       try {
@@ -726,6 +858,10 @@ export default {
         this.systemSettings.force_update_version = data.force_update_version || '1.0.0';
         this.systemSettings.scriza_api_mode = data.scriza_api_mode || 'simulation';
         this.systemSettings.razorpay_api_mode = data.razorpay_api_mode || 'test';
+        this.systemSettings.razorpay_key_id = data.razorpay_key_id || '';
+        this.systemSettings.razorpay_key_secret = data.razorpay_key_secret || '';
+        this.systemSettings.marquee_text = data.marquee_text || '';
+        this.systemSettings.marquee_images = data.marquee_images || '';
         this.systemSettings.maintenance_mode = data.maintenance_mode || 'false';
         this.systemSettings.maintenance_mode_bool = data.maintenance_mode === 'true';
       } catch (err) {
@@ -751,7 +887,11 @@ export default {
             maintenance_mode: this.systemSettings.maintenance_mode,
             force_update_version: this.systemSettings.force_update_version,
             scriza_api_mode: this.systemSettings.scriza_api_mode,
-            razorpay_api_mode: this.systemSettings.razorpay_api_mode
+            razorpay_api_mode: this.systemSettings.razorpay_api_mode,
+            razorpay_key_id: this.systemSettings.razorpay_key_id,
+            razorpay_key_secret: this.systemSettings.razorpay_key_secret,
+            marquee_text: this.systemSettings.marquee_text,
+            marquee_images: this.systemSettings.marquee_images
           })
         });
         const data = await response.json();
@@ -796,6 +936,34 @@ export default {
         this.loadingPassword = false;
       }
     },
+    async handleSendNotification() {
+      this.notifError = '';
+      this.notifSuccess = '';
+      this.sendingNotif = true;
+      const token = localStorage.getItem('adminToken');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/notifications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: this.notifTitle,
+            message: this.notifMessage
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to send notification');
+        this.notifSuccess = 'Notification successfully broadcasted to mobile users!';
+        this.notifTitle = '';
+        this.notifMessage = '';
+      } catch (e) {
+        this.notifError = e.message;
+      } finally {
+        this.sendingNotif = false;
+      }
+    },
     selectUser(user) {
       this.selectedUser = user;
     },
@@ -825,6 +993,10 @@ export default {
     changeUserPage(delta) {
       this.userPage += delta;
       this.fetchUsers();
+    },
+    changeTxnPage(delta) {
+      this.txnPage += delta;
+      this.fetchAllTransactions();
     },
     handleLogout() {
       localStorage.removeItem('adminToken');
@@ -885,7 +1057,7 @@ export default {
 }
 
 .sidebar-menu {
-  padding: 1.5rem 1rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -1016,7 +1188,7 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #e2e8f0;
+  background: #cbd5e1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1145,12 +1317,15 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .stat-left {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .stat-card-title {
@@ -1158,6 +1333,7 @@ export default {
   font-weight: bold;
   color: #64748b;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .icon-indicator {
@@ -1165,9 +1341,12 @@ export default {
 }
 
 .stat-card-val {
-  font-size: 1.75rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: #3e5569;
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 0.5rem;
 }
 
 .progress-bar {

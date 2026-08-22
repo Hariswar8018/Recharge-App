@@ -438,6 +438,80 @@ app.get('/api/admin/gateway-status', async (req, res) => {
   }
 });
 
+// GET Notifications (public / app / web)
+app.get('/api/notifications', async (req, res) => {
+  try {
+    const list = await query('SELECT * FROM notifications ORDER BY id DESC LIMIT 50');
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error loading notifications' });
+  }
+});
+
+// POST Admin Notification
+app.post('/api/admin/notifications', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    const { title, message } = req.body;
+    if (!title || !message) {
+      return res.status(400).json({ error: 'Title and Message are required.' });
+    }
+
+    await query('INSERT INTO notifications (title, message) VALUES (?, ?)', [title, message]);
+    res.status(201).json({ message: 'Notification broadcasted successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create notification' });
+  }
+});
+
+// GET Paginated Admin Transactions
+app.get('/api/admin/transactions', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
+
+    const list = await query(
+      'SELECT id, user_id, wallet_type, amount, type, date, status FROM transactions ORDER BY id DESC LIMIT ? OFFSET ?',
+      [limit, offset]
+    );
+
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error loading transactions' });
+  }
+});
+
+// GET Public Landing Info (Marquee config)
+app.get('/api/landing-info', async (req, res) => {
+  try {
+    const rows = await query('SELECT * FROM system_settings WHERE key_name IN ("marquee_text", "marquee_images")');
+    const data = {};
+    rows.forEach(r => {
+      data[r.key_name] = r.val_value;
+    });
+    res.json({
+      marquee_text: data['marquee_text'] || 'Welcome to SR Digital Seva! Instant wallet loading and commissions are live.',
+      marquee_images: data['marquee_images'] || '/assets/image.png'
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch marquee settings' });
+  }
+});
+
 // Admin Dashboard stats & users list (Supports Redis caching and pagination)
 app.get('/api/admin/dashboard', async (req, res) => {
   const authHeader = req.headers['authorization'];

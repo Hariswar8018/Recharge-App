@@ -133,11 +133,25 @@ async function initDb() {
           ['maintenance_mode', 'false'],
           ['force_update_version', '1.0.0'],
           ['scriza_api_mode', 'simulation'],
-          ['razorpay_api_mode', 'test']
+          ['razorpay_api_mode', 'test'],
+          ['razorpay_key_id', 'rzp_test_dummyKey123'],
+          ['razorpay_key_secret', 'dummySecretKey789'],
+          ['marquee_text', 'Welcome to SR Digital Seva! Enjoy high commission margins on DTH and Mobile recharges. Fast wallet loads enabled via UPI.'],
+          ['marquee_images', '/assets/image.png']
         ]
       ]);
       console.log('Default system settings seeded.');
     }
+
+    // Create Notifications Table
+    await query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB;
+    `);
 
     // Seed initial dummy transactions for visual display if table is empty
     const txns = await query('SELECT * FROM transactions LIMIT 1');

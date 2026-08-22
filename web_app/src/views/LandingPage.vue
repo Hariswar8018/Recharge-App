@@ -21,6 +21,13 @@
       </div>
     </header>
 
+    <!-- Scrolling Marquee Notice -->
+    <div class="marquee-text-container" v-if="marqueeText">
+      <div class="marquee-text-content">
+        {{ marqueeText }} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {{ marqueeText }} &nbsp;&nbsp;&bull;&nbsp;&nbsp; {{ marqueeText }}
+      </div>
+    </div>
+
     <!-- Top Action bar (Very top right below header) -->
     <div class="top-action-bar">
       <div class="top-action-content">
@@ -135,6 +142,13 @@
         </div>
       </div>
     </section>
+
+    <!-- Infinite Image Marquee banner -->
+    <div class="marquee-images-container" v-if="marqueeImages.length > 0">
+      <div class="marquee-images-content">
+        <img v-for="(img, idx) in marqueeImages" :key="idx" :src="img" class="marquee-img" alt="Recharge Operator Banner" />
+      </div>
+    </div>
 
     <!-- Main Content Area -->
     <main class="main-content">
@@ -565,6 +579,8 @@ export default {
   data() {
     return {
       bannerImg,
+      marqueeText: 'Welcome to SR Digital Seva! Enjoy instant recharges, utility bill payments, and robust commission margins.',
+      marqueeImages: [],
       contactForm: {
         name: '',
         email: '',
@@ -593,7 +609,29 @@ export default {
       ]
     }
   },
+  mounted() {
+    this.fetchLandingInfo();
+  },
   methods: {
+    async fetchLandingInfo() {
+      try {
+        const response = await fetch('https://api.srdigitalseva.com/api/landing-info');
+        const data = await response.json();
+        if (data.marquee_text) {
+          this.marqueeText = data.marquee_text;
+        }
+        if (data.marquee_images) {
+          const list = data.marquee_images.split(',').map(s => s.trim()).filter(Boolean);
+          // Duplicate list for infinite scrolling strip effect
+          this.marqueeImages = [...list, ...list, ...list, ...list, ...list];
+        } else {
+          this.marqueeImages = [this.bannerImg, this.bannerImg, this.bannerImg, this.bannerImg];
+        }
+      } catch (e) {
+        console.error('Error fetching landing info', e);
+        this.marqueeImages = [this.bannerImg, this.bannerImg, this.bannerImg, this.bannerImg];
+      }
+    },
     scrollTo(id) {
       const element = document.getElementById(id);
       if (element) {
@@ -627,6 +665,55 @@ export default {
   color: #1e293b;
   font-family: 'Inter', system-ui, sans-serif;
   overflow-x: hidden;
+}
+
+/* Marquee text styling */
+.marquee-text-container {
+  background: #fff3e0;
+  color: #e65100;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0.5rem 0;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #ffe0b2;
+}
+.marquee-text-content {
+  display: inline-block;
+  animation: marqueeText 25s linear infinite;
+  padding-left: 100%;
+}
+@keyframes marqueeText {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* Marquee images styling */
+.marquee-images-container {
+  overflow: hidden;
+  background: white;
+  padding: 1.5rem 0;
+  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.marquee-images-content {
+  display: flex;
+  gap: 2rem;
+  animation: marqueeImages 20s linear infinite;
+  width: max-content;
+}
+.marquee-img {
+  height: 60px;
+  object-fit: contain;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.marquee-img:hover {
+  opacity: 1;
+}
+@keyframes marqueeImages {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 /* Header */
