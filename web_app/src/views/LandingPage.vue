@@ -706,9 +706,11 @@ export default {
 }
 .marquee-img {
   height: 60px;
+  width: 130px;
   object-fit: contain;
-  opacity: 0.7;
+  opacity: 0.85;
   transition: opacity 0.2s;
+  flex-shrink: 0;
 }
 .marquee-img:hover {
   opacity: 1;
