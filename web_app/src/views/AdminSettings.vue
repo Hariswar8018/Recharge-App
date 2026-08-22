@@ -92,6 +92,10 @@
 </template>
 
 <script>
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : 'https://api.srdigitalseva.com';
+
 export default {
   name: 'AdminSettings',
   data() {
@@ -119,7 +123,7 @@ export default {
       const token = localStorage.getItem('adminToken');
 
       try {
-        const response = await fetch('http://localhost:5000/api/admin/change-password', {
+        const response = await fetch(`${API_BASE_URL}/api/admin/change-password`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

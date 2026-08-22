@@ -24,25 +24,25 @@ class _ProviderSelectionScreenState extends State<ProviderSelectionScreen> {
 
   final Map<String, List<Map<String, dynamic>>> _providersMap = {
     "Prepaid": [
-      {"name": "Airtel Prepaid", "id": 1},
-      {"name": "Jio Prepaid", "id": 2},
-      {"name": "Vi Prepaid", "id": 3},
-      {"name": "BSNL Prepaid", "id": 4},
+      {"name": "Airtel Prepaid", "id": 1, "logo": "A", "color": Colors.red},
+      {"name": "Jio Prepaid", "id": 2, "logo": "J", "color": Colors.blue},
+      {"name": "Vi Prepaid", "id": 3, "logo": "V", "color": Colors.purple},
+      {"name": "BSNL Prepaid", "id": 4, "logo": "B", "color": Colors.orange},
     ],
     "Electricity": [
-      {"name": "State Electricity Board", "id": 10},
-      {"name": "Adani Power", "id": 11},
-      {"name": "Tata Power", "id": 12},
+      {"name": "State Electricity", "id": 10, "logo": "SE", "color": Colors.amber},
+      {"name": "Adani Power", "id": 11, "logo": "AP", "color": Colors.yellow.shade800},
+      {"name": "Tata Power", "id": 12, "logo": "TP", "color": Colors.teal},
     ],
     "DTH": [
-      {"name": "Tata Play", "id": 20},
-      {"name": "Dish TV", "id": 21},
-      {"name": "Airtel Digital TV", "id": 22},
+      {"name": "Tata Play", "id": 20, "logo": "TP", "color": Colors.pink},
+      {"name": "Dish TV", "id": 21, "logo": "DT", "color": Colors.redAccent},
+      {"name": "Airtel Digital TV", "id": 22, "logo": "AD", "color": Colors.red},
     ],
     "FastTag": [
-      {"name": "NHAI FastTag", "id": 30},
-      {"name": "SBI FastTag", "id": 31},
-      {"name": "ICICI FastTag", "id": 32},
+      {"name": "NHAI FastTag", "id": 30, "logo": "NH", "color": Colors.blueAccent},
+      {"name": "SBI FastTag", "id": 31, "logo": "SB", "color": Colors.indigo},
+      {"name": "ICICI FastTag", "id": 32, "logo": "IC", "color": Colors.orangeAccent},
     ]
   };
 
@@ -167,7 +167,7 @@ class _ProviderSelectionScreenState extends State<ProviderSelectionScreen> {
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 2.2,
+                  childAspectRatio: 2.5,
                 ),
                 itemBuilder: (context, index) {
                   final providerName = list[index]["name"] as String;
@@ -190,16 +190,31 @@ class _ProviderSelectionScreenState extends State<ProviderSelectionScreen> {
                           width: 1.5,
                         ),
                       ),
-                      child: Center(
-                        child: Text(
-                          providerName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: isSelected ? AppTheme.primaryBlue : AppTheme.textDarkBlue,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 14,
+                            backgroundColor: list[index]["color"] as Color? ?? Colors.grey,
+                            child: Text(
+                              list[index]["logo"] as String? ?? providerName.substring(0, 1),
+                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                        ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              providerName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                                color: isSelected ? AppTheme.primaryBlue : AppTheme.textDarkBlue,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );

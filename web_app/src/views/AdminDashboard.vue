@@ -199,6 +199,10 @@
 </template>
 
 <script>
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : 'https://api.srdigitalseva.com';
+
 export default {
   name: 'AdminDashboard',
   data() {
@@ -255,7 +259,7 @@ export default {
         return;
       }
       try {
-        const response = await fetch('http://localhost:5000/api/admin/dashboard', {
+        const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'x-app-token': 'my_secure_app_token_123'
@@ -280,7 +284,7 @@ export default {
       this.loading = true;
       const token = localStorage.getItem('adminToken');
       try {
-        const response = await fetch(`http://localhost:5000/api/admin/dashboard?page=${this.userPage}&limit=10`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/dashboard?page=${this.userPage}&limit=10`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'x-app-token': 'my_secure_app_token_123'
@@ -297,7 +301,7 @@ export default {
     async fetchFundRequests() {
       const token = localStorage.getItem('adminToken');
       try {
-        const response = await fetch('http://localhost:5000/api/admin/fund-requests', {
+        const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'x-app-token': 'my_secure_app_token_123'
@@ -312,7 +316,7 @@ export default {
     async processRequest(id, approve) {
       const token = localStorage.getItem('adminToken');
       try {
-        const response = await fetch(`http://localhost:5000/api/admin/fund-requests/${id}/approve`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests/${id}/approve`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
