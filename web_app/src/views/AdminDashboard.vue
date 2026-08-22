@@ -199,9 +199,7 @@
 </template>
 
 <script>
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000'
-  : 'https://api.srdigitalseva.com';
+const API_BASE_URL = 'https://api.srdigitalseva.com';
 
 export default {
   name: 'AdminDashboard',
@@ -261,8 +259,7 @@ export default {
       try {
         const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'x-app-token': import.meta.env.VITE_APP_TOKEN || '495cd158fe203c3a19b2a60bdaa3c3ae29581042247c56aec2c1ee3d2bd82f01'
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
@@ -286,8 +283,7 @@ export default {
       try {
         const response = await fetch(`${API_BASE_URL}/api/admin/dashboard?page=${this.userPage}&limit=10`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'x-app-token': import.meta.env.VITE_APP_TOKEN || '495cd158fe203c3a19b2a60bdaa3c3ae29581042247c56aec2c1ee3d2bd82f01'
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
@@ -303,8 +299,7 @@ export default {
       try {
         const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'x-app-token': import.meta.env.VITE_APP_TOKEN || '495cd158fe203c3a19b2a60bdaa3c3ae29581042247c56aec2c1ee3d2bd82f01'
+            'Authorization': `Bearer ${token}`
           }
         });
         const data = await response.json();
@@ -320,8 +315,7 @@ export default {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'x-app-token': import.meta.env.VITE_APP_TOKEN || '495cd158fe203c3a19b2a60bdaa3c3ae29581042247c56aec2c1ee3d2bd82f01'
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ approve })
         });

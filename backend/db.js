@@ -88,16 +88,26 @@ async function initDb() {
       ) ENGINE=InnoDB;
     `);
 
-    // Seed Admin user (hari@gmail.com / 123456)
-    const admins = await query('SELECT * FROM users WHERE role = "admin" LIMIT 1');
-    if (admins.length === 0) {
-      const salt = bcrypt.genSaltSync(10);
-      const passwordHash = bcrypt.hashSync('123456', salt);
+    // Seed Admin users (haris@gmail.com & earnfarm99@gmail.com with password 123456)
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync('123456', salt);
+
+    const checkHaris = await query('SELECT * FROM users WHERE email = ?', ['haris@gmail.com']);
+    if (checkHaris.length === 0) {
       await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, role) VALUES (?, ?, ?, ?, ?)',
-        ['System Admin', 'hari@gmail.com', '0000000000', passwordHash, 'admin']
+        ['Haris Admin', 'haris@gmail.com', '0000000000', passwordHash, 'admin']
       );
-      console.log('Admin user seeded successfully.');
+      console.log('Haris Admin user seeded.');
+    }
+
+    const checkEarnfarm = await query('SELECT * FROM users WHERE email = ?', ['earnfarm99@gmail.com']);
+    if (checkEarnfarm.length === 0) {
+      await query(
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, role) VALUES (?, ?, ?, ?, ?)',
+        ['Earnfarm Admin', 'earnfarm99@gmail.com', '1111111111', passwordHash, 'admin']
+      );
+      console.log('Earnfarm Admin user seeded.');
     }
 
     // Seed initial dummy transactions for visual display if table is empty

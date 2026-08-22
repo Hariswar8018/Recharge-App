@@ -260,7 +260,7 @@ app.get('/api/payment/scriza-callback', async (req, res) => {
 // --- ADMIN SECTION ENDPOINTS ---
 
 // Admin Login
-app.post('/api/admin/login', verifyAppToken, async (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -291,7 +291,7 @@ app.post('/api/admin/login', verifyAppToken, async (req, res) => {
 });
 
 // Change Admin Password
-app.post('/api/admin/change-password', verifyAppToken, async (req, res) => {
+app.post('/api/admin/change-password', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
@@ -331,7 +331,7 @@ app.post('/api/admin/change-password', verifyAppToken, async (req, res) => {
 });
 
 // Admin Dashboard stats & users list (Supports Redis caching and pagination)
-app.get('/api/admin/dashboard', verifyAppToken, async (req, res) => {
+app.get('/api/admin/dashboard', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
@@ -391,7 +391,7 @@ app.get('/api/admin/dashboard', verifyAppToken, async (req, res) => {
 });
 
 // Admin lists all user Fund Requests (with pagination)
-app.get('/api/admin/fund-requests', verifyAppToken, async (req, res) => {
+app.get('/api/admin/fund-requests', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
@@ -423,7 +423,7 @@ app.get('/api/admin/fund-requests', verifyAppToken, async (req, res) => {
 });
 
 // Admin approves a pending Fund Request (Runs inside transactional SQL block)
-app.post('/api/admin/fund-requests/:id/approve', verifyAppToken, async (req, res) => {
+app.post('/api/admin/fund-requests/:id/approve', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (!token) {
