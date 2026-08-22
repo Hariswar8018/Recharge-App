@@ -4,229 +4,282 @@
     <header class="header">
       <div class="header-content">
         <div class="logo-area" @click="scrollTo('hero')">
-          <svg class="logo-svg" viewBox="0 0 100 100" width="40" height="40">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#0052cc" stroke-width="8"/>
-            <path d="M 30 50 L 45 65 L 70 35" fill="none" stroke="#e01a22" stroke-width="8" stroke-linecap="round"/>
-          </svg>
-          <span class="brand-name">SR DIGITAL SEVA <span class="brand-sub">KENDRAM</span></span>
+          <div class="zap-logo">
+            <span class="logo-bold">RECHARGE</span>
+            <span class="logo-italic">ZAP</span>
+          </div>
         </div>
         <nav class="nav-links">
           <a href="#about" @click.prevent="scrollTo('about')">About Us</a>
-          <a href="#steps" @click.prevent="scrollTo('steps')">How It Works</a>
+          <a href="#faq" @click.prevent="scrollTo('faq')">FAQs</a>
           <a href="#contact" @click.prevent="scrollTo('contact')">Contact Us</a>
-          <router-link to="/admin-login" class="nav-btn admin-login-btn">Admin Portal</router-link>
+          <router-link to="/admin-login" class="nav-btn admin-login-btn">Sign In</router-link>
         </nav>
       </div>
     </header>
 
-    <!-- Hero Section -->
-    <section id="hero" class="hero-section">
-      <div class="hero-content">
-        <div class="badge">🚀 ALL-IN-ONE DIGITAL WALLET</div>
-        <h1 class="hero-title">Your Ultimate Platform for <span class="highlight">Smart Payments</span></h1>
-        <p class="hero-subtitle">
-          Recharge mobile connections, settle electricity invoices, pay DTH subscriptions, manage FastTag, and complete water bill payments instantly with our ultra-secure gateway.
-        </p>
-
-        <div class="cta-buttons">
-          <!-- Download Button -->
-          <a href="#" class="cta-btn download-btn">
-            <svg class="playstore-icon" viewBox="0 0 24 24" width="24" height="24">
-              <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#00e676"/>
-              <path d="M17.15,11.3,14.65,9.83l-3.32,3.32,3.32,3.32,2.5-1.47A1.15,1.15,0,0,0,17.15,11.3Z" fill="#ffeb3b"/>
-              <path d="M3.24,4.41l8.09,8.09L3.24,20.59a1,1,0,0,1-.24-.69V5.1A1,1,0,0,1,3.24,4.41Z" fill="#2196f3"/>
-              <path d="M11.33,12.5l8.09,8.09a1,1,0,0,1-.69.24H5.1a1,1,0,0,1-.69-.24Z" fill="#f44336"/>
+    <!-- Hero / Content Area -->
+    <main class="main-content" id="hero">
+      <!-- Exciting Deals Banner -->
+      <section class="banner-section">
+        <div class="deals-banner">
+          <div class="deals-icon-container">
+            <!-- Ticket Icon SVG representation -->
+            <svg class="ticket-icon" viewBox="0 0 64 64" width="60" height="60">
+              <path d="M12 20h40v24H12z" fill="#ffe0b2"/>
+              <path d="M16 16h32a4 4 0 0 1 4 4v4a4 4 0 0 0-4 4 4 4 0 0 0 4 4v4a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4v-4a4 4 0 0 0 4-4 4 4 0 0 0-4-4v-4a4 4 0 0 1 4-4z" fill="#ffb74d" stroke="#f57c00" stroke-width="3"/>
+              <line x1="24" y1="22" x2="24" y2="42" stroke="#f57c00" stroke-width="2" stroke-dasharray="4 4"/>
             </svg>
-            <div class="btn-text">
-              <span class="small-text">GET IT ON</span>
-              <span class="large-text">Google Play</span>
-            </div>
-          </a>
-
-          <!-- Admin Portal Button -->
-          <router-link to="/admin-login" class="cta-btn portal-btn">
-            <svg class="portal-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <path d="M12 8v4"/>
-              <path d="M12 16h.01"/>
-            </svg>
-            <div class="btn-text">
-              <span class="small-text">MANAGEMENT CONTROL</span>
-              <span class="large-text">Admin Panel</span>
-            </div>
-          </router-link>
-        </div>
-      </div>
-
-      <!-- Hero Visual -->
-      <div class="hero-visual">
-        <div class="mockup-container">
-          <div class="phone-mockup">
-            <div class="screen-content">
-              <div class="mockup-header">
-                <span class="mockup-logo">SR DIGITAL SEVA</span>
-                <span class="mockup-bell">🔔</span>
-              </div>
-              <div class="mockup-balance">
-                <span class="bal-label">Your Wallet Balance</span>
-                <span class="bal-amount">₹ 6,700.00</span>
-              </div>
-              <div class="mockup-actions">
-                <div class="action-item">Add Money</div>
-                <div class="action-item active">Subscribe</div>
-                <div class="action-item">Cashout</div>
-              </div>
-              <div class="mockup-grid">
-                <div class="grid-item">📱<br>Prepaid</div>
-                <div class="grid-item">⚡<br>Electricity</div>
-                <div class="grid-item">📡<br>DTH</div>
-                <div class="grid-item">🚗<br>FastTag</div>
-              </div>
-            </div>
+          </div>
+          <div class="deals-text">
+            <span class="deals-tag">EXCITING</span>
+            <h2 class="deals-title">DEALS</h2>
+            <p class="deals-desc">
+              Discover exclusive deals and special promotions tailored for you. Act now to enjoy amazing savings and rewards on every purchase!
+            </p>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- About Section -->
-    <section id="about" class="about-section">
-      <div class="section-header">
-        <h2>Why Choose SR Digital Seva?</h2>
-        <p>Providing the most reliable digital payment experience across the nation.</p>
-      </div>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🛡️</div>
-          <h3>Bank-Grade Security</h3>
-          <p>Every transaction is protected by end-to-end encryption, multi-factor authorization, and real-time fraud monitoring.</p>
+      <!-- Security Banner (Using image.png as background) -->
+      <section class="banner-section">
+        <div class="security-banner">
+          <div class="security-content">
+            <h2 class="security-title">Your Money, Always Secure.</h2>
+            <p class="security-desc">
+              Our platform offers secure, fast, and easy transactions for businesses and individuals, giving you peace of mind with every payment.
+            </p>
+          </div>
         </div>
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h3>Lightning Fast Settlement</h3>
-          <p>Get instant recharges and automatic receipt generation. Zero delays, 100% confirmation rate.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">💸</div>
-          <h3>Affiliate Earnings</h3>
-          <p>Grow your income by inviting team members. Earn commissions on every bill payment made within your group.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">☎️</div>
-          <h3>24/7 Dedicated Support</h3>
-          <p>Our global assistance team is always online to help resolve payment inquiries and account issues.</p>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Steps Section -->
-    <section id="steps" class="steps-section">
-      <div class="section-header">
-        <h2>Start Recharging in 3 Simple Steps</h2>
-        <p>Download our Android application and configure your secure account today.</p>
-      </div>
-      <div class="steps-container">
-        <div class="step-card">
-          <div class="step-num">01</div>
-          <h3>Create an Account</h3>
-          <p>Download our official Android app from the Google Play Store, sign up with your email, mobile number, and set up your password.</p>
-        </div>
-        <div class="step-arrow">➔</div>
-        <div class="step-card">
-          <div class="step-num">02</div>
-          <h3>Load Wallet Balance</h3>
-          <p>Easily top up your digital wallet using various payment methods including UPI, cards, and net banking.</p>
-        </div>
-        <div class="step-arrow">➔</div>
-        <div class="step-card">
-          <div class="step-num">03</div>
-          <h3>Recharge & Pay Bills</h3>
-          <p>Select your service, fill in the consumer details, and settle the payment instantly from your wallet balance.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact Us Section -->
-    <section id="contact" class="contact-section">
-      <div class="section-header">
-        <h2>Get in Touch with Us</h2>
-        <p>Have questions about transactions or team membership? Drop us a line.</p>
-      </div>
-      <div class="contact-grid">
-        <!-- Contact Information -->
-        <div class="contact-info">
-          <div class="info-item">
-            <span class="info-icon">📍</span>
-            <div>
-              <h4>Our Location</h4>
-              <p>SR Digital Seva Kendram, Tech Hub Complex, Main Street, Delhi, India</p>
+      <!-- Trust Badges & Customer Banner -->
+      <section class="trust-section" id="about">
+        <div class="brand-logos">
+          <!-- Mastercard -->
+          <div class="brand-logo-card">
+            <div class="mastercard-circles">
+              <span class="circle red"></span>
+              <span class="circle yellow"></span>
             </div>
+            <span class="brand-text font-bold">mastercard</span>
           </div>
-          <div class="info-item">
-            <span class="info-icon">✉️</span>
-            <div>
-              <h4>Email Address</h4>
-              <p>support@srdigitalseva.com</p>
-            </div>
+          <!-- BHIM -->
+          <div class="brand-logo-card">
+            <span class="bhim-logo">BHIM <span class="bhim-sub">UPI</span></span>
           </div>
-          <div class="info-item">
-            <span class="info-icon">📞</span>
-            <div>
-              <h4>Phone Number</h4>
-              <p>+91 98765 43210</p>
-            </div>
+          <!-- VISA -->
+          <div class="brand-logo-card">
+            <span class="visa-logo font-bold">VISA</span>
           </div>
-          <div class="info-item">
-            <span class="info-icon">💬</span>
-            <div>
-              <h4>Support Hours</h4>
-              <p>Monday - Sunday (24/7 Assistance)</p>
-            </div>
+          <!-- RuPay -->
+          <div class="brand-logo-card">
+            <span class="rupay-logo italic">RuPay&gt;</span>
           </div>
         </div>
 
-        <!-- Contact Form -->
-        <form @submit.prevent="handleContactSubmit" class="contact-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Your Name</label>
-              <input type="text" v-model="contactForm.name" placeholder="Enter Full Name" required />
-            </div>
-            <div class="form-group">
-              <label>Email Address</label>
-              <input type="email" v-model="contactForm.email" placeholder="Enter Email" required />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Subject</label>
-            <input type="text" v-model="contactForm.subject" placeholder="What is this about?" required />
-          </div>
-          <div class="form-group">
-            <label>Message</label>
-            <textarea rows="5" v-model="contactForm.message" placeholder="Type your message here..." required></textarea>
-          </div>
-          <button type="submit" class="submit-btn" :disabled="formSubmitted">
-            <span v-if="formSubmitted">Message Sent Successfully! ✓</span>
-            <span v-else>Send Message &rarr;</span>
+        <div class="customer-trust">
+          <h2 class="trust-title">Trusted by 8 Lakh+ happy customers</h2>
+          <div class="trust-underline"></div>
+          <button class="cta-primary-btn" @click="scrollTo('contact')">
+            Recharge & Pay Bills &rarr;
           </button>
-        </form>
-      </div>
-    </section>
+        </div>
+      </section>
+
+      <!-- QR Download Section -->
+      <section class="download-section">
+        <div class="download-grid">
+          <!-- QR Area -->
+          <div class="qr-panel">
+            <div class="qr-container">
+              <!-- Simulated QR Code -->
+              <div class="qr-code">
+                <div class="qr-pattern"></div>
+              </div>
+              <p class="qr-caption">Scan the QR code to Download our app now</p>
+              <!-- Google Play Badge -->
+              <a href="#" class="play-badge">
+                <svg class="play-icon" viewBox="0 0 24 24" width="20" height="20">
+                  <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#fff"/>
+                </svg>
+                <div class="badge-text">
+                  <span class="get-it">GET IT ON</span>
+                  <span class="g-play">Google Play</span>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Bullet Points -->
+          <div class="features-panel">
+            <div class="feature-bullet">
+              <div class="bullet-icon">📱</div>
+              <div class="bullet-text">
+                <h3>Scan the QR</h3>
+                <p>Download the app instantly by scanning the QR code and start unlocking exclusive rewards!</p>
+              </div>
+            </div>
+            <div class="feature-bullet">
+              <div class="bullet-icon">🎁</div>
+              <div class="bullet-text">
+                <h3>Exclusive App offers</h3>
+                <p>Unlock exciting deals and exclusive offers available only through our app.</p>
+              </div>
+            </div>
+            <div class="feature-bullet">
+              <div class="bullet-icon">🛡️</div>
+              <div class="bullet-text">
+                <h3>Safe and Secure</h3>
+                <p>Your trust is our top priority—secure payments and peace of mind guaranteed with every transaction.</p>
+              </div>
+            </div>
+            <div class="feature-bullet">
+              <div class="bullet-icon">⚡</div>
+              <div class="bullet-text">
+                <h3>Faster, Smoother Experience</h3>
+                <p>Enjoy a seamless, enriched app experience designed for speed and convenience.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="faq-section" id="faq">
+        <h2 class="faq-section-title">Frequently asked questions</h2>
+        <div class="faq-grid">
+          <!-- Contact card -->
+          <div class="faq-contact-card">
+            <div class="chat-bubble-icon">💬</div>
+            <h3>You have a different question?</h3>
+            <p>If our FAQs don't cover your query, our customer service team is here to help.</p>
+            <button class="faq-btn-contact" @click="scrollTo('contact')">Get in Touch</button>
+          </div>
+
+          <!-- FAQ Accordion -->
+          <div class="faq-accordion">
+            <div 
+              v-for="(faq, index) in faqs" 
+              :key="index" 
+              class="faq-item"
+              :class="{ active: activeFaq === index }"
+            >
+              <div class="faq-question" @click="toggleFaq(index)">
+                <span>{{ faq.question }}</span>
+                <span class="faq-toggle-icon">{{ activeFaq === index ? '−' : '+' }}</span>
+              </div>
+              <div class="faq-answer" v-show="activeFaq === index">
+                <p>{{ faq.answer }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact Us Section -->
+      <section id="contact" class="contact-section">
+        <div class="section-header">
+          <h2>Get in Touch with Us</h2>
+          <p>Have questions about transactions or team membership? Drop us a line.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-info">
+            <div class="info-item">
+              <span class="info-icon">📍</span>
+              <div>
+                <h4>Our Location</h4>
+                <p>SR Digital Seva Kendram, Tech Hub Complex, Main Street, Delhi, India</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <span class="info-icon">✉️</span>
+              <div>
+                <h4>Email Address</h4>
+                <p>support@srdigitalseva.com</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <span class="info-icon">📞</span>
+              <div>
+                <h4>Phone Number</h4>
+                <p>+91 98765 43210</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Form -->
+          <form @submit.prevent="handleContactSubmit" class="contact-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" v-model="contactForm.name" placeholder="Enter Full Name" required />
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" v-model="contactForm.email" placeholder="Enter Email" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" v-model="contactForm.subject" placeholder="What is this about?" required />
+            </div>
+            <div class="form-group">
+              <label>Message</label>
+              <textarea rows="5" v-model="contactForm.message" placeholder="Type your message here..." required></textarea>
+            </div>
+            <button type="submit" class="submit-btn" :disabled="formSubmitted">
+              <span v-if="formSubmitted">Message Sent Successfully! ✓</span>
+              <span v-else>Submit &rarr;</span>
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
       <div class="footer-content">
-        <div class="footer-brand">
-          <svg class="logo-svg" viewBox="0 0 100 100" width="30" height="30">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#fff" stroke-width="8"/>
-            <path d="M 30 50 L 45 65 L 70 35" fill="none" stroke="#ffeb3b" stroke-width="8" stroke-linecap="round"/>
-          </svg>
-          <span>SR DIGITAL SEVA</span>
+        <div class="footer-top">
+          <div class="footer-left">
+            <div class="zap-logo white-text">
+              <span class="logo-bold">RECHARGE</span>
+              <span class="logo-italic">ZAP</span>
+            </div>
+            <a href="#" class="play-badge footer-badge">
+              <svg class="play-icon" viewBox="0 0 24 24" width="20" height="20">
+                <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#fff"/>
+              </svg>
+              <div class="badge-text">
+                <span class="get-it">GET IT ON</span>
+                <span class="g-play">Google Play</span>
+              </div>
+            </a>
+          </div>
+
+          <div class="footer-links-grid">
+            <div class="footer-col">
+              <a href="#">ABOUT US</a>
+              <a href="#">CONTACT US</a>
+              <a href="#">REFUND POLICY</a>
+            </div>
+            <div class="footer-col">
+              <a href="#">FAQs</a>
+              <a href="#">PRIVACY POLICY</a>
+              <a href="#">TERMS & CONDITIONS</a>
+            </div>
+          </div>
         </div>
-        <p class="copyright">&copy; 2026 SR Digital Seva Kendram. All rights reserved.</p>
-        <div class="footer-links">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Support</a>
+
+        <div class="footer-divider"></div>
+
+        <div class="footer-bottom">
+          <p class="copyright">&copy; 2026 RechargeZap, All Rights Reserved</p>
+          <div class="security-badges">
+            <div class="sec-badge">🔒 SSL Secure</div>
+            <div class="sec-badge">Verified by VISA</div>
+            <div class="sec-badge">Mastercard SecureCode</div>
+          </div>
         </div>
       </div>
     </footer>
@@ -234,17 +287,39 @@
 </template>
 
 <script>
+import bannerImg from '../assets/image.png';
+
 export default {
   name: 'LandingPage',
   data() {
     return {
+      bannerImg,
       contactForm: {
         name: '',
         email: '',
         subject: '',
         message: ''
       },
-      formSubmitted: false
+      formSubmitted: false,
+      activeFaq: null,
+      faqs: [
+        {
+          question: 'What Payment Methods Are Available for Mobile Recharges on RechargeZap?',
+          answer: 'We support all major payment networks including Credit/Debit Cards (Visa, Mastercard, RuPay), UPI (BHIM, Google Pay, PhonePe, Paytm), and major Net Banking providers to guarantee a seamless transaction experience.'
+        },
+        {
+          question: 'How Can I Find and Choose the Best Recharge Plan for My Mobile Number?',
+          answer: 'Our mobile application automatically fetches plans from your network operator (Jio, Airtel, Vi, BSNL) based on your circle and category choice, such as Unlimited, Data boosters, or Talktime packs.'
+        },
+        {
+          question: 'What Should I Do If I Accidentally Recharge the Wrong Number?',
+          answer: 'Recharges are processed instantly with telecom operators. We recommend double-checking the consumer ID/mobile number on our confirmation receipt sheet before completing the payment process.'
+        },
+        {
+          question: 'How Can I Ensure My Mobile Recharge Is Successful and Safe?',
+          answer: 'All payments are processed via highly secure payment gateway connections with real-time operator callbacks. You can verify the transaction status instantly in the app using the Check Status tool.'
+        }
+      ]
     }
   },
   methods: {
@@ -253,6 +328,9 @@ export default {
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
+    },
+    toggleFaq(index) {
+      this.activeFaq = this.activeFaq === index ? null : index;
     },
     handleContactSubmit() {
       this.formSubmitted = true;
@@ -274,16 +352,16 @@ export default {
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #f3f6ff 0%, #ffffff 50%, #ebf1ff 100%);
+  background-color: #fafbfc;
   color: #1e293b;
   font-family: 'Inter', system-ui, sans-serif;
   overflow-x: hidden;
 }
 
+/* Header */
 .header {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0, 82, 204, 0.08);
+  background: #0052cc;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -292,9 +370,9 @@ export default {
 
 .header-content {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 1.2rem 2rem;
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -302,31 +380,35 @@ export default {
 }
 
 .logo-area {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   cursor: pointer;
 }
 
-.brand-name {
-  font-weight: 900;
-  font-size: 1.35rem;
-  letter-spacing: 0.5px;
-  color: #0052cc;
+.zap-logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #ffffff;
 }
 
-.brand-sub {
-  color: #e01a22;
+.logo-bold {
+  font-weight: 900;
+}
+
+.logo-italic {
+  font-weight: 300;
+  font-style: italic;
+  opacity: 0.9;
+  margin-left: 2px;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 2.25rem;
+  gap: 2rem;
 }
 
 .nav-links a {
-  color: #475569;
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   font-weight: 600;
   font-size: 0.95rem;
@@ -334,12 +416,12 @@ export default {
 }
 
 .nav-links a:hover {
-  color: #0052cc;
+  color: #ffffff;
 }
 
 .nav-btn {
-  padding: 0.65rem 1.4rem;
-  border-radius: 10px;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
   font-weight: 700;
   font-size: 0.9rem;
   text-decoration: none;
@@ -347,567 +429,639 @@ export default {
 }
 
 .admin-login-btn {
-  background: #0052cc;
-  color: white !important;
-  border: 1px solid transparent;
+  background: #ffffff;
+  color: #0052cc !important;
 }
 
 .admin-login-btn:hover {
-  background: #004099;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
 }
 
-/* Sections Common */
-section {
+/* Main Content */
+.main-content {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 6rem 2rem;
+  padding: 2rem;
   box-sizing: border-box;
 }
 
-.section-header {
-  text-align: center;
-  margin-bottom: 4rem;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+/* Banners common */
+.banner-section {
+  width: 100%;
+  margin-bottom: 2rem;
 }
 
-.section-header h2 {
-  font-size: 2.5rem;
-  font-weight: 850;
-  color: #0f172a;
-  letter-spacing: -0.75px;
-  margin: 0 0 1rem;
-}
-
-.section-header p {
-  font-size: 1.1rem;
-  color: #64748b;
-  line-height: 1.5;
-}
-
-/* Hero Section */
-.hero-section {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  align-items: center;
-  gap: 5rem;
-  padding-top: 4rem;
-  padding-bottom: 4rem;
-}
-
-@media (max-width: 960px) {
-  .hero-section {
-    grid-template-columns: 1fr;
-    text-align: center;
-    gap: 3.5rem;
-  }
-}
-
-.hero-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
-  align-items: flex-start;
-}
-
-@media (max-width: 960px) {
-  .hero-content {
-    align-items: center;
-  }
-}
-
-.badge {
-  background: rgba(0, 82, 204, 0.08);
-  color: #0052cc;
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 750;
-  letter-spacing: 1px;
-}
-
-.hero-title {
-  font-size: 4rem;
-  font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -1.5px;
-  color: #0f172a;
-  margin: 0;
-}
-
-.hero-title .highlight {
-  background: linear-gradient(120deg, #0052cc, #0080ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.hero-subtitle {
-  font-size: 1.25rem;
-  line-height: 1.6;
-  color: #475569;
-  margin: 0;
-}
-
-.cta-buttons {
-  display: flex;
-  gap: 1.25rem;
-}
-
-@media (max-width: 600px) {
-  .cta-buttons {
-    flex-direction: column;
-    width: 100%;
-  }
-}
-
-.cta-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem 1.75rem;
-  border-radius: 14px;
-  text-decoration: none;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  min-width: 220px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
-  box-sizing: border-box;
-}
-
-.download-btn {
-  background: #0f172a;
-  color: white;
-}
-
-.download-btn:hover {
-  background: #000;
-  transform: translateY(-3px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
-}
-
-.portal-btn {
-  background: white;
-  color: #0052cc;
-  border: 2px solid #0052cc;
-}
-
-.portal-btn:hover {
-  background: #f0f4ff;
-  transform: translateY(-3px);
-  box-shadow: 0 12px 20px rgba(0, 82, 204, 0.1);
-}
-
-.btn-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.small-text {
-  font-size: 0.7rem;
-  opacity: 0.85;
-}
-
-.large-text {
-  font-size: 1.15rem;
-  line-height: 1.1;
-}
-
-.hero-visual {
-  display: flex;
-  justify-content: center;
-}
-
-.mockup-container {
-  background: linear-gradient(135deg, rgba(0, 82, 204, 0.08) 0%, rgba(224, 26, 34, 0.04) 100%);
-  padding: 2.5rem;
-  border-radius: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03);
-}
-
-.phone-mockup {
-  width: 280px;
-  height: 560px;
+.deals-banner {
   background: #ffffff;
-  border: 10px solid #0f172a;
-  border-radius: 44px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-  position: relative;
-}
-
-.screen-content {
-  padding: 1.5rem;
+  border: 1px solid #1e293b;
+  border-radius: 24px;
+  padding: 3rem 2rem;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  gap: 1.5rem;
+  align-items: center;
+  text-align: center;
   box-sizing: border-box;
 }
 
-.mockup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1.5px solid #f1f5f9;
-  padding-bottom: 0.75rem;
-}
-
-.mockup-logo {
-  font-weight: 900;
-  color: #0052cc;
-  font-size: 0.85rem;
-}
-
-.mockup-balance {
-  background: #0052cc;
-  color: white;
-  padding: 1.2rem;
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.bal-label {
-  font-size: 0.75rem;
-  opacity: 0.9;
-}
-
-.bal-amount {
-  font-size: 1.5rem;
-  font-weight: 800;
-}
-
-.mockup-actions {
-  display: flex;
-  gap: 0.4rem;
-  background: #f1f5f9;
-  padding: 0.3rem;
-  border-radius: 10px;
-}
-
-.action-item {
-  flex: 1;
-  text-align: center;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.4rem 0;
-  border-radius: 6px;
-  color: #64748b;
-}
-
-.action-item.active {
-  background: white;
-  color: #0052cc;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.mockup-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
-}
-
-.grid-item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  height: 80px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #334155;
-  gap: 0.25rem;
-}
-
-/* About Section */
-.about-section {
-  background: white;
-  border-top: 1px solid rgba(0, 82, 204, 0.05);
-  border-bottom: 1px solid rgba(0, 82, 204, 0.05);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2.5rem;
-}
-
-.feature-card {
-  padding: 2.5rem;
-  border-radius: 20px;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
-  transition: all 0.3s;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 82, 204, 0.06);
-  border-color: rgba(0, 82, 204, 0.1);
-  background: white;
-}
-
-.feature-icon {
-  font-size: 2.5rem;
+.deals-icon-container {
   margin-bottom: 1.5rem;
 }
 
-.feature-card h3 {
-  font-size: 1.25rem;
+.deals-tag {
+  color: #f57c00;
   font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  letter-spacing: 2px;
 }
 
-.feature-card p {
+.deals-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #0052cc;
+  margin: 0.25rem 0 1rem;
+}
+
+.deals-desc {
   color: #64748b;
-  font-size: 0.95rem;
+  max-width: 600px;
+  font-size: 1.1rem;
   line-height: 1.6;
-  margin: 0;
 }
 
-/* Steps Section */
-.steps-container {
+/* Security Banner styling */
+.security-banner {
+  background-image: url('../assets/image.png');
+  background-size: cover;
+  background-position: center;
+  border-radius: 24px;
+  padding: 4rem 3rem;
+  color: #ffffff;
+  min-height: 240px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
+  box-sizing: border-box;
 }
 
-@media (max-width: 900px) {
-  .steps-container {
-    flex-direction: column;
-    gap: 3rem;
-  }
-  .step-arrow {
-    transform: rotate(90deg);
-  }
+.security-content {
+  max-width: 550px;
+  margin-left: 20%;
 }
 
-.step-card {
-  flex: 1;
-  text-align: center;
-  padding: 2rem;
+.security-title {
+  font-size: 2rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.security-desc {
+  font-size: 1.05rem;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+/* Trust Section */
+.trust-section {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 3rem 0;
+  width: 100%;
+}
+
+.brand-logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.brand-logo-card {
+  background: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.mastercard-circles {
+  display: flex;
+}
+
+.circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.circle.red {
+  background: #eb001b;
+}
+
+.circle.yellow {
+  background: #ff5f00;
+  margin-left: -6px;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+.brand-text {
+  font-size: 0.95rem;
+  color: #222;
+}
+
+.bhim-logo {
+  font-weight: 800;
+  color: #ff6f00;
+}
+
+.bhim-sub {
+  color: #0052cc;
+}
+
+.visa-logo {
+  color: #1a1f71;
+  font-style: italic;
+  font-size: 1.25rem;
+}
+
+.rupay-logo {
+  color: #0d47a1;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.customer-trust {
+  text-align: center;
+}
+
+.trust-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0052cc;
+  margin: 0;
+}
+
+.trust-underline {
+  height: 4px;
+  width: 180px;
+  background: #0052cc;
+  margin: 10px auto 20px;
+  border-radius: 2px;
+}
+
+.cta-primary-btn {
+  background: #0052cc;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cta-primary-btn:hover {
+  background: #004099;
+}
+
+/* Download App Section */
+.download-section {
+  background: #102a5c;
+  border-radius: 24px;
+  padding: 4rem 3rem;
+  color: white;
+  margin-bottom: 4rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.download-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.qr-panel {
+  display: flex;
+  justify-content: center;
+}
+
+.qr-container {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 300px;
+}
+
+.qr-code {
+  width: 160px;
+  height: 160px;
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.qr-pattern {
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(black 30%, transparent 30%), radial-gradient(black 30%, transparent 30%);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+}
+
+.qr-caption {
+  font-size: 0.85rem;
+  margin: 1.25rem 0;
+  text-align: center;
+  opacity: 0.9;
+}
+
+.play-badge {
+  background: #000000;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 0.4rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: white;
+}
+
+.badge-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.get-it {
+  font-size: 0.6rem;
+  opacity: 0.7;
+}
+
+.g-play {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.features-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.feature-bullet {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.bullet-icon {
+  background: #ffab00;
+  font-size: 1.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bullet-text h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.bullet-text p {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+
+/* FAQ Section */
+.faq-section {
+  padding: 4rem 0;
+  width: 100%;
+}
+
+.faq-section-title {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 3rem;
+}
+
+.faq-contact-card {
+  background: #e6f0ff;
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.chat-bubble-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.faq-contact-card h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0052cc;
+  margin: 0 0 0.75rem;
+}
+
+.faq-contact-card p {
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem;
+}
+
+.faq-btn-contact {
+  background: #0052cc;
+  color: white;
+  border: none;
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
+.faq-accordion {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
-.step-num {
-  font-size: 3.5rem;
-  font-weight: 900;
-  color: rgba(0, 82, 204, 0.15);
-  line-height: 1;
+.faq-item {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-.step-card h3 {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
+.faq-item.active {
+  border-color: #0052cc;
+  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.05);
 }
 
-.step-card p {
+.faq-question {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  user-select: none;
+}
+
+.faq-toggle-icon {
+  font-size: 1.25rem;
+  color: #0052cc;
+}
+
+.faq-answer {
+  padding: 0 1.5rem 1.25rem;
   color: #64748b;
   font-size: 0.95rem;
-  line-height: 1.6;
-  margin: 0;
+  line-height: 1.5;
 }
 
-.step-arrow {
-  font-size: 2rem;
-  color: #0052cc;
-  font-weight: 900;
-}
-
-/* Contact Section */
+/* Contact Us Section */
 .contact-section {
-  background: white;
+  padding: 5rem 0;
+  border-top: 1px solid #e2e8f0;
+  width: 100%;
 }
 
 .contact-grid {
   display: grid;
   grid-template-columns: 0.8fr 1.2fr;
-  gap: 4rem;
-}
-
-@media (max-width: 900px) {
-  .contact-grid {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
+  gap: 3rem;
 }
 
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .info-item {
   display: flex;
-  gap: 1.25rem;
+  gap: 1rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
 }
 
 .info-icon {
-  font-size: 1.75rem;
-  background: #f0f4ff;
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 1.5rem;
 }
 
 .info-item h4 {
   margin: 0 0 0.25rem;
-  font-size: 1.05rem;
-  font-weight: 750;
   color: #0f172a;
 }
 
 .info-item p {
   margin: 0;
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .contact-form {
-  background: #f8fafc;
+  background: white;
   padding: 2.5rem;
-  border-radius: 24px;
-  border: 1px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-@media (max-width: 600px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
-  font-size: 0.85rem;
   font-weight: 700;
-  color: #475569;
+  font-size: 0.85rem;
 }
 
-.form-group input, .form-group textarea {
-  padding: 0.85rem 1.1rem;
-  border-radius: 12px;
-  border: 1.5px solid #e2e8f0;
+.form-group input,
+.form-group textarea {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
   font-family: inherit;
-  font-size: 0.95rem;
-  background: white;
-  transition: all 0.2s;
-}
-
-.form-group input:focus, .form-group textarea:focus {
-  outline: none;
-  border-color: #0052cc;
-  box-shadow: 0 0 0 4px rgba(0, 82, 204, 0.08);
 }
 
 .submit-btn {
   background: #0052cc;
   color: white;
-  font-weight: 700;
-  font-size: 1rem;
   border: none;
-  padding: 1rem;
-  border-radius: 12px;
+  padding: 0.85rem;
+  border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s;
-}
-
-.submit-btn:hover:not(:disabled) {
-  background: #004099;
-}
-
-.submit-btn:disabled {
-  background: #16a34a;
-  cursor: not-allowed;
-}
-
-/* Footer */
-.footer {
-  background: #0f172a;
-  color: white;
-  padding: 4rem 2rem;
   width: 100%;
+  margin-top: 1rem;
 }
 
-.footer-content {
-  max-width: 1440px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Footer Section */
+.footer {
+  background: #002244;
+  color: white;
+  width: 100%;
+  padding: 4rem 2rem 2rem;
   box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
-  .footer-content {
-    flex-direction: column;
-    gap: 1.5rem;
-    text-align: center;
-  }
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.footer-brand {
+.footer-top {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 900;
-  letter-spacing: 0.5px;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 3rem;
 }
 
-.copyright {
-  font-size: 0.9rem;
-  color: #94a3b8;
-  margin: 0;
-}
-
-.footer-links {
+.footer-left {
   display: flex;
-  gap: 2rem;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.footer-links a {
-  color: #94a3b8;
+.white-text {
+  color: white !important;
+}
+
+.footer-badge {
+  width: 140px;
+}
+
+.footer-links-grid {
+  display: flex;
+  gap: 4rem;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer-col a {
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
   transition: color 0.2s;
 }
 
-.footer-links a:hover {
+.footer-col a:hover {
   color: white;
+}
+
+.footer-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 3rem 0 2rem;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.copyright {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.security-badges {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Responsive Grid layouts */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .security-banner {
+    padding: 3rem 1.5rem;
+  }
+  .security-content {
+    margin-left: 0;
+  }
+  .download-grid,
+  .faq-grid,
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+  .footer-top {
+    flex-direction: column;
+  }
 }
 </style>
