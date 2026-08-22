@@ -228,6 +228,30 @@ app.post('/api/payment/razorpay-sandbox', verifyAppToken, verifyUserToken, async
   } catch (err) {
     res.status(500).json({ error: 'Transaction failed' });
   }
+// Scriza Telecom Recharge Callback Hook
+app.get('/api/payment/scriza-callback', async (req, res) => {
+  const { payid, client_id, operator_ref, status } = req.query;
+  console.log(`Received Scriza Callback - Client ID: ${client_id}, Pay ID: ${payid}, Operator Ref: ${operator_ref}, Status: ${status}`);
+
+  if (!client_id) {
+    return res.status(200).send('Missing client_id'); // Return OK to prevent Scriza spam
+  }
+
+  try {
+    const isSuccess = status === 'success' || status === 'Success';
+    const finalStatus = isSuccess ? 'Success' : 'Failure';
+
+    // Update transaction log status in database
+    await query(
+      'UPDATE transactions SET status = ? WHERE id = ?',
+      [finalStatus, client_id]
+    );
+
+    res.status(200).send('OK'); // Return HTTP 200 as requested by Scriza
+  } catch (err) {
+    console.error('Error handling Scriza callback:', err);
+    res.status(200).send('OK'); // Always return 200 so Scriza stops retrying on DB glitches
+  }
 });
 
 
