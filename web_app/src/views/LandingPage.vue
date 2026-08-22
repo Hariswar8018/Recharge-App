@@ -10,11 +10,13 @@
           </div>
         </div>
         <nav class="nav-links">
+          <a href="#services" @click.prevent="scrollTo('services')">Services</a>
+          <a href="#commissions" @click.prevent="scrollTo('commissions')">Commissions</a>
           <a href="#about" @click.prevent="scrollTo('about')">About Us</a>
           <a href="#steps" @click.prevent="scrollTo('steps')">How It Works</a>
           <a href="#faq" @click.prevent="scrollTo('faq')">FAQs</a>
           <a href="#contact" @click.prevent="scrollTo('contact')">Contact Us</a>
-          <router-link to="/admin-login" class="nav-btn admin-login-btn">Admin Login</router-link>
+          <router-link to="/admin-login" class="nav-btn admin-login-btn">Admin Portal</router-link>
         </nav>
       </div>
     </header>
@@ -23,30 +25,123 @@
     <div class="top-action-bar">
       <div class="top-action-content">
         <div class="playstore-download-info">
-          <!-- Play Store Icon SVG -->
           <svg class="playstore-mini-icon" viewBox="0 0 24 24" width="24" height="24">
             <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#00e676"/>
             <path d="M17.15,11.3,14.65,9.83l-3.32,3.32,3.32,3.32,2.5-1.47A1.15,1.15,0,0,0,17.15,11.3Z" fill="#ffeb3b"/>
             <path d="M3.24,4.41l8.09,8.09L3.24,20.59a1,1,0,0,1-.24-.69V5.1A1,1,0,0,1,3.24,4.41Z" fill="#2196f3"/>
             <path d="M11.33,12.5l8.09,8.09a1,1,0,0,1-.69.24H5.1a1,1,0,0,1-.69-.24Z" fill="#f44336"/>
           </svg>
-          <span class="download-text">Download our official Android App from Google Play Store!</span>
-          <a href="#" class="top-mini-btn download-link">Download App</a>
+          <span class="download-text">Get our mobile application directly from Google Play Store!</span>
+          <a href="#" class="top-mini-btn download-link">Download Now</a>
         </div>
         <div class="admin-portal-access">
-          <span class="portal-text font-bold">Management Portal:</span>
-          <router-link to="/admin-login" class="top-mini-btn portal-link">Login to Admin Panel &rarr;</router-link>
+          <span class="portal-text font-bold">Authorized Personnel:</span>
+          <router-link to="/admin-login" class="top-mini-btn portal-link">Access Panel &rarr;</router-link>
         </div>
       </div>
     </div>
 
+    <!-- Main Hero Section (Action-packed) -->
+    <section class="hero-section" id="hero">
+      <div class="hero-content">
+        <div class="hero-badge">⚡ INSTANT ACTIVATIONS & BEST COMMISSION RATES</div>
+        <h1 class="hero-title">
+          India's Leading Platform for <span class="blue-highlight">Smart Payments</span> & Commissions
+        </h1>
+        <p class="hero-desc">
+          Empowering retailers, distributors, and individuals to recharge mobile lines, settle utility bills, and manage local customer payments with unmatched commission margins.
+        </p>
+
+        <div class="hero-cta-buttons">
+          <!-- Play Store Link -->
+          <a href="#" class="hero-cta-btn playstore-btn">
+            <svg class="playstore-svg" viewBox="0 0 24 24" width="28" height="28">
+              <path d="M3,5.27V18.73c0,0.89,0.97,1.44,1.73,0.99l11.45-6.73a1.15,1.15,0,0,0,0-1.98L4.73,4.28C3.97,3.83,3,4.38,3,5.27Z" fill="#fff"/>
+            </svg>
+            <div class="btn-lbl">
+              <span class="lbl-small">GET THE ANDROID APP</span>
+              <span class="lbl-large">Google Play</span>
+            </div>
+          </a>
+
+          <!-- Admin Login link -->
+          <router-link to="/admin-login" class="hero-cta-btn admin-btn">
+            <span class="admin-icon">⚙️</span>
+            <div class="btn-lbl">
+              <span class="lbl-small">PARTNER GATEWAY</span>
+              <span class="lbl-large">Admin Dashboard</span>
+            </div>
+          </router-link>
+        </div>
+
+        <div class="hero-stats-mini">
+          <div class="mini-stat">
+            <span class="stat-num">8 Lakh+</span>
+            <span class="stat-lbl">Active Users</span>
+          </div>
+          <div class="mini-stat">
+            <span class="stat-num">99.99%</span>
+            <span class="stat-lbl">Success Rate</span>
+          </div>
+          <div class="mini-stat">
+            <span class="stat-num">Instant</span>
+            <span class="stat-lbl">Settlements</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Visual (Interactive Device Mockup) -->
+      <div class="hero-visual">
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="app-header">
+              <div class="app-logo">SR DIGITAL SEVA</div>
+              <div class="notification-dot">🔔</div>
+            </div>
+            
+            <div class="app-balance-card">
+              <div class="card-glow"></div>
+              <span class="bal-title">Available Income Wallet</span>
+              <span class="bal-value">₹ 14,850.50</span>
+              <div class="card-footer">
+                <span>Distributor Account</span>
+                <span class="status-active">● Verified</span>
+              </div>
+            </div>
+
+            <div class="app-quick-actions">
+              <div class="quick-btn">➕ Fund Wallet</div>
+              <div class="quick-btn active">⚡ Recharge</div>
+              <div class="quick-btn">💸 Transfer</div>
+            </div>
+
+            <div class="app-services-grid">
+              <div class="app-service-item">📱<span>Mobile</span></div>
+              <div class="app-service-item">📡<span>DTH</span></div>
+              <div class="app-service-item">⚡<span>Electricity</span></div>
+              <div class="app-service-item">🚗<span>FASTag</span></div>
+              <div class="app-service-item">💧<span>Water</span></div>
+              <div class="app-service-item">🌐<span>Broadband</span></div>
+            </div>
+
+            <div class="app-recent-txn">
+              <span class="txn-title">Recent Commission payout</span>
+              <div class="txn-row">
+                <span class="txn-op">Jio Recharge +4.5%</span>
+                <span class="txn-amt text-green">+ ₹ 22.50</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Main Content Area -->
-    <main class="main-content" id="hero">
+    <main class="main-content">
       <!-- Exciting Deals Banner -->
       <section class="banner-section">
         <div class="deals-banner">
           <div class="deals-icon-container">
-            <!-- Ticket Icon SVG representation -->
             <svg class="ticket-icon" viewBox="0 0 64 64" width="60" height="60">
               <path d="M12 20h40v24H12z" fill="#ffe0b2"/>
               <path d="M16 16h32a4 4 0 0 1 4 4v4a4 4 0 0 0-4 4 4 4 0 0 0 4 4v4a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4v-4a4 4 0 0 0 4-4 4 4 0 0 0-4-4v-4a4 4 0 0 1 4-4z" fill="#ffb74d" stroke="#f57c00" stroke-width="3"/>
@@ -71,6 +166,103 @@
             <p class="security-desc">
               Our platform offers secure, fast, and easy transactions for businesses and individuals, giving you peace of mind with every payment.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- NEW: Supported Services Grid Section -->
+      <section id="services" class="services-showcase">
+        <div class="section-header">
+          <h2>Services We Support</h2>
+          <p>Settle all primary consumer utility services instantly under one unified portal.</p>
+        </div>
+        <div class="services-showcase-grid">
+          <div class="service-show-card">
+            <div class="service-show-icon">📱</div>
+            <h3>Prepaid Recharges</h3>
+            <p>Instant activation for Jio, Airtel, Vi, and BSNL with operator plan lookups.</p>
+          </div>
+          <div class="service-show-card">
+            <div class="service-show-icon">📡</div>
+            <h3>DTH Activations</h3>
+            <p>Fast renewals for Tata Play, Airtel Digital TV, Dish TV, and Sun Direct.</p>
+          </div>
+          <div class="service-show-card">
+            <div class="service-show-icon">⚡</div>
+            <h3>Electricity Bills</h3>
+            <p>Check consumer bills and pay all state power boards instantly.</p>
+          </div>
+          <div class="service-show-card">
+            <div class="service-show-icon">🚗</div>
+            <h3>FASTag Top-ups</h3>
+            <p>Recharge highway tags instantly for NHAI, SBI, HDFC, and Paytm FASTags.</p>
+          </div>
+          <div class="service-show-card">
+            <div class="service-show-icon">💧</div>
+            <h3>Water Bill Payments</h3>
+            <p>Settle municipal water bills securely through BBPS integrations.</p>
+          </div>
+          <div class="service-show-card">
+            <div class="service-show-icon">🌐</div>
+            <h3>Broadband Services</h3>
+            <p>Pay fiber and broadband bills for ACT, Airtel, JioFiber, and Hathaway.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- NEW: Distributor & Retailer Commission Section -->
+      <section id="commissions" class="commission-section">
+        <div class="section-header">
+          <h2>Earn High Commissions on Recharges</h2>
+          <p>Boost your retail margins by partnering with India's highest paying commission provider.</p>
+        </div>
+        <div class="commission-card-wrapper">
+          <div class="commission-intro-card">
+            <span class="card-accent">PARTNER BENEFIT</span>
+            <h3>Highest Payout Rates</h3>
+            <p>Whether you are a retailer or running a downline team of agents, SR Digital Seva Kendram guarantees maximum margins on every single transaction.</p>
+            <div class="perks-list">
+              <div class="perk-row">✓ Real-time commission credits</div>
+              <div class="perk-row">✓ Fully separate Main and Fund Wallets</div>
+              <div class="perk-row">✓ Downline agent tracking and reports</div>
+            </div>
+          </div>
+          
+          <div class="commission-table-card">
+            <h3>Standard Commission Structure</h3>
+            <div class="table-container">
+              <table class="com-table">
+                <thead>
+                  <tr>
+                    <th>Service Operator</th>
+                    <th>Retailer Margin</th>
+                    <th>Distributor Margin</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Jio Prepaid</td>
+                    <td class="text-green font-bold">3.5%</td>
+                    <td class="text-green font-bold">4.2%</td>
+                  </tr>
+                  <tr>
+                    <td>Airtel Prepaid</td>
+                    <td class="text-green font-bold">2.8%</td>
+                    <td class="text-green font-bold">3.5%</td>
+                  </tr>
+                  <tr>
+                    <td>Vi (Vodafone Idea)</td>
+                    <td class="text-green font-bold">3.8%</td>
+                    <td class="text-green font-bold">4.5%</td>
+                  </tr>
+                  <tr>
+                    <td>DTH Recharges</td>
+                    <td class="text-green font-bold">4.0%</td>
+                    <td class="text-green font-bold">4.8%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -103,13 +295,13 @@
         <div class="customer-trust">
           <h2 class="trust-title">Trusted by 8 Lakh+ happy customers</h2>
           <div class="trust-underline"></div>
-          <button class="cta-primary-btn" @click="scrollTo('steps')">
-            Recharge & Pay Bills &rarr;
+          <button class="cta-primary-btn" @click="scrollTo('contact')">
+            Get in Touch &rarr;
           </button>
         </div>
       </section>
 
-      <!-- restored: Features Section -->
+      <!-- Features Section -->
       <section id="about" class="about-section">
         <div class="section-header">
           <h2>Why Choose SR Digital Seva?</h2>
@@ -139,7 +331,7 @@
         </div>
       </section>
 
-      <!-- restored: Steps Section -->
+      <!-- Steps Section -->
       <section id="steps" class="steps-section">
         <div class="section-header">
           <h2>Start Recharging in 3 Simple Steps</h2>
@@ -483,14 +675,14 @@ export default {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .nav-links a {
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: color 0.2s;
 }
 
@@ -499,10 +691,10 @@ export default {
 }
 
 .nav-btn {
-  padding: 0.5rem 1.5rem;
+  padding: 0.5rem 1.25rem;
   border-radius: 20px;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-decoration: none;
   transition: all 0.3s ease;
 }
@@ -586,7 +778,438 @@ export default {
   font-size: 0.9rem;
 }
 
-/* Main Content */
+/* Hero Section (Action-Full) */
+.hero-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 4rem;
+  box-sizing: border-box;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero-badge {
+  background: #e6f0ff;
+  color: #0052cc;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.15;
+  margin: 0 0 1.5rem;
+  letter-spacing: -1px;
+}
+
+.blue-highlight {
+  color: #0052cc;
+}
+
+.hero-desc {
+  font-size: 1.15rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0 0 2.5rem;
+}
+
+.hero-cta-buttons {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.hero-cta-btn {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.playstore-btn {
+  background: #1e293b;
+  color: white;
+}
+
+.playstore-btn:hover {
+  background: #0f172a;
+  transform: translateY(-2px);
+}
+
+.admin-btn {
+  background: #0052cc;
+  color: white;
+}
+
+.admin-btn:hover {
+  background: #004099;
+  transform: translateY(-2px);
+}
+
+.admin-icon {
+  font-size: 1.75rem;
+}
+
+.btn-lbl {
+  display: flex;
+  flex-direction: column;
+}
+
+.lbl-small {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  font-weight: 700;
+}
+
+.lbl-large {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.hero-stats-mini {
+  display: flex;
+  gap: 3rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 2rem;
+  width: 100%;
+}
+
+.mini-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-num {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #0052cc;
+}
+
+.stat-lbl {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Device Mockup Visuals */
+.phone-frame {
+  background: #0f172a;
+  padding: 12px;
+  border-radius: 40px;
+  box-shadow: 0 25px 50px -12px rgba(0, 82, 204, 0.25);
+  max-width: 320px;
+  margin: 0 auto;
+  border: 4px solid #334155;
+}
+
+.phone-screen {
+  background: #f8fafc;
+  border-radius: 32px;
+  overflow: hidden;
+  height: 520px;
+  display: flex;
+  flex-direction: column;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.app-header {
+  background: #0052cc;
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+}
+
+.app-balance-card {
+  background: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%);
+  color: white;
+  margin: 1rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-glow {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.bal-title {
+  opacity: 0.8;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.bal-value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  opacity: 0.9;
+}
+
+.status-active {
+  color: #00e676;
+  font-weight: bold;
+}
+
+.app-quick-actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1rem;
+}
+
+.quick-btn {
+  flex: 1;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border: 1px solid #e2e8f0;
+}
+
+.quick-btn.active {
+  background: #e6f0ff;
+  color: #0052cc;
+  border-color: #bfdbfe;
+}
+
+.app-services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.app-service-item {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  gap: 0.25rem;
+}
+
+.app-service-item span {
+  color: #475569;
+}
+
+.app-recent-txn {
+  margin-top: auto;
+  background: white;
+  padding: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.txn-title {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #64748b;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.txn-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.text-green {
+  color: #2e7d32;
+}
+
+/* Services Showcase */
+.services-showcase {
+  padding: 5rem 0;
+  border-top: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+.services-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.service-show-card {
+  background: white;
+  padding: 2.5rem 2rem;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+
+.service-show-card:hover {
+  transform: translateY(-4px);
+  border-color: #0052cc;
+  box-shadow: 0 10px 15px -3px rgba(0, 82, 204, 0.05);
+}
+
+.service-show-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.service-show-card h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.75rem;
+}
+
+.service-show-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Commission Section */
+.commission-section {
+  padding: 5rem 0;
+  border-top: 1px solid #e2e8f0;
+  width: 100%;
+}
+
+.commission-card-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 3rem;
+}
+
+.commission-intro-card {
+  background: #002244;
+  color: white;
+  padding: 3rem 2.5rem;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-accent {
+  color: #ffab00;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.commission-intro-card h3 {
+  font-size: 1.85rem;
+  font-weight: 900;
+  margin: 0 0 1rem;
+}
+
+.commission-intro-card p {
+  opacity: 0.85;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0 0 2rem;
+}
+
+.perks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.perk-row {
+  font-weight: bold;
+  color: #ffab00;
+}
+
+.commission-table-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.commission-table-card h3 {
+  font-size: 1.35rem;
+  margin: 0 0 1.5rem;
+  color: #0f172a;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.com-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.com-table th,
+.com-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.com-table th {
+  color: #64748b;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.com-table td {
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+/* Main Content elements */
 .main-content {
   width: 100%;
   max-width: 1200px;
@@ -971,21 +1594,6 @@ export default {
   color: white;
 }
 
-.badge-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.get-it {
-  font-size: 0.6rem;
-  opacity: 0.7;
-}
-
-.g-play {
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
 .features-panel {
   display: flex;
   flex-direction: column;
@@ -1323,6 +1931,21 @@ export default {
   .admin-portal-access {
     justify-content: center;
   }
+  .hero-section {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 3rem;
+  }
+  .hero-content {
+    align-items: center;
+  }
+  .hero-cta-buttons {
+    justify-content: center;
+  }
+  .hero-stats-mini {
+    justify-content: center;
+    gap: 1.5rem;
+  }
   .security-banner {
     padding: 3rem 1.5rem;
   }
@@ -1332,6 +1955,9 @@ export default {
     background: rgba(0, 34, 68, 0.65);
     padding: 1.5rem;
     border-radius: 16px;
+  }
+  .commission-card-wrapper {
+    grid-template-columns: 1fr;
   }
   .steps-container {
     flex-direction: column;
