@@ -7,6 +7,8 @@ const { query, transaction, initDb } = require('./db');
 const { initCache, getCache, setCache, invalidateCache } = require('./cache');
 
 const app = express();
+console.log("LOADED BACKEND INDEX.JS");
+console.log("FILE:", __filename);
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
