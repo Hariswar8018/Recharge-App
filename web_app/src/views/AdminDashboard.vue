@@ -4,7 +4,7 @@
     <aside class="sidebar">
       <div class="sidebar-brand">
         <div class="brand-icon">N</div>
-        <span class="brand-text">NICE ADMIN</span>
+        <span class="brand-text">ADMIN</span>
       </div>
       
       <div class="sidebar-menu">
@@ -45,23 +45,22 @@
 
     <!-- Main Section -->
     <div class="main-section">
-      <!-- Topbar Header -->
+      <!-- Topbar Header (Unified with logout and message action) -->
       <header class="topbar">
-        <div class="topbar-search">
-          <span class="search-icon">🔍</span>
-          <input type="text" placeholder="Search..." />
+        <div class="topbar-left-placeholder">
+          <!-- Left spacing to maintain layout since search bar is removed -->
         </div>
         <div class="topbar-actions">
-          <span class="action-icon">🇮🇳</span>
-          <span class="action-icon">✉️</span>
-          <div class="notification-bell">
-            <span class="action-icon">🔔</span>
-            <span class="bell-badge">3</span>
-          </div>
+          <span class="action-icon" @click="currentTab = 'notifications'" title="Send Broadcast Notification">✉️</span>
+          
           <div class="admin-profile-badge">
             <div class="avatar">{{ adminEmail[0].toUpperCase() }}</div>
             <span class="profile-name">{{ adminEmail.split('@')[0] }}</span>
           </div>
+
+          <button @click="handleLogout" class="topbar-logout-btn">
+            Logout 📤
+          </button>
         </div>
       </header>
 
@@ -72,36 +71,32 @@
           <div class="breadcrumbs">Dashboard &gt; {{ tabTitle }}</div>
         </div>
 
-        <!-- System & API Operational Status Banner -->
-        <section v-if="currentTab === 'dashboard'" class="op-status-card">
-          <div class="op-card-header">
+        <!-- System & API Operational Status Cards (Color borders & Refresh button) -->
+        <section v-if="currentTab === 'dashboard'" class="op-status-section-new">
+          <div class="op-card-header-new">
             <h4>🖥️ Systems & API Operational Status</h4>
-            <button @click="checkGatewayStatus" class="refresh-op-btn">Refresh</button>
+            <button @click="checkGatewayStatus" class="refresh-op-btn-new">🔄 Refresh Status</button>
           </div>
-          <div class="op-grid">
-            <div class="op-item">
+          <div class="op-grid-new">
+            <!-- Database Connection Card -->
+            <div class="op-card-item" :class="gatewayStatus.database === 'Operational' ? 'green-card' : 'red-card'">
               <span class="op-lbl">Database Connection</span>
-              <span class="op-status-tag" :class="gatewayStatus.database === 'Operational' ? 'green' : 'red'">
-                {{ gatewayStatus.database }}
-              </span>
+              <strong class="op-val">{{ gatewayStatus.database }}</strong>
             </div>
-            <div class="op-item">
-              <span class="op-lbl">Recharge API</span>
-              <span class="op-status-tag" :class="gatewayStatus.app_api === 'Operational' ? 'green' : 'red'">
-                {{ gatewayStatus.app_api }}
-              </span>
+            <!-- Recharge API Card -->
+            <div class="op-card-item" :class="gatewayStatus.app_api === 'Operational' ? 'green-card' : 'red-card'">
+              <span class="op-lbl">Recharge API Server</span>
+              <strong class="op-val">{{ gatewayStatus.app_api }}</strong>
             </div>
-            <div class="op-item">
-              <span class="op-lbl">Scriza Gateway</span>
-              <span class="op-status-tag" :class="gatewayStatus.scriza_api && gatewayStatus.scriza_api.includes('Operational') ? 'green' : 'orange'">
-                {{ gatewayStatus.scriza_api }}
-              </span>
+            <!-- Scriza Gateway Card -->
+            <div class="op-card-item" :class="gatewayStatus.scriza_api && gatewayStatus.scriza_api.includes('Operational') ? 'green-card' : 'orange-card'">
+              <span class="op-lbl">Scriza Gateway API</span>
+              <strong class="op-val">{{ gatewayStatus.scriza_api }}</strong>
             </div>
-            <div class="op-item">
-              <span class="op-lbl">Razorpay Gateway</span>
-              <span class="op-status-tag" :class="gatewayStatus.razorpay_gateway && gatewayStatus.razorpay_gateway.includes('Operational') ? 'green' : 'orange'">
-                {{ gatewayStatus.razorpay_gateway }}
-              </span>
+            <!-- Razorpay Gateway Card -->
+            <div class="op-card-item" :class="gatewayStatus.razorpay_gateway && gatewayStatus.razorpay_gateway.includes('Operational') ? 'green-card' : 'orange-card'">
+              <span class="op-lbl">Razorpay Gateway API</span>
+              <strong class="op-val">{{ gatewayStatus.razorpay_gateway }}</strong>
             </div>
           </div>
         </section>
@@ -113,58 +108,7 @@
         <div v-else class="tab-content-area">
           <!-- TAB 1: DASHBOARD -->
           <div v-if="currentTab === 'dashboard'" class="dashboard-panes">
-            <!-- Top Stats Grid -->
-            <div class="stats-grid">
-              <!-- Total Users -->
-              <div class="nice-stat-card border-blue">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">👤</span>
-                    <span class="stat-card-title">Total Users</span>
-                  </div>
-                  <span class="stat-card-val">{{ stats.totalUsers }}</span>
-                </div>
-                <div class="progress-bar bg-blue"></div>
-              </div>
-
-              <!-- Main Wallet -->
-              <div class="nice-stat-card border-green">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">💼</span>
-                    <span class="stat-card-title">Main Wallet</span>
-                  </div>
-                  <span class="stat-card-val">₹{{ stats.totalMainWallet.toLocaleString('en-IN') }}</span>
-                </div>
-                <div class="progress-bar bg-green"></div>
-              </div>
-
-              <!-- Fund Wallet -->
-              <div class="nice-stat-card border-purple">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">📥</span>
-                    <span class="stat-card-title">Fund Wallet</span>
-                  </div>
-                  <span class="stat-card-val">₹{{ stats.totalFundWallet.toLocaleString('en-IN') }}</span>
-                </div>
-                <div class="progress-bar bg-purple"></div>
-              </div>
-
-              <!-- Total Transactions -->
-              <div class="nice-stat-card border-orange">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">📈</span>
-                    <span class="stat-card-title">Total Txns</span>
-                  </div>
-                  <span class="stat-card-val">{{ stats.totalTransactions }}</span>
-                </div>
-                <div class="progress-bar bg-orange"></div>
-              </div>
-            </div>
-
-            <!-- Dashboard Analytics Grid -->
+            <!-- Dashboard Analytics Grid (Rendered FIRST / above stats cards!) -->
             <div class="analytics-grid">
               <!-- Left: Campaign Donut -->
               <div class="anal-card campaign-card">
@@ -243,6 +187,57 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <!-- Stats Grid (Rendered below analytics-grid charts!) -->
+            <div class="stats-grid">
+              <!-- Total Users -->
+              <div class="nice-stat-card border-blue">
+                <div class="stat-body">
+                  <div class="stat-left">
+                    <span class="icon-indicator">👤</span>
+                    <span class="stat-card-title">Total Users</span>
+                  </div>
+                  <span class="stat-card-val">{{ stats.totalUsers }}</span>
+                </div>
+                <div class="progress-bar bg-blue"></div>
+              </div>
+
+              <!-- Main Wallet -->
+              <div class="nice-stat-card border-green">
+                <div class="stat-body">
+                  <div class="stat-left">
+                    <span class="icon-indicator">💼</span>
+                    <span class="stat-card-title">Main Wallet</span>
+                  </div>
+                  <span class="stat-card-val">₹{{ stats.totalMainWallet.toLocaleString('en-IN') }}</span>
+                </div>
+                <div class="progress-bar bg-green"></div>
+              </div>
+
+              <!-- Fund Wallet -->
+              <div class="nice-stat-card border-purple">
+                <div class="stat-body">
+                  <div class="stat-left">
+                    <span class="icon-indicator">📥</span>
+                    <span class="stat-card-title">Fund Wallet</span>
+                  </div>
+                  <span class="stat-card-val">₹{{ stats.totalFundWallet.toLocaleString('en-IN') }}</span>
+                </div>
+                <div class="progress-bar bg-purple"></div>
+              </div>
+
+              <!-- Total Transactions -->
+              <div class="nice-stat-card border-orange">
+                <div class="stat-body">
+                  <div class="stat-left">
+                    <span class="icon-indicator">📈</span>
+                    <span class="stat-card-title">Total Txns</span>
+                  </div>
+                  <span class="stat-card-val">{{ stats.totalTransactions }}</span>
+                </div>
+                <div class="progress-bar bg-orange"></div>
               </div>
             </div>
 
@@ -461,7 +456,7 @@
             </div>
           </div>
 
-          <!-- NEW TAB: ALL TRANSACTIONS -->
+          <!-- TAB: ALL TRANSACTIONS -->
           <div v-if="currentTab === 'transactions'" class="transactions-pane">
             <div class="table-card">
               <div class="table-header-row">
@@ -501,7 +496,7 @@
             </div>
           </div>
 
-          <!-- NEW TAB: TEAMS VIEW -->
+          <!-- TAB: TEAMS VIEW -->
           <div v-if="currentTab === 'teams'" class="teams-pane">
             <div class="table-card" style="text-align: center; padding: 4rem;">
               <h2>👥 Downline Networks & Teams</h2>
@@ -509,7 +504,7 @@
             </div>
           </div>
 
-          <!-- NEW TAB: BROADCAST NOTIFICATION -->
+          <!-- TAB: BROADCAST NOTIFICATION -->
           <div v-if="currentTab === 'notifications'" class="notifications-pane">
             <div class="settings-nice-card" style="max-width: 600px; margin: 0 auto;">
               <h3>📢 Send Push Notification</h3>
@@ -533,7 +528,7 @@
             </div>
           </div>
 
-          <!-- TAB 5: UNIFIED SETTINGS (UPGRADED WITH RAZORPAY KEYS AND MARQUEES) -->
+          <!-- TAB: UNIFIED SETTINGS -->
           <div v-if="currentTab === 'settings'" class="settings-pane">
             <div class="settings-grid-pane">
               <!-- Change Password Card -->
@@ -1136,17 +1131,8 @@ export default {
   box-sizing: border-box;
 }
 
-.topbar-search {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.topbar-search input {
-  border: none;
-  outline: none;
-  font-size: 0.9rem;
-  color: #3e5569;
+.topbar-left-placeholder {
+  flex: 1;
 }
 
 .topbar-actions {
@@ -1156,26 +1142,32 @@ export default {
 }
 
 .action-icon {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   cursor: pointer;
-  opacity: 0.8;
+  opacity: 0.85;
+  transition: transform 0.2s;
 }
 
-.notification-bell {
-  position: relative;
-  cursor: pointer;
+.action-icon:hover {
+  transform: scale(1.1);
 }
 
-.bell-badge {
-  background: #3b82f6;
-  color: white;
-  font-size: 0.6rem;
+.topbar-logout-btn {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
   font-weight: bold;
-  padding: 0.1rem 0.35rem;
-  border-radius: 99px;
-  position: absolute;
-  top: -5px;
-  right: -5px;
+  font-size: 0.85rem;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.topbar-logout-btn:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
 }
 
 .admin-profile-badge {
@@ -1230,69 +1222,80 @@ export default {
   color: #94a3b8;
 }
 
-/* Operational status */
-.op-status-card {
-  background: white;
-  border-radius: 10px;
-  padding: 1.25rem;
-  box-shadow: 0 1px 15px rgba(0,0,0,0.03);
+/* Upgraded Operational status cards layout */
+.op-status-section-new {
   margin-bottom: 2rem;
 }
 
-.op-card-header {
+.op-card-header-new {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
-.op-card-header h4 {
+.op-card-header-new h4 {
   margin: 0;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #3e5569;
 }
 
-.refresh-op-btn {
-  background: #f8fafc;
+.refresh-op-btn-new {
+  background: #fff;
   border: 1px solid #cbd5e1;
   font-size: 0.75rem;
   font-weight: bold;
-  padding: 0.25rem 0.6rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.15s;
 }
 
-.op-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+.refresh-op-btn-new:hover {
+  background: #f1f5f9;
 }
 
-.op-item {
+.op-grid-new {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.op-card-item {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 15px rgba(0,0,0,0.02);
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.5rem;
-  font-size: 0.8rem;
+  box-sizing: border-box;
+}
+
+.op-card-item.green-card {
+  border-left: 4px solid #10b981;
+}
+
+.op-card-item.orange-card {
+  border-left: 4px solid #f59e0b;
+}
+
+.op-card-item.red-card {
+  border-left: 4px solid #ef4444;
 }
 
 .op-lbl {
+  font-size: 0.75rem;
   color: #64748b;
   font-weight: bold;
+  text-transform: uppercase;
 }
 
-.op-status-tag {
-  font-weight: bold;
-}
-
-.op-status-tag.green {
-  color: #10b981;
-}
-
-.op-status-tag.orange {
-  color: #f59e0b;
-}
-
-.op-status-tag.red {
-  color: #ef4444;
+.op-val {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #3e5569;
 }
 
 /* Nice Stats Card (underlined accent style) */
