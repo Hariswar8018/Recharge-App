@@ -498,7 +498,7 @@
             </div>
           </div>
 
-          <!-- TAB: BROADCAST NOTIFICATION (HORIZONTAL LAYOUT) -->
+          <!-- TAB: BROADCAST NOTIFICATION -->
           <div v-if="currentTab === 'notifications'" class="notifications-pane">
             <div class="settings-nice-card">
               <h3>📢 Send Push Notification</h3>
@@ -553,10 +553,31 @@
 
                   <!-- Right Column -->
                   <div class="form-column">
+                    <!-- Configured Marquee images List representation with delete triggers -->
                     <div class="nice-input-group">
-                      <label for="marqueeImages">Infinite Banner Marquee Images (comma-separated URLs)</label>
-                      <input id="marqueeImages" type="text" v-model="systemSettings.marquee_images" placeholder="e.g. /assets/image.png, /assets/image2.png" required />
+                      <label>Currently Configured Marquee Banner Images</label>
+                      <div v-if="marqueeImagesList.length === 0" style="color: #94a3b8; font-size: 0.85rem; padding: 0.5rem; background: #f8fafc; border-radius: 6px; border: 1px dashed #cbd5e1; text-align: center;">
+                        No images configured. Queue a new URL below.
+                      </div>
+                      <div v-else class="marquee-images-config-list">
+                        <div v-for="(imgUrl, idx) in marqueeImagesList" :key="idx" class="marquee-image-config-item">
+                          <img :src="imgUrl" class="config-thumb" @error="$event.target.src='https://placehold.co/60x30?text=Error'" />
+                          <span class="config-url" :title="imgUrl">{{ imgUrl }}</span>
+                          <button type="button" @click="removeMarqueeImage(idx)" class="btn-delete-img">&times;</button>
+                        </div>
+                      </div>
                     </div>
+
+                    <!-- Input block to append single image queue entries -->
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="newImageUrl">Queue New Marquee Image URL</label>
+                      <div style="display: flex; gap: 0.5rem;">
+                        <input id="newImageUrl" type="text" v-model="newImageUrl" placeholder="Paste network image URL here..." style="flex: 1;" @keyup.enter="addMarqueeImage" />
+                        <button type="button" @click="addMarqueeImage" class="btn-add-img">Add Image</button>
+                      </div>
+                      <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Click 'Add Image' to append, then click 'Save' below to commit changes.</span>
+                    </div>
+
                     <div v-if="systemError" class="error-msg" style="margin-top: 1rem;">{{ systemError }}</div>
                     <div v-if="systemSuccess" class="success-msg" style="margin-top: 1rem;">{{ systemSuccess }}</div>
                     <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn" style="width: 100%; margin-top: 2rem;">
@@ -569,7 +590,7 @@
             </div>
           </div>
 
-          <!-- TAB: SHARED VARIABLES (HORIZONTAL LAYOUT) -->
+          <!-- TAB: SHARED VARIABLES -->
           <div v-if="currentTab === 'shared_variable'" class="shared-variable-pane">
             <div class="settings-nice-card">
               <h3>🔗 Shared Variables & Gateway Keys</h3>
@@ -629,7 +650,7 @@
             </div>
           </div>
 
-          <!-- TAB: CHANGE PASSWORD (HORIZONTAL LAYOUT) -->
+          <!-- TAB: CHANGE PASSWORD -->
           <div v-if="currentTab === 'settings'" class="settings-pane">
             <div class="settings-nice-card">
               <h3>Change Admin Password</h3>
@@ -720,6 +741,8 @@ export default {
       loadingSystem: false,
       systemError: '',
       systemSuccess: '',
+      newImageUrl: '',
+      marqueeImagesList: [],
       systemSettings: {
         min_wallet_balance: '50.00',
         maintenance_mode: 'false',
@@ -797,6 +820,15 @@ export default {
       if (this.$route.path === '/admin-settings' && !['uiux', 'shared_variable'].includes(this.currentTab)) {
         this.currentTab = 'settings';
       }
+    },
+    addMarqueeImage() {
+      if (!this.newImageUrl.trim()) return;
+      const urls = this.newImageUrl.split(',').map(s => s.trim()).filter(Boolean);
+      this.marqueeImagesList.push(...urls);
+      this.newImageUrl = '';
+    },
+    removeMarqueeImage(index) {
+      this.marqueeImagesList.splice(index, 1);
     },
     async checkGatewayStatus() {
       const token = localStorage.getItem('adminToken');
@@ -913,6 +945,7 @@ export default {
         this.systemSettings.marquee_images = data.marquee_images || '';
         this.systemSettings.maintenance_mode = data.maintenance_mode || 'false';
         this.systemSettings.maintenance_mode_bool = data.maintenance_mode === 'true';
+        this.marqueeImagesList = (data.marquee_images || '').split(',').map(s => s.trim()).filter(Boolean);
       } catch (err) {
         console.error(err);
       }
@@ -923,6 +956,7 @@ export default {
       this.loadingSystem = true;
       const token = localStorage.getItem('adminToken');
       this.systemSettings.maintenance_mode = this.systemSettings.maintenance_mode_bool ? 'true' : 'false';
+      this.systemSettings.marquee_images = this.marqueeImagesList.join(',');
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/admin/settings`, {
@@ -2052,5 +2086,82 @@ export default {
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: bold;
+}
+
+/* Custom configured marquee images styling */
+.marquee-images-config-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.5rem;
+  background: #f8fafc;
+}
+
+.marquee-image-config-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: white;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.config-thumb {
+  width: 50px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 3px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+.config-url {
+  flex: 1;
+  font-size: 0.8rem;
+  color: #3e5569;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-delete-img {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: none;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.btn-delete-img:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-add-img {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0 1.25rem;
+  font-weight: bold;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-add-img:hover {
+  opacity: 0.9;
 }
 </style>
