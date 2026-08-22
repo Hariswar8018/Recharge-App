@@ -1,20 +1,18 @@
 ---
 deployment:
   tasks:
-    # -------------------------
-    # Frontend
-    # -------------------------
-    - export WEBPATH=/home/wpzumbof/repositories/Recharge/web_app
-    - export DEPLOYPATH=/home/wpzumbof/public_html/
+    - export REPOPATH=/home/wpzumbof/repositories/Recharge
+    - export WEBPATH=/home/wpzumbof/public_html
+    - export BACKENDPATH=/home/wpzumbof/backend
+    - export NPM=/home/wpzumbof/nodevenv/backend/20/bin/npm
 
-    - /bin/mkdir -p $DEPLOYPATH
-    - /bin/bash -c "cd $WEBPATH && npm install --include=dev && npm run build"
-    - /bin/cp -R $WEBPATH/dist/. $DEPLOYPATH
+    # Build Vue frontend
+    - /bin/bash -c "cd $REPOPATH/web_app && $NPM ci --include=dev && $NPM run build"
 
-    # -------------------------
-    # Backend
-    # -------------------------
-    - export BACKENDPATH=/home/wpzumbof/backend/
+    # Deploy Vue frontend
+    - /bin/mkdir -p $WEBPATH
+    - /bin/cp -R $REPOPATH/web_app/dist/. $WEBPATH/
 
+    # Deploy Node.js backend
     - /bin/mkdir -p $BACKENDPATH
-    - /bin/cp -R /home/wpzumbof/repositories/Recharge/backend/. $BACKENDPATH
+    - /bin/cp -R $REPOPATH/backend/. $BACKENDPATH/
