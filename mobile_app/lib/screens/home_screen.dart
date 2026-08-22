@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/app_theme.dart';
 import '../services/api_service.dart';
-import '../api.dart';
 import '../widgets/background_container.dart';
+import 'recharge_flow_screens.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,25 +20,10 @@ class _HomeScreenState extends State<HomeScreen> {
   String _status = "ACTIVE";
   bool _isLoading = true;
 
-  late Razorpay _razorpay;
-  String _activePaymentService = "";
-
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
-
-    // Initialize Razorpay SDK
-    _razorpay = Razorpay();
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
-  }
-
-  @override
-  void dispose() {
-    _razorpay.clear(); // Clear listeners
-    super.dispose();
   }
 
   Future<void> _loadUserProfile() async {
@@ -71,94 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
     await ApiService.logout();
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/login');
-  }
-
-  // --- RAZORPAY HANDLERS ---
-
-  void _triggerRazorpayCheckout(String serviceName) {
-    _activePaymentService = serviceName;
-    
-    var options = {
-      'key': Api().razorpayapi_key,
-      'amount': 10000, // Amount in paise (10000 paise = 100 INR)
-      'name': 'SR Digital Seva',
-      'description': '$serviceName Bill Payment',
-      'prefill': {
-        'contact': '8888888888',
-        'email': 'test@razorpay.com'
-      },
-      'external': {
-        'wallets': ['paytm']
-      }
-    };
-
-    try {
-      _razorpay.open(options);
-    } catch (e) {
-      debugPrint("Error opening Razorpay: $e");
-    }
-  }
-
-  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    setState(() => _isLoading = true);
-
-    // Sync sandbox payment: deduct ₹100 from Main Wallet in backend
-    await ApiService.triggerRazorpaySandboxPayment(-100.0, "$_activePaymentService Recharge", "MAIN");
-    await _loadUserProfile();
-
-    setState(() => _isLoading = false);
-
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: const [
-            Icon(Icons.check_circle, color: Colors.green),
-            SizedBox(width: 8),
-            Text("Payment Success", style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Text(
-          "Recharge payment of ₹100.00 completed successfully via Razorpay Sandbox.\n\nBill payment api not integrated.\nTxn ID: ${response.paymentId}",
-          style: const TextStyle(height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
-          )
-        ],
-      ),
-    );
-  }
-
-  void _handlePaymentError(PaymentFailureResponse response) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: const [
-            Icon(Icons.error_outline, color: Colors.red),
-            SizedBox(width: 8),
-            Text("Payment Failed", style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Text("Error Code: ${response.code}\nDescription: ${response.message}"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
-          )
-        ],
-      ),
-    );
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    debugPrint("External Wallet Selected: ${response.walletName}");
   }
 
   // --- URL LAUNCHER HELPER ---
@@ -674,7 +570,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildServiceGridItem(IconData icon, String label, Color color) {
     return InkWell(
-      onTap: () => _triggerRazorpayCheckout(label),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProviderSelectionScreen(serviceType: label),
+          ),
+        );
+      },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

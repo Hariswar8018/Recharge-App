@@ -1,0 +1,356 @@
+Now lets integrate recharge apis : 
+Welcome in Scriza Private Limited
+user-img
+0
+user-img
+ Dashboard
+ Report 
+ Payment 
+ Move To Wallet
+ Add Money
+Hi, Malladi Rajesh welcome back!
+Dashboard
+Prepaid And DTH
+Today Sale
+0.00
+Today Profit
+0.00
+Navigation
+Settings
+Provider List
+Prepaid And DTH
+Bill Payment
+Upi Transfer
+Verification Api
+Call Back Logs
+Get Provider
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+POST: https://auth.scrizapay.in/api/application/v1/get-provider
+Alert! Provider id also available in left side menu (provider list)
+Payment
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+number	Customer Number
+amount	Amount For Recharge
+provider_id	Provider id
+client_id	Your Side Uniq Id
+optional1	Optional Value
+optional2	Optional Value
+optional3	Optional Value
+optional4	Optional Value
+GET: https://auth.scrizapay.in/api/telecom/v1/payment?api_token=[api_token]&number=7989293968&amount=10&provider_id=1&client_id=12345
+Success Response : {"status":"success","message":"Dear Malladi Rajesh, Recharge Success Number: 7989293968 Operator: AIRTEL And Amount: 149, Your Remaining Balance is 17935.126 Thanks","operator_ref":"1246746281","payid":21}
+Failure Response : {"status":"failure","message":"Dear Malladi Rajesh, Recharge Failure Number: 7989293968 Operator: AIRTEL And Amount: 149, Your Remaining Balance is 17935.126 Thanks","operator_ref":"","payid":21}
+Pending Response : {"status":"pending","message":"Dear Malladi Rajesh, Recharge Success Number: 7989293968 Operator: AIRTEL And Amount: 149, Your Remaining Balance is 17935.126 Thanks","operator_ref":"","payid":21}
+if status is pending then we will send the actual status & operator ref id in the call back & you need to update the call back from the setting .
+Check Balance
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+GET: https://auth.scrizapay.in/api/telecom/v1/check-balance?api_token=[api_token]
+Response : {"status":"success","balance":{"normal_balance":"2,999.1"}}
+Check Status
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+client_id	your uniq id
+GET: https://auth.scrizapay.in/api/telecom/v1/check-status?api_token=[api_token]&client_id=[client_id]
+Success Response : {"status":"success","message":"success","transaction":{"id":12345,"provider":"VODAFONE","date":"2020-12-24 10:40:07","number":"7989293968","amount":"10.00","profit":"0.00","txnid":"","client_id":"12345","ip_address":"","status":"Success"}}
+Failure Response : {"status":"success","message":"success","transaction":{"id":12345,"provider":"VODAFONE","date":"2020-12-24 10:40:07","number":"7989293968","amount":"10.00","profit":"0.00","txnid":"","client_id":"12345","ip_address":"","status":"Failure"}}
+Pending Response : {"status":"success","message":"success","transaction":{"id":12345,"provider":"VODAFONE","date":"2020-12-24 10:40:07","number":"7989293968","amount":"10.00","profit":"0.00","txnid":"","client_id":"12345","ip_address":"","status":"Pending"}}
+12:13
+Saturday, August 22nd 2026
+
+Normal Balance
+340.95
+Lien Balance
+0.00
+Sms Balance
+0.00
+Aeps Balance
+0.00
+Copyright © 2020-2025 Scriza Private Limited. All rights reserved.  
+Welcome in Scriza Private Limited
+user-img
+0
+user-img
+ Dashboard
+ Report 
+ Payment 
+ Move To Wallet
+ Add Money
+Hi, Malladi Rajesh welcome back!
+Dashboard
+Bill Payment
+Today Sale
+0.00
+Today Profit
+0.00
+Navigation
+Settings
+Provider List
+Prepaid And DTH
+Bill Payment
+Upi Transfer
+Verification Api
+Call Back Logs
+Get Provider
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+POST: https://auth.scrizapay.in/api/application/v1/get-provider
+Alert! Provider id also available in left side menu (provider list)
+Provider Validation
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+provider_id	Provider id
+POST: https://auth.scrizapay.in/api/telecom/v1/provider-validation
+Success Response : {"status":"success","is_validation":1,"params":[{"name":"optional1","placeholder":"CA Number"}],"payment_modes":[{"mode":"Internet Banking"},{"mode":" Debit Card"},{"mode":" Credit Card"},{"mode":" Prepaid Card"},{"mode":" IMPS"},{"mode":" Cash"},{"mode":" UPI"},{"mode":" Wallet"},{"mode":" NEFT"}]}
+Bill Verification
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+provider_id	Provider id
+optional1	the data which will need to send in optional 1, that data you will get under the params of provider validation api
+optional2	the data which will need to send in optional 2, that data you will get under the params of provider validation api
+optional3	the data which will need to send in optional 3, that data you will get under the params of provider validation api
+POST: https://auth.scrizapay.in/api/telecom/v1/bill-verify
+Success Response : {"status":"success","provider_name":"MSEDC Limited - MAHARASHTRA","number":"4745","amount":"1300","name":"Malladi Rajesh","duedate":"2021-03-17","provider_id":"57","optional1":"4745","optional2":"7989293968","optional3":null,"optional4":12345}
+Payment
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+number	Customer Number
+amount	Amount For Recharge
+provider_id	Provider id
+client_id	Your Side Uniq Id
+optional1	the data which will need to send in optional 1, that data you will get under the params of provider validation api
+optional2	the data which will need to send in optional 2, that data you will get under the params of provider validation api
+optional3	the data which will need to send in optional 3, that data you will get under the params of provider validation api
+optional4	the data which will need to send in optional 4, that data you will get under the optional4 of bill verification api
+payment_mode	Payment Mode
+GET: https://auth.scrizapay.in/api/telecom/v1/payment
+Success Response : {"status":"success","message":"Dear Malladi Rajesh, Recharge Success Number: 7989293968 Operator: AIRTEL And Amount: 149, Your Remaining Balance is 17935.126 Thanks","operator_ref":"1246746281","payid":21}
+Failure Response : {"status":"failure","message":"Dear Malladi Rajesh, Recharge Failure Number: 7989293968 Operator: AIRTEL And Amount: 149, Your Remaining Balance is 17935.126 Thanks","operator_ref":"","payid":21}
+Pending Response : {"status":"pending","message":"Dear Malladi Rajesh, Recharge Success Number: 7989293968 Operator: AIRTEL And Amount: 149, Your Remaining Balance is 17935.126 Thanks","operator_ref":"","payid":21}
+if status is pending then we will send the actual status & operator ref id in the call back & you need to update the call back from the setting .
+Check Balance
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+GET: https://auth.scrizapay.in/api/telecom/v1/check-balance
+Response : {"status":"success","balance":{"normal_balance":"2,999.1"}}
+Check Status
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+client_id	your uniq id
+GET: https://auth.scrizapay.in/api/telecom/v1/check-status
+Success Response : {"status":"success","message":"success","transaction":{"id":12345,"provider":"VODAFONE","date":"2020-12-24 10:40:07","number":"7989293968","amount":"10.00","profit":"0.00","txnid":"","client_id":"12345","ip_address":"","status":"Success"}}
+Failure Response : {"status":"success","message":"success","transaction":{"id":12345,"provider":"VODAFONE","date":"2020-12-24 10:40:07","number":"7989293968","amount":"10.00","profit":"0.00","txnid":"","client_id":"12345","ip_address":"","status":"Failure"}}
+Pending Response : {"status":"success","message":"success","transaction":{"id":12345,"provider":"VODAFONE","date":"2020-12-24 10:40:07","number":"7989293968","amount":"10.00","profit":"0.00","txnid":"","client_id":"12345","ip_address":"","status":"Pending"}}
+12:14
+Saturday, August 22nd 2026
+
+Normal Balance
+340.95
+Lien Balance
+0.00
+Sms Balance
+0.00
+Aeps Balance
+0.00
+Copyright © 2020-2025 Scriza Private Limited. All rights reserved.
+ 
+Welcome in Scriza Private Limited
+user-img
+0
+user-img
+ Dashboard
+ Report 
+ Payment 
+ Move To Wallet
+ Add Money
+Hi, Malladi Rajesh welcome back!
+Dashboard
+Upi Transfer Docs
+Today Sale
+0.00
+Today Profit
+0.00
+Navigation
+Settings
+Provider List
+Prepaid And DTH
+Bill Payment
+Upi Transfer
+Verification Api
+Call Back Logs
+Transfer Api
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+upi_id	Upi id (Example : 7989293968@paytm)
+beneficiary_name	Upi Id Holder Name
+customer_mobile	Customer Mobile Number
+amount	Transfer Amount
+client_id	Your Side Uniq ID
+POST: https://auth.scrizapay.in/api/upi-transfer/v1/transfer-now
+Success Response : {"status":"success","message":"Dear Malladi Rajesh, Recharge Success UPI ID: 7989293968@paytm  Operator: Transfer Via Upi And Amount: 20, Your Remaining Balance is 606 Thanks","operator_ref":"1234567890","payid":2334}
+12:14
+Saturday, August 22nd 2026
+
+Normal Balance
+340.95
+Lien Balance
+0.00
+Sms Balance
+0.00
+Aeps Balance
+0.00
+Copyright © 2020-2025 Scriza Private Limited. All rights reserved.
+
+
+Welcome in Scriza Private Limited
+user-img
+0
+user-img
+ Dashboard
+ Report 
+ Payment 
+ Move To Wallet
+ Add Money
+Hi, Malladi Rajesh welcome back!
+Dashboard
+Upi Transfer Docs
+Today Sale
+0.00
+Today Profit
+0.00
+Navigation
+Settings
+Provider List
+Prepaid And DTH
+Bill Payment
+Upi Transfer
+Verification Api
+Call Back Logs
+Transfer Api
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+upi_id	Upi id (Example : 7989293968@paytm)
+beneficiary_name	Upi Id Holder Name
+customer_mobile	Customer Mobile Number
+amount	Transfer Amount
+client_id	Your Side Uniq ID
+POST: https://auth.scrizapay.in/api/upi-transfer/v1/transfer-now
+Success Response : {"status":"success","message":"Dear Malladi Rajesh, Recharge Success UPI ID: 7989293968@paytm  Operator: Transfer Via Upi And Amount: 20, Your Remaining Balance is 606 Thanks","operator_ref":"1234567890","payid":2334}
+12:15
+Saturday, August 22nd 2026
+
+Normal Balance
+340.95
+Lien Balance
+0.00
+Sms Balance
+0.00
+Aeps Balance
+0.00
+Copyright © 2020-2025 Scriza Private Limited. All rights reserved.
+  
+Welcome in Scriza Private Limited
+user-img
+0
+user-img
+ Dashboard
+ Report 
+ Payment 
+ Move To Wallet
+ Add Money
+Hi, Malladi Rajesh welcome back!
+Dashboard
+Verification Api
+Today Sale
+0.00
+Today Profit
+0.00
+Navigation
+Settings
+Provider List
+Prepaid And DTH
+Bill Payment
+Upi Transfer
+Verification Api
+Call Back Logs
+Bank Account Verification
+ATTRIBUTE	DESCRIPTIONS
+api_token	Api token provider by auth.scrizapay.in OR Click Here
+account_number	Bank Account Number
+ifsc_code	IFSC Code
+client_id	Your Side Unique ID
+POST: https://auth.scrizapay.in/api/verification-api/v1/bank-account-verification
+Success Response : {"status":"success","message":"Transaction Success.","data":{"name":"Malladi Rajesh","utr":"Malladi Rajesh","payid":11448}}
+12:15
+Saturday, August 22nd 2026
+
+Normal Balance
+340.95
+Lien Balance
+0.00
+Sms Balance
+0.00
+Aeps Balance
+0.00
+Copyright © 2020-2025 Scriza Private Limited. All rights reserved.  
+
+
+Welcome in Scriza Private Limited
+user-img
+0
+user-img
+ Dashboard
+ Report 
+ Payment 
+ Move To Wallet
+ Add Money
+Hi, Malladi Rajesh welcome back!
+Dashboard
+Developer Settings
+Today Sale
+0.00
+Today Profit
+0.00
+Navigation
+Settings
+Provider List
+Prepaid And DTH
+Bill Payment
+Upi Transfer
+Verification Api
+Call Back Logs
+Developer Settings
+API Token
+<secret>
+Don't Share token with Anybody !
+
+IP Address
+Request accepted only from Following IP's !
+
+103.160.107.175	
+Add Ip
+Enter New IP Addresses
+ie : 123.45.6.789 or dynamic
+
+Callback Url
+Callback Url
+Leave Empty to Cancel Callback ! , Url must start with http and should get HTTP 200 Response.
+
+Sample Response :
+https://www.yourdomain.com/callback?payid=1234&client_id=2121&operator_ref=1234567&status=success/failure
+
+12:15
+Saturday, August 22nd 2026
+
+Normal Balance
+340.95
+Lien Balance
+0.00
+Sms Balance
+0.00
+Aeps Balance
+0.00
+Copyright © 2020-2025 Scriza Private Limited. All rights reserved.
+ 
