@@ -263,7 +263,6 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.white),
-          centerTitle: true,
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -272,10 +271,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 32,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: Colors.black, width: 2),
                 ),
                 child: const Center(
-                  child: Text("S", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                  child: Text("S", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
               const SizedBox(width: 6),
@@ -283,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("SR DIGITAL SEVA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
+                  Text("SR DIGITAL SEVA", style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 13)),
                   Text("K E N D R A M", style: TextStyle(color: AppTheme.secondaryRed, fontWeight: FontWeight.bold, fontSize: 7, letterSpacing: 0.5)),
                 ],
               )
