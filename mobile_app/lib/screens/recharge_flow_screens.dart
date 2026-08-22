@@ -335,6 +335,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
     var options = {
       'key': Api.razorpayapi_key,
       'amount': (widget.amount * 100).toInt(), // paise
+      'currency': 'INR',
       'name': 'SR Digital Seva',
       'description': '${widget.providerName} Recharge',
       'prefill': {
@@ -377,8 +378,14 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Recharge Initiated", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+        title: Row(
+          children: const [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text("Recharge Initiated", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+          ],
+        ),
         content: Text(
           "Recharge transaction for ${widget.providerName} success!\n\nBill payment api not integrated.\nPay ID: ${response.paymentId}",
           style: const TextStyle(height: 1.4),
@@ -389,6 +396,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
               Navigator.pop(context); // Close dialog
               Navigator.popUntil(context, ModalRoute.withName('/home')); // Back to Home
             },
+            style: ElevatedButton.styleFrom(shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4)))),
             child: const Text("Go to Home"),
           )
         ],
@@ -411,10 +419,20 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Cancel Recharge?"),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+        title: Row(
+          children: const [
+            Icon(Icons.warning, color: Colors.orange),
+            SizedBox(width: 8),
+            Text("Cancel Recharge?"),
+          ],
+        ),
         content: const Text("Are you sure you want to abort the payment process?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("No"),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pop(context); // Close dialog

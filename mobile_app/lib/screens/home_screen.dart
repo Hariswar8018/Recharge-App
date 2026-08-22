@@ -4,6 +4,7 @@ import '../constants/app_theme.dart';
 import '../services/api_service.dart';
 import '../widgets/background_container.dart';
 import 'recharge_flow_screens.dart';
+import 'wallet_history_screens.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -70,83 +71,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // --- SETTINGS DIALOGS ---
-  void _showPasswordSecurityDialog() {
-    final oldPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Update Password", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: oldPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: "Old Password", hintText: "Enter old password"),
-            ),
-            TextField(
-              controller: newPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: "New Password", hintText: "Enter new password"),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Password updated successfully.")),
-              );
-            },
-            child: const Text("Update"),
-          )
-        ],
-      ),
-    );
-  }
-
-  void _showManageProfileDialog() {
-    final nameController = TextEditingController(text: _fullName);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Manage Profile", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: "Full Name"),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _fullName = nameController.text;
-              });
-              Navigator.pop(context);
-            },
-            child: const Text("Save"),
-          )
-        ],
-      ),
-    );
-  }
 
   void _showNotificationsDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Notification Preference", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+        title: Row(
+          children: const [
+            Icon(Icons.notifications_active, color: AppTheme.primaryBlue),
+            SizedBox(width: 8),
+            Text("Notification Preference", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue, fontSize: 16)),
+          ],
+        ),
         content: const Text("Would you like to enable push notifications for transactions?"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
@@ -260,10 +197,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         appBar: AppBar(
-          
           backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.black),
+          centerTitle: false,
+          titleSpacing: 0,
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -416,50 +354,56 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           // Separate Wallets Displays (Main Wallet & Fund Wallet)
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
-              ],
-              border: Border.all(color: AppTheme.cardLightBlue),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Main Wallet Column
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Main/Income Wallet", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text(
-                        "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
-                        style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 16, fontWeight: FontWeight.w900),
-                      ),
-                    ],
+          // Separate Wallets Displays (Main Wallet & Fund Wallet)
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/wallet-details').then((_) => _loadUserProfile());
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                ],
+                border: Border.all(color: AppTheme.cardLightBlue),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Main Wallet Column
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Main/Income Wallet", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(
+                          "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
+                          style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 16, fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Container(width: 1.5, height: 40, color: AppTheme.cardLightBlue),
-                const SizedBox(width: 12),
-                // Fund Wallet Column
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Fund Wallet", style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text(
-                        "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
-                        style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 16, fontWeight: FontWeight.w900),
-                      ),
-                    ],
+                  Container(width: 1.5, height: 40, color: AppTheme.cardLightBlue),
+                  const SizedBox(width: 12),
+                  // Fund Wallet Column
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Fund Wallet", style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(
+                          "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
+                          style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 16, fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -522,12 +466,31 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(width: 4, height: 16, color: AppTheme.primaryBlue),
-                  const SizedBox(width: 8),
-                  const Text(
-                    "Transaction History",
-                    style: TextStyle(color: AppTheme.textDarkBlue, fontSize: 15, fontWeight: FontWeight.w800),
+                  Row(
+                    children: [
+                      Container(width: 4, height: 16, color: AppTheme.primaryBlue),
+                      const SizedBox(width: 8),
+                      const Text(
+                        "Transaction History",
+                        style: TextStyle(color: AppTheme.textDarkBlue, fontSize: 15, fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/transaction-history');
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(50, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text(
+                      "See More",
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                    ),
                   ),
                 ],
               ),
@@ -607,40 +570,58 @@ class _HomeScreenState extends State<HomeScreen> {
     required String date,
     required bool isIncome,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isIncome ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: isIncome ? Colors.green : Colors.red, size: 16),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(type, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textDarkBlue)),
-                const SizedBox(height: 2),
-                Text(date, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-              ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TransactionReceiptScreen(
+              transaction: TransactionModel(
+                id: "mock_id",
+                type: type,
+                amount: amount,
+                date: date,
+                isIncome: isIncome,
+              ),
             ),
           ),
-          Text(
-            amount,
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 13,
-              color: isIncome ? Colors.green : AppTheme.textDarkBlue,
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isIncome ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: isIncome ? Colors.green : Colors.red, size: 16),
             ),
-          ),
-          const SizedBox(width: 4),
-          const Icon(Icons.chevron_right, color: Colors.grey, size: 16),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(type, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textDarkBlue)),
+                  const SizedBox(height: 2),
+                  Text(date, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                ],
+              ),
+            ),
+            Text(
+              amount,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+                color: isIncome ? Colors.green : AppTheme.textDarkBlue,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right, color: Colors.grey, size: 16),
+          ],
+        ),
       ),
     );
   }
@@ -809,6 +790,62 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Affiliate Referral Info Card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.cardLightBlue),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "YOUR REFERRAL PROGRAM",
+                  style: TextStyle(color: AppTheme.textDarkBlue, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.cardLightBlue.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          "https://srdigitalseva.com/join?ref=SRD9921",
+                          style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.copy, color: AppTheme.primaryBlue, size: 20),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Referral link copied to clipboard")),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.share, color: AppTheme.primaryBlue, size: 20),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Sharing referral link")),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -1046,8 +1083,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               children: [
-                _buildProfileMenuOption(Icons.person, "Manage Profile", "Update your personal details", onTap: _showManageProfileDialog),
-                _buildProfileMenuOption(Icons.security, "Password & Security", "Change password and secure your account", onTap: _showPasswordSecurityDialog),
+                _buildProfileMenuOption(Icons.person, "Manage Profile", "Update your personal details", onTap: () {
+                  Navigator.pushNamed(context, '/profile-details').then((val) {
+                    if (val != null) {
+                      setState(() {
+                        _fullName = val as String;
+                      });
+                    }
+                  });
+                }),
+                _buildProfileMenuOption(Icons.security, "Password & Security", "Change password and secure your account", onTap: () {
+                  Navigator.pushNamed(context, '/security-details');
+                }),
                 _buildProfileMenuOption(Icons.notifications_active, "Notifications", "Manage your notification preferences", onTap: _showNotificationsDialog),
                 _buildProfileMenuOption(Icons.info, "About Us", "Know more about SR Digital Seva Kendram", onTap: () => _openWebUrl("https://srdigitalseva.com")),
                 _buildProfileMenuOption(Icons.help_center, "Support", "Help & support center", onTap: () => _openWebUrl("https://srdigitalseva.com/contact")),
