@@ -262,7 +262,7 @@ export default {
         const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'x-app-token': 'my_secure_app_token_123'
+            'x-app-token': import.meta.env.VITE_APP_TOKEN || '495cd158fe203c3a19b2a60bdaa3c3ae29581042247c56aec2c1ee3d2bd82f01'
           }
         });
         const data = await response.json();
@@ -287,7 +287,7 @@ export default {
         const response = await fetch(`${API_BASE_URL}/api/admin/dashboard?page=${this.userPage}&limit=10`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'x-app-token': 'my_secure_app_token_123'
+            'x-app-token': import.meta.env.VITE_APP_TOKEN || '495cd158fe203c3a19b2a60bdaa3c3ae29581042247c56aec2c1ee3d2bd82f01'
           }
         });
         const data = await response.json();
@@ -304,7 +304,7 @@ export default {
         const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests`, {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'x-app-token': 'my_secure_app_token_123'
+            'x-app-token': import.meta.env.VITE_APP_TOKEN || '495cd158fe203c3a19b2a60bdaa3c3ae29581042247c56aec2c1ee3d2bd82f01'
           }
         });
         const data = await response.json();
@@ -321,7 +321,7 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'x-app-token': 'my_secure_app_token_123'
+            'x-app-token': import.meta.env.VITE_APP_TOKEN || '495cd158fe203c3a19b2a60bdaa3c3ae29581042247c56aec2c1ee3d2bd82f01'
           },
           body: JSON.stringify({ approve })
         });
