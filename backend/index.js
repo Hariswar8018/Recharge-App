@@ -375,6 +375,61 @@ app.post('/api/admin/settings', async (req, res) => {
   }
 });
 
+// GET Admin list
+app.get('/api/admin/list', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    const admins = await query('SELECT id, fullName, email, mobileNumber, status, createdAt FROM users WHERE role = "admin" ORDER BY id ASC');
+    res.json(admins);
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// GET Gateway & APIs Operational Status
+app.get('/api/admin/gateway-status', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+    // Check database connection
+    let dbStatus = 'Operational';
+    try {
+      await query('SELECT 1');
+    } catch (e) {
+      dbStatus = 'Offline';
+    }
+
+    // Check active modes
+    const rows = await query('SELECT * FROM system_settings');
+    const settings = {};
+    rows.forEach(r => { settings[r.key_name] = r.val_value; });
+
+    const scrizaMode = settings['scriza_api_mode'] || 'simulation';
+    const razorpayMode = settings['razorpay_api_mode'] || 'test';
+
+    res.json({
+      database: dbStatus,
+      app_api: 'Operational',
+      scriza_api: scrizaMode === 'production' ? 'Operational (Live)' : 'Simulation Active',
+      razorpay_gateway: razorpayMode === 'live' ? 'Operational (Live)' : 'Test Sandbox Active',
+      redis_cache: redisClient ? 'Operational' : 'Offline (In-Memory Fallback)'
+    });
+  } catch (err) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
 // Admin Dashboard stats & users list (Supports Redis caching and pagination)
 app.get('/api/admin/dashboard', async (req, res) => {
   const authHeader = req.headers['authorization'];
