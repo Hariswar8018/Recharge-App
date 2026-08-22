@@ -9,7 +9,16 @@ async function initCache() {
   const port = process.env.REDIS_PORT || 6379;
 
   redisClient = redis.createClient({
-    url: `redis://${host}:${port}`
+    url: `redis://${host}:${port}`,
+    socket: {
+      reconnectStrategy: (retries) => {
+        // Stop retrying reconnection after 2 attempts to prevent console log spam
+        if (retries >= 2) {
+          return false;
+        }
+        return 1000; // wait 1s before retry
+      }
+    }
   });
 
   redisClient.on('error', (err) => {
