@@ -3,8 +3,13 @@ import '../constants/app_theme.dart';
 
 class BackgroundContainer extends StatelessWidget {
   final Widget child;
+  final bool useSafeArea;
 
-  const BackgroundContainer({super.key, required this.child});
+  const BackgroundContainer({
+    super.key,
+    required this.child,
+    this.useSafeArea = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -64,9 +69,9 @@ class BackgroundContainer extends StatelessWidget {
               ),
             ),
           ),
-          SafeArea(
-            child: child,
-          ),
+          useSafeArea 
+              ? SafeArea(child: child) 
+              : child,
         ],
       ),
     );

@@ -173,209 +173,319 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // --- SETTINGS DIALOGS ---
+  void _showPasswordSecurityDialog() {
+    final oldPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Update Password", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: oldPasswordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: "Old Password", hintText: "Enter old password"),
+            ),
+            TextField(
+              controller: newPasswordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: "New Password", hintText: "Enter new password"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Password updated successfully.")),
+              );
+            },
+            child: const Text("Update"),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _showManageProfileDialog() {
+    final nameController = TextEditingController(text: _fullName);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Manage Profile", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: "Full Name"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _fullName = nameController.text;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _showNotificationsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Notification Preference", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue)),
+        content: const Text("Would you like to enable push notifications for transactions?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Yes")),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      drawer: Drawer(
-        elevation: 16,
-        child: Container(
-          color: Colors.white,
-          child: Column(
-            children: [
-              // Professional Drawer Header
-              UserAccountsDrawerHeader(
-                margin: EdgeInsets.zero,
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.blueGradient,
-                ),
-                accountName: Text(
-                  _fullName,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white),
-                ),
-                accountEmail: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+    return BackgroundContainer(
+      useSafeArea: false,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        drawer: Drawer(
+          elevation: 16,
+          child: Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                // Professional Drawer Header
+                UserAccountsDrawerHeader(
+                  margin: EdgeInsets.zero,
+                  decoration: const BoxDecoration(
+                    gradient: AppTheme.blueGradient,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  accountName: Text(
+                    _fullName,
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white),
+                  ),
+                  accountEmail: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.verified, color: Colors.greenAccent, size: 14),
+                        const SizedBox(width: 4),
+                        Text("Status: $_status", style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                  currentAccountPicture: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2.5),
+                    ),
+                    child: const CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.person, color: AppTheme.primaryBlue, size: 44),
+                    ),
+                  ),
+                ),
+
+                // Drawer Menu Options
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     children: [
-                      const Icon(Icons.verified, color: Colors.greenAccent, size: 14),
-                      const SizedBox(width: 4),
-                      Text("Status: $_status", style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                      _buildDrawerItem(Icons.home_outlined, "Home Portal", () {
+                        Navigator.pop(context);
+                        setState(() => _currentIndex = 0);
+                      }),
+                      _buildDrawerItem(Icons.business_center_outlined, "Business Hub", () {
+                        Navigator.pop(context);
+                        setState(() => _currentIndex = 1);
+                      }),
+                      _buildDrawerItem(Icons.group_outlined, "Team Network", () {
+                        Navigator.pop(context);
+                        setState(() => _currentIndex = 2);
+                      }),
+                      _buildDrawerItem(Icons.person_outline, "My Profile", () {
+                        Navigator.pop(context);
+                        setState(() => _currentIndex = 3);
+                      }),
+                      const Divider(color: AppTheme.cardLightBlue, thickness: 1.5, indent: 16, endIndent: 16),
+                      _buildDrawerItem(Icons.help_outline, "About Seva Kendram", () {
+                        Navigator.pop(context);
+                        _openWebUrl("https://srdigitalseva.com");
+                      }),
+                      _buildDrawerItem(Icons.support_agent_outlined, "Customer Support", () {
+                        Navigator.pop(context);
+                        _openWebUrl("https://srdigitalseva.com/contact");
+                      }),
                     ],
                   ),
                 ),
-                currentAccountPicture: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2.5),
+
+                // Sign Out at Bottom
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: ElevatedButton.icon(
+                    onPressed: _handleLogout,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade50,
+                      foregroundColor: Colors.red,
+                      elevation: 0,
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.logout),
+                    label: const Text("Sign Out", style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                  child: const CircleAvatar(
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person, color: AppTheme.primaryBlue, size: 44),
-                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Center(
+                  child: Text("S", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                 ),
               ),
-
-              // Drawer Menu Options
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  children: [
-                    _buildDrawerItem(Icons.home_outlined, "Home Portal", () {
-                      Navigator.pop(context);
-                      setState(() => _currentIndex = 0);
-                    }),
-                    _buildDrawerItem(Icons.business_center_outlined, "Business Hub", () {
-                      Navigator.pop(context);
-                      setState(() => _currentIndex = 1);
-                    }),
-                    _buildDrawerItem(Icons.group_outlined, "Team Network", () {
-                      Navigator.pop(context);
-                      setState(() => _currentIndex = 2);
-                    }),
-                    _buildDrawerItem(Icons.person_outline, "My Profile", () {
-                      Navigator.pop(context);
-                      setState(() => _currentIndex = 3);
-                    }),
-                    const Divider(color: AppTheme.cardLightBlue, thickness: 1.5, indent: 16, endIndent: 16),
-                    _buildDrawerItem(Icons.help_outline, "About Seva Kendram", () {
-                      Navigator.pop(context);
-                      _openWebUrl("https://srdigitalseva.com");
-                    }),
-                    _buildDrawerItem(Icons.support_agent_outlined, "Customer Support", () {
-                      Navigator.pop(context);
-                      _openWebUrl("https://srdigitalseva.com/contact");
-                    }),
-                  ],
-                ),
-              ),
-
-              // Sign Out at Bottom
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: ElevatedButton.icon(
-                  onPressed: _handleLogout,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade50,
-                    foregroundColor: Colors.red,
-                    elevation: 0,
-                    minimumSize: const Size(double.infinity, 48),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  icon: const Icon(Icons.logout),
-                  label: const Text("Sign Out", style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
+              const SizedBox(width: 6),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("SR DIGITAL SEVA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
+                  Text("K E N D R A M", style: TextStyle(color: AppTheme.secondaryRed, fontWeight: FontWeight.bold, fontSize: 7, letterSpacing: 0.5)),
+                ],
               )
             ],
           ),
-        ),
-      ),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        iconTheme: const IconThemeData(color: AppTheme.primaryBlue),
-        centerTitle: true,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.primaryBlue, width: 2),
-              ),
-              child: const Center(
-                child: Text("S", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 14)),
-              ),
-            ),
-            const SizedBox(width: 6),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          actions: [
+            Stack(
+              alignment: Alignment.center,
               children: [
-                Text("SR DIGITAL SEVA", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.w900, fontSize: 13)),
-                Text("K E N D R A M", style: TextStyle(color: AppTheme.secondaryRed, fontWeight: FontWeight.bold, fontSize: 7, letterSpacing: 0.5)),
+                IconButton(
+                  icon: const Icon(Icons.notifications, color: Colors.white),
+                  onPressed: () {},
+                ),
+                Positioned(
+                  right: 12,
+                  top: 12,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                  ),
+                )
               ],
             )
           ],
         ),
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications, color: AppTheme.primaryBlue),
-                onPressed: () {},
-              ),
-              Positioned(
-                right: 12,
-                top: 12,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                ),
-              )
-            ],
-          )
-        ],
-      ),
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
-          : Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  color: AppTheme.cardLightBlue.withOpacity(0.5),
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.volume_up, color: AppTheme.primaryBlue, size: 16),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Text(
-                            "Welcome to Affiliate Marketing | Grow your income with Smart Digital Services",
-                            style: TextStyle(color: AppTheme.primaryBlue, fontSize: 11, fontWeight: FontWeight.w600),
+        body: _isLoading 
+            ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
+            : Column(
+                children: [
+                  SafeArea(
+                    bottom: false,
+                    child: Container(
+                      width: double.infinity,
+                      color: Colors.white.withOpacity(0.9),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.volume_up, color: AppTheme.primaryBlue, size: 16),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Text(
+                                "Welcome to Affiliate Marketing | Grow your income with Smart Digital Services",
+                                style: TextStyle(color: AppTheme.primaryBlue, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: BackgroundContainer(
+                  Expanded(
                     child: SingleChildScrollView(
                       child: _buildTabContent(),
                     ),
                   ),
-                ),
+                ],
+              ),
+        // Premium Floating Curved Navigation Bar
+        bottomNavigationBar: Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.white,
+              selectedItemColor: AppTheme.primaryBlue,
+              unselectedItemColor: Colors.grey.shade400,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+              unselectedLabelStyle: const TextStyle(fontSize: 11),
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+                BottomNavigationBarItem(icon: Icon(Icons.business_center), label: "Business"),
+                BottomNavigationBarItem(icon: Icon(Icons.group), label: "Team"),
+                BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
               ],
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppTheme.primaryBlue,
-        unselectedItemColor: Colors.grey,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        unselectedLabelStyle: const TextStyle(fontSize: 12),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.business_center), label: "Business"),
-          BottomNavigationBarItem(icon: Icon(Icons.group), label: "Team"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
+          ),
+        ),
       ),
     );
   }
@@ -1033,9 +1143,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               children: [
-                _buildProfileMenuOption(Icons.person, "Manage Profile", "Update your personal details"),
-                _buildProfileMenuOption(Icons.security, "Password & Security", "Change password and secure your account"),
-                _buildProfileMenuOption(Icons.notifications_active, "Notifications", "Manage your notification preferences"),
+                _buildProfileMenuOption(Icons.person, "Manage Profile", "Update your personal details", onTap: _showManageProfileDialog),
+                _buildProfileMenuOption(Icons.security, "Password & Security", "Change password and secure your account", onTap: _showPasswordSecurityDialog),
+                _buildProfileMenuOption(Icons.notifications_active, "Notifications", "Manage your notification preferences", onTap: _showNotificationsDialog),
                 _buildProfileMenuOption(Icons.info, "About Us", "Know more about SR Digital Seva Kendram", onTap: () => _openWebUrl("https://srdigitalseva.com")),
                 _buildProfileMenuOption(Icons.help_center, "Support", "Help & support center", onTap: () => _openWebUrl("https://srdigitalseva.com/contact")),
                 _buildProfileMenuOption(Icons.power_settings_new, "Log out", "Sign out from your account", isLogout: true),
