@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export REPOPATH=/home/wpzumbof/repositories/Recharge-App
+    - export REPOPATH=/home/wpzumbof/repositories/Recharge
     - export WEBPATH=/home/wpzumbof/public_html
     - export BACKENDPATH=/home/wpzumbof/backend
 
