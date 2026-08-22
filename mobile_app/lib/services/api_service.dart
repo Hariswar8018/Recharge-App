@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_theme.dart';
@@ -56,6 +57,8 @@ class ApiService {
           'email': email,
           'mobileNumber': mobileNumber,
           'password': password,
+          'device_model': '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+          'app_version': '1.0.0',
         }),
       );
 
@@ -82,6 +85,8 @@ class ApiService {
         body: jsonEncode({
           'email': email,
           'password': password,
+          'device_model': '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+          'app_version': '1.0.0',
         }),
       );
 

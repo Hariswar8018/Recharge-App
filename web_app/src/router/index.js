@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LandingPage from '../views/LandingPage.vue'
 import AdminLogin from '../views/AdminLogin.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
-import AdminSettings from '../views/AdminSettings.vue'
 import ContactUs from '../views/ContactUs.vue'
 import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 
@@ -26,7 +25,7 @@ const routes = [
   {
     path: '/admin-settings',
     name: 'AdminSettings',
-    component: AdminSettings,
+    component: AdminDashboard,
     meta: { requiresAdmin: true }
   },
   {

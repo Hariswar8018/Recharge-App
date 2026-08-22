@@ -55,10 +55,16 @@ async function initDb() {
         main_wallet_balance DECIMAL(15, 2) DEFAULT 0.00,
         status VARCHAR(20) DEFAULT 'ACTIVE',
         role VARCHAR(20) DEFAULT 'user',
+        device_model VARCHAR(100) DEFAULT 'Unknown',
+        app_version VARCHAR(20) DEFAULT '1.0.0',
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_email (email)
       ) ENGINE=InnoDB;
     `);
+
+    // Dynamically upgrade existing tables
+    try { await query('ALTER TABLE users ADD COLUMN device_model VARCHAR(100) DEFAULT "Unknown"'); } catch(e){}
+    try { await query('ALTER TABLE users ADD COLUMN app_version VARCHAR(20) DEFAULT "1.0.0"'); } catch(e){}
 
     // Fund Requests Table
     await query(`

@@ -51,7 +51,7 @@ const verifyUserToken = (req, res, next) => {
 
 // Register User
 app.post('/api/auth/register', verifyAppToken, async (req, res) => {
-  const { fullName, email, mobileNumber, password } = req.body;
+  const { fullName, email, mobileNumber, password, device_model, app_version } = req.body;
   if (!fullName || !email || !mobileNumber || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
@@ -66,8 +66,8 @@ app.post('/api/auth/register', verifyAppToken, async (req, res) => {
     const passwordHash = bcrypt.hashSync(password, salt);
 
     await query(
-      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, fund_wallet_balance, main_wallet_balance) VALUES (?, ?, ?, ?, 0.00, 0.00)',
-      [fullName, email.toLowerCase(), mobileNumber, passwordHash]
+      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, fund_wallet_balance, main_wallet_balance, device_model, app_version) VALUES (?, ?, ?, ?, 0.00, 0.00, ?, ?)',
+      [fullName, email.toLowerCase(), mobileNumber, passwordHash, device_model || 'Unknown', app_version || '1.0.0']
     );
 
     // Invalidate cached dashboard metrics
@@ -81,7 +81,7 @@ app.post('/api/auth/register', verifyAppToken, async (req, res) => {
 
 // Login User
 app.post('/api/auth/login', verifyAppToken, async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, device_model, app_version } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
@@ -96,6 +96,14 @@ app.post('/api/auth/login', verifyAppToken, async (req, res) => {
     const isMatch = bcrypt.compareSync(password, user.passwordHash);
     if (!isMatch) {
       return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    // Update device stats on login
+    if (device_model || app_version) {
+      await query(
+        'UPDATE users SET device_model = ?, app_version = ? WHERE id = ?',
+        [device_model || 'Unknown', app_version || '1.0.0', user.id]
+      );
     }
 
     const token = jwt.sign(
@@ -468,7 +476,7 @@ app.get('/api/admin/dashboard', async (req, res) => {
     const offset = (page - 1) * limit;
 
     const usersList = await query(
-      'SELECT id, fullName, email, mobileNumber, fund_wallet_balance, main_wallet_balance, status, createdAt FROM users WHERE role = "user" ORDER BY id DESC LIMIT ? OFFSET ?',
+      'SELECT id, fullName, email, mobileNumber, fund_wallet_balance, main_wallet_balance, status, device_model, app_version, createdAt FROM users WHERE role = "user" ORDER BY id DESC LIMIT ? OFFSET ?',
       [limit, offset]
     );
 
