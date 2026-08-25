@@ -211,11 +211,45 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<bool?> _showExitConfirmationDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Exit App", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text("Are you sure you want to exit EarnFarm?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("No"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryRed,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text("Yes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BackgroundContainer(
-      useSafeArea: false,
-      child: Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) return;
+        final shouldPop = await _showExitConfirmationDialog(context);
+        if (shouldPop == true) {
+          SystemNavigator.pop();
+        }
+      },
+      child: BackgroundContainer(
+        useSafeArea: false,
+        child: Scaffold(
         backgroundColor: Colors.transparent,
         drawer: Drawer(
           elevation: 16,
