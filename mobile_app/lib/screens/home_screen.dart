@@ -441,10 +441,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(width: 8),
                           const Expanded(
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
+                            child: MarqueeWidget(
+                              animationDuration: Duration(seconds: 12),
                               child: Text(
-                                "Welcome to Affiliate Marketing | Grow your income with Smart Digital Services",
+                                "Welcome to Affiliate Marketing | Grow your income with Smart Digital Services          ",
                                 style: TextStyle(
                                   color: AppTheme.primaryBlue,
                                   fontSize: 11,
@@ -2276,6 +2276,73 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
       onTap: onTap ?? (isLogout ? _handleLogout : () {}),
+    );
+  }
+}
+
+class MarqueeWidget extends StatefulWidget {
+  final Widget child;
+  final Duration animationDuration;
+  final Duration backDuration;
+
+  const MarqueeWidget({
+    super.key,
+    required this.child,
+    this.animationDuration = const Duration(milliseconds: 10000),
+    this.backDuration = const Duration(milliseconds: 800),
+  });
+
+  @override
+  State<MarqueeWidget> createState() => _MarqueeWidgetState();
+}
+
+class _MarqueeWidgetState extends State<MarqueeWidget> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scroll());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scroll() async {
+    while (_scrollController.hasClients) {
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (_scrollController.hasClients) {
+        final maxExtent = _scrollController.position.maxScrollExtent;
+        if (maxExtent > 0) {
+          await _scrollController.animateTo(
+            maxExtent,
+            duration: widget.animationDuration,
+            curve: Curves.linear,
+          );
+          await Future.delayed(const Duration(milliseconds: 1000));
+          if (_scrollController.hasClients) {
+            await _scrollController.animateTo(
+              0.0,
+              duration: widget.backDuration,
+              curve: Curves.easeOut,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      child: widget.child,
     );
   }
 }

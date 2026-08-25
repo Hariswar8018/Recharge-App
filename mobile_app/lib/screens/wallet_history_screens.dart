@@ -31,6 +31,9 @@ class TransactionReceiptScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isIncome = transaction.isIncome;
+    final String status = transaction.status;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6FA),
       appBar: AppBar(
@@ -58,22 +61,45 @@ class TransactionReceiptScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Success Badge
+                // Icon Badge (Different colors & symbols for Credit/Debit)
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: transaction.status == "Success" ? Colors.green.shade50 : Colors.red.shade50,
+                  backgroundColor: status != "Success"
+                      ? Colors.red.shade50
+                      : (isIncome ? Colors.green.shade50 : AppTheme.primaryBlue.withOpacity(0.08)),
                   child: Icon(
-                    transaction.status == "Success" ? Icons.check_circle : Icons.error,
-                    color: transaction.status == "Success" ? Colors.green : Colors.red,
-                    size: 40,
+                    status != "Success"
+                        ? Icons.error_outline
+                        : (isIncome ? Icons.arrow_downward : Icons.arrow_upward),
+                    color: status != "Success"
+                        ? Colors.red
+                        : (isIncome ? Colors.green : AppTheme.primaryBlue),
+                    size: 34,
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text("Payment Successful", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue)),
+                Text(
+                  status != "Success"
+                      ? "Transaction Failed"
+                      : (isIncome ? "Deposit Successful" : "Payment / Debit Successful"),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: status != "Success"
+                        ? Colors.red
+                        : (isIncome ? Colors.green : AppTheme.textDarkBlue),
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text(
-                  transaction.amount,
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.primaryBlue),
+                  (isIncome ? "+" : "-") + "₹${transaction.amount}",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: status != "Success"
+                        ? Colors.grey
+                        : (isIncome ? Colors.green : AppTheme.textDarkBlue),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 const Divider(color: AppTheme.cardLightBlue, height: 1),
@@ -83,8 +109,11 @@ class TransactionReceiptScreen extends StatelessWidget {
                 _buildReceiptRow("Transaction ID", transaction.reference),
                 _buildReceiptRow("Service/Type", transaction.type),
                 _buildReceiptRow("Date & Time", transaction.date),
-                _buildReceiptRow("Flow", transaction.isIncome ? "Wallet Credit (+)" : "Wallet Debit (-)"),
-                _buildReceiptRow("Status", transaction.status),
+                _buildReceiptRow(
+                  "Flow Direction",
+                  isIncome ? "Credit (Incoming to Wallet)" : "Debit (Outgoing from Wallet)",
+                ),
+                _buildReceiptRow("Status", status),
 
                 const SizedBox(height: 24),
                 const Divider(color: AppTheme.cardLightBlue, height: 1),
