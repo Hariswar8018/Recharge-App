@@ -1101,12 +1101,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               _buildServiceGridItem(Icons.security, "Insurance", Colors.indigo),
               _buildServiceGridItem(
-                Icons.water_drop,
-                "Water Bill",
-                Colors.lightBlue,
+                Icons.local_fire_department,
+                "Gas Cylinder",
+                Colors.red,
               ),
-              _buildServiceGridItem(Icons.receipt, "Postpaid", Colors.brown),
-              _buildServiceGridItem(Icons.apps, "More", Colors.grey),
+              _buildServiceGridItem(Icons.play_arrow, "Google Play", Colors.green),
+              _buildServiceGridItem(Icons.credit_card, "Credit Card", Colors.amber),
             ],
           ),
 
@@ -1222,6 +1222,35 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildServiceGridItem(IconData icon, String label, Color color) {
+    String? assetPath;
+    switch (label.toLowerCase()) {
+      case "prepaid":
+        assetPath = "assets/logos/phone_recharge.jpg";
+        break;
+      case "electricity":
+        assetPath = "assets/logos/electrcity.jpg";
+        break;
+      case "dth":
+        assetPath = "assets/logos/dth.jpg";
+        break;
+      case "fasttag":
+        assetPath = "assets/logos/fast_track.jpg";
+        break;
+      case "insurance":
+        assetPath = "assets/logos/insurance.jpg";
+        break;
+      case "google play":
+        assetPath = "assets/logos/google_play.jpg";
+        break;
+      case "credit card":
+        assetPath = "assets/logos/credit_card.jpg";
+        break;
+      case "gas cylinder":
+      case "cylinder":
+        assetPath = "assets/logos/cylinder.jpg";
+        break;
+    }
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -1235,12 +1264,21 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: assetPath != null ? const EdgeInsets.all(4) : const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: color.withOpacity(0.08),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: assetPath != null
+                ? ClipOval(
+                    child: Image.asset(
+                      assetPath,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
           Text(
