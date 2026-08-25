@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _activeCycleId = "";
           _membersCount = 0;
         }
-        _referralLink = "https://earnfarm.com/join?ref=$_userId";
+        _referralLink = "https://earnfarm.com/join?ref=EARNKARO97US77$_userId";
         _isLoading = false;
       });
     } else {
@@ -2133,13 +2133,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         "Main Balance",
                         "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
                         Icons.account_balance_wallet,
+                        onTap: () => Navigator.pushNamed(context, '/wallet-details').then((_) => _loadUserProfile()),
                       ),
                       Container(
                         width: 1,
                         height: 36,
                         color: AppTheme.cardLightBlue,
                       ),
-                      _buildProfileSubMetric("Team Size", "99", Icons.group),
+                      _buildProfileSubMetric(
+                        "Team Size",
+                        "${_teamMembers.length}",
+                        Icons.group,
+                        onTap: () => setState(() => _currentIndex = 2),
+                      ),
                       Container(
                         width: 1,
                         height: 36,
@@ -2149,6 +2155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         "Fund Balance",
                         "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
                         Icons.wallet_giftcard,
+                        onTap: () => Navigator.pushNamed(context, '/wallet-details').then((_) => _loadUserProfile()),
                       ),
                     ],
                   ),
@@ -2198,6 +2205,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: _showNotificationsDialog,
                 ),
                 _buildProfileMenuOption(
+                  Icons.share,
+                  "Refer & Earn",
+                  "Share app with friends and earn ₹300.00",
+                  onTap: _handleShareReferral,
+                ),
+                _buildProfileMenuOption(
                   Icons.info,
                   "About Us",
                   "Know more about SR Digital Seva Kendram",
@@ -2224,29 +2237,36 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProfileSubMetric(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: AppTheme.primaryBlue, size: 18),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppTheme.textGray,
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
+  Widget _buildProfileSubMetric(String label, String value, IconData icon, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Column(
+          children: [
+            Icon(icon, color: AppTheme.primaryBlue, size: 18),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppTheme.textGray,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                color: AppTheme.primaryBlue,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppTheme.primaryBlue,
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
+      ),
     );
   }
 

@@ -296,6 +296,7 @@ class WalletDetailsScreen extends StatefulWidget {
 class _WalletDetailsScreenState extends State<WalletDetailsScreen> {
   double _mainBalance = 6700.0;
   double _fundBalance = 1200.0;
+  int _teamCount = 0;
   bool _isLoading = true;
 
   @override
@@ -306,15 +307,20 @@ class _WalletDetailsScreenState extends State<WalletDetailsScreen> {
 
   Future<void> _loadWalletData() async {
     final response = await ApiService.getProfile();
+    final teamRes = await ApiService.getTeam();
     if (response['success']) {
       final user = response['user'];
       setState(() {
         _mainBalance = double.tryParse(user['main_wallet_balance']?.toString() ?? "6700.0") ?? 6700.0;
         _fundBalance = double.tryParse(user['fund_wallet_balance']?.toString() ?? "1200.0") ?? 1200.0;
+        _teamCount = teamRes.length;
         _isLoading = false;
       });
     } else {
-      setState(() => _isLoading = false);
+      setState(() {
+        _teamCount = teamRes.length;
+        _isLoading = false;
+      });
     }
   }
 
@@ -411,7 +417,7 @@ class _WalletDetailsScreenState extends State<WalletDetailsScreen> {
                       children: [
                         _buildMetricRow(Icons.rule, "Min. Balance Limit", "₹0.00 (No lock-in)"),
                         const Divider(color: AppTheme.cardLightBlue),
-                        _buildMetricRow(Icons.people_outline, "Current Team Size", "99 Members"),
+                        _buildMetricRow(Icons.people_outline, "Current Team Size", "$_teamCount Members"),
                         const Divider(color: AppTheme.cardLightBlue),
                         _buildMetricRow(Icons.cached, "Current Active Cycle", "Cycle 1 (126 Max)"),
                       ],
