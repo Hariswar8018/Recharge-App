@@ -303,25 +303,45 @@ app.post('/api/fund/request', verifyAppToken, verifyUserToken, async (req, res) 
       return res.status(400).json({ error: 'Duplicate UTR number submitted' });
     }
 
-    await query('INSERT INTO fund_requests (user_id, amount, utr, status) VALUES (?, ?, ?, "PENDING")', [
-      req.user.id,
-      parseFloat(amount),
-      utr.trim()
-    ]);
+    await transaction(async (conn) => {
+      // 1. Insert approved fund request
+      await conn.execute(
+        'INSERT INTO fund_requests (user_id, amount, utr, status) VALUES (?, ?, ?, "APPROVED")',
+        [req.user.id, parseFloat(amount), utr.trim()]
+      );
+
+      // 2. Credit user's fund wallet
+      await conn.execute(
+        'UPDATE users SET fund_wallet_balance = fund_wallet_balance + ? WHERE id = ?',
+        [parseFloat(amount), req.user.id]
+      );
+
+      // 3. Log transaction success
+      const dateStr = new Date().toLocaleString('en-US', { hour12: true });
+      await conn.execute(
+        'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "FUND", ?, "Fund Deposit", ?, "Success")',
+        [req.user.id, `₹${parseFloat(amount).toFixed(2)}`, dateStr]
+      );
+    });
+
+    // Invalidate caches
+    await invalidateCache(`user_profile_${req.user.id}`);
+    await invalidateCache('admin_stats');
 
     // Send email trigger
     query('SELECT fullName FROM users WHERE id = ?', [req.user.id]).then((users) => {
       if (users.length > 0) {
-        sendNotificationEmail(req.user.email, "Fund Deposit Request Submitted - EarnFarm", `
+        sendNotificationEmail(req.user.email, "Fund Deposit Approved - EarnFarm", `
           <h3>Hi ${users[0].fullName},</h3>
-          <p>Your deposit request of <strong>₹${parseFloat(amount).toFixed(2)}</strong> (UTR: ${utr.trim()}) has been submitted successfully and is currently awaiting administrator review.</p>
+          <p>Your deposit of <strong>₹${parseFloat(amount).toFixed(2)}</strong> has been processed successfully. The funds are now available in your Fund Wallet.</p>
         `);
       }
     }).catch(e => console.error(e));
 
-    res.status(201).json({ message: 'Fund deposit request submitted successfully for approval' });
+    res.status(201).json({ message: 'Funds added directly to your Fund Wallet successfully!' });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to record fund request' });
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add funds directly' });
   }
 });
 
