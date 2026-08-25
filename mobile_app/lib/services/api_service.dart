@@ -260,4 +260,18 @@ class ApiService {
     } catch (_) {}
     return [];
   }
+
+  // Get User Transactions list
+  static Future<List<dynamic>> getTransactions() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/user/transactions'),
+        headers: await _getHeaders(requireAuth: true),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (_) {}
+    return [];
+  }
 }

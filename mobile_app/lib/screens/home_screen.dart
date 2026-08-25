@@ -33,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _mobileNumber = "";
   String _createdAt = "2026-08-25";
   List<dynamic> _teamMembers = [];
+  List<dynamic> _transactions = [];
   bool _isNetworkConnected = true;
   Timer? _healthCheckTimer;
 
@@ -54,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final user = response['user'];
       final cycles = await ApiService.getCyclesHistory();
       final team = await ApiService.getTeam();
+      final txns = await ApiService.getTransactions();
 
       dynamic activeCycle;
       try {
@@ -80,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _status = user['status'] ?? "ACTIVE";
         _cyclesHistory = cycles;
         _teamMembers = team;
+        _transactions = txns;
         if (activeCycle != null) {
           _activeCycleId = activeCycle['cycle_id'] ?? "";
           _membersCount = activeCycle['members_count'] ?? 0;
@@ -1133,21 +1136,41 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              _buildTransactionRow(
-                icon: Icons.call_made,
-                type: "Cashout",
-                amount: "₹12,600.00",
-                date: "2026-08-21 12:30 PM",
-                isIncome: false,
-              ),
-              const Divider(color: AppTheme.cardLightBlue, height: 1),
-              _buildTransactionRow(
-                icon: Icons.call_received,
-                type: "Affiliate Income",
-                amount: "₹300.00",
-                date: "2026-08-21 10:15 AM",
-                isIncome: true,
-              ),
+              _transactions.isEmpty
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Text(
+                          "No transactions recorded yet",
+                          style: TextStyle(color: AppTheme.textGray, fontSize: 12),
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _transactions.length > 5 ? 5 : _transactions.length,
+                      separatorBuilder: (context, index) => const Divider(color: AppTheme.cardLightBlue, height: 1),
+                      itemBuilder: (context, index) {
+                        final tx = _transactions[index];
+                        final type = tx['type'] as String? ?? 'Transaction';
+                        final amount = tx['amount'] as String? ?? '₹0.00';
+                        final date = tx['date'] as String? ?? '';
+                        
+                        final typeLower = type.toLowerCase();
+                        final bool isIncome = !typeLower.contains('debit') && 
+                                              !typeLower.contains('cashout') && 
+                                              !typeLower.contains('withdrawal');
+
+                        return _buildTransactionRow(
+                          icon: isIncome ? Icons.call_received : Icons.call_made,
+                          type: type,
+                          amount: amount,
+                          date: date,
+                          isIncome: isIncome,
+                        );
+                      },
+                    ),
             ],
           ),
         ],

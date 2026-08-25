@@ -142,14 +142,46 @@ class TransactionHistoryScreen extends StatefulWidget {
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
-  final List<TransactionModel> _allTransactions = [
-    TransactionModel(id: "1", type: "Cashout Withdrawal", amount: "₹12,600.00", date: "2026-08-22 12:30 PM", isIncome: false, reference: "TXN55283920"),
-    TransactionModel(id: "2", type: "Affiliate Payout (Level 1)", amount: "₹300.00", date: "2026-08-22 10:15 AM", isIncome: true, reference: "TXN10294829"),
-    TransactionModel(id: "3", type: "Mobile Prepaid Recharge", amount: "₹299.00", date: "2026-08-21 04:45 PM", isIncome: false, reference: "TXN99281729"),
-    TransactionModel(id: "4", type: "DTH Subscription Topup", amount: "₹450.00", date: "2026-08-20 02:15 PM", isIncome: false, reference: "TXN33827182"),
-    TransactionModel(id: "5", type: "FastTag Recharge", amount: "₹500.00", date: "2026-08-20 11:00 AM", isIncome: false, reference: "TXN28173921"),
-    TransactionModel(id: "6", type: "Deposit Request", amount: "₹1,200.00", date: "2026-08-19 09:30 AM", isIncome: true, reference: "TXN77362810"),
-  ];
+  List<TransactionModel> _allTransactions = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTransactions();
+  }
+
+  Future<void> _loadTransactions() async {
+    final list = await ApiService.getTransactions();
+    setState(() {
+      _allTransactions = list.map((item) {
+        final type = item['type'] as String? ?? 'Transaction';
+        final amount = item['amount'] as String? ?? '₹0.00';
+        final date = item['date'] as String? ?? '';
+        final status = item['status'] as String? ?? 'Success';
+        final id = item['id']?.toString() ?? '';
+        
+        final typeLower = type.toLowerCase();
+        final bool isIncome = !typeLower.contains('debit') && 
+                              !typeLower.contains('cashout') && 
+                              !typeLower.contains('withdrawal');
+
+        // Extract numeric part if starting with ₹
+        String cleanAmt = amount.startsWith('₹') ? amount.substring(1) : amount;
+
+        return TransactionModel(
+          id: id,
+          type: type,
+          amount: cleanAmt,
+          date: date,
+          isIncome: isIncome,
+          status: status,
+          reference: "SRTXN${id.padLeft(8, '0')}",
+        );
+      }).toList();
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,62 +193,65 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         elevation: 0.5,
         iconTheme: const IconThemeData(color: AppTheme.primaryBlue),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _allTransactions.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 10),
-        itemBuilder: (context, index) {
-          final tx = _allTransactions[index];
-          return InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TransactionReceiptScreen(transaction: tx)),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppTheme.cardLightBlue),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: tx.isIncome ? Colors.green.shade50 : Colors.red.shade50,
-                    child: Icon(
-                      tx.isIncome ? Icons.call_received : Icons.call_made,
-                      color: tx.isIncome ? Colors.green : Colors.red,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(tx.type, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue, fontSize: 13)),
-                        const SizedBox(height: 4),
-                        Text(tx.date, style: const TextStyle(color: Colors.grey, fontSize: 11)),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    (tx.isIncome ? "+" : "-") + tx.amount,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: tx.isIncome ? Colors.green : Colors.red,
-                      fontSize: 13,
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
+          : _allTransactions.isEmpty
+              ? const Center(child: Text("No transactions recorded yet", style: TextStyle(color: AppTheme.textGray)))
+              : ListView.separated(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _allTransactions.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final tx = _allTransactions[index];
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => TransactionReceiptScreen(transaction: tx)),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppTheme.cardLightBlue),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 20,
+                              backgroundColor: tx.isIncome ? Colors.green.shade50 : Colors.red.shade50,
+                              child: Icon(
+                                tx.isIncome ? Icons.call_received : Icons.call_made,
+                                color: tx.isIncome ? Colors.green : Colors.red,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(tx.type, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue, fontSize: 13)),
+                                  const SizedBox(height: 4),
+                                  Text(tx.date, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              (tx.isIncome ? "+" : "-") + "₹${tx.amount}",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  color: tx.isIncome ? Colors.green : Colors.red,
+                                  fontSize: 13),
+                            )
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }
