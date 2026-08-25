@@ -12,6 +12,7 @@ deployment:
     # Deploy Node.js backend
     - /bin/mkdir -p $BACKENDPATH
     - /bin/cp -R $REPOPATH/backend/. $BACKENDPATH/
+    - /bin/rm -rf $BACKENDPATH/node_modules
     - cd $BACKENDPATH && /home/wpzumbof/nodevenv/backend/22/bin/npm install
     - /bin/mkdir -p $BACKENDPATH/tmp
     - /bin/touch $BACKENDPATH/tmp/restart.txt
