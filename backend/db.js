@@ -42,19 +42,6 @@ async function initDb() {
   try {
     console.log('Initializing MySQL Database schema...');
 
-    // Drop/reset tables for production fresh start
-    console.log('Clearing database tables for fresh production start...');
-    try {
-      await query('DELETE FROM users WHERE role != "admin"');
-      await query('DROP TABLE IF EXISTS fund_requests');
-      await query('DROP TABLE IF EXISTS transactions');
-      await query('DROP TABLE IF EXISTS notifications');
-      await query('DROP TABLE IF EXISTS single_leg_queue');
-      await query('DROP TABLE IF EXISTS cycles');
-    } catch(e) {
-      console.warn('Error during production reset:', e);
-    }
-
     // Users Table
     await query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -160,48 +147,50 @@ async function initDb() {
       console.log('Earnfarm Admin user seeded.');
     }
 
-    // Reset and seed default system settings
-    await query('DELETE FROM system_settings');
-    const settings = [
-      ['min_wallet_balance', '50.00'],
-      ['maintenance_mode', 'false'],
-      ['force_update_version', '1.0.0'],
-      ['scriza_api_mode', 'simulation'],
-      ['razorpay_api_mode', 'test'],
-      ['razorpay_key_id', 'rzp_test_dummyKey123'],
-      ['razorpay_key_secret', 'dummySecretKey789'],
-      ['marquee_text', 'Welcome to EarnFarm! Enjoy high commission margins on DTH and Mobile recharges. Fast wallet loads enabled via UPI.'],
-      ['marquee_images', 'https://upload.wikimedia.org/wikipedia/commons/5/50/Reliance_Jio_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/e5/Bharti_Airtel_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/d/d4/Vodafone_Idea_logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/ec/BSNL_logo.svg,https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg'],
-      
-      ['join_amount', '1200'],
-      ['top_up_amount', '1200'],
-      ['direct_income', '300'],
-      ['level_pool', '600'],
-      ['company_maintenance', '300'],
-      ['cycle_size', '126'],
-      ['withdrawal_percentage', '15'],
-      ['minimum_withdrawal', '500'],
-      ['withdrawal_days', 'Mon,Wed,Fri'],
-      ['upi_vpa_id', 'vp110064@okaxis'],
-      ['upi_payee_name', 'EarnFarm'],
+    // Seed default system settings if table is empty
+    const checkSettings = await query('SELECT COUNT(*) as count FROM system_settings');
+    if (checkSettings[0].count === 0) {
+      const settings = [
+        ['min_wallet_balance', '50.00'],
+        ['maintenance_mode', 'false'],
+        ['force_update_version', '1.0.0'],
+        ['scriza_api_mode', 'simulation'],
+        ['razorpay_api_mode', 'test'],
+        ['razorpay_key_id', 'rzp_test_dummyKey123'],
+        ['razorpay_key_secret', 'dummySecretKey789'],
+        ['marquee_text', 'Welcome to EarnFarm! Enjoy high commission margins on DTH and Mobile recharges. Fast wallet loads enabled via UPI.'],
+        ['marquee_images', 'https://upload.wikimedia.org/wikipedia/commons/5/50/Reliance_Jio_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/e5/Bharti_Airtel_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/d/d4/Vodafone_Idea_logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/ec/BSNL_logo.svg,https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg'],
+        
+        ['join_amount', '1200'],
+        ['top_up_amount', '1200'],
+        ['direct_income', '300'],
+        ['level_pool', '600'],
+        ['company_maintenance', '300'],
+        ['cycle_size', '126'],
+        ['withdrawal_percentage', '15'],
+        ['minimum_withdrawal', '500'],
+        ['withdrawal_days', 'Mon,Wed,Fri'],
+        ['upi_vpa_id', 'vp110064@okaxis'],
+        ['upi_payee_name', 'EarnFarm'],
 
-      ['level_1_members', '2'],
-      ['level_1_income', '200'],
-      ['level_2_members', '4'],
-      ['level_2_income', '400'],
-      ['level_3_members', '8'],
-      ['level_3_income', '800'],
-      ['level_4_members', '16'],
-      ['level_4_income', '1600'],
-      ['level_5_members', '32'],
-      ['level_5_income', '3200'],
-      ['level_6_members', '64'],
-      ['level_6_income', '6400']
-    ];
-    for (const [k, v] of settings) {
-      await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);
+        ['level_1_members', '2'],
+        ['level_1_income', '200'],
+        ['level_2_members', '4'],
+        ['level_2_income', '400'],
+        ['level_3_members', '8'],
+        ['level_3_income', '800'],
+        ['level_4_members', '16'],
+        ['level_4_income', '1600'],
+        ['level_5_members', '32'],
+        ['level_5_income', '3200'],
+        ['level_6_members', '64'],
+        ['level_6_income', '6400']
+      ];
+      for (const [k, v] of settings) {
+        await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);
+      }
+      console.log('Production default system settings seeded.');
     }
-    console.log('Production default system settings seeded.');
 
     // Create Notifications Table
     await query(`
