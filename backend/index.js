@@ -276,6 +276,24 @@ app.get('/api/user/profile', verifyAppToken, verifyUserToken, async (req, res) =
   }
 });
 
+// Update User Profile (JWT authenticated)
+app.post('/api/user/update', verifyAppToken, verifyUserToken, async (req, res) => {
+  const { fullName, mobileNumber } = req.body;
+  if (!fullName) {
+    return res.status(400).json({ error: 'Full Name is required' });
+  }
+  try {
+    await query(
+      'UPDATE users SET fullName = ?, mobileNumber = ? WHERE id = ?',
+      [fullName, mobileNumber || null, req.user.id]
+    );
+    await invalidateCache(`user_profile_${req.user.id}`);
+    res.json({ success: true, message: 'Profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Database error occurred' });
+  }
+});
+
 // Get User Team / Affiliates (JWT authenticated)
 app.get('/api/user/team', verifyAppToken, verifyUserToken, async (req, res) => {
   try {

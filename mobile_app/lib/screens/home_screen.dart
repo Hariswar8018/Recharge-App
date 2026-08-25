@@ -2067,7 +2067,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            "ID : 7989293968",
+                            "ID : ",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 13,

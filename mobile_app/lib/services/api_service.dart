@@ -274,4 +274,25 @@ class ApiService {
     } catch (_) {}
     return [];
   }
+
+  // Update User Profile
+  static Future<Map<String, dynamic>> updateProfile(String fullName, String mobileNumber) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/user/update'),
+        headers: await _getHeaders(requireAuth: true),
+        body: jsonEncode({
+          'fullName': fullName,
+          'mobileNumber': mobileNumber,
+        }),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true};
+      }
+      return {'success': false, 'error': decoded['error'] ?? 'Update failed'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 }
