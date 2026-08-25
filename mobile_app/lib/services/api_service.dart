@@ -227,4 +227,18 @@ class ApiService {
       return {'success': false, 'error': 'Server connection error'};
     }
   }
+
+  // Get User Team / Affiliates
+  static Future<List<dynamic>> getTeam() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/user/team'),
+        headers: await _getHeaders(requireAuth: true),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (_) {}
+    return [];
+  }
 }

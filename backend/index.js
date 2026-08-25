@@ -182,6 +182,19 @@ app.get('/api/user/profile', verifyAppToken, verifyUserToken, async (req, res) =
   }
 });
 
+// Get User Team / Affiliates (JWT authenticated)
+app.get('/api/user/team', verifyAppToken, verifyUserToken, async (req, res) => {
+  try {
+    const team = await query(
+      'SELECT id, fullName, email, mobileNumber, status, createdAt FROM users WHERE sponsor_id = ? ORDER BY id DESC',
+      [req.user.id]
+    );
+    res.json(team);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load team network' });
+  }
+});
+
 // --- USER WALLET FLOW & FUND REQUEST ENDPOINTS ---
 
 // User creates fund request

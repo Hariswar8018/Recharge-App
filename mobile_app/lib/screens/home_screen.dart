@@ -26,6 +26,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> _cyclesHistory = [];
   int _userId = 0;
   String _referralLink = "";
+  String _email = "";
+  String _mobileNumber = "";
+  String _createdAt = "2026-08-25";
+  List<dynamic> _teamMembers = [];
 
   @override
   void initState() {
@@ -38,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (response['success']) {
       final user = response['user'];
       final cycles = await ApiService.getCyclesHistory();
+      final team = await ApiService.getTeam();
       
       dynamic activeCycle;
       try {
@@ -49,10 +54,16 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _fullName = user['fullName'] ?? "Rajesh Reddy";
         _userId = user['id'] ?? 0;
+        _email = user['email'] ?? "";
+        _mobileNumber = user['mobileNumber'] ?? "";
+        _createdAt = user['createdAt'] != null
+            ? DateTime.parse(user['createdAt']).toLocal().toString().substring(0, 10)
+            : "2026-08-25";
         _mainWalletBalance = parseDouble(user['main_wallet_balance']) ?? 0.00;
         _fundWalletBalance = parseDouble(user['fund_wallet_balance']) ?? 0.00;
         _status = user['status'] ?? "ACTIVE";
         _cyclesHistory = cycles;
+        _teamMembers = team;
         if (activeCycle != null) {
           _activeCycleId = activeCycle['cycle_id'] ?? "";
           _membersCount = activeCycle['members_count'] ?? 0;
@@ -374,6 +385,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTabContent() {
+    if (_activeCycleId.isEmpty) {
+      if (_currentIndex == 0 || _currentIndex == 2) {
+        return _buildSubscriptionActivationView();
+      }
+    }
     switch (_currentIndex) {
       case 0:
         return _buildHomeTab();
@@ -386,6 +402,246 @@ class _HomeScreenState extends State<HomeScreen> {
       default:
         return _buildHomeTab();
     }
+  }
+
+  Widget _buildSubscriptionActivationView() {
+    String formattedId = "SRD${_userId.toString().padLeft(8, '0')}";
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header card
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.cardLightBlue),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.stars, color: Colors.amber, size: 32),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text("SR DIGITAL SEVA", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.primaryBlue)),
+                        Text("KENDRAM", style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
+                      ],
+                    )
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text("Fund Wallet Balance", style: TextStyle(fontSize: 10, color: AppTheme.textGray)),
+                    const SizedBox(height: 2),
+                    Text("₹ ${_fundWalletBalance.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.primaryBlue)),
+                  ],
+                )
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 1. Select Plan
+          _buildStepHeader("1. Select Plan", Icons.workspace_premium),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.primaryBlue, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
+                  child: const Icon(Icons.workspace_premium, color: AppTheme.primaryBlue),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text("Basic Plan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textDarkBlue)),
+                      Text("ID Activation Plan", style: TextStyle(color: AppTheme.textGray, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: const [
+                    Text("₹1200", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primaryBlue)),
+                    Text("One Time", style: TextStyle(color: AppTheme.textGray, fontSize: 11)),
+                  ],
+                )
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 2. Enter ID to Activate
+          _buildStepHeader("2. Enter ID to Activate", Icons.person_outline),
+          TextFormField(
+            initialValue: formattedId,
+            readOnly: true,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.person, color: AppTheme.primaryBlue),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 3. User Details
+          _buildStepHeader("3. User Details", Icons.assignment_outlined),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.cardLightBlue),
+            ),
+            child: Column(
+              children: [
+                _buildDetailRow("ID", formattedId),
+                _buildDetailRow("Name", _fullName),
+                _buildDetailRow("Mobile Number", _mobileNumber),
+                _buildDetailRow("Email", _email),
+                _buildDetailRow("Joining Date", _createdAt),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.check_circle, color: Colors.green, size: 18),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "User Verified Successfully\nAll details are correct.",
+                          style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold, height: 1.3),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // 4. Amount Pay
+          _buildStepHeader("4. Amount Pay", Icons.payment),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppTheme.cardLightBlue),
+            ),
+            child: Column(
+              children: [
+                _buildPayRow("Plan Amount", "₹1200.00"),
+                const Divider(),
+                _buildPayRow("Total Amount", "₹1200.00", isBold: true),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/fund-request').then((_) => _loadUserProfile());
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardLightBlue.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.account_balance_wallet, color: AppTheme.primaryBlue, size: 18),
+                            const SizedBox(width: 6),
+                            Text("Available in Fund Wallet: ₹${_fundWalletBalance.toStringAsFixed(2)}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue)),
+                          ],
+                        ),
+                        const Icon(Icons.chevron_right, size: 16, color: AppTheme.textGray),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Button
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _handleActivateCycle,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(
+                _isLoading ? "ACTIVATING..." : "SUBSCRIBE NOW - ₹1200",
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepHeader(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: AppTheme.primaryBlue, size: 18),
+          const SizedBox(width: 6),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textDarkBlue)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String val) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: AppTheme.textGray, fontSize: 12)),
+          Text(val, style: const TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.bold, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayRow(String label, String val, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: isBold ? AppTheme.textDarkBlue : AppTheme.textGray, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: 13)),
+        Text(val, style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: isBold ? 15 : 13)),
+      ],
+    );
   }
 
   // --- TAB 0: HOME VIEW ---
@@ -751,19 +1007,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            crossAxisSpacing: 14,
-            mainAxisSpacing: 14,
-            childAspectRatio: 1.35,
-            children: [
-              _buildBusinessStatCard("TODAY INCOME", "₹ 300.00", Icons.trending_up, Colors.blue),
-              _buildBusinessStatCard("TOTAL INCOME", "₹ 6,700.00", Icons.account_balance_wallet, Colors.teal),
-              _buildBusinessStatCard("GLOBAL INCOME", "₹ 6,400.00", Icons.language, Colors.indigo),
-              _buildBusinessStatCard("AFFILIATE INCOME", "₹ 300.00", Icons.people, Colors.purple),
-            ],
+          Builder(
+            builder: (context) {
+              double globalIncome = 0;
+              if (_activeCycleId.isNotEmpty) {
+                if (_membersCount >= 2) globalIncome += 200;
+                if (_membersCount >= 6) globalIncome += 400;
+                if (_membersCount >= 14) globalIncome += 800;
+                if (_membersCount >= 30) globalIncome += 1600;
+                if (_membersCount >= 62) globalIncome += 3200;
+                if (_membersCount >= 126) globalIncome += 6400;
+              }
+              double affiliateIncome = _activeCycleId.isNotEmpty ? (_teamMembers.length * 300.0) : 0.0;
+              double totalIncome = _activeCycleId.isNotEmpty ? _mainWalletBalance : 0.00;
+              double todayIncome = 0.00;
+
+              return GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 14,
+                mainAxisSpacing: 14,
+                childAspectRatio: 1.35,
+                children: [
+                  _buildBusinessStatCard("TODAY INCOME", "₹ ${todayIncome.toStringAsFixed(2)}", Icons.trending_up, Colors.blue),
+                  _buildBusinessStatCard("TOTAL INCOME", "₹ ${totalIncome.toStringAsFixed(2)}", Icons.account_balance_wallet, Colors.teal),
+                  _buildBusinessStatCard("GLOBAL INCOME", "₹ ${globalIncome.toStringAsFixed(2)}", Icons.language, Colors.indigo),
+                  _buildBusinessStatCard("AFFILIATE INCOME", "₹ ${affiliateIncome.toStringAsFixed(2)}", Icons.people, Colors.purple),
+                ],
+              );
+            }
           ),
 
           const SizedBox(height: 20),
@@ -850,6 +1123,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Affiliate Referral Info Card
           Container(
@@ -965,56 +1239,62 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           const SizedBox(height: 20),
-
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.cardLightBlue),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primaryBlue,
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+          const Text(
+            "YOUR AFFILIATE NETWORK",
+            style: TextStyle(color: AppTheme.textDarkBlue, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: _teamMembers.isEmpty
+                ? Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.cardLightBlue),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "No affiliates have joined using your referral link yet.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: AppTheme.textGray, fontSize: 12),
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _teamMembers.length,
+                    itemBuilder: (context, index) {
+                      final member = _teamMembers[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        elevation: 0.5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: AppTheme.cardLightBlue),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
+                            child: const Icon(Icons.person, color: AppTheme.primaryBlue),
+                          ),
+                          title: Text(member['fullName'] ?? 'User', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue, fontSize: 13)),
+                          subtitle: Text("ID: SRD${member['id'].toString().padLeft(8, '0')}\nJoined: ${member['createdAt'] != null ? member['createdAt'].toString().substring(0, 10) : ''}", style: const TextStyle(fontSize: 10, height: 1.4)),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: (member['status'] == 'ACTIVE' ? Colors.green : Colors.orange).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              member['status'] ?? 'PENDING',
+                              style: TextStyle(color: member['status'] == 'ACTIVE' ? Colors.green : Colors.orange, fontWeight: FontWeight.bold, fontSize: 9),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  child: Row(
-                    children: const [
-                      Expanded(child: Text("Level", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))),
-                      Expanded(child: Text("Team", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12), textAlign: TextAlign.center)),
-                      Expanded(child: Text("Income", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12), textAlign: TextAlign.center)),
-                      Expanded(child: Text("Total", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12), textAlign: TextAlign.right)),
-                    ],
-                  ),
-                ),
-
-                _buildTeamRow("1", "2", "₹ 100", "₹ 200"),
-                _buildTeamRow("2", "4", "₹ 100", "₹ 400"),
-                _buildTeamRow("3", "8", "₹ 100", "₹ 800"),
-                _buildTeamRow("4", "16", "₹ 100", "₹ 1,600"),
-                _buildTeamRow("5", "32", "₹ 100", "₹ 3,200"),
-                _buildTeamRow("6", "64", "₹ 100", "₹ 6,400"),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withOpacity(0.05),
-                    borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
-                    border: const Border(top: BorderSide(color: AppTheme.cardLightBlue, width: 1.5)),
-                  ),
-                  child: Row(
-                    children: const [
-                      Expanded(child: Text("Total", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.w900, fontSize: 12))),
-                      Expanded(child: Text("126", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.w900, fontSize: 12), textAlign: TextAlign.center)),
-                      Expanded(child: Text("₹ 600", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.w900, fontSize: 12), textAlign: TextAlign.center)),
-                      Expanded(child: Text("₹ 12,600", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.w900, fontSize: 12), textAlign: TextAlign.right)),
-                    ],
-                  ),
-                )
-              ],
-            ),
           )
         ],
       ),
