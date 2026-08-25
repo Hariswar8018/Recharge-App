@@ -1074,7 +1074,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
-                  onTap: () => Navigator.pushNamed(context, '/fund-request'),
+                  onTap: () => Navigator.pushNamed(context, '/fund-request').then((_) => _loadUserProfile()),
                   child: Row(
                     children: const [
                       Icon(
@@ -1095,9 +1095,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Container(width: 1, height: 24, color: Colors.white24),
-                _buildActionButton(Icons.stars, "Subscribe"),
-                Container(width: 1, height: 24, color: Colors.white24),
-                _buildActionButton(Icons.call_made, "Cashout"),
+                InkWell(
+                  onTap: () => Navigator.pushNamed(context, '/withdrawal').then((_) => _loadUserProfile()),
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.call_made,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        "Cashout",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
