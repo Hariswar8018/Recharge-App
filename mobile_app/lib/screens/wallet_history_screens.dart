@@ -48,14 +48,10 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         final Uint8List pngBytes = byteData.buffer.asUint8List();
-        final result = await ImageGallerySaver().saveImage(pngBytes);
-        if (result != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Receipt saved to gallery successfully!")),
-          );
-        } else {
-          throw Exception("Failed to save image");
-        }
+        await ImageGallerySaver().saveImage(pngBytes);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Receipt saved to gallery successfully!")),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
