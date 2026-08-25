@@ -110,11 +110,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleShareReferral() async {
     if (_referralLink.isEmpty) return;
+    final String shareMessage = 
+      "Join EarnFarm Today!\n\n"
+      "Register on EarnFarm using my Sponsor ID: EARNFARM$_userId\n\n"
+      "Referral Link:\n$_referralLink\n\n"
+      "Download the App:\nhttps://play.google.com/store/apps/details?id=com.app.earnfarm\n\n"
+      "Start earning affiliate commissions, global cycle rewards, and much more! Join our network today.";
     try {
       await ShareMe.system(
         title: 'Join EarnFarm Today!',
         url: _referralLink,
-        description: 'Register on EarnFarm using my Sponsor ID EARNFARM$_userId. Download the app here: https://play.google.com/store/apps/details?id=com.app.earnfarm and start earning affiliate commissions, global cycle rewards, and much more! Join our network today.',
+        description: shareMessage,
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
