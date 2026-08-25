@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_theme.dart';
 import '../widgets/background_container.dart';
 import '../widgets/brand_logo.dart';
+import '../services/api_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -22,20 +23,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _handleSendOtp() {
+  Future<void> _handleSendOtp() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() {
       _isLoading = true;
       _message = "";
     });
 
-    // Mock send OTP trigger
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _message = "OTP sent successfully to ${_emailController.text}!";
-      });
+    final email = _emailController.text.trim();
+    final res = await ApiService.forgotPassword(email);
+
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+      if (res['success']) {
+        _message = res['message'] ?? "Temporary password sent successfully!";
+      } else {
+        _message = "Error: ${res['error'] ?? 'Reset failed'}";
+      }
     });
   }
 

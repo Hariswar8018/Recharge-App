@@ -75,6 +75,25 @@ class ApiService {
     }
   }
 
+  // Forgot Password Reset
+  static Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/forgot-password'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'email': email}),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': decoded['message']};
+      } else {
+        return {'success': false, 'error': decoded['error'] ?? 'Failed to reset password'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Connection error: Could not connect to server'};
+    }
+  }
+
   // Login user
   static Future<Map<String, dynamic>> login({
     required String email,

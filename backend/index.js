@@ -2,7 +2,32 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 const { query, transaction, initDb } = require('./db');
+
+const mailTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'mail.srdigitalseva.com',
+  port: parseInt(process.env.SMTP_PORT) || 465,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER || 'no-reply@srdigitalseva.com',
+    pass: process.env.SMTP_PASS || 'UseYourEmailPasswordHere!'
+  }
+});
+
+async function sendNotificationEmail(to, subject, htmlContent) {
+  try {
+    await mailTransporter.sendMail({
+      from: `"EarnFarm Support" <${process.env.SMTP_USER || 'no-reply@srdigitalseva.com'}>`,
+      to,
+      subject,
+      html: htmlContent
+    });
+    console.log(`Notification email sent to ${to}: ${subject}`);
+  } catch (err) {
+    console.error('Failed to send notification email:', err);
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -99,6 +124,24 @@ app.post('/api/auth/register', verifyAppToken, async (req, res) => {
     // Invalidate cached dashboard metrics
     await invalidateCache('admin_stats');
 
+    // Trigger emails
+    sendNotificationEmail(email.toLowerCase(), "Welcome to EarnFarm!", `
+      <h3>Welcome to EarnFarm, ${fullName}!</h3>
+      <p>Your account was successfully registered.</p>
+      <p>Please activate your account by purchasing the Basic Plan to start earning sponsor and pool income.</p>
+    `);
+
+    if (sponsorIdVal) {
+      query('SELECT email, fullName FROM users WHERE id = ?', [sponsorIdVal]).then((sponsors) => {
+        if (sponsors.length > 0) {
+          sendNotificationEmail(sponsors[0].email, "New Affiliate Joined Your Team!", `
+            <h3>Hi ${sponsors[0].fullName},</h3>
+            <p>A new member <strong>${fullName}</strong> has joined your team using your referral code.</p>
+          `);
+        }
+      }).catch((e) => console.error('Sponsor query fail:', e));
+    }
+
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
     console.error(err);
@@ -139,6 +182,12 @@ app.post('/api/auth/login', verifyAppToken, async (req, res) => {
       { expiresIn: '30d' }
     );
 
+    // Trigger login notification
+    sendNotificationEmail(user.email, "New Login Detected - EarnFarm", `
+      <h3>Hello ${user.fullName},</h3>
+      <p>A new login was recorded for your EarnFarm account on ${new Date().toLocaleString()}.</p>
+    `);
+
     res.json({
       token,
       user: {
@@ -153,6 +202,41 @@ app.post('/api/auth/login', verifyAppToken, async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: 'Database error occurred during login' });
+  }
+});
+
+// User Forgot Password (SMTP reset trigger)
+app.post('/api/auth/forgot-password', verifyAppToken, async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    const users = await query('SELECT id, fullName FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'No user registered with this email address' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const tempPassword = `Temp${otp}`;
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(tempPassword, salt);
+
+    await query('UPDATE users SET passwordHash = ? WHERE id = ?', [hash, users[0].id]);
+
+    await sendNotificationEmail(email.trim().toLowerCase(), "Temporary Password Reset - EarnFarm", `
+      <h3>Hi ${users[0].fullName},</h3>
+      <p>We received a password reset request for your EarnFarm account.</p>
+      <p>Your password has been reset to the following temporary password:</p>
+      <p style="font-size: 16px; font-weight: bold; color: #1e3a8a; background: #f1f5f9; padding: 10px; display: inline-block;">${tempPassword}</p>
+      <p>Please log in using this temporary password and update it in your profile settings immediately.</p>
+    `);
+
+    res.json({ message: 'Temporary password sent to your email address successfully!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to reset password. Please check backend log.' });
   }
 });
 
@@ -218,6 +302,17 @@ app.post('/api/fund/request', verifyAppToken, verifyUserToken, async (req, res) 
       parseFloat(amount),
       utr.trim()
     ]);
+
+    // Send email trigger
+    query('SELECT fullName FROM users WHERE id = ?', [req.user.id]).then((users) => {
+      if (users.length > 0) {
+        sendNotificationEmail(req.user.email, "Fund Deposit Request Submitted - EarnFarm", `
+          <h3>Hi ${users[0].fullName},</h3>
+          <p>Your deposit request of <strong>₹${parseFloat(amount).toFixed(2)}</strong> (UTR: ${utr.trim()}) has been submitted successfully and is currently awaiting administrator review.</p>
+        `);
+      }
+    }).catch(e => console.error(e));
+
     res.status(201).json({ message: 'Fund deposit request submitted successfully for approval' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to record fund request' });
@@ -410,6 +505,13 @@ app.post('/api/cycles/activate', verifyAppToken, verifyUserToken, async (req, re
 
     await invalidateCache(`user_profile_${req.user.id}`);
     await invalidateCache('admin_stats');
+
+    // Trigger activation email
+    sendNotificationEmail(user.email, "EarnFarm ID Activated - Cycle Started!", `
+      <h3>Hi ${user.fullName},</h3>
+      <p>We have successfully processed your plan payment of <strong>₹${joinAmount.toFixed(2)}</strong>.</p>
+      <p>Your subscription is active and your cycle ID <strong>${result.cycleId}</strong> has been registered in the single-leg monoline queue.</p>
+    `);
 
     res.status(201).json({ message: 'Cycle activated successfully!', cycleId: result.cycleId });
   } catch (err) {
@@ -904,9 +1006,30 @@ app.post('/api/admin/fund-requests/:id/approve', async (req, res) => {
       await invalidateCache(`user_profile_${request.user_id}`);
       await invalidateCache('admin_stats');
 
+      // Send email
+      query('SELECT email, fullName FROM users WHERE id = ?', [request.user_id]).then((users) => {
+        if (users.length > 0) {
+          sendNotificationEmail(users[0].email, "Fund Deposit Approved - EarnFarm", `
+            <h3>Hi ${users[0].fullName},</h3>
+            <p>Your fund request of <strong>₹${parseFloat(request.amount).toFixed(2)}</strong> has been approved. The funds are now available in your Fund Wallet.</p>
+          `);
+        }
+      }).catch((e) => console.error(e));
+
       res.json({ message: 'Fund deposit request approved successfully.' });
     } else {
       await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [requestId]);
+
+      // Send rejection email
+      query('SELECT email, fullName FROM users WHERE id = ?', [request.user_id]).then((users) => {
+        if (users.length > 0) {
+          sendNotificationEmail(users[0].email, "Fund Deposit Rejected - EarnFarm", `
+            <h3>Hi ${users[0].fullName},</h3>
+            <p>Your fund request of <strong>₹${parseFloat(request.amount).toFixed(2)}</strong> has been rejected by the administrator.</p>
+          `);
+        }
+      }).catch((e) => console.error(e));
+
       res.json({ message: 'Fund request has been rejected.' });
     }
   } catch (err) {

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/app_theme.dart';
 import '../services/api_service.dart';
@@ -31,11 +33,41 @@ class _HomeScreenState extends State<HomeScreen> {
   String _mobileNumber = "";
   String _createdAt = "2026-08-25";
   List<dynamic> _teamMembers = [];
+  bool _isNetworkConnected = true;
+  Timer? _healthCheckTimer;
 
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
+    _startHealthCheck();
+  }
+
+  @override
+  void dispose() {
+    _healthCheckTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startHealthCheck() {
+    _healthCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      try {
+        final response = await http.get(Uri.parse('https://api.srdigitalseva.com/api/health')).timeout(const Duration(seconds: 3));
+        if (response.statusCode == 200) {
+          if (!_isNetworkConnected) {
+            setState(() { _isNetworkConnected = true; });
+          }
+        } else {
+          if (_isNetworkConnected) {
+            setState(() { _isNetworkConnected = false; });
+          }
+        }
+      } catch (_) {
+        if (_isNetworkConnected) {
+          setState(() { _isNetworkConnected = false; });
+        }
+      }
+    });
   }
 
   Future<void> _loadUserProfile() async {
@@ -307,6 +339,26 @@ class _HomeScreenState extends State<HomeScreen> {
             ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
             : Column(
                 children: [
+                  if (!_isNetworkConnected)
+                    Container(
+                      color: Colors.red,
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.wifi_off, color: Colors.white, size: 16),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "No internet connection or API server is unreachable",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   SafeArea(
                     bottom: false,
                     child: Container(
