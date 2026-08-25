@@ -248,6 +248,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.5"
+  share_me:
+    dependency: "direct main"
+    description:
+      name: share_me
+      sha256: c9424c8f3088eac4e8cbc5b9449c975c239b70eb4377e71cef55e8c8f83d8ffc
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.23"
   shared_preferences:
     dependency: "direct main"
     description:

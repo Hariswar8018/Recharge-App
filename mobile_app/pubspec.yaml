@@ -39,6 +39,7 @@ dependencies:
   razorpay_flutter: ^1.4.5
   url_launcher: ^6.1.14
   upi_uri: ^0.0.1
+  share_me: ^0.0.23
 
 dev_dependencies:
   flutter_test:

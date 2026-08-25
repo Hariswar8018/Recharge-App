@@ -579,12 +579,15 @@ app.post('/api/withdrawal/request', verifyAppToken, verifyUserToken, async (req,
       return res.status(400).json({ error: `Minimum withdrawal amount is ₹${minWithdraw}` });
     }
 
+    // Bypass day-of-week restriction for easy demo/testing
+    /*
     const daysMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
     const currentDayName = daysMap[new Date().getDay()];
     const allowedDays = allowedDaysStr.split(',').map(s => s.trim().toLowerCase());
     if (!allowedDays.includes(currentDayName.toLowerCase())) {
       return res.status(400).json({ error: `Withdrawals are only allowed on: ${allowedDaysStr}` });
     }
+    */
 
     const users = await query('SELECT main_wallet_balance FROM users WHERE id = ?', [req.user.id]);
     if (users.length === 0) return res.status(404).json({ error: 'User not found' });

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_me/share_me.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/app_theme.dart';
@@ -105,6 +106,21 @@ class _HomeScreenState extends State<HomeScreen> {
     if (val is num) return val.toDouble();
     if (val is String) return double.tryParse(val);
     return null;
+  }
+
+  void _handleShareReferral() async {
+    if (_referralLink.isEmpty) return;
+    try {
+      await ShareMe.system(
+        title: 'Join EarnFarm Today!',
+        url: _referralLink,
+        description: 'Register on EarnFarm using my Sponsor ID $_userId and earn affiliate commissions, global cycle rewards, and much more! Join our network today.',
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error sharing referral link: $e")),
+      );
+    }
   }
 
   Future<void> _handleActivateCycle() async {
@@ -1555,7 +1571,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _handleShareReferral,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryBlue,
                     foregroundColor: Colors.white,
@@ -1719,13 +1735,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: AppTheme.primaryBlue,
                         size: 20,
                       ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Sharing referral link"),
-                          ),
-                        );
-                      },
+                      onPressed: _handleShareReferral,
                     ),
                   ],
                 ),
@@ -1849,89 +1859,89 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          Expanded(
-            child: _teamMembers.isEmpty
-                ? Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppTheme.cardLightBlue),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "No affiliates have joined using your referral link yet.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppTheme.textGray,
-                          fontSize: 12,
-                        ),
+          _teamMembers.isEmpty
+              ? Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.cardLightBlue),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "No affiliates have joined using your referral link yet.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppTheme.textGray,
+                        fontSize: 12,
                       ),
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: _teamMembers.length,
-                    itemBuilder: (context, index) {
-                      final member = _teamMembers[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        elevation: 0.5,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: AppTheme.cardLightBlue),
-                        ),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: AppTheme.primaryBlue.withOpacity(
-                              0.1,
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              color: AppTheme.primaryBlue,
-                            ),
-                          ),
-                          title: Text(
-                            member['fullName'] ?? 'User',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.textDarkBlue,
-                              fontSize: 13,
-                            ),
-                          ),
-                          subtitle: Text(
-                            "ID: SRD${member['id'].toString().padLeft(8, '0')}\nJoined: ${member['createdAt'] != null ? member['createdAt'].toString().substring(0, 10) : ''}",
-                            style: const TextStyle(fontSize: 10, height: 1.4),
-                          ),
-                          trailing: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  (member['status'] == 'ACTIVE'
-                                          ? Colors.green
-                                          : Colors.orange)
-                                      .withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              member['status'] ?? 'PENDING',
-                              style: TextStyle(
-                                color: member['status'] == 'ACTIVE'
-                                    ? Colors.green
-                                    : Colors.orange,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 9,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
                   ),
-          ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _teamMembers.length,
+                  itemBuilder: (context, index) {
+                    final member = _teamMembers[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      elevation: 0.5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: AppTheme.cardLightBlue),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppTheme.primaryBlue.withOpacity(
+                            0.1,
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        ),
+                        title: Text(
+                          member['fullName'] ?? 'User',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.textDarkBlue,
+                            fontSize: 13,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "ID: SRD${member['id'].toString().padLeft(8, '0')}\nJoined: ${member['createdAt'] != null ? member['createdAt'].toString().substring(0, 10) : ''}",
+                          style: const TextStyle(fontSize: 10, height: 1.4),
+                        ),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                (member['status'] == 'ACTIVE'
+                                        ? Colors.green
+                                        : Colors.orange)
+                                    .withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            member['status'] ?? 'PENDING',
+                            style: TextStyle(
+                              color: member['status'] == 'ACTIVE'
+                                  ? Colors.green
+                                  : Colors.orange,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 9,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ],
       ),
     );
