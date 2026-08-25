@@ -318,106 +318,6 @@ class _WalletDetailsScreenState extends State<WalletDetailsScreen> {
     }
   }
 
-  void _showCashoutDialog(BuildContext context) {
-    final _cashoutFormKey = GlobalKey<FormState>();
-    final _amountController = TextEditingController();
-    final _paymentDetailsController = TextEditingController();
-    bool _isSubmitting = false;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Row(
-                children: const [
-                  Icon(Icons.account_balance, color: AppTheme.secondaryRed),
-                  SizedBox(width: 8),
-                  Text("Request Cashout", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                ],
-              ),
-              content: Form(
-                key: _cashoutFormKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: _amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: "Withdrawal Amount (₹)",
-                        hintText: "Enter amount (Min ₹500)",
-                        prefixIcon: Icon(Icons.currency_rupee),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) return "Amount is required";
-                        final amt = double.tryParse(value.trim());
-                        if (amt == null || amt <= 0) return "Enter valid amount";
-                        if (amt > _mainBalance) return "Insufficient main balance";
-                        if (amt < 500) return "Minimum withdrawal is ₹500";
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _paymentDetailsController,
-                      decoration: const InputDecoration(
-                        labelText: "UPI ID or Bank details",
-                        hintText: "UPI ID or Account No + IFSC",
-                        prefixIcon: Icon(Icons.payment),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) return "Details are required";
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: _isSubmitting ? null : () => Navigator.pop(dialogContext),
-                  child: const Text("Cancel"),
-                ),
-                ElevatedButton(
-                  onPressed: _isSubmitting ? null : () async {
-                    if (!_cashoutFormKey.currentState!.validate()) return;
-                    setDialogState(() {
-                      _isSubmitting = true;
-                    });
-                    
-                    final amt = double.parse(_amountController.text.trim());
-                    final result = await ApiService.submitWithdrawal(amt);
-                    
-                    if (result['success']) {
-                      Navigator.pop(dialogContext);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Cashout request submitted successfully!")),
-                      );
-                      _loadWalletData();
-                    } else {
-                      setDialogState(() {
-                        _isSubmitting = false;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(result['error'] ?? "Withdrawal failed")),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.secondaryRed),
-                  child: _isSubmitting 
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text("Confirm", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            );
-          }
-        );
-      }
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -485,7 +385,7 @@ class _WalletDetailsScreenState extends State<WalletDetailsScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => _showCashoutDialog(context),
+                      onPressed: () => Navigator.pushNamed(context, '/withdrawal').then((_) => _loadWalletData()),
                       icon: const Icon(Icons.account_balance, color: Colors.white),
                       label: const Text("CASHOUT TO BANK / UPI", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(

@@ -7,6 +7,7 @@ import 'screens/home_screen.dart';
 import 'screens/fund_request_screen.dart';
 import 'screens/settings_detail_screen.dart';
 import 'screens/wallet_history_screens.dart';
+import 'screens/withdrawal_screen.dart';
 import 'constants/app_theme.dart';
 
 void main() {
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
         '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/home': (context) => const HomeScreen(),
         '/fund-request': (context) => const FundRequestScreen(),
+        '/withdrawal': (context) => const WithdrawalScreen(),
         '/profile-details': (context) => const ProfileDetailsScreen(),
         '/security-details': (context) => const SecurityDetailsScreen(),
         '/wallet-details': (context) => const WalletDetailsScreen(),
