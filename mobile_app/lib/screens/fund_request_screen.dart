@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:upi_uri/qr_widget.dart';
 import '../constants/app_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/processing_dialog.dart';
 
 class FundRequestScreen extends StatefulWidget {
   const FundRequestScreen({super.key});
@@ -83,6 +84,9 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       });
       return;
     }
+
+    await showProcessingDialog(context, "Verifying Deposit / UTR Details...");
+    if (!mounted) return;
 
     setState(() {
       _isLoading = true;

@@ -4,6 +4,7 @@ import '../constants/app_theme.dart';
 import '../services/api_service.dart';
 import '../api.dart';
 import '../widgets/background_container.dart';
+import '../widgets/processing_dialog.dart';
 
 // --- SCREEN 1: PROVIDER SELECTION & DETAILS ---
 class ProviderSelectionScreen extends StatefulWidget {
@@ -354,6 +355,9 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    await showProcessingDialog(context, "Processing Telecom Recharge...");
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
       _paymentStatus = "Payment verified. Executing Telecom Recharge...";

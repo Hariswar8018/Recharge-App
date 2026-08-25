@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../constants/app_theme.dart';
 import '../services/api_service.dart';
 import '../widgets/background_container.dart';
+import '../widgets/processing_dialog.dart';
 import 'recharge_flow_screens.dart';
 import 'wallet_history_screens.dart';
 
@@ -89,6 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleActivateCycle() async {
+    await showProcessingDialog(context, "Activating ID / Subscription...");
+    if (!mounted) return;
     setState(() { _isLoading = true; });
     final res = await ApiService.activateCycle();
     setState(() { _isLoading = false; });
