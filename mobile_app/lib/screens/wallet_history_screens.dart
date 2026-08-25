@@ -384,15 +384,26 @@ class _WalletDetailsScreenState extends State<WalletDetailsScreen> {
         border: Border.all(color: AppTheme.cardLightBlue),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue, fontSize: 13)),
-              const SizedBox(height: 4),
-              Text(date, style: const TextStyle(color: Colors.grey, fontSize: 11)),
-            ],
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: isIncome ? Colors.green.shade50 : Colors.red.shade50,
+            child: Icon(
+              isIncome ? Icons.call_received : Icons.call_made,
+              color: isIncome ? Colors.green : Colors.red,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue, fontSize: 13)),
+                const SizedBox(height: 4),
+                Text(date, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+              ],
+            ),
           ),
           Text(
             (isIncome ? "+" : "-") + amt,
