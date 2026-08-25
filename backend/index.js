@@ -101,9 +101,13 @@ app.post('/api/auth/register', verifyAppToken, async (req, res) => {
 
     let sponsorIdVal = null;
     if (sponsor_id) {
-      let cleanSponsorId = sponsor_id.toString().trim();
-      if (cleanSponsorId.toUpperCase().startsWith('EARNKARO97US77')) {
-        cleanSponsorId = cleanSponsorId.toUpperCase().replace('EARNKARO97US77', '');
+      let cleanSponsorId = sponsor_id.toString().trim().toUpperCase();
+      if (cleanSponsorId.startsWith('EARNFARMX7AQ96SD')) {
+        cleanSponsorId = cleanSponsorId.replace('EARNFARMX7AQ96SD', '');
+      } else if (cleanSponsorId.startsWith('EARNFARM')) {
+        cleanSponsorId = cleanSponsorId.replace('EARNFARM', '');
+      } else if (cleanSponsorId.startsWith('EARNKARO97US77')) {
+        cleanSponsorId = cleanSponsorId.replace('EARNKARO97US77', '');
       }
       const sponsor = await query('SELECT id FROM users WHERE id = ?', [cleanSponsorId]);
       if (sponsor.length === 0) {

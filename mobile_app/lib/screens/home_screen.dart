@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _activeCycleId = "";
           _membersCount = 0;
         }
-        _referralLink = "https://earnfarm.com/join?ref=EARNFARM$_userId";
+        _referralLink = "https://earnfarm.com/join?ref=EARNFARMX7AQ96SD$_userId";
         _isLoading = false;
       });
     } else {
@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_referralLink.isEmpty) return;
     final String shareMessage = 
       "Join EarnFarm Today!\n\n"
-      "Register on EarnFarm using my Sponsor ID: EARNFARM$_userId\n\n"
+      "Register on EarnFarm using my Sponsor ID: EARNFARMX7AQ96SD$_userId\n\n"
       "Referral Link:\n$_referralLink\n\n"
       "Download the App:\nhttps://play.google.com/store/apps/details?id=com.app.earnfarm\n\n"
       "Start earning affiliate commissions, global cycle rewards, and much more! Join our network today.";
@@ -2073,7 +2073,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "ID : EARNFARM${_userId.toString().padLeft(4, '0')}",
+                            "ID : EARNFARMX7AQ96SD$_userId",
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
