@@ -12,23 +12,16 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
-
     _navigateToNextScreen();
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     super.dispose();
   }
 
@@ -63,37 +56,34 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  RotationTransition(
-                    turns: _controller,
-                    child: Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppTheme.primaryBlue.withOpacity(0.2),
-                          width: 4,
-                        ),
+                  Container(
+                    width: 140,
+                    height: 140,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppTheme.primaryBlue.withOpacity(0.2),
+                        width: 4,
                       ),
-                      child: Center(
-                        child: Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppTheme.primaryBlue,
-                              width: 4,
-                            ),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppTheme.primaryBlue,
+                            width: 4,
                           ),
-                          child: const Center(
-                            child: Text(
-                              "SR",
-                              style: TextStyle(
-                                color: AppTheme.primaryBlue,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 28,
-                              ),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            "SR",
+                            style: TextStyle(
+                              color: AppTheme.primaryBlue,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 28,
                             ),
                           ),
                         ),
