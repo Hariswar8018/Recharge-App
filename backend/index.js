@@ -230,7 +230,7 @@ app.post('/api/auth/forgot-password', verifyAppToken, async (req, res) => {
 
     await query('UPDATE users SET passwordHash = ? WHERE id = ?', [hash, users[0].id]);
 
-    await sendNotificationEmail(email.trim().toLowerCase(), "Temporary Password Reset - EarnFarm", `
+    sendNotificationEmail(email.trim().toLowerCase(), "Temporary Password Reset - EarnFarm", `
       <h3>Hi ${users[0].fullName},</h3>
       <p>We received a password reset request for your EarnFarm account.</p>
       <p>Your password has been reset to the following temporary password:</p>
