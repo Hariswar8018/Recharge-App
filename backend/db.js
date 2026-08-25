@@ -79,6 +79,7 @@ async function initDb() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
         amount DECIMAL(15, 2) NOT NULL,
+        utr VARCHAR(50) DEFAULT NULL,
         status VARCHAR(20) DEFAULT 'PENDING',
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_user_id (user_id),
@@ -209,6 +210,28 @@ async function initDb() {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB;
     `);
+
+    // Ensure sponsor_id column exists in users table
+    try {
+      const cols = await query("SHOW COLUMNS FROM users LIKE 'sponsor_id'");
+      if (cols.length === 0) {
+        await query("ALTER TABLE users ADD COLUMN sponsor_id INT DEFAULT NULL");
+        console.log("Migrated: Added sponsor_id column to users table.");
+      }
+    } catch (e) {
+      console.warn("Sponsor_id migration check failed: ", e);
+    }
+
+    // Ensure utr column exists in fund_requests table
+    try {
+      const cols = await query("SHOW COLUMNS FROM fund_requests LIKE 'utr'");
+      if (cols.length === 0) {
+        await query("ALTER TABLE fund_requests ADD COLUMN utr VARCHAR(50) DEFAULT NULL");
+        console.log("Migrated: Added utr column to fund_requests table.");
+      }
+    } catch (e) {
+      console.warn("UTR migration check failed: ", e);
+    }
 
     console.log('MySQL Database migration complete.');
   } catch (err) {
