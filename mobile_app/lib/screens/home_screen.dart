@@ -40,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadUserProfile();
-    _startHealthCheck();
   }
 
   @override
@@ -49,37 +48,19 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _startHealthCheck() {
-    _healthCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-      try {
-        final response = await http.get(Uri.parse('https://api.srdigitalseva.com/api/health')).timeout(const Duration(seconds: 3));
-        if (response.statusCode == 200) {
-          if (!_isNetworkConnected) {
-            setState(() { _isNetworkConnected = true; });
-          }
-        } else {
-          if (_isNetworkConnected) {
-            setState(() { _isNetworkConnected = false; });
-          }
-        }
-      } catch (_) {
-        if (_isNetworkConnected) {
-          setState(() { _isNetworkConnected = false; });
-        }
-      }
-    });
-  }
-
   Future<void> _loadUserProfile() async {
     final response = await ApiService.getProfile();
     if (response['success']) {
       final user = response['user'];
       final cycles = await ApiService.getCyclesHistory();
       final team = await ApiService.getTeam();
-      
+
       dynamic activeCycle;
       try {
-        activeCycle = cycles.firstWhere((c) => c['status'] == 'ACTIVE', orElse: () => null);
+        activeCycle = cycles.firstWhere(
+          (c) => c['status'] == 'ACTIVE',
+          orElse: () => null,
+        );
       } catch (_) {
         activeCycle = null;
       }
@@ -90,7 +71,9 @@ class _HomeScreenState extends State<HomeScreen> {
         _email = user['email'] ?? "";
         _mobileNumber = user['mobileNumber'] ?? "";
         _createdAt = user['createdAt'] != null
-            ? DateTime.parse(user['createdAt']).toLocal().toString().substring(0, 10)
+            ? DateTime.parse(
+                user['createdAt'],
+              ).toLocal().toString().substring(0, 10)
             : "2026-08-25";
         _mainWalletBalance = parseDouble(user['main_wallet_balance']) ?? 0.00;
         _fundWalletBalance = parseDouble(user['fund_wallet_balance']) ?? 0.00;
@@ -124,12 +107,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _handleActivateCycle() async {
     await showProcessingDialog(context, "Activating ID / Subscription...");
     if (!mounted) return;
-    setState(() { _isLoading = true; });
+    setState(() {
+      _isLoading = true;
+    });
     final res = await ApiService.activateCycle();
-    setState(() { _isLoading = false; });
+    setState(() {
+      _isLoading = false;
+    });
     if (res['success']) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Cycle activated successfully! ID: ${res['cycleId']}")),
+        SnackBar(
+          content: Text("Cycle activated successfully! ID: ${res['cycleId']}"),
+        ),
       );
       _loadUserProfile();
     } else {
@@ -163,18 +152,35 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(4)),
+        ),
         title: Row(
           children: const [
             Icon(Icons.notifications_active, color: AppTheme.primaryBlue),
             SizedBox(width: 8),
-            Text("Notification Preference", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryBlue, fontSize: 16)),
+            Text(
+              "Notification Preference",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryBlue,
+                fontSize: 16,
+              ),
+            ),
           ],
         ),
-        content: const Text("Would you like to enable push notifications for transactions?"),
+        content: const Text(
+          "Would you like to enable push notifications for transactions?",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Yes")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Yes"),
+          ),
         ],
       ),
     );
@@ -200,10 +206,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   accountName: Text(
                     _fullName,
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
                   ),
                   accountEmail: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -211,9 +224,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.verified, color: Colors.greenAccent, size: 14),
+                        const Icon(
+                          Icons.verified,
+                          color: Colors.greenAccent,
+                          size: 14,
+                        ),
                         const SizedBox(width: 4),
-                        Text("Status: $_status", style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                        Text(
+                          "Status: $_status",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -224,7 +248,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: const CircleAvatar(
                       backgroundColor: Colors.white,
-                      child: Icon(Icons.person, color: AppTheme.primaryBlue, size: 44),
+                      child: Icon(
+                        Icons.person,
+                        color: AppTheme.primaryBlue,
+                        size: 44,
+                      ),
                     ),
                   ),
                 ),
@@ -238,27 +266,48 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.pop(context);
                         setState(() => _currentIndex = 0);
                       }),
-                      _buildDrawerItem(Icons.business_center_outlined, "Business Hub", () {
-                        Navigator.pop(context);
-                        setState(() => _currentIndex = 1);
-                      }),
-                      _buildDrawerItem(Icons.group_outlined, "Team Network", () {
-                        Navigator.pop(context);
-                        setState(() => _currentIndex = 2);
-                      }),
+                      _buildDrawerItem(
+                        Icons.business_center_outlined,
+                        "Business Hub",
+                        () {
+                          Navigator.pop(context);
+                          setState(() => _currentIndex = 1);
+                        },
+                      ),
+                      _buildDrawerItem(
+                        Icons.group_outlined,
+                        "Team Network",
+                        () {
+                          Navigator.pop(context);
+                          setState(() => _currentIndex = 2);
+                        },
+                      ),
                       _buildDrawerItem(Icons.person_outline, "My Profile", () {
                         Navigator.pop(context);
                         setState(() => _currentIndex = 3);
                       }),
-                      const Divider(color: AppTheme.cardLightBlue, thickness: 1.5, indent: 16, endIndent: 16),
-                      _buildDrawerItem(Icons.help_outline, "About Seva Kendram", () {
-                        Navigator.pop(context);
-                        _openWebUrl("https://srdigitalseva.com");
-                      }),
-                      _buildDrawerItem(Icons.support_agent_outlined, "Customer Support", () {
-                        Navigator.pop(context);
-                        _openWebUrl("https://srdigitalseva.com/contact");
-                      }),
+                      const Divider(
+                        color: AppTheme.cardLightBlue,
+                        thickness: 1.5,
+                        indent: 16,
+                        endIndent: 16,
+                      ),
+                      _buildDrawerItem(
+                        Icons.help_outline,
+                        "About Seva Kendram",
+                        () {
+                          Navigator.pop(context);
+                          _openWebUrl("https://srdigitalseva.com");
+                        },
+                      ),
+                      _buildDrawerItem(
+                        Icons.support_agent_outlined,
+                        "Customer Support",
+                        () {
+                          Navigator.pop(context);
+                          _openWebUrl("https://srdigitalseva.com/contact");
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -273,12 +322,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       foregroundColor: Colors.red,
                       elevation: 0,
                       minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     icon: const Icon(Icons.logout),
-                    label: const Text("Sign Out", style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      "Sign Out",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -300,7 +354,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   border: Border.all(color: Colors.black, width: 2),
                 ),
                 child: const Center(
-                  child: Text("S", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
+                  child: Text(
+                    "S",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 6),
@@ -308,10 +369,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("SR DIGITAL SEVA", style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 13)),
-                  Text("K E N D R A M", style: TextStyle(color: AppTheme.secondaryRed, fontWeight: FontWeight.bold, fontSize: 7, letterSpacing: 0.5)),
+                  Text(
+                    "SR DIGITAL SEVA",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                    ),
+                  ),
+                  Text(
+                    "K E N D R A M",
+                    style: TextStyle(
+                      color: AppTheme.secondaryRed,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 7,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ],
-              )
+              ),
             ],
           ),
           actions: [
@@ -328,53 +404,49 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     width: 8,
                     height: 8,
-                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
-        body: _isLoading 
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue))
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+              )
             : Column(
                 children: [
-                  if (!_isNetworkConnected)
-                    Container(
-                      color: Colors.red,
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.wifi_off, color: Colors.white, size: 16),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              "No internet connection or API server is unreachable",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   SafeArea(
                     bottom: false,
                     child: Container(
                       width: double.infinity,
                       color: Colors.white.withOpacity(0.9),
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 16,
+                      ),
                       child: Row(
                         children: [
-                          const Icon(Icons.volume_up, color: AppTheme.primaryBlue, size: 16),
+                          const Icon(
+                            Icons.volume_up,
+                            color: AppTheme.primaryBlue,
+                            size: 16,
+                          ),
                           const SizedBox(width: 8),
                           const Expanded(
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Text(
                                 "Welcome to Affiliate Marketing | Grow your income with Smart Digital Services",
-                                style: TextStyle(color: AppTheme.primaryBlue, fontSize: 11, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  color: AppTheme.primaryBlue,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
@@ -383,9 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: _buildTabContent(),
-                    ),
+                    child: SingleChildScrollView(child: _buildTabContent()),
                   ),
                 ],
               ),
@@ -416,13 +486,22 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Colors.white,
               selectedItemColor: AppTheme.primaryBlue,
               unselectedItemColor: Colors.grey.shade400,
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+              selectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
               unselectedLabelStyle: const TextStyle(fontSize: 11),
               items: const [
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                BottomNavigationBarItem(icon: Icon(Icons.business_center), label: "Business"),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.business_center),
+                  label: "Business",
+                ),
                 BottomNavigationBarItem(icon: Icon(Icons.group), label: "Team"),
-                BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person),
+                  label: "Profile",
+                ),
               ],
             ),
           ),
@@ -434,7 +513,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon, color: AppTheme.primaryBlue),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textDarkBlue)),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+          color: AppTheme.textDarkBlue,
+        ),
+      ),
       onTap: onTap,
     );
   }
@@ -484,20 +570,44 @@ class _HomeScreenState extends State<HomeScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Text("SR DIGITAL SEVA", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.primaryBlue)),
-                        Text("KENDRAM", style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold)),
+                        Text(
+                          "SR DIGITAL SEVA",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: AppTheme.primaryBlue,
+                          ),
+                        ),
+                        Text(
+                          "KENDRAM",
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text("Fund Wallet Balance", style: TextStyle(fontSize: 10, color: AppTheme.textGray)),
+                    const Text(
+                      "Fund Wallet Balance",
+                      style: TextStyle(fontSize: 10, color: AppTheme.textGray),
+                    ),
                     const SizedBox(height: 2),
-                    Text("₹ ${_fundWalletBalance.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.primaryBlue)),
+                    Text(
+                      "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: AppTheme.primaryBlue,
+                      ),
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -516,25 +626,51 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 CircleAvatar(
                   backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
-                  child: const Icon(Icons.workspace_premium, color: AppTheme.primaryBlue),
+                  child: const Icon(
+                    Icons.workspace_premium,
+                    color: AppTheme.primaryBlue,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Text("Basic Plan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textDarkBlue)),
-                      Text("ID Activation Plan", style: TextStyle(color: AppTheme.textGray, fontSize: 12)),
+                      Text(
+                        "Basic Plan",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: AppTheme.textDarkBlue,
+                        ),
+                      ),
+                      Text(
+                        "ID Activation Plan",
+                        style: TextStyle(
+                          color: AppTheme.textGray,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: const [
-                    Text("₹1200", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primaryBlue)),
-                    Text("One Time", style: TextStyle(color: AppTheme.textGray, fontSize: 11)),
+                    Text(
+                      "₹1200",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: AppTheme.primaryBlue,
+                      ),
+                    ),
+                    Text(
+                      "One Time",
+                      style: TextStyle(color: AppTheme.textGray, fontSize: 11),
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -547,9 +683,18 @@ class _HomeScreenState extends State<HomeScreen> {
             readOnly: true,
             decoration: InputDecoration(
               prefixIcon: const Icon(Icons.person, color: AppTheme.primaryBlue),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppTheme.cardLightBlue),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: AppTheme.cardLightBlue),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -572,7 +717,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildDetailRow("Joining Date", _createdAt),
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(6),
@@ -585,12 +733,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: Text(
                           "User Verified Successfully\nAll details are correct.",
-                          style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold, height: 1.3),
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            height: 1.3,
+                          ),
                         ),
-                      )
+                      ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -613,10 +766,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 8),
                 InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, '/fund-request').then((_) => _loadUserProfile());
+                    Navigator.pushNamed(
+                      context,
+                      '/fund-request',
+                    ).then((_) => _loadUserProfile());
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.cardLightBlue.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(6),
@@ -626,16 +785,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.account_balance_wallet, color: AppTheme.primaryBlue, size: 18),
+                            const Icon(
+                              Icons.account_balance_wallet,
+                              color: AppTheme.primaryBlue,
+                              size: 18,
+                            ),
                             const SizedBox(width: 6),
-                            Text("Available in Fund Wallet: ₹${_fundWalletBalance.toStringAsFixed(2)}", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue)),
+                            Text(
+                              "Available in Fund Wallet: ₹${_fundWalletBalance.toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textDarkBlue,
+                              ),
+                            ),
                           ],
                         ),
-                        const Icon(Icons.chevron_right, size: 16, color: AppTheme.textGray),
+                        const Icon(
+                          Icons.chevron_right,
+                          size: 16,
+                          color: AppTheme.textGray,
+                        ),
                       ],
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -650,14 +824,19 @@ class _HomeScreenState extends State<HomeScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryBlue,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: Text(
                 _isLoading ? "ACTIVATING..." : "SUBSCRIBE NOW - ₹1200",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -670,7 +849,14 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Icon(icon, color: AppTheme.primaryBlue, size: 18),
           const SizedBox(width: 6),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textDarkBlue)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: AppTheme.textDarkBlue,
+            ),
+          ),
         ],
       ),
     );
@@ -682,8 +868,18 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.textGray, fontSize: 12)),
-          Text(val, style: const TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.bold, fontSize: 12)),
+          Text(
+            label,
+            style: const TextStyle(color: AppTheme.textGray, fontSize: 12),
+          ),
+          Text(
+            val,
+            style: const TextStyle(
+              color: AppTheme.textDarkBlue,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     );
@@ -693,8 +889,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(color: isBold ? AppTheme.textDarkBlue : AppTheme.textGray, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: 13)),
-        Text(val, style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: isBold ? 15 : 13)),
+        Text(
+          label,
+          style: TextStyle(
+            color: isBold ? AppTheme.textDarkBlue : AppTheme.textGray,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
+        ),
+        Text(
+          val,
+          style: TextStyle(
+            color: AppTheme.primaryBlue,
+            fontWeight: FontWeight.bold,
+            fontSize: isBold ? 15 : 13,
+          ),
+        ),
       ],
     );
   }
@@ -709,7 +919,10 @@ class _HomeScreenState extends State<HomeScreen> {
           // Separate Wallets Displays (Main Wallet & Fund Wallet)
           InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/wallet-details').then((_) => _loadUserProfile());
+              Navigator.pushNamed(
+                context,
+                '/wallet-details',
+              ).then((_) => _loadUserProfile());
             },
             child: Container(
               padding: const EdgeInsets.all(16),
@@ -717,7 +930,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
                 border: Border.all(color: AppTheme.cardLightBlue),
               ),
@@ -729,27 +946,53 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Main/Income Wallet", style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const Text(
+                          "Main/Income Wallet",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
-                          style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 16, fontWeight: FontWeight.w900),
+                          style: const TextStyle(
+                            color: AppTheme.primaryBlue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Container(width: 1.5, height: 40, color: AppTheme.cardLightBlue),
+                  Container(
+                    width: 1.5,
+                    height: 40,
+                    color: AppTheme.cardLightBlue,
+                  ),
                   const SizedBox(width: 12),
                   // Fund Wallet Column
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Fund Wallet", style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+                        const Text(
+                          "Fund Wallet",
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
-                          style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 16, fontWeight: FontWeight.w900),
+                          style: const TextStyle(
+                            color: AppTheme.primaryBlue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ],
                     ),
@@ -775,9 +1018,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => Navigator.pushNamed(context, '/fund-request'),
                   child: Row(
                     children: const [
-                      Icon(Icons.account_balance_wallet, color: Colors.white, size: 18),
+                      Icon(
+                        Icons.account_balance_wallet,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       SizedBox(width: 6),
-                      Text("Add Money", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text(
+                        "Add Money",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -800,12 +1054,32 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSpacing: 16,
             childAspectRatio: 0.9,
             children: [
-              _buildServiceGridItem(Icons.phone_android, "Prepaid", Colors.blue),
-              _buildServiceGridItem(Icons.electric_bolt, "Electricity", Colors.orange),
-              _buildServiceGridItem(Icons.settings_input_hdmi, "DTH", Colors.purple),
-              _buildServiceGridItem(Icons.directions_car, "FastTag", Colors.teal),
+              _buildServiceGridItem(
+                Icons.phone_android,
+                "Prepaid",
+                Colors.blue,
+              ),
+              _buildServiceGridItem(
+                Icons.electric_bolt,
+                "Electricity",
+                Colors.orange,
+              ),
+              _buildServiceGridItem(
+                Icons.settings_input_hdmi,
+                "DTH",
+                Colors.purple,
+              ),
+              _buildServiceGridItem(
+                Icons.directions_car,
+                "FastTag",
+                Colors.teal,
+              ),
               _buildServiceGridItem(Icons.security, "Insurance", Colors.indigo),
-              _buildServiceGridItem(Icons.water_drop, "Water Bill", Colors.lightBlue),
+              _buildServiceGridItem(
+                Icons.water_drop,
+                "Water Bill",
+                Colors.lightBlue,
+              ),
               _buildServiceGridItem(Icons.receipt, "Postpaid", Colors.brown),
               _buildServiceGridItem(Icons.apps, "More", Colors.grey),
             ],
@@ -822,11 +1096,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Row(
                     children: [
-                      Container(width: 4, height: 16, color: AppTheme.primaryBlue),
+                      Container(
+                        width: 4,
+                        height: 16,
+                        color: AppTheme.primaryBlue,
+                      ),
                       const SizedBox(width: 8),
                       const Text(
                         "Transaction History",
-                        style: TextStyle(color: AppTheme.textDarkBlue, fontSize: 15, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                          color: AppTheme.textDarkBlue,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ],
                   ),
@@ -841,7 +1123,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: const Text(
                       "See More",
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryBlue,
+                      ),
                     ),
                   ),
                 ],
@@ -877,7 +1163,14 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Icon(icon, color: Colors.white, size: 18),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
         ],
       ),
     );
@@ -907,7 +1200,11 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.w600, fontSize: 11),
+            style: const TextStyle(
+              color: AppTheme.textDarkBlue,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -946,19 +1243,35 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isIncome ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                color: isIncome
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.red.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: isIncome ? Colors.green : Colors.red, size: 16),
+              child: Icon(
+                icon,
+                color: isIncome ? Colors.green : Colors.red,
+                size: 16,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(type, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textDarkBlue)),
+                  Text(
+                    type,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppTheme.textDarkBlue,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(date, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                  Text(
+                    date,
+                    style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -980,8 +1293,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 1: BUSINESS VIEW ---
   Widget _buildBusinessTab() {
-    double progressVal = _activeCycleId.isNotEmpty ? (_membersCount / 126.0) : 0.0;
-    String progressPercent = _activeCycleId.isNotEmpty ? "${(_membersCount * 100 / 126).toStringAsFixed(0)}%" : "0%";
+    double progressVal = _activeCycleId.isNotEmpty
+        ? (_membersCount / 126.0)
+        : 0.0;
+    String progressPercent = _activeCycleId.isNotEmpty
+        ? "${(_membersCount * 100 / 126).toStringAsFixed(0)}%"
+        : "0%";
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -994,7 +1311,11 @@ class _HomeScreenState extends State<HomeScreen> {
               gradient: AppTheme.blueGradient,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: AppTheme.primaryBlue.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5)),
+                BoxShadow(
+                  color: AppTheme.primaryBlue.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
               ],
             ),
             child: Column(
@@ -1006,28 +1327,62 @@ class _HomeScreenState extends State<HomeScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("INCOME GROWTH", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                        const Text(
+                          "INCOME GROWTH",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(_activeCycleId.isNotEmpty ? "Active Cycle: $_activeCycleId" : "No Active Cycle", style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                        Text(
+                          _activeCycleId.isNotEmpty
+                              ? "Active Cycle: $_activeCycleId"
+                              : "No Active Cycle",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           "₹ ${(_mainWalletBalance).toStringAsFixed(2)}",
-                          style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ],
                     ),
-                    const Icon(Icons.trending_up, color: Colors.white38, size: 60),
+                    const Icon(
+                      Icons.trending_up,
+                      color: Colors.white38,
+                      size: 60,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text("Members completed: $_membersCount of 126", style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                Text(
+                  "Members completed: $_membersCount of 126",
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: progressVal,
                     backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Colors.white,
+                    ),
                     minHeight: 6,
                   ),
                 ),
@@ -1035,11 +1390,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("0%", style: TextStyle(color: Colors.white70, fontSize: 10)),
-                    Text(progressPercent, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
-                    const Text("100%", style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    const Text(
+                      "0%",
+                      style: TextStyle(color: Colors.white70, fontSize: 10),
+                    ),
+                    Text(
+                      progressPercent,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      "100%",
+                      style: TextStyle(color: Colors.white70, fontSize: 10),
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -1052,11 +1420,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 backgroundColor: AppTheme.primaryBlue,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 2,
               ),
               icon: const Icon(Icons.flash_on),
-              label: const Text("ACTIVATE NEW CYCLE (₹1,200)", style: TextStyle(fontWeight: FontWeight.bold)),
+              label: const Text(
+                "ACTIVATE NEW CYCLE (₹1,200)",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
 
@@ -1073,8 +1446,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (_membersCount >= 62) globalIncome += 3200;
                 if (_membersCount >= 126) globalIncome += 6400;
               }
-              double affiliateIncome = _activeCycleId.isNotEmpty ? (_teamMembers.length * 300.0) : 0.0;
-              double totalIncome = _activeCycleId.isNotEmpty ? _mainWalletBalance : 0.00;
+              double affiliateIncome = _activeCycleId.isNotEmpty
+                  ? (_teamMembers.length * 300.0)
+                  : 0.0;
+              double totalIncome = _activeCycleId.isNotEmpty
+                  ? _mainWalletBalance
+                  : 0.00;
               double todayIncome = 0.00;
 
               return GridView.count(
@@ -1085,13 +1462,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSpacing: 14,
                 childAspectRatio: 1.35,
                 children: [
-                  _buildBusinessStatCard("TODAY INCOME", "₹ ${todayIncome.toStringAsFixed(2)}", Icons.trending_up, Colors.blue),
-                  _buildBusinessStatCard("TOTAL INCOME", "₹ ${totalIncome.toStringAsFixed(2)}", Icons.account_balance_wallet, Colors.teal),
-                  _buildBusinessStatCard("GLOBAL INCOME", "₹ ${globalIncome.toStringAsFixed(2)}", Icons.language, Colors.indigo),
-                  _buildBusinessStatCard("AFFILIATE INCOME", "₹ ${affiliateIncome.toStringAsFixed(2)}", Icons.people, Colors.purple),
+                  _buildBusinessStatCard(
+                    "TODAY INCOME",
+                    "₹ ${todayIncome.toStringAsFixed(2)}",
+                    Icons.trending_up,
+                    Colors.blue,
+                  ),
+                  _buildBusinessStatCard(
+                    "TOTAL INCOME",
+                    "₹ ${totalIncome.toStringAsFixed(2)}",
+                    Icons.account_balance_wallet,
+                    Colors.teal,
+                  ),
+                  _buildBusinessStatCard(
+                    "GLOBAL INCOME",
+                    "₹ ${globalIncome.toStringAsFixed(2)}",
+                    Icons.language,
+                    Colors.indigo,
+                  ),
+                  _buildBusinessStatCard(
+                    "AFFILIATE INCOME",
+                    "₹ ${affiliateIncome.toStringAsFixed(2)}",
+                    Icons.people,
+                    Colors.purple,
+                  ),
                 ],
               );
-            }
+            },
           ),
 
           const SizedBox(height: 20),
@@ -1105,7 +1502,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.card_giftcard, color: AppTheme.primaryBlue, size: 28),
+                const Icon(
+                  Icons.card_giftcard,
+                  color: AppTheme.primaryBlue,
+                  size: 28,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1113,12 +1514,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: const [
                       Text(
                         "Refer App Earn ₹ 300.00",
-                        style: TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(
+                          color: AppTheme.textDarkBlue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                       SizedBox(height: 2),
                       Text(
                         "Each Referral",
-                        style: TextStyle(color: AppTheme.textGray, fontSize: 11),
+                        style: TextStyle(
+                          color: AppTheme.textGray,
+                          fontSize: 11,
+                        ),
                       ),
                     ],
                   ),
@@ -1128,26 +1536,42 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryBlue,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                   ),
                   child: Row(
                     children: const [
-                      Text("INVITE NOW", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text(
+                        "INVITE NOW",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       SizedBox(width: 4),
                       Icon(Icons.chevron_right, size: 12),
                     ],
                   ),
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBusinessStatCard(String label, String amount, IconData icon, Color color) {
+  Widget _buildBusinessStatCard(
+    String label,
+    String amount,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1161,13 +1585,31 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(color: color.withOpacity(0.08), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(color: AppTheme.textGray, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.2)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppTheme.textGray,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.2,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(amount, style: const TextStyle(color: AppTheme.textDarkBlue, fontSize: 16, fontWeight: FontWeight.w900)),
+          Text(
+            amount,
+            style: const TextStyle(
+              color: AppTheme.textDarkBlue,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
         ],
       ),
     );
@@ -1195,42 +1637,70 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const Text(
                   "YOUR REFERRAL PROGRAM",
-                  style: TextStyle(color: AppTheme.textDarkBlue, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  style: TextStyle(
+                    color: AppTheme.textDarkBlue,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.cardLightBlue.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          _referralLink.isNotEmpty ? _referralLink : "Loading referral Link...",
-                          style: const TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 12),
+                          _referralLink.isNotEmpty
+                              ? _referralLink
+                              : "Loading referral Link...",
+                          style: const TextStyle(
+                            color: AppTheme.primaryBlue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.copy, color: AppTheme.primaryBlue, size: 20),
+                      icon: const Icon(
+                        Icons.copy,
+                        color: AppTheme.primaryBlue,
+                        size: 20,
+                      ),
                       onPressed: () {
                         if (_referralLink.isNotEmpty) {
                           Clipboard.setData(ClipboardData(text: _referralLink));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Referral link copied to clipboard")),
+                            const SnackBar(
+                              content: Text(
+                                "Referral link copied to clipboard",
+                              ),
+                            ),
                           );
                         }
                       },
                     ),
                     IconButton(
-                      icon: const Icon(Icons.share, color: AppTheme.primaryBlue, size: 20),
+                      icon: const Icon(
+                        Icons.share,
+                        color: AppTheme.primaryBlue,
+                        size: 20,
+                      ),
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Sharing referral link")),
+                          const SnackBar(
+                            content: Text("Sharing referral link"),
+                          ),
                         );
                       },
                     ),
@@ -1246,7 +1716,11 @@ class _HomeScreenState extends State<HomeScreen> {
               gradient: AppTheme.blueGradient,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: AppTheme.primaryBlue.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5)),
+                BoxShadow(
+                  color: AppTheme.primaryBlue.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
               ],
             ),
             child: Column(
@@ -1258,25 +1732,60 @@ class _HomeScreenState extends State<HomeScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("TEAM GROWTH", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                        const Text(
+                          "TEAM GROWTH",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                         const SizedBox(height: 8),
-                        const Text("Current Team", style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                        const Text(
+                          "Current Team",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text("$_membersCount", style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)),
+                        Text(
+                          "$_membersCount",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                       ],
                     ),
-                    const Icon(Icons.hub_outlined, color: Colors.white38, size: 54),
+                    const Icon(
+                      Icons.hub_outlined,
+                      color: Colors.white38,
+                      size: 54,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text("TARGET : 126", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+                const Text(
+                  "TARGET : 126",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: _membersCount / 126.0,
                     backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Colors.white,
+                    ),
                     minHeight: 6,
                   ),
                 ),
@@ -1284,11 +1793,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("0%", style: TextStyle(color: Colors.white70, fontSize: 10)),
-                    Text("${(_membersCount * 100 / 126).toStringAsFixed(0)}%", style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
-                    const Text("100%", style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    const Text(
+                      "0%",
+                      style: TextStyle(color: Colors.white70, fontSize: 10),
+                    ),
+                    Text(
+                      "${(_membersCount * 100 / 126).toStringAsFixed(0)}%",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      "100%",
+                      style: TextStyle(color: Colors.white70, fontSize: 10),
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -1296,7 +1818,12 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 20),
           const Text(
             "YOUR AFFILIATE NETWORK",
-            style: TextStyle(color: AppTheme.textDarkBlue, fontSize: 13, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+            style: TextStyle(
+              color: AppTheme.textDarkBlue,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
           ),
           const SizedBox(height: 10),
           Expanded(
@@ -1313,7 +1840,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Text(
                         "No affiliates have joined using your referral link yet.",
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppTheme.textGray, fontSize: 12),
+                        style: TextStyle(
+                          color: AppTheme.textGray,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   )
@@ -1330,27 +1860,55 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: AppTheme.primaryBlue.withOpacity(0.1),
-                            child: const Icon(Icons.person, color: AppTheme.primaryBlue),
+                            backgroundColor: AppTheme.primaryBlue.withOpacity(
+                              0.1,
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              color: AppTheme.primaryBlue,
+                            ),
                           ),
-                          title: Text(member['fullName'] ?? 'User', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue, fontSize: 13)),
-                          subtitle: Text("ID: SRD${member['id'].toString().padLeft(8, '0')}\nJoined: ${member['createdAt'] != null ? member['createdAt'].toString().substring(0, 10) : ''}", style: const TextStyle(fontSize: 10, height: 1.4)),
+                          title: Text(
+                            member['fullName'] ?? 'User',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textDarkBlue,
+                              fontSize: 13,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "ID: SRD${member['id'].toString().padLeft(8, '0')}\nJoined: ${member['createdAt'] != null ? member['createdAt'].toString().substring(0, 10) : ''}",
+                            style: const TextStyle(fontSize: 10, height: 1.4),
+                          ),
                           trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: (member['status'] == 'ACTIVE' ? Colors.green : Colors.orange).withOpacity(0.1),
+                              color:
+                                  (member['status'] == 'ACTIVE'
+                                          ? Colors.green
+                                          : Colors.orange)
+                                      .withOpacity(0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               member['status'] ?? 'PENDING',
-                              style: TextStyle(color: member['status'] == 'ACTIVE' ? Colors.green : Colors.orange, fontWeight: FontWeight.bold, fontSize: 9),
+                              style: TextStyle(
+                                color: member['status'] == 'ACTIVE'
+                                    ? Colors.green
+                                    : Colors.orange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 9,
+                              ),
                             ),
                           ),
                         ),
                       );
                     },
                   ),
-          )
+          ),
         ],
       ),
     );
@@ -1370,19 +1928,56 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 width: 22,
                 height: 22,
-                decoration: BoxDecoration(color: AppTheme.primaryBlue.withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
                 child: Center(
                   child: Text(
                     level,
-                    style: const TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 11),
+                    style: const TextStyle(
+                      color: AppTheme.primaryBlue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          Expanded(child: Text(team, style: const TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.w600, fontSize: 12), textAlign: TextAlign.center)),
-          Expanded(child: Text(income, style: const TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.w600, fontSize: 12), textAlign: TextAlign.center)),
-          Expanded(child: Text(total, style: const TextStyle(color: AppTheme.textDarkBlue, fontWeight: FontWeight.w800, fontSize: 12), textAlign: TextAlign.right)),
+          Expanded(
+            child: Text(
+              team,
+              style: const TextStyle(
+                color: AppTheme.textDarkBlue,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              income,
+              style: const TextStyle(
+                color: AppTheme.textDarkBlue,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              total,
+              style: const TextStyle(
+                color: AppTheme.textDarkBlue,
+                fontWeight: FontWeight.w800,
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
         ],
       ),
     );
@@ -1400,7 +1995,11 @@ class _HomeScreenState extends State<HomeScreen> {
               gradient: AppTheme.blueGradient,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: AppTheme.primaryBlue.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 5)),
+                BoxShadow(
+                  color: AppTheme.primaryBlue.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
               ],
             ),
             child: Column(
@@ -1410,8 +2009,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     Container(
                       width: 64,
                       height: 64,
-                      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                      child: const Icon(Icons.person, color: AppTheme.primaryBlue, size: 40),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        color: AppTheme.primaryBlue,
+                        size: 40,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -1420,40 +2026,69 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             _fullName,
-                            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           const Text(
                             "ID : 7989293968",
-                            style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: const [
-                                Icon(Icons.check_circle, color: Colors.green, size: 12),
+                                Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 12,
+                                ),
                                 SizedBox(width: 4),
                                 Text(
                                   "Active Member",
-                                  style: TextStyle(color: AppTheme.primaryBlue, fontSize: 9, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: AppTheme.primaryBlue,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),
-                    Icon(Icons.verified_user, color: Colors.white.withOpacity(0.12), size: 54),
+                    Icon(
+                      Icons.verified_user,
+                      color: Colors.white.withOpacity(0.12),
+                      size: 54,
+                    ),
                   ],
                 ),
 
                 const SizedBox(height: 20),
 
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -1461,14 +2096,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildProfileSubMetric("Main Balance", "₹ ${_mainWalletBalance.toStringAsFixed(2)}", Icons.account_balance_wallet),
-                      Container(width: 1, height: 36, color: AppTheme.cardLightBlue),
+                      _buildProfileSubMetric(
+                        "Main Balance",
+                        "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
+                        Icons.account_balance_wallet,
+                      ),
+                      Container(
+                        width: 1,
+                        height: 36,
+                        color: AppTheme.cardLightBlue,
+                      ),
                       _buildProfileSubMetric("Team Size", "99", Icons.group),
-                      Container(width: 1, height: 36, color: AppTheme.cardLightBlue),
-                      _buildProfileSubMetric("Fund Balance", "₹ ${_fundWalletBalance.toStringAsFixed(2)}", Icons.wallet_giftcard),
+                      Container(
+                        width: 1,
+                        height: 36,
+                        color: AppTheme.cardLightBlue,
+                      ),
+                      _buildProfileSubMetric(
+                        "Fund Balance",
+                        "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
+                        Icons.wallet_giftcard,
+                      ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -1483,22 +2134,54 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               children: [
-                _buildProfileMenuOption(Icons.person, "Manage Profile", "Update your personal details", onTap: () {
-                  Navigator.pushNamed(context, '/profile-details').then((val) {
-                    if (val != null) {
-                      setState(() {
-                        _fullName = val as String;
-                      });
-                    }
-                  });
-                }),
-                _buildProfileMenuOption(Icons.security, "Password & Security", "Change password and secure your account", onTap: () {
-                  Navigator.pushNamed(context, '/security-details');
-                }),
-                _buildProfileMenuOption(Icons.notifications_active, "Notifications", "Manage your notification preferences", onTap: _showNotificationsDialog),
-                _buildProfileMenuOption(Icons.info, "About Us", "Know more about SR Digital Seva Kendram", onTap: () => _openWebUrl("https://srdigitalseva.com")),
-                _buildProfileMenuOption(Icons.help_center, "Support", "Help & support center", onTap: () => _openWebUrl("https://srdigitalseva.com/contact")),
-                _buildProfileMenuOption(Icons.power_settings_new, "Log out", "Sign out from your account", isLogout: true),
+                _buildProfileMenuOption(
+                  Icons.person,
+                  "Manage Profile",
+                  "Update your personal details",
+                  onTap: () {
+                    Navigator.pushNamed(context, '/profile-details').then((
+                      val,
+                    ) {
+                      if (val != null) {
+                        setState(() {
+                          _fullName = val as String;
+                        });
+                      }
+                    });
+                  },
+                ),
+                _buildProfileMenuOption(
+                  Icons.security,
+                  "Password & Security",
+                  "Change password and secure your account",
+                  onTap: () {
+                    Navigator.pushNamed(context, '/security-details');
+                  },
+                ),
+                _buildProfileMenuOption(
+                  Icons.notifications_active,
+                  "Notifications",
+                  "Manage your notification preferences",
+                  onTap: _showNotificationsDialog,
+                ),
+                _buildProfileMenuOption(
+                  Icons.info,
+                  "About Us",
+                  "Know more about SR Digital Seva Kendram",
+                  onTap: () => _openWebUrl("https://srdigitalseva.com"),
+                ),
+                _buildProfileMenuOption(
+                  Icons.help_center,
+                  "Support",
+                  "Help & support center",
+                  onTap: () => _openWebUrl("https://srdigitalseva.com/contact"),
+                ),
+                _buildProfileMenuOption(
+                  Icons.power_settings_new,
+                  "Log out",
+                  "Sign out from your account",
+                  isLogout: true,
+                ),
               ],
             ),
           ),
@@ -1513,25 +2196,61 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Icon(icon, color: AppTheme.primaryBlue, size: 18),
         const SizedBox(height: 6),
-        Text(label, style: const TextStyle(color: AppTheme.textGray, fontSize: 10, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.textGray,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 12, fontWeight: FontWeight.w900)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: AppTheme.primaryBlue,
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildProfileMenuOption(IconData icon, String title, String subtitle, {bool isLogout = false, VoidCallback? onTap}) {
+  Widget _buildProfileMenuOption(
+    IconData icon,
+    String title,
+    String subtitle, {
+    bool isLogout = false,
+    VoidCallback? onTap,
+  }) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isLogout ? Colors.red.withOpacity(0.08) : AppTheme.primaryBlue.withOpacity(0.08),
+          color: isLogout
+              ? Colors.red.withOpacity(0.08)
+              : AppTheme.primaryBlue.withOpacity(0.08),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: isLogout ? Colors.red : AppTheme.primaryBlue, size: 20),
+        child: Icon(
+          icon,
+          color: isLogout ? Colors.red : AppTheme.primaryBlue,
+          size: 20,
+        ),
       ),
-      title: Text(title, style: TextStyle(color: isLogout ? Colors.red : AppTheme.textDarkBlue, fontWeight: FontWeight.bold, fontSize: 13)),
-      subtitle: Text(subtitle, style: const TextStyle(color: AppTheme.textGray, fontSize: 10)),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isLogout ? Colors.red : AppTheme.textDarkBlue,
+          fontWeight: FontWeight.bold,
+          fontSize: 13,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(color: AppTheme.textGray, fontSize: 10),
+      ),
       trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
       onTap: onTap ?? (isLogout ? _handleLogout : () {}),
     );

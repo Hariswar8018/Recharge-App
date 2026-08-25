@@ -399,6 +399,15 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                             side: const BorderSide(color: AppTheme.cardLightBlue),
                           ),
                           child: ListTile(
+                            leading: CircleAvatar(
+                              radius: 18,
+                              backgroundColor: statusColor.withOpacity(0.1),
+                              child: Icon(
+                                Icons.account_balance_wallet,
+                                color: statusColor,
+                                size: 18,
+                              ),
+                            ),
                             title: Text(
                               "₹ ${(item['amount'] is num ? item['amount'] : double.tryParse(item['amount'].toString()) ?? 0.0).toStringAsFixed(2)}",
                               style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue),
