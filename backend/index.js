@@ -35,6 +35,11 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Health Check Endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'API Server is healthy and running' });
+});
+
 // Simple In-memory Redis cache replacement to support rapid API calls
 let cacheStore = {};
 let redisClient = null; // Stays null to auto-fallback to in-memory store
