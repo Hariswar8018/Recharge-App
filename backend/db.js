@@ -121,9 +121,16 @@ async function initDb() {
     await query(`
       CREATE TABLE IF NOT EXISTS system_settings (
         key_name VARCHAR(50) PRIMARY KEY,
-        val_value VARCHAR(255) NOT NULL
+        val_value TEXT NOT NULL
       ) ENGINE=InnoDB;
     `);
+
+    // Modify column type for existing tables to support long URLs
+    try {
+      await query("ALTER TABLE system_settings MODIFY COLUMN val_value TEXT NOT NULL");
+    } catch (e) {
+      console.warn("System settings column modification failed: ", e);
+    }
 
     // Seed Admin users (haris@gmail.com & earnfarm99@gmail.com with password 123456)
     const salt = bcrypt.genSaltSync(10);
