@@ -47,6 +47,7 @@ class ApiService {
     required String email,
     required String mobileNumber,
     required String password,
+    required String sponsorId,
   }) async {
     try {
       final response = await http.post(
@@ -57,6 +58,7 @@ class ApiService {
           'email': email,
           'mobileNumber': mobileNumber,
           'password': password,
+          'sponsor_id': sponsorId,
           'device_model': '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
           'app_version': '1.0.0',
         }),
@@ -122,12 +124,12 @@ class ApiService {
   }
 
   // Submit deposit request for approval
-  static Future<Map<String, dynamic>> submitFundRequest(double amount) async {
+  static Future<Map<String, dynamic>> submitFundRequest(double amount, String utr) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/fund/request'),
         headers: await _getHeaders(requireAuth: true),
-        body: jsonEncode({'amount': amount}),
+        body: jsonEncode({'amount': amount, 'utr': utr}),
       );
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 201) {
@@ -173,5 +175,56 @@ class ApiService {
       }
     } catch (_) {}
     return {'success': false, 'error': 'Server sync failed'};
+  }
+
+  // Activate Cycle ID
+  static Future<Map<String, dynamic>> activateCycle() async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/cycles/activate'),
+        headers: await _getHeaders(requireAuth: true),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 201) {
+        return {'success': true, 'message': decoded['message'], 'cycleId': decoded['cycleId']};
+      } else {
+        return {'success': false, 'error': decoded['error'] ?? 'Activation failed'};
+      }
+    } catch (_) {
+      return {'success': false, 'error': 'Server connection error'};
+    }
+  }
+
+  // Get Cycles History list
+  static Future<List<dynamic>> getCyclesHistory() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/cycles/history'),
+        headers: await _getHeaders(requireAuth: true),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  // Submit Withdrawal Request
+  static Future<Map<String, dynamic>> submitWithdrawal(double amount) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/withdrawal/request'),
+        headers: await _getHeaders(requireAuth: true),
+        body: jsonEncode({'amount': amount}),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': decoded['message']};
+      } else {
+        return {'success': false, 'error': decoded['error'] ?? 'Withdrawal failed'};
+      }
+    } catch (_) {
+      return {'success': false, 'error': 'Server connection error'};
+    }
   }
 }

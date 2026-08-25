@@ -18,6 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _mobileController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _sponsorController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -32,6 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _mobileController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _sponsorController.dispose();
     super.dispose();
   }
 
@@ -56,6 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       email: _emailController.text.trim(),
       mobileNumber: _mobileController.text.trim(),
       password: _passwordController.text,
+      sponsorId: _sponsorController.text.trim(),
     );
 
     setState(() {
@@ -159,6 +162,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         icon: Icons.phone,
                         keyboardType: TextInputType.phone,
                         validator: (v) => (v == null || v.isEmpty) ? "Please enter mobile number" : null,
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Sponsor ID
+                      _buildLabel("Sponsor ID"),
+                      _buildTextField(
+                        controller: _sponsorController,
+                        hint: "Enter Sponsor ID",
+                        icon: Icons.group,
+                        validator: (v) => (v == null || v.trim().isEmpty) ? "Sponsor ID is mandatory" : null,
                       ),
                       const SizedBox(height: 12),
 

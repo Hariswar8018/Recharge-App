@@ -7,11 +7,10 @@ const pool = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10, // Connection pooling to handle heavy concurrent users
+  connectionLimit: 10,
   queueLimit: 0
 });
 
-// Helper to execute queries
 async function query(sql, params) {
   try {
     const [results] = await pool.execute(sql, params);
@@ -22,7 +21,6 @@ async function query(sql, params) {
   }
 }
 
-// Transaction helper
 async function transaction(callback) {
   const connection = await pool.getConnection();
   await connection.beginTransaction();
@@ -38,10 +36,22 @@ async function transaction(callback) {
   }
 }
 
-// Database schema migration
 async function initDb() {
   try {
     console.log('Initializing MySQL Database schema...');
+
+    // Drop/reset tables for production fresh start
+    console.log('Clearing database tables for fresh production start...');
+    try {
+      await query('DELETE FROM users WHERE role != "admin"');
+      await query('DROP TABLE IF EXISTS fund_requests');
+      await query('DROP TABLE IF EXISTS transactions');
+      await query('DROP TABLE IF EXISTS notifications');
+      await query('DROP TABLE IF EXISTS single_leg_queue');
+      await query('DROP TABLE IF EXISTS cycles');
+    } catch(e) {
+      console.warn('Error during production reset:', e);
+    }
 
     // Users Table
     await query(`
@@ -57,14 +67,11 @@ async function initDb() {
         role VARCHAR(20) DEFAULT 'user',
         device_model VARCHAR(100) DEFAULT 'Unknown',
         app_version VARCHAR(20) DEFAULT '1.0.0',
+        sponsor_id INT DEFAULT NULL,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_email (email)
       ) ENGINE=InnoDB;
     `);
-
-    // Dynamically upgrade existing tables
-    try { await query('ALTER TABLE users ADD COLUMN device_model VARCHAR(100) DEFAULT "Unknown"'); } catch(e){}
-    try { await query('ALTER TABLE users ADD COLUMN app_version VARCHAR(20) DEFAULT "1.0.0"'); } catch(e){}
 
     // Fund Requests Table
     await query(`
@@ -86,11 +93,37 @@ async function initDb() {
         user_id INT NOT NULL,
         wallet_type VARCHAR(20) NOT NULL, -- 'FUND' or 'MAIN'
         amount VARCHAR(50) NOT NULL, -- e.g. "₹12,600.00" or "-₹100.00"
-        type VARCHAR(50) NOT NULL, -- 'Credit', 'Debit', 'Cashout', 'Affiliate Income'
+        type VARCHAR(50) NOT NULL, -- 'Credit', 'Debit', 'Cashout', 'Affiliate Income', 'Direct Income', 'Level Income'
         date VARCHAR(100) NOT NULL,
         status VARCHAR(20) DEFAULT 'Success',
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_user_wallet (user_id, wallet_type)
+      ) ENGINE=InnoDB;
+    `);
+
+    // Cycles Table
+    await query(`
+      CREATE TABLE IF NOT EXISTS cycles (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        cycle_id VARCHAR(50) NOT NULL,
+        status VARCHAR(20) DEFAULT 'ACTIVE',
+        members_count INT DEFAULT 0,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_user_cycle (user_id),
+        INDEX idx_status (status)
+      ) ENGINE=InnoDB;
+    `);
+
+    // Single Leg Queue Table
+    await query(`
+      CREATE TABLE IF NOT EXISTS single_leg_queue (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        cycle_id INT NOT NULL,
+        user_id INT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_cycle_queue (cycle_id),
+        INDEX idx_user_queue (user_id)
       ) ENGINE=InnoDB;
     `);
 
@@ -124,24 +157,47 @@ async function initDb() {
       console.log('Earnfarm Admin user seeded.');
     }
 
-    // Seed default system settings
-    const settings = await query('SELECT * FROM system_settings');
-    if (settings.length === 0) {
-      await query('INSERT INTO system_settings (key_name, val_value) VALUES ?', [
-        [
-          ['min_wallet_balance', '50.00'],
-          ['maintenance_mode', 'false'],
-          ['force_update_version', '1.0.0'],
-          ['scriza_api_mode', 'simulation'],
-          ['razorpay_api_mode', 'test'],
-          ['razorpay_key_id', 'rzp_test_dummyKey123'],
-          ['razorpay_key_secret', 'dummySecretKey789'],
-          ['marquee_text', 'Welcome to SR Digital Seva! Enjoy high commission margins on DTH and Mobile recharges. Fast wallet loads enabled via UPI.'],
-          ['marquee_images', 'https://upload.wikimedia.org/wikipedia/commons/5/50/Reliance_Jio_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/e5/Bharti_Airtel_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/d/d4/Vodafone_Idea_logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/ec/BSNL_logo.svg,https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg']
-        ]
-      ]);
-      console.log('Default system settings seeded.');
-    }
+    // Reset and seed default system settings
+    await query('DELETE FROM system_settings');
+    await query('INSERT INTO system_settings (key_name, val_value) VALUES ?', [
+      [
+        ['min_wallet_balance', '50.00'],
+        ['maintenance_mode', 'false'],
+        ['force_update_version', '1.0.0'],
+        ['scriza_api_mode', 'simulation'],
+        ['razorpay_api_mode', 'test'],
+        ['razorpay_key_id', 'rzp_test_dummyKey123'],
+        ['razorpay_key_secret', 'dummySecretKey789'],
+        ['marquee_text', 'Welcome to EarnFarm! Enjoy high commission margins on DTH and Mobile recharges. Fast wallet loads enabled via UPI.'],
+        ['marquee_images', 'https://upload.wikimedia.org/wikipedia/commons/5/50/Reliance_Jio_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/e5/Bharti_Airtel_Logo.svg,https://upload.wikimedia.org/wikipedia/commons/d/d4/Vodafone_Idea_logo.svg,https://upload.wikimedia.org/wikipedia/commons/e/ec/BSNL_logo.svg,https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg'],
+        
+        ['join_amount', '1200'],
+        ['top_up_amount', '1200'],
+        ['direct_income', '300'],
+        ['level_pool', '600'],
+        ['company_maintenance', '300'],
+        ['cycle_size', '126'],
+        ['withdrawal_percentage', '15'],
+        ['minimum_withdrawal', '500'],
+        ['withdrawal_days', 'Mon,Wed,Fri'],
+        ['upi_vpa_id', 'vp110064@okaxis'],
+        ['upi_payee_name', 'EarnFarm'],
+
+        ['level_1_members', '2'],
+        ['level_1_income', '200'],
+        ['level_2_members', '4'],
+        ['level_2_income', '400'],
+        ['level_3_members', '8'],
+        ['level_3_income', '800'],
+        ['level_4_members', '16'],
+        ['level_4_income', '1600'],
+        ['level_5_members', '32'],
+        ['level_5_income', '3200'],
+        ['level_6_members', '64'],
+        ['level_6_income', '6400']
+      ]
+    ]);
+    console.log('Production default system settings seeded.');
 
     // Create Notifications Table
     await query(`
@@ -152,21 +208,6 @@ async function initDb() {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB;
     `);
-
-    // Seed initial dummy transactions for visual display if table is empty
-    const txns = await query('SELECT * FROM transactions LIMIT 1');
-    if (txns.length === 0) {
-      // Dummy data representing home screen logs
-      await query(
-        'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, ?, ?, ?, ?, ?)',
-        [1, 'MAIN', '₹12,600.00', 'Cashout', '2026-08-21 12:30 PM', 'Success']
-      );
-      await query(
-        'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, ?, ?, ?, ?, ?)',
-        [1, 'MAIN', '₹300.00', 'Affiliate Income', '2026-08-21 10:15 AM', 'Success']
-      );
-      console.log('Dummy transactions seeded.');
-    }
 
     console.log('MySQL Database migration complete.');
   } catch (err) {

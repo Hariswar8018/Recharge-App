@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/app_theme.dart';
 import '../services/api_service.dart';
@@ -16,10 +17,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   String _fullName = "Rajesh Reddy";
-  double _mainWalletBalance = 6700.00;
+  double _mainWalletBalance = 0.00;
   double _fundWalletBalance = 0.00;
   String _status = "ACTIVE";
   bool _isLoading = true;
+  int _membersCount = 0;
+  String _activeCycleId = "";
+  List<dynamic> _cyclesHistory = [];
+  int _userId = 0;
+  String _referralLink = "";
 
   @override
   void initState() {
@@ -31,11 +37,30 @@ class _HomeScreenState extends State<HomeScreen> {
     final response = await ApiService.getProfile();
     if (response['success']) {
       final user = response['user'];
+      final cycles = await ApiService.getCyclesHistory();
+      
+      dynamic activeCycle;
+      try {
+        activeCycle = cycles.firstWhere((c) => c['status'] == 'ACTIVE', orElse: () => null);
+      } catch (_) {
+        activeCycle = null;
+      }
+
       setState(() {
         _fullName = user['fullName'] ?? "Rajesh Reddy";
-        _mainWalletBalance = parseDouble(user['main_wallet_balance']) ?? 6700.00;
+        _userId = user['id'] ?? 0;
+        _mainWalletBalance = parseDouble(user['main_wallet_balance']) ?? 0.00;
         _fundWalletBalance = parseDouble(user['fund_wallet_balance']) ?? 0.00;
         _status = user['status'] ?? "ACTIVE";
+        _cyclesHistory = cycles;
+        if (activeCycle != null) {
+          _activeCycleId = activeCycle['cycle_id'] ?? "";
+          _membersCount = activeCycle['members_count'] ?? 0;
+        } else {
+          _activeCycleId = "";
+          _membersCount = 0;
+        }
+        _referralLink = "https://earnfarm.com/join?ref=$_userId";
         _isLoading = false;
       });
     } else {
@@ -50,6 +75,22 @@ class _HomeScreenState extends State<HomeScreen> {
     if (val is num) return val.toDouble();
     if (val is String) return double.tryParse(val);
     return null;
+  }
+
+  Future<void> _handleActivateCycle() async {
+    setState(() { _isLoading = true; });
+    final res = await ApiService.activateCycle();
+    setState(() { _isLoading = false; });
+    if (res['success']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Cycle activated successfully! ID: ${res['cycleId']}")),
+      );
+      _loadUserProfile();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['error'] ?? "Failed to activate cycle")),
+      );
+    }
   }
 
   void _handleLogout() async {
@@ -628,6 +669,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 1: BUSINESS VIEW ---
   Widget _buildBusinessTab() {
+    double progressVal = _activeCycleId.isNotEmpty ? (_membersCount / 126.0) : 0.0;
+    String progressPercent = _activeCycleId.isNotEmpty ? "${(_membersCount * 100 / 126).toStringAsFixed(0)}%" : "0%";
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -653,11 +697,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const Text("INCOME GROWTH", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                         const SizedBox(height: 4),
-                        const Text("You've earned", style: TextStyle(color: Colors.white, fontSize: 15)),
+                        Text(_activeCycleId.isNotEmpty ? "Active Cycle: $_activeCycleId" : "No Active Cycle", style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        const Text(
-                          "₹ 0.00",
-                          style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900),
+                        Text(
+                          "₹ ${(_mainWalletBalance).toStringAsFixed(2)}",
+                          style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900),
                         ),
                       ],
                     ),
@@ -665,28 +709,45 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text("Of ₹ 12,600", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                Text("Members completed: $_membersCount of 126", style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
-                  child: const LinearProgressIndicator(
-                    value: 0.0,
+                  child: LinearProgressIndicator(
+                    value: progressVal,
                     backgroundColor: Colors.white24,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                     minHeight: 6,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("0%", style: TextStyle(color: Colors.white70, fontSize: 10)),
-                    Text("100%", style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    const Text("0%", style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    Text(progressPercent, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const Text("100%", style: TextStyle(color: Colors.white70, fontSize: 10)),
                   ],
                 )
               ],
             ),
           ),
+
+          if (_activeCycleId.isEmpty) ...[
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _isLoading ? null : _handleActivateCycle,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 2,
+              ),
+              icon: const Icon(Icons.flash_on),
+              label: const Text("ACTIVATE NEW CYCLE (₹1,200)", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
 
           const SizedBox(height: 20),
 
@@ -817,9 +878,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppTheme.cardLightBlue.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
-                          "https://srdigitalseva.com/join?ref=SRD9921",
-                          style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 12),
+                        child: Text(
+                          _referralLink.isNotEmpty ? _referralLink : "Loading referral Link...",
+                          style: const TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 12),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -828,9 +889,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     IconButton(
                       icon: const Icon(Icons.copy, color: AppTheme.primaryBlue, size: 20),
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Referral link copied to clipboard")),
-                        );
+                        if (_referralLink.isNotEmpty) {
+                          Clipboard.setData(ClipboardData(text: _referralLink));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Referral link copied to clipboard")),
+                          );
+                        }
                       },
                     ),
                     IconButton(
@@ -864,12 +928,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text("TEAM GROWTH", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                        SizedBox(height: 8),
-                        Text("Current Team", style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
-                        SizedBox(height: 4),
-                        Text("99", style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)),
+                      children: [
+                        const Text("TEAM GROWTH", style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                        const SizedBox(height: 8),
+                        const Text("Current Team", style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                        const SizedBox(height: 4),
+                        Text("$_membersCount", style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900)),
                       ],
                     ),
                     const Icon(Icons.hub_outlined, color: Colors.white38, size: 54),
@@ -880,19 +944,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
-                  child: const LinearProgressIndicator(
-                    value: 99 / 126,
+                  child: LinearProgressIndicator(
+                    value: _membersCount / 126.0,
                     backgroundColor: Colors.white24,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                     minHeight: 6,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("0%", style: TextStyle(color: Colors.white70, fontSize: 10)),
-                    Text("100%", style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    const Text("0%", style: TextStyle(color: Colors.white70, fontSize: 10)),
+                    Text("${(_membersCount * 100 / 126).toStringAsFixed(0)}%", style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold)),
+                    const Text("100%", style: TextStyle(color: Colors.white70, fontSize: 10)),
                   ],
                 )
               ],

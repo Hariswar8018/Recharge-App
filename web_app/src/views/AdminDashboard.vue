@@ -619,6 +619,30 @@
                         <option value="production">Production Live Mode</option>
                       </select>
                     </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="joinAmount">Join / Activation Amount (₹)</label>
+                      <input id="joinAmount" type="number" v-model="systemSettings.join_amount" placeholder="e.g. 1200" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="topUpAmount">Top-Up Amount (₹)</label>
+                      <input id="topUpAmount" type="number" v-model="systemSettings.top_up_amount" placeholder="e.g. 1200" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="directIncome">Direct Sponsor Income (₹)</label>
+                      <input id="directIncome" type="number" v-model="systemSettings.direct_income" placeholder="e.g. 300" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="levelPool">Level Pool Collection (₹)</label>
+                      <input id="levelPool" type="number" v-model="systemSettings.level_pool" placeholder="e.g. 600" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="companyMaintenance">Company Maintenance (₹)</label>
+                      <input id="companyMaintenance" type="number" v-model="systemSettings.company_maintenance" placeholder="e.g. 300" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="cycleSize">Cycle Size (Members)</label>
+                      <input id="cycleSize" type="number" v-model="systemSettings.cycle_size" placeholder="e.g. 126" required />
+                    </div>
                   </div>
 
                   <!-- Right Column -->
@@ -637,6 +661,26 @@
                     <div class="nice-input-group" style="margin-top: 1rem;">
                       <label for="razorpayKeySecret">Razorpay Key Secret</label>
                       <input id="razorpayKeySecret" type="password" v-model="systemSettings.razorpay_key_secret" placeholder="Enter Razorpay Key Secret" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="withdrawPct">Withdrawal Deduction (%)</label>
+                      <input id="withdrawPct" type="number" v-model="systemSettings.withdrawal_percentage" placeholder="e.g. 15" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="minWithdraw">Minimum Withdrawal Amount (₹)</label>
+                      <input id="minWithdraw" type="number" v-model="systemSettings.minimum_withdrawal" placeholder="e.g. 500" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="withdrawDays">Allowed Withdrawal Days</label>
+                      <input id="withdrawDays" type="text" v-model="systemSettings.withdrawal_days" placeholder="e.g. Mon,Wed,Fri" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="upiVpaId">Company UPI VPA ID</label>
+                      <input id="upiVpaId" type="text" v-model="systemSettings.upi_vpa_id" placeholder="e.g. vp110064@okaxis" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="upiPayeeName">Company UPI Payee Name</label>
+                      <input id="upiPayeeName" type="text" v-model="systemSettings.upi_payee_name" placeholder="e.g. EarnFarm" required />
                     </div>
                     <div v-if="systemError" class="error-msg" style="margin-top: 1rem;">{{ systemError }}</div>
                     <div v-if="systemSuccess" class="success-msg" style="margin-top: 1rem;">{{ systemSuccess }}</div>
