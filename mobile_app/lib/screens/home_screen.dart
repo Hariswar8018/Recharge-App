@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _activeCycleId = "";
           _membersCount = 0;
         }
-        _referralLink = "https://earnfarm.com/join?ref=EARNKARO97US77$_userId";
+        _referralLink = "https://earnfarm.com/join?ref=EARNFARM$_userId";
         _isLoading = false;
       });
     } else {
@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await ShareMe.system(
         title: 'Join EarnFarm Today!',
         url: _referralLink,
-        description: 'Register on EarnFarm using my Sponsor ID $_userId and earn affiliate commissions, global cycle rewards, and much more! Join our network today.',
+        description: 'Register on EarnFarm using my Sponsor ID EARNFARM$_userId. Download the app here: https://play.google.com/store/apps/details?id=com.app.earnfarm and start earning affiliate commissions, global cycle rewards, and much more! Join our network today.',
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
