@@ -1558,11 +1558,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
                       Text(
-                        "Refer App Earn ₹ 300.00",
+                        "Refer App ₹300.00",
                         style: TextStyle(
                           color: AppTheme.textDarkBlue,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 11,
                         ),
                       ),
                       SizedBox(height: 2),
@@ -1899,6 +1899,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         side: const BorderSide(color: AppTheme.cardLightBlue),
                       ),
                       child: ListTile(
+                        tileColor: Colors.white,
                         leading: CircleAvatar(
                           backgroundColor: AppTheme.primaryBlue.withOpacity(
                             0.1,
@@ -2067,7 +2068,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _fullName,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 20,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -2076,7 +2077,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             "ID : EARNFARMX7AQ96SD$_userId",
                             style: const TextStyle(
                               color: Colors.white70,
-                              fontSize: 13,
+                              fontSize: 11,
                               fontWeight: FontWeight.w500,
                             ),
                           ),

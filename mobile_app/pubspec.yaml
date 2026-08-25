@@ -40,6 +40,7 @@ dependencies:
   url_launcher: ^6.1.14
   upi_uri: ^0.0.1
   share_me: ^0.0.23
+  flutter_image_gallery_saver: ^2.0.0
 
 dev_dependencies:
   flutter_test:

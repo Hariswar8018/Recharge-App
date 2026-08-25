@@ -1,4 +1,8 @@
+import 'dart:ui' as ui;
+import 'dart:typed_data';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_gallery_saver/flutter_image_gallery_saver.dart';
 import '../constants/app_theme.dart';
 import '../services/api_service.dart';
 
@@ -23,16 +27,48 @@ class TransactionModel {
   });
 }
 
+
 // --- TRANSACTION RECEIPT SCREEN ---
-class TransactionReceiptScreen extends StatelessWidget {
+class TransactionReceiptScreen extends StatefulWidget {
   final TransactionModel transaction;
 
   const TransactionReceiptScreen({super.key, required this.transaction});
 
   @override
+  State<TransactionReceiptScreen> createState() => _TransactionReceiptScreenState();
+}
+
+class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
+  final GlobalKey _boundaryKey = GlobalKey();
+
+  Future<void> _captureAndSave() async {
+    try {
+      final boundary = _boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData != null) {
+        final Uint8List pngBytes = byteData.buffer.asUint8List();
+        final result = await ImageGallerySaver().saveImage(pngBytes);
+        if (result != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Receipt saved to gallery successfully!")),
+          );
+        } else {
+          throw Exception("Failed to save image");
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error saving receipt: $e")),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool isIncome = transaction.isIncome;
-    final String status = transaction.status;
+    final bool isIncome = widget.transaction.isIncome;
+    final String status = widget.transaction.status;
+    final String cleanAmount = widget.transaction.amount.replaceAll(RegExp(r'[+\-₹\s]'), '');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6FA),
@@ -45,103 +81,101 @@ class TransactionReceiptScreen extends StatelessWidget {
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Icon Badge (Different colors & symbols for Credit/Debit)
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: status != "Success"
-                      ? Colors.red.shade50
-                      : (isIncome ? Colors.green.shade50 : AppTheme.primaryBlue.withOpacity(0.08)),
-                  child: Icon(
-                    status != "Success"
-                        ? Icons.error_outline
-                        : (isIncome ? Icons.arrow_downward : Icons.arrow_upward),
-                    color: status != "Success"
-                        ? Colors.red
-                        : (isIncome ? Colors.green : AppTheme.primaryBlue),
-                    size: 34,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RepaintBoundary(
+                key: _boundaryKey,
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  status != "Success"
-                      ? "Transaction Failed"
-                      : (isIncome ? "Deposit Successful" : "Payment / Debit Successful"),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: status != "Success"
-                        ? Colors.red
-                        : (isIncome ? Colors.green : AppTheme.textDarkBlue),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  (isIncome ? "+" : "-") + "₹${transaction.amount}",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    color: status != "Success"
-                        ? Colors.grey
-                        : (isIncome ? Colors.green : AppTheme.textDarkBlue),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Divider(color: AppTheme.cardLightBlue, height: 1),
-                const SizedBox(height: 20),
-
-                // Receipt Fields Table
-                _buildReceiptRow("Transaction ID", transaction.reference),
-                _buildReceiptRow("Service/Type", transaction.type),
-                _buildReceiptRow("Date & Time", transaction.date),
-                _buildReceiptRow(
-                  "Flow Direction",
-                  isIncome ? "Credit (Incoming to Wallet)" : "Debit (Outgoing from Wallet)",
-                ),
-                _buildReceiptRow("Status", status),
-
-                const SizedBox(height: 24),
-                const Divider(color: AppTheme.cardLightBlue, height: 1),
-                const SizedBox(height: 24),
-
-                // Print or Share Button
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Receipt saved to gallery")),
-                          );
-                        },
-                        icon: const Icon(Icons.download, color: Colors.white),
-                        label: const Text("Download", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryBlue,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Icon Badge (Different colors & symbols for Credit/Debit)
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: status != "Success"
+                            ? Colors.red.shade50
+                            : (isIncome ? Colors.green.shade50 : AppTheme.primaryBlue.withOpacity(0.08)),
+                        child: Icon(
+                          status != "Success"
+                              ? Icons.error_outline
+                              : (isIncome ? Icons.arrow_downward : Icons.arrow_upward),
+                          color: status != "Success"
+                              ? Colors.red
+                              : (isIncome ? Colors.green : AppTheme.primaryBlue),
+                          size: 34,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      Text(
+                        status != "Success"
+                            ? "Transaction Failed"
+                            : (isIncome ? "Deposit Successful" : "Payment / Debit Successful"),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: status != "Success"
+                              ? Colors.red
+                              : (isIncome ? Colors.green : AppTheme.textDarkBlue),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        (isIncome ? "+" : "-") + " ₹" + cleanAmount,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          color: status != "Success"
+                              ? Colors.grey
+                              : (isIncome ? Colors.green : AppTheme.textDarkBlue),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Divider(color: AppTheme.cardLightBlue, height: 1),
+                      const SizedBox(height: 20),
+
+                      // Receipt Fields Table
+                      _buildReceiptRow("Transaction ID", widget.transaction.reference),
+                      _buildReceiptRow("Service/Type", widget.transaction.type),
+                      _buildReceiptRow("Date & Time", widget.transaction.date),
+                      _buildReceiptRow(
+                        "Flow Direction",
+                        isIncome ? "Credit (Incoming to Wallet)" : "Debit (Outgoing from Wallet)",
+                      ),
+                      _buildReceiptRow("Status", status),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+
+              // Download Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _captureAndSave,
+                  icon: const Icon(Icons.download, color: Colors.white),
+                  label: const Text("Download Receipt", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -269,7 +303,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               ),
                             ),
                             Text(
-                              (tx.isIncome ? "+" : "-") + "₹${tx.amount}",
+                              (tx.isIncome ? "+" : "-") + " ₹" + tx.amount.replaceAll(RegExp(r'[+\-₹\s]'), ''),
                               style: TextStyle(
                                   fontWeight: FontWeight.w900,
                                   color: tx.isIncome ? Colors.green : Colors.red,

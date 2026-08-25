@@ -86,6 +86,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_image_gallery_saver:
+    dependency: "direct main"
+    description:
+      name: flutter_image_gallery_saver
+      sha256: "645124130fd2c8f0e1966c751869b81a8dec913f3e6ce9c0617df043151d62d0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   flutter_lints:
     dependency: "direct dev"
     description:
