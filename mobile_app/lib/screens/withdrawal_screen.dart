@@ -12,7 +12,10 @@ class WithdrawalScreen extends StatefulWidget {
 
 class _WithdrawalScreenState extends State<WithdrawalScreen> {
   final _amountController = TextEditingController();
-  final _paymentDetailsController = TextEditingController();
+  final _upiController = TextEditingController();
+  final _bankNameController = TextEditingController();
+  final _bankIfscController = TextEditingController();
+  final _bankAccController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   double _mainBalance = 0.0;
@@ -33,7 +36,10 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   void dispose() {
     _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
-    _paymentDetailsController.dispose();
+    _upiController.dispose();
+    _bankNameController.dispose();
+    _bankIfscController.dispose();
+    _bankAccController.dispose();
     super.dispose();
   }
 
@@ -105,7 +111,10 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       setState(() {
         _message = "Cashout request processed successfully!";
         _amountController.clear();
-        _paymentDetailsController.clear();
+        _upiController.clear();
+        _bankNameController.clear();
+        _bankAccController.clear();
+        _bankIfscController.clear();
         _currentAmount = "";
       });
       await _loadBalanceAndHistory();
@@ -238,17 +247,57 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _paymentDetailsController,
-                      decoration: InputDecoration(
-                        labelText: _paymentMethod == "UPI" ? "Enter UPI ID" : "Account Number + IFSC Code",
-                        hintText: _paymentMethod == "UPI" ? "username@upi" : "Acc: 123456789, IFSC: SBIN0001234",
-                        prefixIcon: Icon(_paymentMethod == "UPI" ? Icons.payment : Icons.account_box, color: AppTheme.primaryBlue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                    if (_paymentMethod == "UPI") ...[
+                      TextFormField(
+                        controller: _upiController,
+                        decoration: InputDecoration(
+                          labelText: "Enter UPI ID",
+                          hintText: "username@upi",
+                          prefixIcon: const Icon(Icons.payment, color: AppTheme.primaryBlue),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                        ),
+                        validator: (value) => (value == null || value.trim().isEmpty) ? "UPI ID is required" : null,
                       ),
-                      validator: (value) => (value == null || value.trim().isEmpty) ? "Payment destination details are required" : null,
-                    ),
+                    ] else ...[
+                      TextFormField(
+                        controller: _bankNameController,
+                        decoration: InputDecoration(
+                          labelText: "Beneficiary Name",
+                          hintText: "Enter account holder name",
+                          prefixIcon: const Icon(Icons.person, color: AppTheme.primaryBlue),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                        ),
+                        validator: (value) => (value == null || value.trim().isEmpty) ? "Beneficiary Name is required" : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _bankAccController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: "Bank Account Number",
+                          hintText: "Enter account number",
+                          prefixIcon: const Icon(Icons.account_balance_wallet, color: AppTheme.primaryBlue),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                        ),
+                        validator: (value) => (value == null || value.trim().isEmpty) ? "Account Number is required" : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _bankIfscController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          labelText: "IFSC Code",
+                          hintText: "Enter 11 character IFSC",
+                          prefixIcon: const Icon(Icons.qr_code, color: AppTheme.primaryBlue),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                        ),
+                        validator: (value) => (value == null || value.trim().isEmpty) ? "IFSC Code is required" : null,
+                      ),
+                    ],
                   ],
                 ),
               ),
