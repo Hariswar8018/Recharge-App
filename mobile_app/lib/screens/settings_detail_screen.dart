@@ -46,15 +46,28 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   }
 
   Future<void> _handleSave() async {
+    final name = _nameController.text.trim();
+    final mobile = _mobileController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Name cannot be empty")),
+      );
+      return;
+    }
     setState(() => _isLoading = true);
-    // Simulate API update profile
-    await Future.delayed(const Duration(milliseconds: 800));
+    final result = await ApiService.updateProfile(name, mobile);
     setState(() => _isLoading = false);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Profile details updated successfully")),
-    );
-    Navigator.pop(context, _nameController.text.trim());
+    if (result['success']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile details updated successfully")),
+      );
+      Navigator.pop(context, name);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['error'] ?? "Failed to update profile")),
+      );
+    }
   }
 
   @override
