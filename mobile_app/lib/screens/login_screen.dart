@@ -297,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 "Forgot Password?",
                                 style: TextStyle(
                                   color: AppTheme.primaryBlue,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w800,
                                   fontSize: 12,
                                 ),
                               ),
@@ -319,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           // Login button
                           SizedBox(
                             width: double.infinity,
-                            height: 52,
+                            height: 50,
                             child: ElevatedButton(
                               onPressed: _isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
@@ -369,14 +369,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 5),
 
                     // OR Divider
                     Row(
                       children: const [
                         Expanded(
                           child: Divider(
-                            color: Color(0xFFCBD5E1),
+                            color:AppTheme.primaryBlue,
                             thickness: 0.5,
                           ),
                         ),
@@ -393,13 +393,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         Expanded(
                           child: Divider(
-                            color: Color(0xFFCBD5E1),
+                            color:AppTheme.primaryBlue,
                             thickness: 0.5,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 5),
 
                     // New here? Register card
                     InkWell(
@@ -407,7 +407,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.pushNamed(context, '/register');
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: const Color(0xFFE2E8F0)),
@@ -448,7 +448,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 5),
 
                     // Support and Join Global Team Buttons
                     Row(
@@ -468,11 +468,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(
-                                  Icons.headset_mic_outlined,
-                                  color: AppTheme.primaryBlue,
-                                  size: 24,
-                                ),
+                                Image.asset("assets/support.png",width: 30,),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
@@ -507,7 +503,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               vertical: 12,
-                              horizontal: 10,
+                              horizontal: 8,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -518,12 +514,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(
-                                  Icons.people_outline,
-                                  color: AppTheme.primaryBlue,
-                                  size: 24,
-                                ),
-                                const SizedBox(width: 8),
+                                Image.asset("assets/team.png",width:30),
+                                const SizedBox(width: 6),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -555,7 +547,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 10),
 
                     // Follow Us Section
                     Row(
@@ -585,33 +577,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-
+                    SizedBox(height:5),
                     // Social Icons Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildSocialIcon(
-                          Icons.telegram,
-                          const Color(0xFF0088CC),
-                        ),
-                        _buildSocialIcon(
-                          Icons.play_circle_fill,
-                          const Color(0xFFFF0000),
-                        ),
-                        _buildSocialIcon(
-                          Icons.video_camera_front,
-                          const Color(0xFF1877F2),
-                        ),
-                        _buildSocialIcon(
-                          Icons.camera_alt,
-                          const Color(0xFFE1306C),
-                        ),
-                        _buildSocialIcon(Icons.chat, const Color(0xFF25D366)),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                   Image.asset("assets/logos/bottom.png",width:MediaQuery.of(context).size.width/2)
+                                     ],
                 ),
               ),
             ),
