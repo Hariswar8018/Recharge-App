@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_theme.dart';
 import '../services/api_service.dart';
+import '../widgets/social_footer.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -133,8 +134,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           Center(
                             child: Image.asset(
                               'assets/user_icon.png',
-                              width: 90,
-                              height: 90,
+                              width: 130,
+                              height: 130,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
                                 return const CircleAvatar(
@@ -373,28 +374,44 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // OR Divider
                     Row(
-                      children: const [
+                      children: [
                         Expanded(
-                          child: Divider(
-                            color:AppTheme.primaryBlue,
-                            thickness: 0.5,
+                          child: Container(
+                            height: 2,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.transparent,
+                                  const Color(0xFF0052CC).withOpacity(0.5),
+                                  const Color(0xFF0052CC),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
                             "OR",
                             style: TextStyle(
-                              color: Color(0xFF94A3B8),
+                              color: Color(0xFF0052CC),
                               fontWeight: FontWeight.bold,
                               fontSize: 11,
                             ),
                           ),
                         ),
                         Expanded(
-                          child: Divider(
-                            color:AppTheme.primaryBlue,
-                            thickness: 0.5,
+                          child: Container(
+                            height: 2,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF0052CC),
+                                  const Color(0xFF0052CC).withOpacity(0.5),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -549,38 +566,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 10),
 
-                    // Follow Us Section
-                    Row(
-                      children: const [
-                        Expanded(
-                          child: Divider(
-                            color: Color(0xFFCBD5E1),
-                            thickness: 0.5,
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text(
-                            "Follow Us",
-                            style: TextStyle(
-                              color: Color(0xFF94A3B8),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            color: Color(0xFFCBD5E1),
-                            thickness: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height:5),
-                    // Social Icons Row
-                   Image.asset("assets/logos/bottom.png",width:MediaQuery.of(context).size.width/2)
-                                     ],
+                    const SizedBox(height: 10),
+                    const SocialFooter(),
+                    const SizedBox(height: 50),
+                  ],
                 ),
               ),
             ),

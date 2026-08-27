@@ -1,0 +1,2 @@
+wallet balajnce and user balance have icon on the left. Also for add money uses the same balance icon. and so the subscribe, and the cashout also uses the same icon. than the  prepaid, electrcvity, dth, fasttag, insurance, water bill, postpaid and the more icon. also the 8 icons theres a card like which devides them into 4 columns and 2 rows. you could clearly see a very thin line that deivide the 8 icons from inside, Also in trsnaction historu, the cashout and thge affilitae icome icon uses the same icon . use that icon in blue backfround from Global theme 
+

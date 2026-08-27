@@ -91,7 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _activeCycleId = "";
           _membersCount = 0;
         }
-        _referralLink = "https://earnfarm.com/join?ref=EARNFARMX7AQ96SD$_userId";
+        _referralLink =
+            "https://earnfarm.com/join?ref=EARNFARMX7AQ96SD$_userId";
         _isLoading = false;
       });
     } else {
@@ -110,12 +111,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _handleShareReferral() async {
     if (_referralLink.isEmpty) return;
-    final String shareMessage = 
-      "Join EarnFarm Today!\n\n"
-      "Register on EarnFarm using my Sponsor ID: EARNFARMX7AQ96SD$_userId\n\n"
-      "Referral Link:\n$_referralLink\n\n"
-      "Download the App:\nhttps://play.google.com/store/apps/details?id=com.app.earnfarm\n\n"
-      "Start earning affiliate commissions, global cycle rewards, and much more! Join our network today.";
+    final String shareMessage =
+        "Join EarnFarm Today!\n\n"
+        "Register on EarnFarm using my Sponsor ID: EARNFARMX7AQ96SD$_userId\n\n"
+        "Referral Link:\n$_referralLink\n\n"
+        "Download the App:\nhttps://play.google.com/store/apps/details?id=com.app.earnfarm\n\n"
+        "Start earning affiliate commissions, global cycle rewards, and much more! Join our network today.";
     try {
       await ShareMe.system(
         title: 'Join EarnFarm Today!',
@@ -216,7 +217,10 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Exit App", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Exit App",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         content: const Text("Are you sure you want to exit EarnFarm?"),
         actions: [
           TextButton(
@@ -227,9 +231,17 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryRed,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text("Yes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              "Yes",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -250,323 +262,337 @@ class _HomeScreenState extends State<HomeScreen> {
       child: BackgroundContainer(
         useSafeArea: false,
         child: Scaffold(
-        backgroundColor: Colors.transparent,
-        drawer: Drawer(
-          elevation: 16,
-          child: Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                // Professional Drawer Header
-                UserAccountsDrawerHeader(
-                  margin: EdgeInsets.zero,
-                  decoration: const BoxDecoration(
-                    gradient: AppTheme.blueGradient,
-                  ),
-                  accountName: Text(
-                    _fullName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 18,
-                      color: Colors.white,
+          backgroundColor: Colors.transparent,
+          drawer: Drawer(
+            elevation: 16,
+            child: Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  // Professional Drawer Header
+                  UserAccountsDrawerHeader(
+                    margin: EdgeInsets.zero,
+                    decoration: const BoxDecoration(
+                      gradient: AppTheme.blueGradient,
                     ),
-                  ),
-                  accountEmail: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.verified,
-                          color: Colors.greenAccent,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          "Status: $_status",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  currentAccountPicture: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2.5),
-                    ),
-                    child: const CircleAvatar(
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.person,
-                        color: AppTheme.primaryBlue,
-                        size: 44,
+                    accountName: Text(
+                      _fullName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
-                ),
-
-                // Drawer Menu Options
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    children: [
-                      _buildDrawerItem(Icons.home_outlined, "Home Portal", () {
-                        Navigator.pop(context);
-                        setState(() => _currentIndex = 0);
-                      }),
-                      _buildDrawerItem(
-                        Icons.business_center_outlined,
-                        "Business Hub",
-                        () {
-                          Navigator.pop(context);
-                          setState(() => _currentIndex = 1);
-                        },
+                    accountEmail: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                      _buildDrawerItem(
-                        Icons.group_outlined,
-                        "Team Network",
-                        () {
-                          Navigator.pop(context);
-                          setState(() => _currentIndex = 2);
-                        },
-                      ),
-                      _buildDrawerItem(Icons.person_outline, "My Profile", () {
-                        Navigator.pop(context);
-                        setState(() => _currentIndex = 3);
-                      }),
-                      const Divider(
-                        color: AppTheme.cardLightBlue,
-                        thickness: 1.5,
-                        indent: 16,
-                        endIndent: 16,
-                      ),
-                      _buildDrawerItem(
-                        Icons.help_outline,
-                        "About Seva Kendram",
-                        () {
-                          Navigator.pop(context);
-                          _openWebUrl("https://srdigitalseva.com");
-                        },
-                      ),
-                      _buildDrawerItem(
-                        Icons.support_agent_outlined,
-                        "Customer Support",
-                        () {
-                          Navigator.pop(context);
-                          _openWebUrl("https://srdigitalseva.com/contact");
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Sign Out at Bottom
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ElevatedButton.icon(
-                    onPressed: _handleLogout,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade50,
-                      foregroundColor: Colors.red,
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                    icon: const Icon(Icons.logout),
-                    label: const Text(
-                      "Sign Out",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.black),
-          centerTitle: false,
-          titleSpacing: 0,
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black, width: 2),
-                ),
-                child: const Center(
-                  child: Text(
-                    "S",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "SR DIGITAL SEVA",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                    ),
-                  ),
-                  Text(
-                    "K E N D R A M",
-                    style: TextStyle(
-                      color: AppTheme.secondaryRed,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 7,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications, color: Colors.white),
-                  onPressed: () {},
-                ),
-                Positioned(
-                  right: 12,
-                  top: 12,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        body: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryBlue),
-              )
-            : Column(
-                children: [
-                  SafeArea(
-                    bottom: false,
-                    child: Container(
-                      width: double.infinity,
-                      color: Colors.white.withOpacity(0.9),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 16,
-                      ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.volume_up,
-                            color: AppTheme.primaryBlue,
-                            size: 16,
+                            Icons.verified,
+                            color: Colors.greenAccent,
+                            size: 14,
                           ),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: MarqueeWidget(
-                              animationDuration: Duration(seconds: 12),
-                              child: Text(
-                                "Welcome to Affiliate Marketing | Grow your income with Smart Digital Services          ",
-                                style: TextStyle(
-                                  color: AppTheme.primaryBlue,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                          const SizedBox(width: 4),
+                          Text(
+                            "Status: $_status",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
                     ),
+                    currentAccountPicture: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2.5),
+                      ),
+                      child: const CircleAvatar(
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.person,
+                          color: AppTheme.primaryBlue,
+                          size: 44,
+                        ),
+                      ),
+                    ),
                   ),
+
+                  // Drawer Menu Options
                   Expanded(
-                    child: SingleChildScrollView(child: _buildTabContent()),
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      children: [
+                        _buildDrawerItem(
+                          Icons.home_outlined,
+                          "Home Portal",
+                          () {
+                            Navigator.pop(context);
+                            setState(() => _currentIndex = 0);
+                          },
+                        ),
+                        _buildDrawerItem(
+                          Icons.business_center_outlined,
+                          "Business Hub",
+                          () {
+                            Navigator.pop(context);
+                            setState(() => _currentIndex = 1);
+                          },
+                        ),
+                        _buildDrawerItem(
+                          Icons.group_outlined,
+                          "Team Network",
+                          () {
+                            Navigator.pop(context);
+                            setState(() => _currentIndex = 2);
+                          },
+                        ),
+                        _buildDrawerItem(
+                          Icons.person_outline,
+                          "My Profile",
+                          () {
+                            Navigator.pop(context);
+                            setState(() => _currentIndex = 3);
+                          },
+                        ),
+                        const Divider(
+                          color: AppTheme.cardLightBlue,
+                          thickness: 1.5,
+                          indent: 16,
+                          endIndent: 16,
+                        ),
+                        _buildDrawerItem(
+                          Icons.help_outline,
+                          "About Seva Kendram",
+                          () {
+                            Navigator.pop(context);
+                            _openWebUrl("https://srdigitalseva.com");
+                          },
+                        ),
+                        _buildDrawerItem(
+                          Icons.support_agent_outlined,
+                          "Customer Support",
+                          () {
+                            Navigator.pop(context);
+                            _openWebUrl("https://srdigitalseva.com/contact");
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Sign Out at Bottom
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ElevatedButton.icon(
+                      onPressed: _handleLogout,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade50,
+                        foregroundColor: Colors.red,
+                        elevation: 0,
+                        minimumSize: const Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.logout),
+                      label: const Text(
+                        "Sign Out",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
                 ],
               ),
-        // Premium Floating Curved Navigation Bar
-        bottomNavigationBar: Container(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+            ),
+          ),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: Builder(
+              builder: (context) => Padding(
+                padding: const EdgeInsets.only(left: 12.0),
+                child: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF0052CC),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.menu,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              ),
+            ),
+            centerTitle: true,
+            title: Image.asset(
+              'assets/sr_logo.png',
+              height: 38,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => const Text(
+                "SR DIGITAL SEVA",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.notifications,
+                    color: Color(0xFF0052CC),
+                    size: 24,
+                  ),
+                  onPressed: () {},
+                ),
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (index) {
-                setState(() {
-                  _currentIndex = index;
-                });
-              },
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.white,
-              selectedItemColor: AppTheme.primaryBlue,
-              unselectedItemColor: Colors.grey.shade400,
-              selectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 11,
-              ),
-              unselectedLabelStyle: const TextStyle(fontSize: 11),
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.business_center),
-                  label: "Business",
+          body: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+                )
+              : Column(
+                  children: [
+                    SafeArea(
+                      bottom: false,
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.white.withOpacity(0.9),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 16,
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.volume_up,
+                              color: AppTheme.primaryBlue,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            const Expanded(
+                              child: MarqueeWidget(
+                                animationDuration: Duration(seconds: 12),
+                                child: Text(
+                                  "Welcome to Affiliate Marketing | Grow your income with Smart Digital Services          ",
+                                  style: TextStyle(
+                                    color: AppTheme.primaryBlue,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(child: _buildTabContent()),
+                    ),
+                  ],
                 ),
-                BottomNavigationBarItem(icon: Icon(Icons.group), label: "Team"),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person),
-                  label: "Profile",
+          // Premium Floating Curved Navigation Bar
+          bottomNavigationBar: Container(
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildCustomNavItem(0, Icons.home_outlined, Icons.home, "Home"),
+                _buildCustomNavItem(1, Icons.business_center_outlined, Icons.business_center, "Business"),
+                _buildCustomNavItem(2, Icons.group_outlined, Icons.group, "Team"),
+                _buildCustomNavItem(3, Icons.person_outlined, Icons.person, "Profile"),
               ],
             ),
           ),
         ),
       ),
-    ));
+    );
+  }
+
+  Widget _buildCustomNavItem(int index, IconData outlineIcon, IconData solidIcon, String label) {
+    final bool isActive = _currentIndex == index;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: isActive
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0052CC),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(solidIcon, color: Colors.white, size: 20),
+                  const SizedBox(height: 2),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(outlineIcon, color: const Color(0xFF0052CC), size: 20),
+                  const SizedBox(height: 2),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF0052CC),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),)
+        ;
   }
 
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
@@ -584,12 +610,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _navigateToSubscription() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: const Text("ID Activation"),
+            backgroundColor: AppTheme.primaryBlue,
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
+          body: _buildSubscriptionActivationView(),
+        ),
+      ),
+    ).then((_) => _loadUserProfile());
+  }
+
   Widget _buildTabContent() {
-    if (_activeCycleId.isEmpty) {
-      if (_currentIndex == 0 || _currentIndex == 2) {
-        return _buildSubscriptionActivationView();
-      }
-    }
     switch (_currentIndex) {
       case 0:
         return _buildHomeTab();
@@ -970,94 +1008,122 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 0: HOME VIEW ---
   Widget _buildHomeTab() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Separate Wallets Displays (Main Wallet & Fund Wallet)
-          // Separate Wallets Displays (Main Wallet & Fund Wallet)
-          InkWell(
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/wallet-details',
-              ).then((_) => _loadUserProfile());
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(color: AppTheme.cardLightBlue),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Main Wallet Column
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Main/Income Wallet",
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
+          // Wallet Balance & User Status Card
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Your Wallet Balance
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEFF6FF),
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
-                          style: const TextStyle(
-                            color: AppTheme.primaryBlue,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                          ),
+                        child: Image.asset(
+                          "assets/icons_logo/wallet.png",
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.cover,
                         ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 1.5,
-                    height: 40,
-                    color: AppTheme.cardLightBlue,
-                  ),
-                  const SizedBox(width: 12),
-                  // Fund Wallet Column
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Fund Wallet",
-                          style: TextStyle(
-                            color: Colors.orange,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Your Balance",
+                              style: TextStyle(
+                                color: AppTheme.textGray,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                color: Color(0xFF0052CC),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
-                          style: const TextStyle(
-                            color: AppTheme.primaryBlue,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Container(width: 1, height: 36, color: const Color(0xFFE2E8F0)),
+                const SizedBox(width: 12),
+                // User Status
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEFF6FF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Image.asset(
+                          "assets/icons_logo/user.png",
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "User Status",
+                              style: TextStyle(
+                                color: AppTheme.textGray,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _activeCycleId.isNotEmpty ? "ACTIVE" : "PENDING",
+                              style: TextStyle(
+                                color: _activeCycleId.isNotEmpty
+                                    ? const Color(0xFF0052CC)
+                                    : Colors.orange,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -1074,21 +1140,25 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
-                  onTap: () => Navigator.pushNamed(context, '/fund-request').then((_) => _loadUserProfile()),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '/fund-request',
+                  ).then((_) => _loadUserProfile()),
                   child: Row(
-                    children: const [
-                      Icon(
-                        Icons.account_balance_wallet,
-                        color: Colors.white,
-                        size: 18,
+                    children: [
+                      Image.asset(
+                        "assets/icons_logo/wallet_home.png",
+                        width: 26,
+                        height: 26,
+                        fit: BoxFit.contain,
                       ),
-                      SizedBox(width: 6),
-                      Text(
+                      const SizedBox(width: 6),
+                      const Text(
                         "Add Money",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 10,
                         ),
                       ),
                     ],
@@ -1096,21 +1166,48 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Container(width: 1, height: 24, color: Colors.white24),
                 InkWell(
-                  onTap: () => Navigator.pushNamed(context, '/withdrawal').then((_) => _loadUserProfile()),
+                  onTap: _navigateToSubscription,
                   child: Row(
-                    children: const [
-                      Icon(
-                        Icons.call_made,
-                        color: Colors.white,
-                        size: 18,
+                    children: [
+                      Image.asset(
+                        "assets/icons_logo/subscribe.png",
+                        width: 26,
+                        height: 26,
+                        fit: BoxFit.contain,
                       ),
-                      SizedBox(width: 6),
-                      Text(
+                      const SizedBox(width: 6),
+                      const Text(
+                        "Subscribe",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(width: 1, height: 24, color: Colors.white24),
+                InkWell(
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '/withdrawal',
+                  ).then((_) => _loadUserProfile()),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        "assets/icons_logo/cashout.png",
+                        width: 26,
+                        height: 26,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
                         "Cashout",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 10,
                         ),
                       ),
                     ],
@@ -1120,46 +1217,204 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 10),
 
-          // Services Grid (Prepaid, Electricity, etc.)
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 4,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.9,
-            children: [
-              _buildServiceGridItem(
-                Icons.phone_android,
-                "Prepaid",
-                Colors.blue,
-              ),
-              _buildServiceGridItem(
-                Icons.electric_bolt,
-                "Electricity",
-                Colors.orange,
-              ),
-              _buildServiceGridItem(
-                Icons.settings_input_hdmi,
-                "DTH",
-                Colors.purple,
-              ),
-              _buildServiceGridItem(
-                Icons.directions_car,
-                "FastTag",
-                Colors.teal,
-              ),
-              _buildServiceGridItem(Icons.security, "Insurance", Colors.indigo),
-              _buildServiceGridItem(
-                Icons.local_fire_department,
-                "Gas Cylinder",
-                Colors.red,
-              ),
-              _buildServiceGridItem(Icons.play_arrow, "Google Play", Colors.green),
-              _buildServiceGridItem(Icons.credit_card, "Credit Card", Colors.amber),
-            ],
+          // Services Divided Grid Card (Prepaid, Electricity, DTH, FastTag, Insurance, Water Bill, Postpaid, More)
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+           // padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                // Row 1: Prepaid, Electricity, DTH, FastTag
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildServiceGridItem(
+                        Icons.phone_android,
+                        "Prepaid",
+                        const Color(0xFF0052CC),
+                      ),
+                    ),
+                    Container(
+                      width: 0.5,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildServiceGridItem(
+                        Icons.lightbulb_outline,
+                        "Electricity",
+                        const Color(0xFF0052CC),
+                      ),
+                    ),
+                    Container(
+                      width: 0.5,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildServiceGridItem(
+                        Icons.satellite_alt_outlined,
+                        "DTH",
+                        const Color(0xFF0052CC),
+                      ),
+                    ),
+                    Container(
+                      width: 0.5,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildServiceGridItem(
+                        Icons.directions_car,
+                        "FastTag",
+                        const Color(0xFF0052CC),
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  height: 0.5,
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        const Color(0xFFE2E8F0).withOpacity(0.4),
+                        const Color(0xFFE2E8F0),
+                        const Color(0xFFE2E8F0).withOpacity(0.4),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                // Row 2: Insurance, Water Bill, Postpaid, More
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildServiceGridItem(
+                        Icons.shield_outlined,
+                        "Insurance",
+                        const Color(0xFF0052CC),
+                      ),
+                    ),
+                    Container(
+                      width: 0.5,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildServiceGridItem(
+                        Icons.water_drop_outlined,
+                        "Water Bill",
+                        const Color(0xFF0052CC),
+                      ),
+                    ),
+                    Container(
+                      width: 0.5,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildServiceGridItem(
+                        Icons.description_outlined,
+                        "Postpaid",
+                        const Color(0xFF0052CC),
+                      ),
+                    ),
+                    Container(
+                      width: 0.5,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildServiceGridItem(
+                        Icons.apps,
+                        "More",
+                        const Color(0xFF0052CC),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -1216,28 +1471,39 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: EdgeInsets.symmetric(vertical: 20),
                         child: Text(
                           "No transactions recorded yet",
-                          style: TextStyle(color: AppTheme.textGray, fontSize: 12),
+                          style: TextStyle(
+                            color: AppTheme.textGray,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     )
                   : ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _transactions.length > 5 ? 5 : _transactions.length,
-                      separatorBuilder: (context, index) => const Divider(color: AppTheme.cardLightBlue, height: 1),
+                      itemCount: _transactions.length > 5
+                          ? 5
+                          : _transactions.length,
+                      separatorBuilder: (context, index) => const Divider(
+                        color: AppTheme.cardLightBlue,
+                        height: 1,
+                      ),
                       itemBuilder: (context, index) {
                         final tx = _transactions[index];
                         final type = tx['type'] as String? ?? 'Transaction';
                         final amount = tx['amount'] as String? ?? '₹0.00';
                         final date = tx['date'] as String? ?? '';
-                        
+
                         final typeLower = type.toLowerCase();
-                        final bool isIncome = !typeLower.contains('debit') && 
-                                              !typeLower.contains('cashout') && 
-                                              !typeLower.contains('withdrawal');
+                        final bool isIncome =
+                            !typeLower.contains('debit') &&
+                            !typeLower.contains('cashout') &&
+                            !typeLower.contains('withdrawal');
 
                         return _buildTransactionRow(
-                          icon: isIncome ? Icons.call_received : Icons.call_made,
+                          icon: isIncome
+                              ? Icons.call_received
+                              : Icons.call_made,
                           type: type,
                           amount: amount,
                           date: date,
@@ -1277,72 +1543,89 @@ class _HomeScreenState extends State<HomeScreen> {
     String? assetPath;
     switch (label.toLowerCase()) {
       case "prepaid":
-        assetPath = "assets/logos/phone_recharge.jpg";
+        assetPath = "assets/logos/reccharge.png";
         break;
       case "electricity":
-        assetPath = "assets/logos/electrcity.jpg";
+        assetPath = "assets/logos/electricity.png";
         break;
       case "dth":
-        assetPath = "assets/logos/dth.jpg";
+        assetPath = "assets/logos/dth.png";
         break;
       case "fasttag":
-        assetPath = "assets/logos/fast_track.jpg";
+        assetPath = "assets/logos/fasttag.png";
         break;
       case "insurance":
-        assetPath = "assets/logos/insurance.jpg";
+        assetPath = "assets/logos/insurance.png";
         break;
-      case "google play":
-        assetPath = "assets/logos/google_play.jpg";
+      case "water bill":
+        assetPath = "assets/logos/water.png";
         break;
-      case "credit card":
-        assetPath = "assets/logos/credit_card.jpg";
+      case "postpaid":
+        assetPath = "assets/logos/postpaid.png";
         break;
-      case "gas cylinder":
-      case "cylinder":
-        assetPath = "assets/logos/cylinder.jpg";
+      case "more":
+        assetPath = "assets/logos/more.png";
         break;
     }
 
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProviderSelectionScreen(serviceType: label),
-          ),
-        );
+        if (_activeCycleId.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please activate your ID to access services."),
+            ),
+          );
+          _navigateToSubscription();
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProviderSelectionScreen(serviceType: label),
+            ),
+          );
+        }
       },
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: assetPath != null ? const EdgeInsets.all(4) : const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.08),
-              shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEFF6FF),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: assetPath != null
+                    ? Image.asset(
+                        assetPath,
+                        width: 34,
+                        height: 34,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          icon,
+                          color: const Color(0xFF0052CC),
+                          size: 28,
+                        ),
+                      )
+                    : Icon(icon, color: const Color(0xFF0052CC), size: 28),
+              ),
             ),
-            child: assetPath != null
-                ? ClipOval(
-                    child: Image.asset(
-                      assetPath,
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppTheme.textDarkBlue,
-              fontWeight: FontWeight.w600,
-              fontSize: 11,
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppTheme.textDarkBlue,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1377,49 +1660,41 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isIncome
-                    ? Colors.green.withOpacity(0.1)
-                    : Colors.red.withOpacity(0.1),
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: AppTheme.primaryBlue,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: isIncome ? Colors.green : Colors.red,
-                size: 16,
+              child: Image.asset(
+                'assets/business_page.png',
+                color: Colors.white,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(icon, color: Colors.white, size: 16),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    type,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppTheme.textDarkBlue,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    date,
-                    style: const TextStyle(fontSize: 10, color: Colors.grey),
-                  ),
-                ],
+              child: Text(
+                type,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: AppTheme.textDarkBlue,
+                ),
               ),
             ),
             Text(
               amount,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 13,
-                color: isIncome ? Colors.green : AppTheme.textDarkBlue,
+                color: Color(0xFF0052CC),
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(Icons.chevron_right, color: Colors.grey, size: 16),
+            const Icon(Icons.chevron_right, color: Color(0xFF0052CC), size: 18),
           ],
         ),
       ),
@@ -1428,17 +1703,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 1: BUSINESS VIEW ---
   Widget _buildBusinessTab() {
-    double progressVal = _activeCycleId.isNotEmpty
-        ? (_membersCount / 126.0)
-        : 0.0;
-    String progressPercent = _activeCycleId.isNotEmpty
-        ? "${(_membersCount * 100 / 126).toStringAsFixed(0)}%"
-        : "0%";
+    double totalEarned = _mainWalletBalance;
+    double progressVal = (_membersCount / 126.0).clamp(0.0, 1.0);
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Income Growth Card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -1457,89 +1729,145 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "INCOME GROWTH",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _activeCycleId.isNotEmpty
-                              ? "Active Cycle: $_activeCycleId"
-                              : "No Active Cycle",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "₹ ${(_mainWalletBalance).toStringAsFixed(2)}",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Icon(
-                      Icons.trending_up,
-                      color: Colors.white38,
-                      size: 60,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "Members completed: $_membersCount of 126",
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: progressVal,
-                    backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Colors.white,
-                    ),
-                    minHeight: 6,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "0%",
-                      style: TextStyle(color: Colors.white70, fontSize: 10),
-                    ),
-                    Text(
-                      progressPercent,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                    // Business Page Icon on the Left
+                    Image.asset(
+                      'assets/business_page.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.trending_up,
+                        color: Colors.white38,
+                        size: 70,
                       ),
                     ),
-                    const Text(
-                      "100%",
-                      style: TextStyle(color: Colors.white70, fontSize: 10),
+                    const SizedBox(width: 16),
+                    // Vertical White Divider
+                    Container(width: 1, height: 95, color: Colors.white24),
+                    const SizedBox(width: 16),
+                    // Text Details on the Right
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "INCOME GROWTH",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            "You've earned",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            "₹ ${totalEarned.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            "Of ₹ 12,600",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // Custom slider-style progress indicator inside right column
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final double maxWidth = constraints.maxWidth;
+                              final double thumbPosition =
+                                  maxWidth * progressVal;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: const [
+                                      Text(
+                                        "0%",
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                      Text(
+                                        "100%",
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Stack(
+                                    alignment: Alignment.centerLeft,
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      // Track
+                                      Container(
+                                        width: maxWidth,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white24,
+                                          borderRadius: BorderRadius.circular(
+                                            2,
+                                          ),
+                                        ),
+                                      ),
+                                      // Active Track
+                                      Container(
+                                        width: thumbPosition,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            2,
+                                          ),
+                                        ),
+                                      ),
+                                      // Thumb circle dot
+                                      Positioned(
+                                        left: (thumbPosition - 6).clamp(
+                                          0.0,
+                                          maxWidth - 12,
+                                        ),
+                                        child: Container(
+                                          width: 12,
+                                          height: 12,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1547,26 +1875,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          if (_activeCycleId.isEmpty) ...[
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _isLoading ? null : _handleActivateCycle,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryBlue,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-              ),
-              icon: const Icon(Icons.flash_on),
-              label: const Text(
-                "ACTIVATE NEW CYCLE (₹1,200)",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+
 
           const SizedBox(height: 20),
 
@@ -1589,58 +1898,96 @@ class _HomeScreenState extends State<HomeScreen> {
                   : 0.00;
               double todayIncome = 0.00;
 
-              return GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: 1.35,
-                children: [
-                  _buildBusinessStatCard(
-                    "TODAY INCOME",
-                    "₹ ${todayIncome.toStringAsFixed(2)}",
-                    Icons.trending_up,
-                    Colors.blue,
-                  ),
-                  _buildBusinessStatCard(
-                    "TOTAL INCOME",
-                    "₹ ${totalIncome.toStringAsFixed(2)}",
-                    Icons.account_balance_wallet,
-                    Colors.teal,
-                  ),
-                  _buildBusinessStatCard(
-                    "GLOBAL INCOME",
-                    "₹ ${globalIncome.toStringAsFixed(2)}",
-                    Icons.language,
-                    Colors.indigo,
-                  ),
-                  _buildBusinessStatCard(
-                    "AFFILIATE INCOME",
-                    "₹ ${affiliateIncome.toStringAsFixed(2)}",
-                    Icons.people,
-                    Colors.purple,
-                  ),
-                ],
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  children: [
+                    // Row 1: Today Income & Total Income
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildBusinessStatItem(
+                            "TODAY INCOME",
+                            "₹ ${todayIncome.toStringAsFixed(2)}",
+                            Icons.trending_up,
+                          ),
+                        ),
+                        Container(
+                          width: 0.5,
+                          height: 90,
+                          color: const Color(0xFFE2E8F0),
+                        ),
+                        Expanded(
+                          child: _buildBusinessStatItem(
+                            "TOTAL INCOME",
+                            "₹ ${totalIncome.toStringAsFixed(2)}",
+                            Icons.account_balance_wallet,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      height: 0.5,
+                      color: const Color(0xFFE2E8F0),
+                    ),
+                    // Row 2: Global Income & Affiliate Income
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildBusinessStatItem(
+                            "GLOBAL INCOME",
+                            "₹ ${globalIncome.toStringAsFixed(2)}",
+                            Icons.language,
+                          ),
+                        ),
+                        Container(
+                          width: 0.5,
+                          height: 90,
+                          color: const Color(0xFFE2E8F0),
+                        ),
+                        Expanded(
+                          child: _buildBusinessStatItem(
+                            "AFFILIATE INCOME",
+                            "₹ ${affiliateIncome.toStringAsFixed(2)}",
+                            Icons.people,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               );
             },
           ),
 
           const SizedBox(height: 20),
 
+          // Refer invitation Card
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.cardLightBlue),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.card_giftcard,
-                  color: AppTheme.primaryBlue,
-                  size: 28,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEFF6FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    "assets/icons_logo/refer.png",
+                    width: 34,
+                    height: 34,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1648,49 +1995,65 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
                       Text(
-                        "Refer App ₹300.00",
+                        "Refer App Earn ₹ 300.00",
                         style: TextStyle(
                           color: AppTheme.textDarkBlue,
                           fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                          fontSize: 10,
                         ),
                       ),
                       SizedBox(height: 2),
                       Text(
                         "Each Referral",
                         style: TextStyle(
-                          color: AppTheme.textGray,
-                          fontSize: 11,
+                          color: AppTheme.textDarkBlue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
                         ),
                       ),
                     ],
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: _handleShareReferral,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                InkWell(
+                  onTap: _handleShareReferral,
+                  child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
+                      horizontal: 12,
                       vertical: 8,
                     ),
-                  ),
-                  child: Row(
-                    children: const [
-                      Text(
-                        "INVITE NOW",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0052CC),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "INVITE NOW",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 4),
-                      Icon(Icons.chevron_right, size: 12),
-                    ],
+                        const SizedBox(width: 6),
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.chevron_right,
+                              color: Color(0xFF0052CC),
+                              size: 11,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -1701,48 +2064,47 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBusinessStatCard(
+  Widget _buildBusinessStatItem(
     String label,
     String amount,
     IconData icon,
-    Color color,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.cardLightBlue),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+      child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.08),
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFEFF6FF),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: Icon(icon, color: const Color(0xFF0052CC), size: 20),
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppTheme.textGray,
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.2,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            amount,
-            style: const TextStyle(
-              color: AppTheme.textDarkBlue,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppTheme.textGray,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  amount,
+                  style: const TextStyle(
+                    color: Color(0xFF0052CC),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1751,93 +2113,88 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // --- TAB 2: TEAM VIEW ---
+  Widget _buildLevelRow({
+    required String level,
+    required String team,
+    required String income,
+    required String total,
+    required Color bgColor,
+    bool isHeader = false,
+    bool isFooter = false,
+  }) {
+    final TextStyle textStyle = TextStyle(
+      fontSize: 12,
+      fontWeight: (isHeader || isFooter) ? FontWeight.bold : FontWeight.w600,
+      color: isHeader
+          ? Colors.white
+          : (isFooter ? const Color(0xFF0C3C8F) : AppTheme.textDarkBlue),
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: isHeader
+            ? const BorderRadius.vertical(top: Radius.circular(16))
+            : (isFooter
+                  ? const BorderRadius.vertical(bottom: Radius.circular(16))
+                  : null),
+      ),
+      child: Row(
+        children: [
+          // Level
+          Expanded(
+            flex: 2,
+            child: isHeader || isFooter
+                ? Text(level, style: textStyle, textAlign: TextAlign.center)
+                : Center(
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEFF6FF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          level,
+                          style: const TextStyle(
+                            color: Color(0xFF0052CC),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+          // Team
+          Expanded(
+            flex: 2,
+            child: Text(team, style: textStyle, textAlign: TextAlign.center),
+          ),
+          // Income
+          Expanded(
+            flex: 3,
+            child: Text(income, style: textStyle, textAlign: TextAlign.center),
+          ),
+          // Total
+          Expanded(
+            flex: 3,
+            child: Text(total, style: textStyle, textAlign: TextAlign.center),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTeamTab() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Affiliate Referral Info Card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.only(bottom: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.cardLightBlue),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "YOUR REFERRAL PROGRAM",
-                  style: TextStyle(
-                    color: AppTheme.textDarkBlue,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.cardLightBlue.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _referralLink.isNotEmpty
-                              ? _referralLink
-                              : "Loading referral Link...",
-                          style: const TextStyle(
-                            color: AppTheme.primaryBlue,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.copy,
-                        color: AppTheme.primaryBlue,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        if (_referralLink.isNotEmpty) {
-                          Clipboard.setData(ClipboardData(text: _referralLink));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Referral link copied to clipboard",
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.share,
-                        color: AppTheme.primaryBlue,
-                        size: 20,
-                      ),
-                      onPressed: _handleShareReferral,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+          // Team Growth Card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -1856,87 +2213,146 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "TEAM GROWTH",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "Current Team",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          "$_membersCount",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Icon(
-                      Icons.hub_outlined,
-                      color: Colors.white38,
-                      size: 54,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  "TARGET : 126",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: _membersCount / 126.0,
-                    backgroundColor: Colors.white24,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Colors.white,
-                    ),
-                    minHeight: 6,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "0%",
-                      style: TextStyle(color: Colors.white70, fontSize: 10),
-                    ),
-                    Text(
-                      "${(_membersCount * 100 / 126).toStringAsFixed(0)}%",
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                    // Team Network Icon on the Left
+                    Image.asset(
+                      'assets/teams.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.hub_outlined,
+                        color: Colors.white38,
+                        size: 70,
                       ),
                     ),
-                    const Text(
-                      "100%",
-                      style: TextStyle(color: Colors.white70, fontSize: 10),
+                    const SizedBox(width: 16),
+                    // Vertical White Divider
+                    Container(width: 1, height: 95, color: Colors.white24),
+                    const SizedBox(width: 16),
+                    // Text & Progress details on the Right
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "TEAM GROWTH",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            "Current Team",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            "$_membersCount",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            "TARGET : 126",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // Custom slider-style progress indicator inside right column
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final double maxWidth = constraints.maxWidth;
+                              final double progress = (_membersCount / 126.0)
+                                  .clamp(0.0, 1.0);
+                              final double thumbPosition = maxWidth * progress;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: const [
+                                      Text(
+                                        "0%",
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                      Text(
+                                        "100%",
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Stack(
+                                    alignment: Alignment.centerLeft,
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      // Track
+                                      Container(
+                                        width: maxWidth,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white24,
+                                          borderRadius: BorderRadius.circular(
+                                            2,
+                                          ),
+                                        ),
+                                      ),
+                                      // Active Track
+                                      Container(
+                                        width: thumbPosition,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            2,
+                                          ),
+                                        ),
+                                      ),
+                                      // Thumb circle dot
+                                      Positioned(
+                                        left: (thumbPosition - 6).clamp(
+                                          0.0,
+                                          maxWidth - 12,
+                                        ),
+                                        child: Container(
+                                          width: 12,
+                                          height: 12,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1945,8 +2361,91 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           const SizedBox(height: 20),
+
+          // Levels Matrix Table Card
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Header
+                _buildLevelRow(
+                  level: "Level",
+                  team: "Team",
+                  income: "Income",
+                  total: "Total",
+                  bgColor: AppTheme.primaryBlue,
+                  isHeader: true,
+                ),
+                // Rows 1 to 6
+                _buildLevelRow(
+                  level: "1",
+                  team: "2",
+                  income: "₹ 100",
+                  total: "₹ 200",
+                  bgColor: Colors.white,
+                ),
+                _buildLevelRow(
+                  level: "2",
+                  team: "4",
+                  income: "₹ 100",
+                  total: "₹ 400",
+                  bgColor: const Color(0xFFF8FAFC),
+                ),
+                _buildLevelRow(
+                  level: "3",
+                  team: "8",
+                  income: "₹ 100",
+                  total: "₹ 800",
+                  bgColor: Colors.white,
+                ),
+                _buildLevelRow(
+                  level: "4",
+                  team: "16",
+                  income: "₹ 100",
+                  total: "₹ 1,600",
+                  bgColor: const Color(0xFFF8FAFC),
+                ),
+                _buildLevelRow(
+                  level: "5",
+                  team: "32",
+                  income: "₹ 100",
+                  total: "₹ 3,200",
+                  bgColor: Colors.white,
+                ),
+                _buildLevelRow(
+                  level: "6",
+                  team: "64",
+                  income: "₹ 100",
+                  total: "₹ 6,400",
+                  bgColor: const Color(0xFFF8FAFC),
+                ),
+                // Footer
+                _buildLevelRow(
+                  level: "Total",
+                  team: "126",
+                  income: "₹ 600",
+                  total: "₹ 12,600",
+                  bgColor: const Color(0xFFEFF6FF),
+                  isFooter: true,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
           const Text(
-            "YOUR AFFILIATE NETWORK",
+            "YOUR REFERRAL NETWORK",
             style: TextStyle(
               color: AppTheme.textDarkBlue,
               fontSize: 13,
@@ -1962,16 +2461,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.cardLightBlue),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
                   child: const Center(
                     child: Text(
                       "No affiliates have joined using your referral link yet.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppTheme.textGray,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: AppTheme.textGray, fontSize: 12),
                     ),
                   ),
                 )
@@ -1986,7 +2482,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       elevation: 0.5,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: AppTheme.cardLightBlue),
+                        side: const BorderSide(color: Color(0xFFE2E8F0)),
                       ),
                       child: ListTile(
                         tileColor: Colors.white,
@@ -2039,6 +2535,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -2115,12 +2612,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 3: PROFILE VIEW ---
   Widget _buildProfileTab() {
-    return Padding(
+    double globalIncome = 0;
+    if (_activeCycleId.isNotEmpty) {
+      if (_membersCount >= 2) globalIncome += 200;
+      if (_membersCount >= 6) globalIncome += 400;
+      if (_membersCount >= 14) globalIncome += 800;
+      if (_membersCount >= 30) globalIncome += 1600;
+      if (_membersCount >= 62) globalIncome += 3200;
+      if (_membersCount >= 126) globalIncome += 6400;
+    }
+
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Profile Header Card
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: AppTheme.blueGradient,
               borderRadius: BorderRadius.circular(20),
@@ -2136,19 +2644,23 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Row(
                   children: [
+                    // Circular bordered user avatar
                     Container(
-                      width: 64,
-                      height: 64,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      width: 68,
+                      height: 68,
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
                       child: const Icon(
                         Icons.person,
-                        color: AppTheme.primaryBlue,
+                        color: Colors.white,
                         size: 40,
                       ),
                     ),
+                    const SizedBox(width: 16),
+                    // Vertical White Divider
+                    Container(width: 1, height: 68, color: Colors.white24),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -2164,14 +2676,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "ID : EARNFARMX7AQ96SD$_userId",
+                            "ID : $_mobileNumber",
                             style: const TextStyle(
                               color: Colors.white70,
-                              fontSize: 11,
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(height: 6),
+                          // Active Member Badge
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -2185,15 +2698,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: const [
                                 Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
+                                  Icons.verified,
+                                  color: Color(0xFF0052CC),
                                   size: 12,
                                 ),
                                 SizedBox(width: 4),
                                 Text(
                                   "Active Member",
                                   style: TextStyle(
-                                    color: AppTheme.primaryBlue,
+                                    color: Color(0xFF0052CC),
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -2207,52 +2720,64 @@ class _HomeScreenState extends State<HomeScreen> {
                     Icon(
                       Icons.verified_user,
                       color: Colors.white.withOpacity(0.12),
-                      size: 54,
+                      size: 58,
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
+                // White 3-Column Submetrics Row inside Header Card
                 Container(
                   padding: const EdgeInsets.symmetric(
                     vertical: 14,
-                    horizontal: 10,
+                    horizontal: 8,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildProfileSubMetric(
-                        "Main Balance",
-                        "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
-                        Icons.account_balance_wallet,
-                        onTap: () => Navigator.pushNamed(context, '/wallet-details').then((_) => _loadUserProfile()),
+                      // Total Income
+                      Expanded(
+                        child: _buildProfileSubMetric(
+                          "Total Income",
+                          "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
+                          Icons.account_balance_wallet_outlined,
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            '/wallet-details',
+                          ).then((_) => _loadUserProfile()),
+                        ),
                       ),
                       Container(
                         width: 1,
                         height: 36,
-                        color: AppTheme.cardLightBlue,
+                        color: const Color(0xFFE2E8F0),
                       ),
-                      _buildProfileSubMetric(
-                        "Team Size",
-                        "${_teamMembers.length}",
-                        Icons.group,
-                        onTap: () => setState(() => _currentIndex = 2),
+                      // Team Size
+                      Expanded(
+                        child: _buildProfileSubMetric(
+                          "Team Size",
+                          "$_membersCount",
+                          Icons.group_outlined,
+                          onTap: () => setState(() => _currentIndex = 2),
+                        ),
                       ),
                       Container(
                         width: 1,
                         height: 36,
-                        color: AppTheme.cardLightBlue,
+                        color: const Color(0xFFE2E8F0),
                       ),
-                      _buildProfileSubMetric(
-                        "Fund Balance",
-                        "₹ ${_fundWalletBalance.toStringAsFixed(2)}",
-                        Icons.wallet_giftcard,
-                        onTap: () => Navigator.pushNamed(context, '/wallet-details').then((_) => _loadUserProfile()),
+                      // Global Income
+                      Expanded(
+                        child: _buildProfileSubMetric(
+                          "Global Income",
+                          "₹ ${globalIncome.toStringAsFixed(2)}",
+                          Icons.bar_chart_outlined,
+                          onTap: () => setState(() => _currentIndex = 1),
+                        ),
                       ),
                     ],
                   ),
@@ -2260,14 +2785,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 20),
-
+          // Menu Options List Box
           Container(
+            padding:EdgeInsets.symmetric(
+              vertical:10
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.cardLightBlue),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Column(
               children: [
@@ -2288,24 +2815,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 _buildProfileMenuOption(
-                  Icons.security,
+                  Icons.shield,
                   "Password & Security",
-                  "Change password and secure your account",
+                  "Secure your account",
                   onTap: () {
                     Navigator.pushNamed(context, '/security-details');
                   },
                 ),
                 _buildProfileMenuOption(
-                  Icons.notifications_active,
+                  Icons.notifications,
                   "Notifications",
                   "Manage your notification preferences",
                   onTap: _showNotificationsDialog,
-                ),
-                _buildProfileMenuOption(
-                  Icons.share,
-                  "Refer & Earn",
-                  "Share app with friends and earn ₹300.00",
-                  onTap: _handleShareReferral,
                 ),
                 _buildProfileMenuOption(
                   Icons.info,
@@ -2314,7 +2835,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => _openWebUrl("https://srdigitalseva.com"),
                 ),
                 _buildProfileMenuOption(
-                  Icons.help_center,
+                  Icons.support_agent,
                   "Support",
                   "Help & support center",
                   onTap: () => _openWebUrl("https://srdigitalseva.com/contact"),
@@ -2334,35 +2855,44 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildProfileSubMetric(String label, String value, IconData icon, {VoidCallback? onTap}) {
+  Widget _buildProfileSubMetric(
+    String label,
+    String value,
+    IconData icon, {
+    VoidCallback? onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Column(
-          children: [
-            Icon(icon, color: AppTheme.primaryBlue, size: 18),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppTheme.textGray,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: const BoxDecoration(
+              color: Color(0xFFEFF6FF),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                color: AppTheme.primaryBlue,
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
-              ),
+            child: Icon(icon, color: const Color(0xFF0052CC), size: 18),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppTheme.textGray,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Color(0xFF0052CC),
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -2375,33 +2905,41 @@ class _HomeScreenState extends State<HomeScreen> {
     VoidCallback? onTap,
   }) {
     return ListTile(
+      dense: true,
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isLogout
-              ? Colors.red.withOpacity(0.08)
-              : AppTheme.primaryBlue.withOpacity(0.08),
+          color: const Color(0xFFEFF6FF),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(
-          icon,
-          color: isLogout ? Colors.red : AppTheme.primaryBlue,
-          size: 20,
-        ),
+        child: Icon(icon, color: const Color(0xFF0052CC), size: 20),
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isLogout ? Colors.red : AppTheme.textDarkBlue,
-          fontWeight: FontWeight.bold,
-          fontSize: 13,
-        ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppTheme.textDarkBlue,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            subtitle,
+            style: const TextStyle(color: AppTheme.textGray, fontSize: 10),
+          ),
+        ],
       ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(color: AppTheme.textGray, fontSize: 10),
+      trailing: const Icon(
+        Icons.chevron_right,
+        color: Color(0xFF0052CC),
+        size: 22,
       ),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 18),
       onTap: onTap ?? (isLogout ? _handleLogout : () {}),
     );
   }
