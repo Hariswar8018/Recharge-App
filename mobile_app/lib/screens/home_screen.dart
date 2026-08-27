@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
