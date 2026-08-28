@@ -1713,10 +1713,10 @@ class _HomeScreenState extends State<HomeScreen> {
           // Income Growth Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.only(left:8, top:20, bottom:20, right:15),
             decoration: BoxDecoration(
               gradient: AppTheme.blueGradient,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
                   color: AppTheme.primaryBlue.withOpacity(0.3),
@@ -1743,9 +1743,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         size: 70,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 8),
                     // Vertical White Divider
-                    Container(width: 1, height: 95, color: Colors.white24),
+                    Container(width: 1, height: 135, color: Colors.white24),
                     const SizedBox(width: 16),
                     // Text Details on the Right
                     Expanded(

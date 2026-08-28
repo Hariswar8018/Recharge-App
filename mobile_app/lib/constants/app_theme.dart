@@ -3,7 +3,7 @@ import '../api.dart';
 class AppTheme {
   // Global background image asset string. 
   // The user can replace this empty string or mock asset path with their real background asset path later!
-  static const String globalBackgroundImageAsset = "assets/image.png";
+  static const String globalBackgroundImageAsset = "assets/background.png";
 
   // API Config
   static const String apiBaseUrl = Api.apiBaseUrl; 
@@ -19,8 +19,8 @@ class AppTheme {
 
   // Gradient definitions (mirroring UI)
   static const LinearGradient blueGradient = LinearGradient(
-    colors: [Color(0xFF0052CC), Color(0xFF0080FF)],
-    begin: Alignment.topLeft,
+    colors: [Color(0xFF0052CC), Color(0xFF0080FF),Color(0xFF0052CC),],
+    begin: Alignment.bottomLeft,
     end: Alignment.bottomRight,
   );
 
