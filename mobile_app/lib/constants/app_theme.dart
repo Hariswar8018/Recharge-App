@@ -18,10 +18,13 @@ class AppTheme {
   static const Color textGray = Color(0xFF64748B);
 
   // Gradient definitions (mirroring UI)
-  static const LinearGradient blueGradient = LinearGradient(
-    colors: [Color(0xFF0052CC), Color(0xFF0080FF),Color(0xFF0052CC),],
-    begin: Alignment.bottomLeft,
-    end: Alignment.bottomRight,
+  static const Gradient blueGradient = RadialGradient(
+    colors: [
+      Color(0xFF0080FF), // B color (light blue)
+      Color(0xFF0052CC), // A color (dark blue)
+    ],
+    center: Alignment.topCenter,
+    radius: 1.3,
   );
 
   static const LinearGradient buttonGradient = LinearGradient(

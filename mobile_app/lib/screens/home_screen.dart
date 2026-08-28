@@ -1017,13 +1017,12 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(13),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withOpacity(0.08),
                   blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -1225,8 +1224,14 @@ class _HomeScreenState extends State<HomeScreen> {
            // padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(13),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               children: [
@@ -1902,7 +1907,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -1918,8 +1929,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Container(
                           width: 0.5,
-                          height: 90,
-                          color: const Color(0xFFE2E8F0),
+                          height: 75,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                const Color(0xFFE2E8F0).withOpacity(0.4),
+                                const Color(0xFFE2E8F0),
+                                const Color(0xFFE2E8F0).withOpacity(0.4),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
                         ),
                         Expanded(
                           child: _buildBusinessStatItem(
@@ -1932,7 +1955,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Container(
                       height: 0.5,
-                      color: const Color(0xFFE2E8F0),
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFFE2E8F0).withOpacity(0.4),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
                     ),
                     // Row 2: Global Income & Affiliate Income
                     Row(
@@ -1946,8 +1980,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Container(
                           width: 0.5,
-                          height: 90,
-                          color: const Color(0xFFE2E8F0),
+                          height: 75,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                const Color(0xFFE2E8F0).withOpacity(0.4),
+                                const Color(0xFFE2E8F0),
+                                const Color(0xFFE2E8F0).withOpacity(0.4),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
                         ),
                         Expanded(
                           child: _buildBusinessStatItem(
@@ -1971,25 +2017,31 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(13),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(1),
                   decoration: const BoxDecoration(
                     color: Color(0xFFEFF6FF),
                     shape: BoxShape.circle,
                   ),
                   child: Image.asset(
                     "assets/icons_logo/refer.png",
-                    width: 34,
-                    height: 34,
-                    fit: BoxFit.contain,
+                    width: 45,
+                    height: 45,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1998,7 +2050,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         "Refer App Earn ₹ 300.00",
                         style: TextStyle(
                           color: AppTheme.textDarkBlue,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                           fontSize: 10,
                         ),
                       ),
@@ -2007,7 +2059,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         "Each Referral",
                         style: TextStyle(
                           color: AppTheme.textDarkBlue,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w500,
                           fontSize: 10,
                         ),
                       ),
@@ -2023,7 +2075,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0052CC),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(9),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -2074,12 +2126,12 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             decoration: const BoxDecoration(
               color: Color(0xFFEFF6FF),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF0052CC), size: 20),
+            child: Icon(icon, color: const Color(0xFF0052CC), size: 25),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -2095,7 +2147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 1),
                 Text(
                   amount,
                   style: const TextStyle(
@@ -2366,13 +2418,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(13),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withOpacity(0.08),
                   blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -2460,8 +2511,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    borderRadius: BorderRadius.circular(13),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
                   child: const Center(
                     child: Text(
@@ -2793,8 +2850,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(13),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               children: [
