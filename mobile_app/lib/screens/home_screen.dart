@@ -2165,21 +2165,76 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // --- TAB 2: TEAM VIEW ---
+  Widget _buildStatusBadge(String status) {
+    if (status == "Status") {
+      return const Text(
+        "Status",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
+      );
+    }
+
+    Color bgColor;
+    Color textColor;
+    IconData iconData;
+
+    if (status == "Completed") {
+      bgColor = const Color(0xFFE8F5E9); // Light green
+      textColor = const Color(0xFF2E7D32); // Dark green
+      iconData = Icons.check_circle;
+    } else if (status == "In Progress") {
+      bgColor = const Color(0xFFFFF3E0); // Light orange
+      textColor = const Color(0xFFE65100); // Dark orange
+      iconData = Icons.access_time;
+    } else {
+      bgColor = const Color(0xFFF1F5F9); // Light grey/slate
+      textColor = const Color(0xFF64748B); // Slate grey
+      iconData = Icons.lock;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(iconData, color: textColor, size: 12),
+          const SizedBox(width: 4),
+          Text(
+            status,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLevelRow({
     required String level,
     required String team,
     required String income,
-    required String total,
+    required String status,
     required Color bgColor,
     bool isHeader = false,
-    bool isFooter = false,
+    bool isFirstRow = false,
+    bool isLastRow = false,
   }) {
     final TextStyle textStyle = TextStyle(
       fontSize: 12,
-      fontWeight: (isHeader || isFooter) ? FontWeight.bold : FontWeight.w600,
-      color: isHeader
-          ? Colors.white
-          : (isFooter ? const Color(0xFF0C3C8F) : AppTheme.textDarkBlue),
+      fontWeight: isHeader ? FontWeight.bold : FontWeight.w600,
+      color: isHeader ? Colors.white : AppTheme.textDarkBlue,
     );
 
     return Container(
@@ -2187,17 +2242,20 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: isHeader
-            ? const BorderRadius.vertical(top: Radius.circular(16))
-            : (isFooter
-                  ? const BorderRadius.vertical(bottom: Radius.circular(16))
-                  : null),
+            ? const BorderRadius.vertical(top: Radius.circular(13))
+            : BorderRadius.only(
+                topLeft: isFirstRow ? const Radius.circular(13) : Radius.zero,
+                topRight: isFirstRow ? const Radius.circular(13) : Radius.zero,
+                bottomLeft: isLastRow ? const Radius.circular(13) : Radius.zero,
+                bottomRight: isLastRow ? const Radius.circular(13) : Radius.zero,
+              ),
       ),
       child: Row(
         children: [
           // Level
           Expanded(
             flex: 2,
-            child: isHeader || isFooter
+            child: isHeader
                 ? Text(level, style: textStyle, textAlign: TextAlign.center)
                 : Center(
                     child: Container(
@@ -2230,10 +2288,12 @@ class _HomeScreenState extends State<HomeScreen> {
             flex: 3,
             child: Text(income, style: textStyle, textAlign: TextAlign.center),
           ),
-          // Total
+          // Status
           Expanded(
             flex: 3,
-            child: Text(total, style: textStyle, textAlign: TextAlign.center),
+            child: Center(
+              child: _buildStatusBadge(status),
+            ),
           ),
         ],
       ),
@@ -2249,7 +2309,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Team Growth Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.only(top:20,bottom:20, left:12, right:20),
             decoration: BoxDecoration(
               gradient: AppTheme.blueGradient,
               borderRadius: BorderRadius.circular(20),
@@ -2269,7 +2329,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Team Network Icon on the Left
                     Image.asset(
-                      'assets/teams.png',
+                      'assets/logos/user.png',
                       width: 80,
                       height: 80,
                       fit: BoxFit.contain,
@@ -2279,9 +2339,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         size: 70,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 8),
                     // Vertical White Divider
-                    Container(width: 1, height: 95, color: Colors.white24),
+                    Container(width: 1, height: 125, color: Colors.white24),
                     const SizedBox(width: 16),
                     // Text & Progress details on the Right
                     Expanded(
@@ -2414,87 +2474,94 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          // Levels Matrix Table Card
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(13),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+          // Unified Levels Table Card (Header & Body merged)
+          Builder(
+            builder: (context) {
+              // Dynamic status calculation based on current team size (defaulting to mock display values if team is empty to showcase all states)
+              final int displayCount = _membersCount == 0 ? 3 : _membersCount;
+              final String status1 = displayCount >= 2 ? "Completed" : (displayCount > 0 ? "In Progress" : "Locked");
+              final String status2 = displayCount >= 6 ? "Completed" : (displayCount >= 2 ? "In Progress" : "Locked");
+              final String status3 = displayCount >= 14 ? "Completed" : (displayCount >= 6 ? "In Progress" : "Locked");
+              final String status4 = displayCount >= 30 ? "Completed" : (displayCount >= 14 ? "In Progress" : "Locked");
+              final String status5 = displayCount >= 62 ? "Completed" : (displayCount >= 30 ? "In Progress" : "Locked");
+              final String status6 = displayCount >= 126 ? "Completed" : (displayCount >= 62 ? "In Progress" : "Locked");
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(13),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                // Header
-                _buildLevelRow(
-                  level: "Level",
-                  team: "Team",
-                  income: "Income",
-                  total: "Total",
-                  bgColor: AppTheme.primaryBlue,
-                  isHeader: true,
+                child: Column(
+                  children: [
+                    // Header Row (Joined at the top of the card)
+                    _buildLevelRow(
+                      level: "Level",
+                      team: "Team",
+                      income: "Income",
+                      status: "Status",
+                      bgColor: AppTheme.primaryBlue,
+                      isHeader: true,
+                    ),
+                    // Level 1 Row (No top-round corners since it meets header)
+                    _buildLevelRow(
+                      level: "1",
+                      team: "2",
+                      income: "₹ 200.00",
+                      status: status1,
+                      bgColor: Colors.white,
+                      isFirstRow: false,
+                    ),
+                    _buildLevelRow(
+                      level: "2",
+                      team: "4",
+                      income: "₹ 400.00",
+                      status: status2,
+                      bgColor: const Color(0xFFF8FAFC),
+                    ),
+                    _buildLevelRow(
+                      level: "3",
+                      team: "8",
+                      income: "₹ 800.00",
+                      status: status3,
+                      bgColor: Colors.white,
+                    ),
+                    _buildLevelRow(
+                      level: "4",
+                      team: "16",
+                      income: "₹ 1,600.00",
+                      status: status4,
+                      bgColor: const Color(0xFFF8FAFC),
+                    ),
+                    _buildLevelRow(
+                      level: "5",
+                      team: "32",
+                      income: "₹ 3,200.00",
+                      status: status5,
+                      bgColor: Colors.white,
+                    ),
+                    _buildLevelRow(
+                      level: "6",
+                      team: "64",
+                      income: "₹ 6,400.00",
+                      status: status6,
+                      bgColor: const Color(0xFFF8FAFC),
+                      isLastRow: true,
+                    ),
+                  ],
                 ),
-                // Rows 1 to 6
-                _buildLevelRow(
-                  level: "1",
-                  team: "2",
-                  income: "₹ 100",
-                  total: "₹ 200",
-                  bgColor: Colors.white,
-                ),
-                _buildLevelRow(
-                  level: "2",
-                  team: "4",
-                  income: "₹ 100",
-                  total: "₹ 400",
-                  bgColor: const Color(0xFFF8FAFC),
-                ),
-                _buildLevelRow(
-                  level: "3",
-                  team: "8",
-                  income: "₹ 100",
-                  total: "₹ 800",
-                  bgColor: Colors.white,
-                ),
-                _buildLevelRow(
-                  level: "4",
-                  team: "16",
-                  income: "₹ 100",
-                  total: "₹ 1,600",
-                  bgColor: const Color(0xFFF8FAFC),
-                ),
-                _buildLevelRow(
-                  level: "5",
-                  team: "32",
-                  income: "₹ 100",
-                  total: "₹ 3,200",
-                  bgColor: Colors.white,
-                ),
-                _buildLevelRow(
-                  level: "6",
-                  team: "64",
-                  income: "₹ 100",
-                  total: "₹ 6,400",
-                  bgColor: const Color(0xFFF8FAFC),
-                ),
-                // Footer
-                _buildLevelRow(
-                  level: "Total",
-                  team: "126",
-                  income: "₹ 600",
-                  total: "₹ 12,600",
-                  bgColor: const Color(0xFFEFF6FF),
-                  isFooter: true,
-                ),
-              ],
-            ),
+              );
+            },
           ),
 
           const SizedBox(height: 24),
+          /*
           const Text(
             "YOUR REFERRAL NETWORK",
             style: TextStyle(
@@ -2592,6 +2659,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
+          */
           const SizedBox(height: 20),
         ],
       ),
