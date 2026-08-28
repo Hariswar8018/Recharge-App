@@ -116,62 +116,77 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     
                     const SizedBox(height: 7),
 
-                    // Title
-                    const Text(
-                      "Create an Account",
-                      style: TextStyle(
-                        color: Color(0xFF0C3C8F),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      "Join us today! Please fill in the details to get started.",
-                      style: TextStyle(
-                        color: AppTheme.textGray,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 14),
+                     // Title
+                     Row(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         const Icon(
+                           Icons.add_circle_outline,
+                           color: Color(0xFF0C3C8F),
+                           size: 20,
+                         ),
+                         const SizedBox(width: 6),
+                         const Text(
+                           "Create an Account",
+                           style: TextStyle(
+                             color: Color(0xFF0C3C8F),
+                             fontSize: 16,
+                             fontWeight: FontWeight.w900,
+                           ),
+                         ),
+                       ],
+                     ),
+                     const SizedBox(height: 2),
+                     const Text(
+                       "Join us today! Please fill in the details to get started.",
+                       style: TextStyle(
+                         color: AppTheme.textGray,
+                         fontSize: 11,
+                         fontWeight: FontWeight.w500,
+                       ),
+                       textAlign: TextAlign.center,
+                     ),
+                     const SizedBox(height: 14),
 
-                    // Card Form Container
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          )
-                        ],
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // User Icon inside the card (centered)
-                          Center(
-                            child: Image.asset(
-                              'assets/user_icon.png',
-                              width: 130,
-                              height: 130,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor: Colors.white,
-                                  child: Icon(Icons.person, size: 50, color: AppTheme.primaryBlue),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 5),
+                     // Card Form Container
+                     Container(
+                       padding: const EdgeInsets.all(20),
+                       decoration: BoxDecoration(
+                         color: Colors.white,
+                         borderRadius: BorderRadius.circular(24),
+                         boxShadow: [
+                           BoxShadow(
+                             color: Colors.black.withOpacity(0.04),
+                             blurRadius: 20,
+                             offset: const Offset(0, 10),
+                           )
+                         ],
+                         border: Border.all(color: const Color(0xFFE2E8F0)),
+                       ),
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           // User Icon inside the card (centered with + overlay)
+                           Center(
+                             child: Stack(
+                               children: [
+                                 Image.asset(
+                                   'assets/icons_logo/regitser_icon.png',
+                                   width: 110,
+                                   height: 110,
+                                   fit: BoxFit.contain,
+                                   errorBuilder: (context, error, stackTrace) {
+                                     return const CircleAvatar(
+                                       radius: 45,
+                                       backgroundColor: Colors.white,
+                                       child: Icon(Icons.person, size: 45, color: AppTheme.primaryBlue),
+                                     );
+                                   },
+                                 ),
+                               ],
+                             ),
+                           ),
+                           const SizedBox(height: 5),
 
                           // Full Name
                           _buildLabel("Full Name"),
@@ -222,6 +237,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: "Enter Password",
                             obscure: _obscurePassword,
                             onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please enter password";
+                              }
+                              if (value.length < 8) {
+                                return "Password must be at least 8 characters";
+                              }
+                              if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                return "Password must contain at least one uppercase letter (A-Z)";
+                              }
+                              if (!RegExp(r'[a-z]').hasMatch(value)) {
+                                return "Password must contain at least one lowercase letter (a-z)";
+                              }
+                              if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                return "Password must contain at least one number (0-9)";
+                              }
+                              if (!RegExp(r'[!@#\$&*~%]').hasMatch(value)) {
+                                return "Password must contain at least one special character (@, #, \$, %, etc.)";
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 12),
 
@@ -232,6 +268,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             hint: "Confirm Password",
                             obscure: _obscureConfirmPassword,
                             onToggle: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please confirm password";
+                              }
+                              if (value != _passwordController.text) {
+                                return "Passwords do not match";
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 16),
 
@@ -506,6 +551,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     required String hint,
     required bool obscure,
     required VoidCallback onToggle,
+    FormFieldValidator<String>? validator,
   }) {
     return TextFormField(
       controller: controller,
@@ -539,7 +585,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
       ),
-      validator: (v) => (v == null || v.isEmpty) ? "Please enter password" : null,
+      validator: validator ?? (v) => (v == null || v.isEmpty) ? "Please enter password" : null,
     );
   }
 }

@@ -152,63 +152,63 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 5),
 
-                          // Email field label
-                          const Text(
-                            "Email Address",
-                            style: TextStyle(
-                              color: AppTheme.primaryBlue,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            style: const TextStyle(fontSize: 13),
-                            decoration: InputDecoration(
-                              hintText: "Enter Registered Email Address",
-                              hintStyle: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 13,
-                              ),
-                              prefixIcon: Container(
-                                margin: const EdgeInsets.all(8),
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFEFF6FF),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.email,
-                                  color: AppTheme.primaryBlue,
-                                  size: 16,
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 12,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE2E8F0),
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE2E8F0),
-                                ),
-                              ),
-                            ),
-                            validator: (value) =>
-                                (value == null || value.isEmpty)
-                                ? "Please enter email"
-                                : null,
-                          ),
-                          const SizedBox(height: 10),
+                           // Registered Mobile field label
+                           const Text(
+                             "Registered Mobile",
+                             style: TextStyle(
+                               color: AppTheme.primaryBlue,
+                               fontWeight: FontWeight.w800,
+                               fontSize: 13,
+                             ),
+                           ),
+                           const SizedBox(height: 4),
+                           TextFormField(
+                             controller: _emailController,
+                             keyboardType: TextInputType.phone,
+                             style: const TextStyle(fontSize: 13),
+                             decoration: InputDecoration(
+                               hintText: "Enter Registered Mobile",
+                               hintStyle: const TextStyle(
+                                 color: Colors.grey,
+                                 fontSize: 13,
+                               ),
+                               prefixIcon: Container(
+                                 margin: const EdgeInsets.all(8),
+                                 padding: const EdgeInsets.all(8),
+                                 decoration: BoxDecoration(
+                                   color: const Color(0xFFEFF6FF),
+                                   borderRadius: BorderRadius.circular(8),
+                                 ),
+                                 child: const Icon(
+                                   Icons.phone,
+                                   color: AppTheme.primaryBlue,
+                                   size: 16,
+                                 ),
+                               ),
+                               filled: true,
+                               fillColor: Colors.white,
+                               contentPadding: const EdgeInsets.symmetric(
+                                 vertical: 12,
+                               ),
+                               border: OutlineInputBorder(
+                                 borderRadius: BorderRadius.circular(12),
+                                 borderSide: const BorderSide(
+                                   color: Color(0xFFE2E8F0),
+                                 ),
+                               ),
+                               enabledBorder: OutlineInputBorder(
+                                 borderRadius: BorderRadius.circular(12),
+                                 borderSide: const BorderSide(
+                                   color: Color(0xFFE2E8F0),
+                                 ),
+                               ),
+                             ),
+                             validator: (value) =>
+                                 (value == null || value.isEmpty)
+                                 ? "Please enter registered mobile"
+                                 : null,
+                           ),
+                           const SizedBox(height: 10),
 
                           // Password field label
                           const Text(
@@ -275,10 +275,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
-                            validator: (value) =>
-                                (value == null || value.isEmpty)
-                                ? "Please enter password"
-                                : null,
+                             validator: (value) {
+                               if (value == null || value.isEmpty) {
+                                 return "Please enter password";
+                               }
+                               if (value.length < 8) {
+                                 return "Password must be at least 8 characters";
+                               }
+                               if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                 return "Password must contain at least one uppercase letter (A-Z)";
+                               }
+                               if (!RegExp(r'[a-z]').hasMatch(value)) {
+                                 return "Password must contain at least one lowercase letter (a-z)";
+                               }
+                               if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                 return "Password must contain at least one number (0-9)";
+                               }
+                               if (!RegExp(r'[!@#\$&*~%]').hasMatch(value)) {
+                                 return "Password must contain at least one special character (@, #, \$, %, etc.)";
+                               }
+                               return null;
+                             },
                           ),
 
                           // Forgot password

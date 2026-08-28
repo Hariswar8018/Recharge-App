@@ -171,7 +171,7 @@ app.post('/api/auth/login', verifyAppToken, async (req, res) => {
   }
 
   try {
-    const users = await query('SELECT * FROM users WHERE email = ? AND role = "user"', [email.toLowerCase()]);
+    const users = await query('SELECT * FROM users WHERE (email = ? OR mobileNumber = ?) AND role = "user"', [email.toLowerCase(), email]);
     if (users.length === 0) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }

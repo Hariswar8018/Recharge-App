@@ -29,6 +29,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateToNextScreen() async {
+    final startTime = DateTime.now();
+
     setState(() {
       _isChecking = true;
       _isOffline = false;
@@ -56,6 +58,13 @@ class _SplashScreenState extends State<SplashScreen> {
       _isOffline = false;
     });
 
+    final elapsedTime = DateTime.now().difference(startTime);
+    final remainingDelay = const Duration(seconds: 4) - elapsedTime;
+    if (remainingDelay > Duration.zero) {
+      await Future.delayed(remainingDelay);
+    }
+
+    if (!mounted) return;
     final token = await ApiService.getToken();
     if (token != null) {
       Navigator.pushReplacementNamed(context, '/home');
