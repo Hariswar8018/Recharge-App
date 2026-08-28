@@ -2309,10 +2309,10 @@ class _HomeScreenState extends State<HomeScreen> {
           // Team Growth Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top:20,bottom:20, left:12, right:20),
+            padding: const EdgeInsets.only(left:8, top:20, bottom:20, right:15),
             decoration: BoxDecoration(
               gradient: AppTheme.blueGradient,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
                   color: AppTheme.primaryBlue.withOpacity(0.3),
@@ -2341,7 +2341,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(width: 8),
                     // Vertical White Divider
-                    Container(width: 1, height: 125, color: Colors.white24),
+                    Container(width: 1, height: 135, color: Colors.white24),
                     const SizedBox(width: 16),
                     // Text & Progress details on the Right
                     Expanded(
@@ -2753,10 +2753,10 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Profile Header Card
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               gradient: AppTheme.blueGradient,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                   color: AppTheme.primaryBlue.withOpacity(0.2),
@@ -2775,7 +2775,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 68,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: Colors.white, width: 2.6),
                       ),
                       child: const Icon(
                         Icons.person,
@@ -2783,10 +2783,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         size: 40,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 8),
                     // Vertical White Divider
                     Container(width: 1, height: 68, color: Colors.white24),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2823,7 +2823,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: const [
                                 Icon(
-                                  Icons.verified,
+                                  Icons.gpp_good,
                                   color: Color(0xFF0052CC),
                                   size: 12,
                                 ),
@@ -2850,17 +2850,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // White 3-Column Submetrics Row inside Header Card
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 8,
+                    vertical: 9,
+                    horizontal: 5,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
@@ -2878,7 +2878,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Container(
                         width: 1,
-                        height: 36,
+                        height: 65,
                         color: const Color(0xFFE2E8F0),
                       ),
                       // Team Size
@@ -2892,7 +2892,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       Container(
                         width: 1,
-                        height: 36,
+                        height: 65,
                         color: const Color(0xFFE2E8F0),
                       ),
                       // Global Income
@@ -2910,11 +2910,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           // Menu Options List Box
           Container(
             padding:EdgeInsets.symmetric(
-              vertical:10
+              vertical:5
             ),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -2946,7 +2946,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 _buildProfileMenuOption(
-                  Icons.shield,
+                  Icons.gpp_good,
                   "Password & Security",
                   "Secure your account",
                   onTap: () {
@@ -2998,12 +2998,12 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(5),
             decoration: const BoxDecoration(
               color: Color(0xFFEFF6FF),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: const Color(0xFF0052CC), size: 18),
+            child: Icon(icon, color: const Color(0xFF0052CC), size: 20),
           ),
           const SizedBox(height: 6),
           Text(
@@ -3038,14 +3038,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return ListTile(
       dense: true,
       visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
           color: const Color(0xFFEFF6FF),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: const Color(0xFF0052CC), size: 20),
+        child: Icon(icon, color: const Color(0xFF0052CC), size: 25),
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3062,7 +3062,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 1),
           Text(
             subtitle,
-            style: const TextStyle(color: AppTheme.textGray, fontSize: 10),
+            style: const TextStyle(color: AppTheme.textGray, fontSize: 9),
           ),
         ],
       ),
