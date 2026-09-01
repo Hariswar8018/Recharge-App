@@ -900,15 +900,20 @@ app.get('/api/admin/transactions', async (req, res) => {
     const offset = (page - 1) * limit;
 
     const list = await query(
-      'SELECT id, user_id, wallet_type, amount, type, date, status FROM transactions ORDER BY id DESC LIMIT ? OFFSET ?',
+      `SELECT t.*, u.fullName, u.email 
+       FROM transactions t 
+       LEFT JOIN users u ON t.user_id = u.id 
+       ORDER BY t.id DESC LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
     res.json(list);
   } catch (err) {
-    res.status(500).json({ error: 'Database error loading transactions' });
+    console.error('Error fetching admin transactions:', err);
+    res.status(500).json({ error: 'Database error loading transactions', details: err.message });
   }
 });
+
 
 // GET Public Landing Info
 app.get('/api/landing-info', async (req, res) => {
@@ -935,27 +940,32 @@ app.get('/api/admin/dashboard', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  let decoded;
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
+  } catch (err) {
+    return res.status(401).json({ error: 'Session expired or invalid token' });
+  }
 
+  try {
     let stats = await getCache('admin_stats');
     if (!stats) {
-      const totalUsersResult = await query('SELECT COUNT(id) as count FROM users WHERE role = "user"');
+      const totalUsersResult = await query('SELECT COUNT(id) as count FROM users WHERE role != "admin" OR role IS NULL');
       const walletsResult = await query(
-        'SELECT SUM(fund_wallet_balance) as fundTotal, SUM(main_wallet_balance) as mainTotal FROM users'
+        'SELECT COALESCE(SUM(fund_wallet_balance), 0) as fundTotal, COALESCE(SUM(main_wallet_balance), 0) as mainTotal FROM users'
       );
       const txnsCountResult = await query('SELECT COUNT(id) as count FROM transactions');
 
       stats = {
-        totalUsers: totalUsersResult[0].count,
-        totalFundWallet: parseFloat(walletsResult[0].fundTotal || 0),
-        totalMainWallet: parseFloat(walletsResult[0].mainTotal || 0),
-        totalTransactions: txnsCountResult[0].count
+        totalUsers: (totalUsersResult && totalUsersResult[0] && totalUsersResult[0].count) ? parseInt(totalUsersResult[0].count) : 0,
+        totalFundWallet: (walletsResult && walletsResult[0] && walletsResult[0].fundTotal) ? parseFloat(walletsResult[0].fundTotal) : 0,
+        totalMainWallet: (walletsResult && walletsResult[0] && walletsResult[0].mainTotal) ? parseFloat(walletsResult[0].mainTotal) : 0,
+        totalTransactions: (txnsCountResult && txnsCountResult[0] && txnsCountResult[0].count) ? parseInt(txnsCountResult[0].count) : 0
       };
-      await setCache('admin_stats', stats, 30);
+      await setCache('admin_stats', stats, 15);
     }
 
     const page = parseInt(req.query.page) || 1;
@@ -963,12 +973,12 @@ app.get('/api/admin/dashboard', async (req, res) => {
     const offset = (page - 1) * limit;
 
     const usersList = await query(
-      'SELECT id, fullName, email, mobileNumber, fund_wallet_balance, main_wallet_balance, status, device_model, app_version, sponsor_id, createdAt FROM users WHERE role = "user" ORDER BY id DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM users WHERE role != "admin" OR role IS NULL ORDER BY id DESC LIMIT ? OFFSET ?',
       [limit, offset]
     );
 
     const transactions = await query(
-      'SELECT id, user_id, wallet_type, amount, type, date, status FROM transactions ORDER BY id DESC LIMIT 15'
+      'SELECT * FROM transactions ORDER BY id DESC LIMIT 15'
     );
 
     res.json({
@@ -981,7 +991,8 @@ app.get('/api/admin/dashboard', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(401).json({ error: 'Session expired or invalid token' });
+    console.error('Error fetching admin dashboard:', err);
+    res.status(500).json({ error: 'Failed to load admin dashboard data', details: err.message });
   }
 });
 
@@ -1004,18 +1015,20 @@ app.get('/api/admin/fund-requests', async (req, res) => {
     const offset = (page - 1) * limit;
 
     const requests = await query(
-      `SELECT fr.id, fr.amount, fr.utr, fr.status, fr.createdAt, u.fullName, u.email 
+      `SELECT fr.*, u.fullName, u.email 
        FROM fund_requests fr 
-       JOIN users u ON fr.user_id = u.id 
+       LEFT JOIN users u ON fr.user_id = u.id 
        ORDER BY fr.id DESC LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
     res.json(requests);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch fund requests' });
+    console.error('Error fetching fund requests:', err);
+    res.status(500).json({ error: 'Failed to fetch fund requests', details: err.message });
   }
 });
+
 
 // Admin approves a pending Fund Request
 app.post('/api/admin/fund-requests/:id/approve', async (req, res) => {
