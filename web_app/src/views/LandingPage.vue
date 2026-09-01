@@ -41,14 +41,9 @@
           <p class="hero-subtitle">
             Recharge your Mobile, DTH, Electricity bills and more in just a few clicks. Quick, easy and 100% secure.
           </p>
-
-          <div class="hero-cta-group">
-            <a href="#contact" class="btn-primary">Get Started Now</a>
-            <a href="#services" class="btn-secondary">Explore Services</a>
-          </div>
         </div>
 
-        <!-- Hero Right Visual Column with Girl Image & Floating Badges -->
+        <!-- Hero Right Visual Column with Woman, Phone Mockup & Floating Cards -->
         <div class="hero-right">
           <!-- Background Ambient Glow Waves -->
           <div class="hero-bg-wave"></div>
@@ -56,14 +51,14 @@
 
           <div class="visual-wrapper">
             <!-- 1. Flying Card 1: Top Left Lightning -->
-            <div class="floating-badge badge-lightning float-anim-1" title="Instant Recharges">
+            <div class="floating-badge badge-lightning float-anim-1">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="badge-icon">
                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
               </svg>
             </div>
 
             <!-- 2. Flying Card 2: Top Right Satellite Dish -->
-            <div class="floating-badge badge-dth float-anim-2" title="DTH Topup">
+            <div class="floating-badge badge-dth float-anim-2">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="badge-icon">
                 <path d="M6.08 17.5a9 9 0 0 1 11.84 0M3 13.5a13 13 0 0 1 18 0"></path>
                 <path d="M12 12v10M12 22h4m-8 0h4"></path>
@@ -72,34 +67,106 @@
             </div>
 
             <!-- 3. Flying Card 3: Middle Right Rupee Symbol -->
-            <div class="floating-badge badge-rupee float-anim-3" title="Best Rates & Cashback">
+            <div class="floating-badge badge-rupee float-anim-3">
               <span class="rupee-symbol">₹</span>
             </div>
 
             <!-- 4. Flying Card 4: Bottom Right Lightbulb -->
-            <div class="floating-badge badge-bulb float-anim-4" title="Electricity Bills">
+            <div class="floating-badge badge-bulb float-anim-4">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="badge-icon">
                 <path d="M9 18h6M10 22h4M15 14.5A7 7 0 1 0 9 14.5M12 2v2"></path>
               </svg>
             </div>
 
-            <!-- 5. Flying Card 5: Bottom Left Mobile Icon -->
-            <div class="floating-badge badge-phone float-anim-5" title="Mobile Recharge">
+            <!-- 5. Flying Card 5: Bottom Left Phone Icon -->
+            <div class="floating-badge badge-phone float-anim-5">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="badge-icon">
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
                 <line x1="12" y1="18" x2="12.01" y2="18"></line>
               </svg>
             </div>
 
-            <!-- Smiling Woman Image holding Phone -->
-            <img :src="bannerImg" alt="SR Digital Seva Woman holding phone" class="woman-image" @error="handleImageError" />
+            <!-- Smartphone Mockup Displaying App Screen -->
+            <div class="mockup-phone">
+              <div class="phone-app-header">
+                <div class="phone-app-logo">
+                  <span class="bold">SR DIGITAL SEVA</span>
+                  <span class="sub">KENDRAM</span>
+                </div>
+                <div class="phone-bell-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.5">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Wallet Balance Card inside Phone -->
+              <div class="phone-balance-card">
+                <span class="lbl">Wallet Balance</span>
+                <span class="val">₹ 2,450.00</span>
+              </div>
+
+              <!-- Services Section inside Phone -->
+              <div class="phone-section-title">Recharge & Pay Bills</div>
+              <div class="phone-grid">
+                <div class="grid-item">
+                  <div class="item-icon blue-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"></rect></svg>
+                  </div>
+                  <span>Mobile</span>
+                </div>
+                <div class="grid-item">
+                  <div class="item-icon purple-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2"><path d="M6 18a9 9 0 0 1 12 0M3 14a13 13 0 0 1 18 0"></path></svg>
+                  </div>
+                  <span>DTH</span>
+                </div>
+                <div class="grid-item">
+                  <div class="item-icon orange-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                  </div>
+                  <span>Electricity</span>
+                </div>
+                <div class="grid-item">
+                  <div class="item-icon green-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><rect x="2" y="14" width="20" height="6" rx="1"></rect><path d="M6 14v-4a4 4 0 0 1 8 0v4"></path></svg>
+                  </div>
+                  <span>Broadband</span>
+                </div>
+                <div class="grid-item">
+                  <div class="item-icon lightblue-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                  </div>
+                  <span>Water</span>
+                </div>
+                <div class="grid-item">
+                  <div class="item-icon red-bg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><rect x="6" y="8" width="12" height="13" rx="2"></rect><path d="M9 8V5a2 2 0 0 1 4 0v3"></path></svg>
+                  </div>
+                  <span>Gas</span>
+                </div>
+              </div>
+
+              <!-- Recent Transaction Row inside Phone -->
+              <div class="phone-section-title">Recent Transaction</div>
+              <div class="phone-transaction-row">
+                <div class="tx-left">
+                  <span class="tx-date">Monday 19th Sept</span>
+                  <span class="tx-desc">Successful</span>
+                </div>
+                <span class="tx-amt">₹ 2,450.00</span>
+              </div>
+            </div>
+
+            <!-- Smiling Woman Image -->
+            <img :src="bannerImg" alt="SR Digital Seva Woman" class="woman-image" @error="handleImageError" />
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Services Section -->
-    <section class="services-section" id="services">
+    <!-- Our Services Section -->
+    <section class="services-section">
       <div class="services-content">
         <div class="services-divider">
           <span class="line-gradient left"></span>
@@ -182,250 +249,6 @@
             </div>
             <h3 class="card-title">Gas Bill</h3>
             <p class="card-desc">Pay your gas bills securely</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Why Choose Us Feature Info Section (Pic | Title | Description & Features) -->
-    <section class="why-us-section">
-      <div class="why-us-content">
-        <div class="why-us-grid">
-          <!-- Left Column: Visual Security Card & Stats -->
-          <div class="why-us-visual-col">
-            <div class="visual-card">
-              <div class="card-badge">TRUSTED PAYMENT PLATFORM</div>
-              <h3 class="visual-title">Fast, Safe & Transparent Digital Transactions</h3>
-              <p class="visual-desc">SR Digital Seva Kendram powers over 100,000+ daily recharges across Telangana with bank-grade encryption and 99.9% uptime.</p>
-              
-              <div class="stats-row">
-                <div class="stat-box">
-                  <span class="stat-num">99.9%</span>
-                  <span class="stat-lbl">Success Rate</span>
-                </div>
-                <div class="stat-box">
-                  <span class="stat-num">24/7</span>
-                  <span class="stat-lbl">Instant Support</span>
-                </div>
-                <div class="stat-box">
-                  <span class="stat-num">100%</span>
-                  <span class="stat-lbl">Secure SSL</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Column: 4 Feature Items -->
-          <div class="why-us-info-col">
-            <div class="section-tag">WHY CHOOSE US</div>
-            <h2 class="why-us-heading">Empowering Your Daily Digital Payments</h2>
-            <p class="why-us-subtext">We provide a seamless platform for customers and retailers with maximum convenience and instant automated settlements.</p>
-
-            <div class="features-list">
-              <div class="feature-item">
-                <div class="feature-icon-wrapper blue-light">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2" class="f-icon"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-                </div>
-                <div class="feature-text">
-                  <h4>Instant Processing</h4>
-                  <p>Recharges and bill payments are processed within seconds with direct provider connectivity.</p>
-                </div>
-              </div>
-
-              <div class="feature-item">
-                <div class="feature-icon-wrapper green-light">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2" class="f-icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                </div>
-                <div class="feature-text">
-                  <h4>Bank-Grade Security</h4>
-                  <p>Encrypted multi-layer security keeps your personal information and transaction credentials safe.</p>
-                </div>
-              </div>
-
-              <div class="feature-item">
-                <div class="feature-icon-wrapper purple-light">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2.2" class="f-icon"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
-                </div>
-                <div class="feature-text">
-                  <h4>24/7 Continuous Service</h4>
-                  <p>Our automated systems operate non-stop 365 days a year so you never miss a bill due date.</p>
-                </div>
-              </div>
-
-              <div class="feature-item">
-                <div class="feature-icon-wrapper orange-light">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2.2" class="f-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                </div>
-                <div class="feature-text">
-                  <h4>Exclusive Commission & Offers</h4>
-                  <p>Enjoy attractive cashbacks, partner commissions, and special discounts on every payment.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- How It Works 3-Step Process Section -->
-    <section class="how-it-works-section">
-      <div class="how-it-works-content">
-        <div class="section-center-head">
-          <span class="pill-tag">SIMPLE STEPS</span>
-          <h2 class="section-title-dark">How It Works</h2>
-          <p class="section-desc-gray">Complete your recharge in 3 quick and easy steps</p>
-        </div>
-
-        <div class="steps-grid">
-          <div class="step-card">
-            <div class="step-num">01</div>
-            <div class="step-icon-bg">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 12h6M12 9v6"></path></svg>
-            </div>
-            <h3 class="step-title">Select Service</h3>
-            <p class="step-text">Choose Mobile, DTH, Electricity, Broadband or Gas bill payment service.</p>
-          </div>
-
-          <div class="step-card">
-            <div class="step-num">02</div>
-            <div class="step-icon-bg">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M6 10h12M6 14h8"></path></svg>
-            </div>
-            <h3 class="step-title">Enter Details & Amount</h3>
-            <p class="step-text">Input your mobile number, consumer ID, or operator details with plan amount.</p>
-          </div>
-
-          <div class="step-card">
-            <div class="step-num">03</div>
-            <div class="step-icon-bg">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            </div>
-            <h3 class="step-title">Instant Success</h3>
-            <p class="step-text">Pay securely and receive immediate confirmation with digital payment receipt.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Retailer Partnership Opportunity Banner -->
-    <section class="partner-banner-section">
-      <div class="partner-banner-content">
-        <div class="banner-box">
-          <div class="banner-left">
-            <span class="banner-pill">RETAILER & AGENT OPPORTUNITY</span>
-            <h2 class="banner-title">Start Your Own Recharge Business Today</h2>
-            <p class="banner-text">Join SR Digital Seva Kendram network as an authorized retailer or agent. Earn high commissions on every transaction with instant wallet top-ups.</p>
-          </div>
-          <div class="banner-right">
-            <a href="#contact" class="btn-banner-action">Become an Agent</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact Form Section (Placed right before Download Section) -->
-    <section class="contact-section" id="contact">
-      <div class="contact-content">
-        <div class="contact-header-center">
-          <span class="contact-tag">GET IN TOUCH</span>
-          <h2 class="contact-main-title">Send Us a Message</h2>
-          <p class="contact-sub-title">Have a question, feedback, or need help with a transaction? Fill out the form below and our team will respond promptly.</p>
-        </div>
-
-        <div class="contact-grid-wrapper">
-          <!-- Left Column: Contact Details Card -->
-          <div class="contact-info-card">
-            <h3 class="info-card-heading">Contact Information</h3>
-            <p class="info-card-desc">Reach out to us directly through any of the following channels or visit our Warangal kendram.</p>
-
-            <div class="info-items-list">
-              <div class="info-item">
-                <div class="info-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                </div>
-                <div class="info-text">
-                  <span class="label">Phone Support</span>
-                  <span class="value">+91 9988494936</span>
-                </div>
-              </div>
-
-              <div class="info-item">
-                <div class="info-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                </div>
-                <div class="info-text">
-                  <span class="label">Email Address</span>
-                  <span class="value">info@srdigitalseva.com</span>
-                </div>
-              </div>
-
-              <div class="info-item">
-                <div class="info-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                </div>
-                <div class="info-text">
-                  <span class="label">Office Address</span>
-                  <span class="value">Warangal, Telangana 506005</span>
-                </div>
-              </div>
-
-              <div class="info-item">
-                <div class="info-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                </div>
-                <div class="info-text">
-                  <span class="label">Working Hours</span>
-                  <span class="value">Mon - Sat: 9:00 AM - 8:00 PM</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Column: Interactive Form -->
-          <div class="contact-form-card">
-            <form @submit.prevent="submitContactForm" class="contact-form">
-              <div v-if="formSubmitted" class="form-success-alert">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                <span>Thank you! Your message has been sent successfully. We will get back to you shortly.</span>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="c-name" class="form-label">Full Name <span class="required">*</span></label>
-                  <input type="text" id="c-name" v-model="contactForm.name" placeholder="Enter your full name" required class="form-input" />
-                </div>
-
-                <div class="form-group">
-                  <label for="c-phone" class="form-label">Mobile Number <span class="required">*</span></label>
-                  <input type="tel" id="c-phone" v-model="contactForm.phone" placeholder="Enter 10-digit mobile number" required class="form-input" />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="c-service" class="form-label">Select Service / Inquiry Type</label>
-                <select id="c-service" v-model="contactForm.service" class="form-select">
-                  <option value="General Query">General Inquiry</option>
-                  <option value="Mobile Recharge">Mobile Recharge Issue</option>
-                  <option value="DTH Recharge">DTH Connection Inquiry</option>
-                  <option value="Electricity Bill">Electricity Bill Payment</option>
-                  <option value="Retailer Registration">Become a Retailer / Agent</option>
-                  <option value="Payment Support">Transaction / Refund Support</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="c-message" class="form-label">Message / Details</label>
-                <textarea id="c-message" v-model="contactForm.message" rows="4" placeholder="Write your message or inquiry details here..." class="form-textarea"></textarea>
-              </div>
-
-              <button type="submit" class="form-submit-btn">
-                <span>Send Message</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-              </button>
-            </form>
           </div>
         </div>
       </div>
@@ -554,32 +377,11 @@ export default {
   data() {
     return {
       bannerImg,
-      contactForm: {
-        name: '',
-        phone: '',
-        service: 'General Query',
-        message: ''
-      },
-      formSubmitted: false
     };
   },
   methods: {
     handleImageError(e) {
       e.target.src = 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=600';
-    },
-    submitContactForm() {
-      if (this.contactForm.name && this.contactForm.phone) {
-        this.formSubmitted = true;
-        setTimeout(() => {
-          this.formSubmitted = false;
-          this.contactForm = {
-            name: '',
-            phone: '',
-            service: 'General Query',
-            message: ''
-          };
-        }, 5000);
-      }
     }
   }
 }
@@ -744,69 +546,26 @@ export default {
   color: #4B5563;
   max-width: 480px;
   font-weight: 400;
-  margin-bottom: 2rem;
-}
-
-.hero-cta-group {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.btn-primary {
-  background-color: #0052CC;
-  color: #FFFFFF;
-  padding: 0.85rem 1.8rem;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  text-decoration: none;
-  box-shadow: 0 6px 20px rgba(0, 82, 204, 0.3);
-  transition: all 0.25s ease;
-}
-
-.btn-primary:hover {
-  background-color: #0040A8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 82, 204, 0.4);
-}
-
-.btn-secondary {
-  background-color: #FFFFFF;
-  color: #1F2937;
-  padding: 0.85rem 1.8rem;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  text-decoration: none;
-  border: 1.5px solid #E5E7EB;
-  transition: all 0.25s ease;
-}
-
-.btn-secondary:hover {
-  background-color: #F9FAFB;
-  border-color: #D1D5DB;
-  transform: translateY(-2px);
 }
 
 /* Hero Right Visual Column */
 .hero-right {
-  flex: 1;
+  flex: 1.1;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 500px;
+  min-height: 520px;
   z-index: 1;
 }
 
 .hero-bg-wave {
   position: absolute;
-  top: -40px;
-  right: -20px;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(0,82,204,0.09) 0%, rgba(255,255,255,0) 70%);
+  top: -60px;
+  right: -40px;
+  width: 460px;
+  height: 460px;
+  background: radial-gradient(circle, rgba(0,82,204,0.08) 0%, rgba(255,255,255,0) 70%);
   border-radius: 50%;
   z-index: -1;
 }
@@ -815,9 +574,9 @@ export default {
   position: absolute;
   bottom: -40px;
   left: -20px;
-  width: 360px;
-  height: 360px;
-  background: radial-gradient(circle, rgba(0,82,204,0.06) 0%, rgba(255,255,255,0) 70%);
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(0,82,204,0.05) 0%, rgba(255,255,255,0) 70%);
   border-radius: 50%;
   z-index: -1;
 }
@@ -825,16 +584,16 @@ export default {
 .visual-wrapper {
   position: relative;
   width: 100%;
-  max-width: 480px;
-  height: 500px;
+  max-width: 540px;
+  height: 520px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: flex-end;
 }
 
 .woman-image {
   height: 100%;
-  max-height: 490px;
+  max-height: 510px;
   width: auto;
   object-fit: contain;
   z-index: 2;
@@ -842,11 +601,160 @@ export default {
   filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.08));
 }
 
-/* Flying Floating Badges around Girl Image */
+/* Mockup Phone overlay inside Hero */
+.mockup-phone {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 215px;
+  height: 410px;
+  background-color: #FFFFFF;
+  border-radius: 26px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.14);
+  border: 5.5px solid #1F2937;
+  z-index: 4;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.phone-app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+
+.phone-app-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 8px;
+  line-height: 1;
+}
+
+.phone-app-logo .bold {
+  font-weight: 900;
+  color: #0052CC;
+}
+
+.phone-app-logo .sub {
+  font-size: 6px;
+  color: #EF4444;
+  font-weight: 800;
+}
+
+.phone-balance-card {
+  background: linear-gradient(135deg, #0052CC 0%, #1D4ED8 100%);
+  border-radius: 10px;
+  padding: 9px 10px;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.25);
+}
+
+.phone-balance-card .lbl {
+  font-size: 6.5px;
+  opacity: 0.85;
+}
+
+.phone-balance-card .val {
+  font-size: 13.5px;
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+.phone-section-title {
+  font-size: 7px;
+  font-weight: 800;
+  color: #374151;
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+
+.phone-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 6.5px;
+  font-weight: 600;
+  color: #4B5563;
+}
+
+.item-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 3px;
+}
+
+.item-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.blue-bg { background-color: #EFF6FF; }
+.green-bg { background-color: #F0FDF4; }
+.orange-bg { background-color: #FFF7ED; }
+.red-bg { background-color: #FEF2F2; }
+.lightblue-bg { background-color: #F0F9FF; }
+.purple-bg { background-color: #FAF5FF; }
+
+.phone-transaction-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #F9FAFB;
+  border: 1px solid #F3F4F6;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.tx-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.tx-date {
+  font-size: 6.5px;
+  font-weight: 700;
+  color: #1F2937;
+}
+
+.tx-desc {
+  font-size: 5.5px;
+  color: #9CA3AF;
+}
+
+.tx-amt {
+  font-size: 7.5px;
+  font-weight: 800;
+  color: #10B981;
+}
+
+/* Flying Floating Badges / Cards around Girl & Phone */
 .floating-badge {
   position: absolute;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   background-color: #FFFFFF;
   border-radius: 50%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
@@ -854,51 +762,45 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 5;
-  border: 1.5px solid rgba(255, 255, 255, 0.9);
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.floating-badge:hover {
-  transform: scale(1.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .badge-icon {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
 .rupee-symbol {
   color: #0052CC;
   font-weight: 800;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
 }
 
-/* Badge Absolute Positioning surrounding Girl Image */
+/* Badge Absolute Positioning */
 .badge-lightning {
-  top: 40px;
-  left: 20px;
+  top: 25px;
+  left: 170px;
 }
 
 .badge-dth {
-  top: 50px;
-  right: 20px;
+  top: 40px;
+  right: 15px;
 }
 
 .badge-rupee {
-  top: 210px;
-  right: -10px;
+  top: 180px;
+  right: -15px;
 }
 
 .badge-bulb {
-  bottom: 80px;
-  right: 30px;
+  bottom: 85px;
+  right: 10px;
   background-color: #FFFBEB;
 }
 
 .badge-phone {
-  bottom: 90px;
-  left: 10px;
+  bottom: 50px;
+  left: -15px;
   background-color: #F0F6FF;
 }
 
@@ -925,27 +827,27 @@ export default {
 
 @keyframes floatOne {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-14px) rotate(5deg); }
+  50% { transform: translateY(-12px) rotate(4deg); }
 }
 
 @keyframes floatTwo {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-16px) rotate(-6deg); }
+  50% { transform: translateY(-15px) rotate(-5deg); }
 }
 
 @keyframes floatThree {
   0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-12px) scale(1.08); }
+  50% { transform: translateY(-10px) scale(1.08); }
 }
 
 @keyframes floatFour {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-15px) rotate(5deg); }
+  50% { transform: translateY(-14px) rotate(4deg); }
 }
 
 @keyframes floatFive {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-13px) rotate(-5deg); }
+  50% { transform: translateY(-11px) rotate(-4deg); }
 }
 
 /* Services Section */
@@ -1082,578 +984,10 @@ export default {
   line-height: 1.45;
 }
 
-/* Why Choose Us Feature Info Section */
-.why-us-section {
-  width: 100%;
-  padding: 5rem 0;
-  background-color: #F8FAFC;
-  border-top: 1px solid #F1F5F9;
-  border-bottom: 1px solid #F1F5F9;
-}
-
-.why-us-content {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  width: 100%;
-}
-
-.why-us-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 3.5rem;
-  align-items: center;
-}
-
-.visual-card {
-  background: linear-gradient(135deg, #0B132B 0%, #1E293B 100%);
-  border-radius: 24px;
-  padding: 3rem 2.5rem;
-  color: #FFFFFF;
-  box-shadow: 0 20px 40px rgba(11, 19, 43, 0.15);
-  position: relative;
-  overflow: hidden;
-}
-
-.visual-card::after {
-  content: '';
-  position: absolute;
-  top: -80px;
-  right: -80px;
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(0,82,204,0.3) 0%, rgba(0,0,0,0) 70%);
-  border-radius: 50%;
-}
-
-.card-badge {
-  display: inline-block;
-  background: rgba(0, 82, 204, 0.35);
-  border: 1px solid rgba(0, 82, 204, 0.6);
-  color: #60A5FA;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.4rem 1rem;
-  border-radius: 999px;
-  margin-bottom: 1.5rem;
-}
-
-.visual-title {
-  font-size: 1.8rem;
-  font-weight: 800;
-  line-height: 1.3;
-  margin-bottom: 1rem;
-  color: #FFFFFF;
-}
-
-.visual-desc {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: #94A3B8;
-  margin-bottom: 2.2rem;
-}
-
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 1.5rem;
-}
-
-.stat-box {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-num {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #60A5FA;
-}
-
-.stat-lbl {
-  font-size: 0.75rem;
-  color: #94A3B8;
-  font-weight: 600;
-}
-
-.section-tag {
-  color: #0052CC;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.5rem;
-}
-
-.why-us-heading {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #0B132B;
-  margin-bottom: 0.8rem;
-  line-height: 1.25;
-}
-
-.why-us-subtext {
-  font-size: 1.02rem;
-  color: #4B5563;
-  margin-bottom: 2.2rem;
-  line-height: 1.55;
-}
-
-.features-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.2rem;
-  background: #FFFFFF;
-  padding: 1.2rem 1.4rem;
-  border-radius: 14px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-  transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.feature-item:hover {
-  transform: translateX(4px);
-  border-color: #CBD5E1;
-}
-
-.feature-icon-wrapper {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.blue-light { background-color: #EFF6FF; }
-.green-light { background-color: #F0FDF4; }
-.purple-light { background-color: #FAF5FF; }
-.orange-light { background-color: #FFF7ED; }
-
-.f-icon {
-  width: 22px;
-  height: 22px;
-}
-
-.feature-text h4 {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #1E2937;
-  margin-bottom: 0.25rem;
-}
-
-.feature-text p {
-  font-size: 0.88rem;
-  color: #6B7280;
-  line-height: 1.45;
-}
-
-/* How It Works Section */
-.how-it-works-section {
-  width: 100%;
-  padding: 5rem 0;
-  background-color: #FFFFFF;
-}
-
-.how-it-works-content {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  width: 100%;
-}
-
-.section-center-head {
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto 3.5rem;
-}
-
-.pill-tag {
-  display: inline-block;
-  background: #F0F6FF;
-  color: #0052CC;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.4rem 1.1rem;
-  border-radius: 999px;
-  margin-bottom: 0.8rem;
-}
-
-.section-title-dark {
-  font-size: 2.1rem;
-  font-weight: 800;
-  color: #0B132B;
-  margin-bottom: 0.5rem;
-}
-
-.section-desc-gray {
-  font-size: 1rem;
-  color: #6B7280;
-}
-
-.steps-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.step-card {
-  background: #FFFFFF;
-  border: 1px solid #F1F5F9;
-  border-radius: 18px;
-  padding: 2.5rem 1.8rem;
-  position: relative;
-  text-align: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-  transition: transform 0.3s ease;
-}
-
-.step-card:hover {
-  transform: translateY(-5px);
-}
-
-.step-num {
-  position: absolute;
-  top: 16px;
-  right: 20px;
-  font-size: 1.8rem;
-  font-weight: 900;
-  color: #E2E8F0;
-}
-
-.step-icon-bg {
-  width: 60px;
-  height: 60px;
-  background-color: #F0F6FF;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-}
-
-.step-icon-bg svg {
-  width: 26px;
-  height: 26px;
-}
-
-.step-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #1F2937;
-  margin-bottom: 0.6rem;
-}
-
-.step-text {
-  font-size: 0.9rem;
-  color: #6B7280;
-  line-height: 1.5;
-}
-
-/* Retailer Partner Opportunity Banner */
-.partner-banner-section {
-  width: 100%;
-  padding: 1.5rem 0 3rem;
-  background-color: #FFFFFF;
-}
-
-.partner-banner-content {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  width: 100%;
-}
-
-.banner-box {
-  background: linear-gradient(135deg, #0052CC 0%, #1D4ED8 100%);
-  border-radius: 20px;
-  padding: 3rem;
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  box-shadow: 0 15px 35px rgba(0, 82, 204, 0.25);
-}
-
-.banner-pill {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.35rem 0.9rem;
-  border-radius: 999px;
-  display: inline-block;
-  margin-bottom: 0.8rem;
-}
-
-.banner-title {
-  font-size: 1.8rem;
-  font-weight: 800;
-  margin-bottom: 0.6rem;
-  color: #FFFFFF;
-}
-
-.banner-text {
-  font-size: 0.95rem;
-  opacity: 0.9;
-  max-width: 600px;
-  line-height: 1.5;
-}
-
-.btn-banner-action {
-  background-color: #FFFFFF;
-  color: #0052CC;
-  padding: 0.9rem 2rem;
-  border-radius: 10px;
-  font-weight: 800;
-  font-size: 0.95rem;
-  text-decoration: none;
-  white-space: nowrap;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  display: inline-block;
-}
-
-.btn-banner-action:hover {
-  background-color: #F8FAFC;
-  transform: translateY(-2px);
-}
-
-/* Contact Section (Before Download Section) */
-.contact-section {
-  width: 100%;
-  padding: 5rem 0;
-  background-color: #F8FAFC;
-  border-top: 1px solid #F1F5F9;
-}
-
-.contact-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-  width: 100%;
-}
-
-.contact-header-center {
-  text-align: center;
-  max-width: 650px;
-  margin: 0 auto 3.5rem;
-}
-
-.contact-tag {
-  color: #0052CC;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  display: inline-block;
-  margin-bottom: 0.5rem;
-}
-
-.contact-main-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #0B132B;
-  margin-bottom: 0.6rem;
-}
-
-.contact-sub-title {
-  font-size: 1rem;
-  color: #6B7280;
-  line-height: 1.5;
-}
-
-.contact-grid-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 2.5rem;
-  align-items: stretch;
-}
-
-.contact-info-card {
-  background-color: #0B132B;
-  border-radius: 20px;
-  padding: 2.5rem 2rem;
-  color: #FFFFFF;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 15px 35px rgba(11, 19, 43, 0.15);
-}
-
-.info-card-heading {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin-bottom: 0.6rem;
-  color: #FFFFFF;
-}
-
-.info-card-desc {
-  font-size: 0.9rem;
-  color: #94A3B8;
-  margin-bottom: 2.5rem;
-  line-height: 1.5;
-}
-
-.info-items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.info-icon {
-  width: 44px;
-  height: 44px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.info-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.info-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.info-text .label {
-  font-size: 0.75rem;
-  color: #94A3B8;
-  font-weight: 600;
-}
-
-.info-text .value {
-  font-size: 0.95rem;
-  color: #FFFFFF;
-  font-weight: 700;
-}
-
-.contact-form-card {
-  background-color: #FFFFFF;
-  border-radius: 20px;
-  padding: 2.5rem 2.2rem;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-}
-
-.contact-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.3rem;
-}
-
-.form-success-alert {
-  background-color: #ECFDF5;
-  border: 1px solid #A7F3D0;
-  color: #065F46;
-  padding: 1rem;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  line-height: 1.4;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.2rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.form-label {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: #374151;
-}
-
-.form-label .required {
-  color: #EF4444;
-}
-
-.form-input, .form-select, .form-textarea {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  border: 1.5px solid #E5E7EB;
-  font-family: inherit;
-  font-size: 0.92rem;
-  color: #1F2937;
-  background-color: #FFFFFF;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  outline: none;
-}
-
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: #0052CC;
-  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.12);
-}
-
-.form-textarea {
-  resize: vertical;
-}
-
-.form-submit-btn {
-  background-color: #0052CC;
-  color: #FFFFFF;
-  border: none;
-  padding: 0.9rem 1.8rem;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  font-family: inherit;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  box-shadow: 0 6px 20px rgba(0, 82, 204, 0.25);
-  transition: all 0.2s ease;
-  margin-top: 0.5rem;
-}
-
-.form-submit-btn:hover {
-  background-color: #0040A8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 82, 204, 0.35);
-}
-
 /* Download App Section */
 .download-section {
   width: 100%;
-  padding: 4rem 0 3rem;
+  padding: 1.5rem 0 2rem;
   background-color: #FFFFFF;
 }
 
@@ -1888,28 +1222,8 @@ export default {
     max-width: 100%;
   }
 
-  .hero-cta-group {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .why-us-grid {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-  }
-
-  .contact-grid-wrapper {
-    grid-template-columns: 1fr;
-  }
-  
-  .services-grid, .steps-grid {
+  .services-grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .banner-box {
-    flex-direction: column;
-    text-align: center;
-    padding: 2.2rem;
   }
 }
 
@@ -1932,8 +1246,10 @@ export default {
   .woman-image {
     max-height: 410px;
   }
-  .form-row {
-    grid-template-columns: 1fr;
+  .mockup-phone {
+    width: 185px;
+    height: 360px;
+    left: 0px;
   }
   .download-card {
     flex-direction: column;
@@ -1995,31 +1311,9 @@ export default {
     margin-bottom: 1.5rem;
     text-align: left;
   }
-  .hero-cta-group {
-    flex-direction: column;
-    width: 100%;
-    gap: 0.8rem;
-  }
-  .btn-primary, .btn-secondary {
-    width: 100%;
-    text-align: center;
-    box-sizing: border-box;
-    padding: 0.85rem 1rem;
-  }
-  .services-grid, .steps-grid {
+  .services-grid {
     grid-template-columns: 1fr;
     gap: 1.2rem;
   }
-  .stats-row {
-    grid-template-columns: 1fr;
-    gap: 0.8rem;
-  }
-  .visual-card {
-    padding: 2rem 1.5rem;
-  }
-  .contact-form-card {
-    padding: 1.8rem 1.2rem;
-  }
 }
 </style>
-

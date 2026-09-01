@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const { query, transaction, initDb } = require('./db');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'earnfarm_super_secret_jwt_key_2026';
+
 const mailTransporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'mail.srdigitalseva.com',
   port: parseInt(process.env.SMTP_PORT) || 465,
@@ -75,7 +77,7 @@ const verifyUserToken = (req, res, next) => {
   if (!token) {
     return res.status(401).json({ error: 'Access Denied: Missing User JWT Token' });
   }
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
       return res.status(403).json({ error: 'Forbidden: Invalid token' });
     }
@@ -192,7 +194,7 @@ app.post('/api/auth/login', verifyAppToken, async (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: 'user' },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '30d' }
     );
 
@@ -703,7 +705,7 @@ app.post('/api/admin/login', async (req, res) => {
 
     const token = jwt.sign(
       { email: admin.email, role: 'admin' },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -722,7 +724,7 @@ app.post('/api/admin/change-password', async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
@@ -760,7 +762,7 @@ app.get('/api/admin/settings', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
 
     const settingsRows = await query('SELECT * FROM system_settings');
@@ -782,7 +784,7 @@ app.post('/api/admin/settings', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
 
     const updates = req.body;
@@ -805,7 +807,7 @@ app.get('/api/admin/list', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
 
     const admins = await query('SELECT id, fullName, email, mobileNumber, status, createdAt FROM users WHERE role = "admin" ORDER BY id ASC');
@@ -822,7 +824,7 @@ app.get('/api/admin/gateway-status', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
 
     let dbStatus = 'Operational';
@@ -868,7 +870,7 @@ app.post('/api/admin/notifications', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
 
     const { title, message } = req.body;
@@ -890,7 +892,7 @@ app.get('/api/admin/transactions', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
 
     const page = parseInt(req.query.page) || 1;
@@ -934,7 +936,7 @@ app.get('/api/admin/dashboard', async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
@@ -992,7 +994,7 @@ app.get('/api/admin/fund-requests', async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
@@ -1024,7 +1026,7 @@ app.post('/api/admin/fund-requests/:id/approve', async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (decoded.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
