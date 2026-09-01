@@ -30,7 +30,7 @@ export default {
 
 .page {
   width: 100%;
-  max-width: 683px;
+  max-width: 100%;
   line-height: 0;
 }
 
