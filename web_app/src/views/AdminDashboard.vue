@@ -738,7 +738,7 @@
 </template>
 
 <script>
-const API_BASE_URL = 'https://api.srdigitalseva.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://recharge-app-production-5b63.up.railway.app';
 
 export default {
   name: 'AdminDashboard',
@@ -2207,5 +2207,33 @@ export default {
 
 .btn-add-img:hover {
   opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+    width: 100%;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar-menu {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0.5rem;
+    white-space: nowrap;
+  }
+  .content-body {
+    padding: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .topbar {
+    padding: 0 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 </style>

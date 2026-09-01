@@ -4,6 +4,7 @@ import AdminLogin from '../views/AdminLogin.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
 import ContactUs from '../views/ContactUs.vue'
 import PrivacyPolicy from '../views/PrivacyPolicy.vue'
+import NotFound from '../views/NotFound.vue'
 
 const routes = [
   {
@@ -37,6 +38,11 @@ const routes = [
     path: '/privacy-policy',
     name: 'PrivacyPolicy',
     component: PrivacyPolicy
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound
   }
 ]
 

@@ -51,7 +51,7 @@
 </template>
 
 <script>
-const API_BASE_URL = 'https://api.srdigitalseva.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://recharge-app-production-5b63.up.railway.app';
 
 export default {
   name: 'AdminLogin',

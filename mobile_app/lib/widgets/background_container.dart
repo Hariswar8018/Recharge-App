@@ -17,6 +17,7 @@ class BackgroundContainer extends StatelessWidget {
     if (AppTheme.globalBackgroundImageAsset.isNotEmpty) {
       return Container(
         decoration: const BoxDecoration(
+          color: Colors.white,
           image: DecorationImage(
             image: AssetImage(AppTheme.globalBackgroundImageAsset),
             fit: BoxFit.cover,

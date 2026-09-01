@@ -419,30 +419,34 @@ class _HomeScreenState extends State<HomeScreen> {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
+            leadingWidth: 64,
             leading: Builder(
               builder: (context) => Padding(
-                padding: const EdgeInsets.only(left: 12.0),
-                child: IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF0052CC),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.menu,
-                      color: Colors.white,
-                      size: 16,
+                padding: const EdgeInsets.only(left: 10.0),
+                child: Center(
+                  child: InkWell(
+                    onTap: () => Scaffold.of(context).openDrawer(),
+                    borderRadius: BorderRadius.circular(22),
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0052CC),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.menu,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
-                  onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),
             ),
             centerTitle: true,
             title: Image.asset(
               'assets/sr_logo.png',
-              height: 38,
+              height: 46,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) => const Text(
                 "SR DIGITAL SEVA",
@@ -460,7 +464,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: const Icon(
                     Icons.notifications,
                     color: Color(0xFF0052CC),
-                    size: 24,
+                    size: 28,
                   ),
                   onPressed: () {},
                 ),
@@ -473,34 +477,45 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
               : Column(
                   children: [
+                    SizedBox(height: 10),
                     SafeArea(
                       bottom: false,
                       child: Container(
                         width: double.infinity,
-                        color: Colors.white.withOpacity(0.9),
                         padding: const EdgeInsets.symmetric(
-                          vertical: 8,
+                          vertical: 6,
                           horizontal: 16,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: Color(
+                            0xFFEFF6FF,
+                          ), // very light blue background
                         ),
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.volume_up,
-                              color: AppTheme.primaryBlue,
-                              size: 16,
+                            Image.asset(
+                              'assets/logos/announcmenet.png',
+                              width: 13,
+                              height: 13,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.volume_up,
+                                    color: AppTheme.primaryBlue,
+                                    size: 16,
+                                  ),
                             ),
                             const SizedBox(width: 8),
                             const Expanded(
-                              child: MarqueeWidget(
-                                animationDuration: Duration(seconds: 12),
-                                child: Text(
-                                  "Welcome to Affiliate Marketing | Grow your income with Smart Digital Services          ",
-                                  style: TextStyle(
-                                    color: AppTheme.primaryBlue,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              child: Text(
+                                "Welcome to Affiliate Marketing    |    Grow your income with Smart Digital Services",
+                                style: TextStyle(
+                                  color: AppTheme.primaryBlue,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.4,
                                 ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -531,9 +546,24 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildCustomNavItem(0, Icons.home_outlined, Icons.home, "Home"),
-                _buildCustomNavItem(1, Icons.business_center_outlined, Icons.business_center, "Business"),
-                _buildCustomNavItem(2, Icons.group_outlined, Icons.group, "Team"),
-                _buildCustomNavItem(3, Icons.person_outlined, Icons.person, "Profile"),
+                _buildCustomNavItem(
+                  1,
+                  Icons.business_center_outlined,
+                  Icons.business_center,
+                  "Business",
+                ),
+                _buildCustomNavItem(
+                  2,
+                  Icons.group_outlined,
+                  Icons.group,
+                  "Team",
+                ),
+                _buildCustomNavItem(
+                  3,
+                  Icons.person_outlined,
+                  Icons.person,
+                  "Profile",
+                ),
               ],
             ),
           ),
@@ -542,7 +572,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCustomNavItem(int index, IconData outlineIcon, IconData solidIcon, String label) {
+  Widget _buildCustomNavItem(
+    int index,
+    IconData outlineIcon,
+    IconData solidIcon,
+    String label,
+  ) {
     final bool isActive = _currentIndex == index;
     return InkWell(
       onTap: () {
@@ -553,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
       borderRadius: BorderRadius.circular(16),
       child: isActive
           ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: const Color(0xFF0052CC),
                 borderRadius: BorderRadius.circular(16),
@@ -575,7 +610,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             )
           : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -591,8 +626,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-            ),)
-        ;
+            ),
+    );
   }
 
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback onTap) {
@@ -1033,7 +1068,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(10),
                         decoration: const BoxDecoration(
                           color: Color(0xFFEFF6FF),
                           shape: BoxShape.circle,
@@ -1042,7 +1077,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           "assets/icons_logo/wallet.png",
                           width: 30,
                           height: 30,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1089,7 +1124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           "assets/icons_logo/user.png",
                           width: 30,
                           height: 30,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1126,15 +1161,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
           // Actions Row: Add Money, Subscribe, Cashout
           Container(
             decoration: BoxDecoration(
               color: AppTheme.primaryBlue,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(9),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -1147,11 +1182,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Image.asset(
                         "assets/icons_logo/wallet_home.png",
-                        width: 26,
-                        height: 26,
-                        fit: BoxFit.contain,
+                        width: 42,
+                        height: 42,
+                        fit: BoxFit.fill,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 1),
                       const Text(
                         "Add Money",
                         style: TextStyle(
@@ -1170,11 +1205,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Image.asset(
                         "assets/icons_logo/subscribe.png",
-                        width: 26,
-                        height: 26,
+                        width: 42,
+                        height: 42,
                         fit: BoxFit.contain,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 1),
                       const Text(
                         "Subscribe",
                         style: TextStyle(
@@ -1196,11 +1231,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Image.asset(
                         "assets/icons_logo/cashout.png",
-                        width: 26,
-                        height: 26,
+                        width: 42,
+                        height: 42,
                         fit: BoxFit.contain,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 1),
                       const Text(
                         "Cashout",
                         style: TextStyle(
@@ -1212,6 +1247,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
+                SizedBox(width: 1),
               ],
             ),
           ),
@@ -1220,16 +1256,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Services Divided Grid Card (Prepaid, Electricity, DTH, FastTag, Insurance, Water Bill, Postpaid, More)
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-           // padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+            //margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+            // padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(13),
+              borderRadius: BorderRadius.circular(9),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -1433,12 +1469,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        width: 4,
-                        height: 16,
-                        color: AppTheme.primaryBlue,
-                      ),
-                      const SizedBox(width: 8),
                       const Text(
                         "Transaction History",
                         style: TextStyle(
@@ -1469,7 +1499,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Container(width: 18, height: 3.5, color: AppTheme.primaryBlue),
+                ],
+              ),
               _transactions.isEmpty
                   ? const Center(
                       child: Padding(
@@ -1607,8 +1641,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: assetPath != null
                     ? Image.asset(
                         assetPath,
-                        width: 34,
-                        height: 34,
+                        width: 45,
+                        height: 45,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) => Icon(
                           icon,
@@ -1718,7 +1752,12 @@ class _HomeScreenState extends State<HomeScreen> {
           // Income Growth Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(left:8, top:20, bottom:20, right:15),
+            padding: const EdgeInsets.only(
+              left: 8,
+              top: 20,
+              bottom: 20,
+              right: 15,
+            ),
             decoration: BoxDecoration(
               gradient: AppTheme.blueGradient,
               borderRadius: BorderRadius.circular(15),
@@ -1879,8 +1918,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
-
 
           const SizedBox(height: 20),
 
@@ -2116,11 +2153,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBusinessStatItem(
-    String label,
-    String amount,
-    IconData icon,
-  ) {
+  Widget _buildBusinessStatItem(String label, String amount, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
       child: Row(
@@ -2247,7 +2280,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 topLeft: isFirstRow ? const Radius.circular(13) : Radius.zero,
                 topRight: isFirstRow ? const Radius.circular(13) : Radius.zero,
                 bottomLeft: isLastRow ? const Radius.circular(13) : Radius.zero,
-                bottomRight: isLastRow ? const Radius.circular(13) : Radius.zero,
+                bottomRight: isLastRow
+                    ? const Radius.circular(13)
+                    : Radius.zero,
               ),
       ),
       child: Row(
@@ -2289,12 +2324,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(income, style: textStyle, textAlign: TextAlign.center),
           ),
           // Status
-          Expanded(
-            flex: 3,
-            child: Center(
-              child: _buildStatusBadge(status),
-            ),
-          ),
+          Expanded(flex: 3, child: Center(child: _buildStatusBadge(status))),
         ],
       ),
     );
@@ -2309,7 +2339,12 @@ class _HomeScreenState extends State<HomeScreen> {
           // Team Growth Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(left:8, top:20, bottom:20, right:15),
+            padding: const EdgeInsets.only(
+              left: 8,
+              top: 20,
+              bottom: 20,
+              right: 15,
+            ),
             decoration: BoxDecoration(
               gradient: AppTheme.blueGradient,
               borderRadius: BorderRadius.circular(15),
@@ -2479,12 +2514,24 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context) {
               // Dynamic status calculation based on current team size (defaulting to mock display values if team is empty to showcase all states)
               final int displayCount = _membersCount == 0 ? 3 : _membersCount;
-              final String status1 = displayCount >= 2 ? "Completed" : (displayCount > 0 ? "In Progress" : "Locked");
-              final String status2 = displayCount >= 6 ? "Completed" : (displayCount >= 2 ? "In Progress" : "Locked");
-              final String status3 = displayCount >= 14 ? "Completed" : (displayCount >= 6 ? "In Progress" : "Locked");
-              final String status4 = displayCount >= 30 ? "Completed" : (displayCount >= 14 ? "In Progress" : "Locked");
-              final String status5 = displayCount >= 62 ? "Completed" : (displayCount >= 30 ? "In Progress" : "Locked");
-              final String status6 = displayCount >= 126 ? "Completed" : (displayCount >= 62 ? "In Progress" : "Locked");
+              final String status1 = displayCount >= 2
+                  ? "Completed"
+                  : (displayCount > 0 ? "In Progress" : "Locked");
+              final String status2 = displayCount >= 6
+                  ? "Completed"
+                  : (displayCount >= 2 ? "In Progress" : "Locked");
+              final String status3 = displayCount >= 14
+                  ? "Completed"
+                  : (displayCount >= 6 ? "In Progress" : "Locked");
+              final String status4 = displayCount >= 30
+                  ? "Completed"
+                  : (displayCount >= 14 ? "In Progress" : "Locked");
+              final String status5 = displayCount >= 62
+                  ? "Completed"
+                  : (displayCount >= 30 ? "In Progress" : "Locked");
+              final String status6 = displayCount >= 126
+                  ? "Completed"
+                  : (displayCount >= 62 ? "In Progress" : "Locked");
 
               return Container(
                 decoration: BoxDecoration(
@@ -2913,9 +2960,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 12),
           // Menu Options List Box
           Container(
-            padding:EdgeInsets.symmetric(
-              vertical:5
-            ),
+            padding: EdgeInsets.symmetric(vertical: 5),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(13),
@@ -2945,6 +2990,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     });
                   },
                 ),
+                _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.gpp_good,
                   "Password & Security",
@@ -2953,24 +2999,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.pushNamed(context, '/security-details');
                   },
                 ),
+                _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.notifications,
                   "Notifications",
                   "Manage your notification preferences",
                   onTap: _showNotificationsDialog,
                 ),
+                _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.info,
                   "About Us",
                   "Know more about SR Digital Seva Kendram",
                   onTap: () => _openWebUrl("https://srdigitalseva.com"),
                 ),
+                _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.support_agent,
                   "Support",
                   "Help & support center",
                   onTap: () => _openWebUrl("https://srdigitalseva.com/contact"),
                 ),
+                _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.power_settings_new,
                   "Log out",
@@ -3024,6 +3074,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildProfileMenuDivider() {
+    return const FractionallySizedBox(
+      widthFactor: 0.9,
+      child: Divider(
+        height: 1,
+        thickness: 0.3,
+        color: Color(0xFFE0EFFF), // very light blue
       ),
     );
   }

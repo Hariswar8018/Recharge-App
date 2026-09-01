@@ -3,7 +3,7 @@ import '../api.dart';
 class AppTheme {
   // Global background image asset string. 
   // The user can replace this empty string or mock asset path with their real background asset path later!
-  static const String globalBackgroundImageAsset = "assets/background.png";
+  static const String globalBackgroundImageAsset = "assets/logos/background.png";
 
   // API Config
   static const String apiBaseUrl = Api.apiBaseUrl; 
