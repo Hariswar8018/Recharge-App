@@ -15,13 +15,14 @@ const pool = process.env.DATABASE_URL
 
 async function query(sql, params) {
   try {
-    const [results] = await pool.execute(sql, params);
+    const [results] = await pool.query(sql, params);
     return results;
   } catch (err) {
     console.error('MySQL query error:', err);
     throw err;
   }
 }
+
 
 async function transaction(callback) {
   const connection = await pool.getConnection();
