@@ -7,9 +7,6 @@
           <img src="../assets/sr_logo.png" alt="SR Digital Seva Kendram" class="logo-image" />
         </div>
         <div class="header-right-container">
-          <router-link to="/admin-login" class="admin-login-nav-btn">
-            Admin Login
-          </router-link>
           <div class="header-notification-container" title="Notifications">
             <div class="notification-bell">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0052CC" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
