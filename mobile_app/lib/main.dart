@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'screens/splash_screen.dart';
-import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/forgot_password_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/fund_request_screen.dart';
-import 'screens/settings_detail_screen.dart';
-import 'screens/wallet_history_screens.dart';
-import 'screens/withdrawal_screen.dart';
+import 'screens/auth/splash_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
+import 'screens/auth/forgot_password_screen.dart';
+import 'screens/navigation/home_screen.dart';
+import 'screens/transactions/fund_request_screen.dart';
+import 'screens/profile/profile_details_screen.dart';
+import 'screens/profile/security_details_screen.dart';
+import 'screens/transactions/wallet_details_screen.dart';
+import 'screens/transactions/transaction_history_screen.dart';
+import 'screens/transactions/withdrawal_screen.dart';
+import 'screens/recharge/id_subscription_screen.dart';
 import 'constants/app_theme.dart';
 
 void main() {
@@ -43,6 +46,7 @@ class MyApp extends StatelessWidget {
         '/security-details': (context) => const SecurityDetailsScreen(),
         '/wallet-details': (context) => const WalletDetailsScreen(),
         '/transaction-history': (context) => const TransactionHistoryScreen(),
+        '/id-subscription': (context) => const IdSubscriptionScreen(),
       },
     );
   }
