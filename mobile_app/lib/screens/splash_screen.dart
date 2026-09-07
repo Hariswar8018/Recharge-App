@@ -1,10 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../constants/app_theme.dart';
 import '../services/api_service.dart';
-import '../widgets/background_container.dart';
-import '../widgets/brand_logo.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,8 +11,11 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  // ignore: unused_field
   bool _isOffline = false;
+  // ignore: unused_field
   bool _isChecking = true;
+
 
   @override
   void initState() {
@@ -64,8 +64,8 @@ class _SplashScreenState extends State<SplashScreen> {
       await Future.delayed(remainingDelay);
     }
 
-    if (!mounted) return;
     final token = await ApiService.getToken();
+    if (!mounted) return;
     if (token != null) {
       Navigator.pushReplacementNamed(context, '/home');
     } else {

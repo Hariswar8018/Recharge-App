@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../constants/app_theme.dart';
 
 class SocialFooter extends StatelessWidget {
   const SocialFooter({super.key});

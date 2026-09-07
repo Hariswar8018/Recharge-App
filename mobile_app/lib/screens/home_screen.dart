@@ -10,6 +10,7 @@ import '../widgets/background_container.dart';
 import '../widgets/processing_dialog.dart';
 import 'recharge_flow_screens.dart';
 import 'wallet_history_screens.dart';
+import 'settings_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -157,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handleLogout() async {
     await ApiService.logout();
     if (!mounted) return;
-    Navigator.pushReplacementNamed(context, '/login');
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 
   // --- URL LAUNCHER HELPER ---
@@ -1557,6 +1558,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildActionButton(IconData icon, String label) {
     return InkWell(
       onTap: () {},
@@ -1609,21 +1611,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return InkWell(
       onTap: () {
-        if (_activeCycleId.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Please activate your ID to access services."),
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.info_outline_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Text(
+                  "$label - Coming Soon",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
-          );
-          _navigateToSubscription();
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProviderSelectionScreen(serviceType: label),
+            backgroundColor: const Color(0xFF0D47A1),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-          );
-        }
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
@@ -1684,10 +1697,14 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context) => TransactionReceiptScreen(
               transaction: TransactionModel(
                 id: "mock_id",
+                title: type,
                 type: type,
+                descLine1: type,
+                descLine2: "Wallet Transaction",
                 amount: amount,
                 date: date,
                 isIncome: isIncome,
+                reference: "TXN10002849",
               ),
             ),
           ),
@@ -2713,6 +2730,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildTeamRow(String level, String team, String income, String total) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -2977,48 +2995,95 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildProfileMenuOption(
                   Icons.person,
                   "Manage Profile",
-                  "Update your personal details",
+                  "View your locked personal details",
                   onTap: () {
-                    Navigator.pushNamed(context, '/profile-details').then((
-                      val,
-                    ) {
-                      if (val != null) {
-                        setState(() {
-                          _fullName = val as String;
-                        });
-                      }
-                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfileDetailsScreen()),
+                    );
                   },
                 ),
                 _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.gpp_good,
                   "Password & Security",
-                  "Secure your account",
+                  "Secure your account password",
                   onTap: () {
-                    Navigator.pushNamed(context, '/security-details');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SecurityDetailsScreen()),
+                    );
                   },
                 ),
                 _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.notifications,
                   "Notifications",
-                  "Manage your notification preferences",
-                  onTap: _showNotificationsDialog,
+                  "View admin announcements & alerts",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const InternalNotificationsScreen()),
+                    );
+                  },
                 ),
                 _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.info,
                   "About Us",
                   "Know more about SR Digital Seva Kendram",
-                  onTap: () => _openWebUrl("https://srdigitalseva.com"),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const InternalPolicyScreen(
+                          title: "About Us",
+                          content: "SR Digital Seva Kendram is India's leading digital services platform offering instant mobile & DTH recharges, bill payments, and smart wallet solutions.\n\nOur mission is to empower digital entrepreneurs and retailers with 100% secure, lightning-fast transaction technology and instant commission distributions.",
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                _buildProfileMenuDivider(),
+                _buildProfileMenuOption(
+                  Icons.privacy_tip_outlined,
+                  "Privacy Policy",
+                  "Our privacy practices & data policy",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const InternalPolicyScreen(
+                          title: "Privacy Policy",
+                          content: "Your privacy is important to us. SR Digital Seva Kendram collects and uses your data strictly for authentication, wallet transaction processing, and service delivery.\n\nWe do not share your personal information or financial data with unauthorized third parties. All communication and data transfers are encrypted with industry-standard protocols.",
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                _buildProfileMenuDivider(),
+                _buildProfileMenuOption(
+                  Icons.article_outlined,
+                  "Terms & Conditions",
+                  "Rules & service agreement",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const InternalPolicyScreen(
+                          title: "Terms & Conditions",
+                          content: "By using the SR Digital Seva application and services, you agree to abide by our platform guidelines, wallet transaction rules, and minimum balance policies.\n\nAll fund deposits are subject to verification. Misuse or fraudulent activity will result in immediate account suspension.",
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
                   Icons.support_agent,
                   "Support",
-                  "Help & support center",
-                  onTap: () => _openWebUrl("https://srdigitalseva.com/contact"),
+                  "Help & WhatsApp support center",
+                  onTap: () => launchWhatsAppSupport(context),
                 ),
                 _buildProfileMenuDivider(),
                 _buildProfileMenuOption(
@@ -3026,7 +3091,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   "Log out",
                   "Sign out from your account",
                   isLogout: true,
+                  onTap: _handleLogout,
                 ),
+
               ],
             ),
           ),

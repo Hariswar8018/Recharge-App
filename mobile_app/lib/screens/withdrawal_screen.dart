@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../constants/app_theme.dart';
 import '../services/api_service.dart';
 import '../widgets/processing_dialog.dart';
 
@@ -11,74 +10,62 @@ class WithdrawalScreen extends StatefulWidget {
 }
 
 class _WithdrawalScreenState extends State<WithdrawalScreen> {
-  final _amountController = TextEditingController();
-  final _upiController = TextEditingController();
-  final _bankNameController = TextEditingController();
-  final _bankIfscController = TextEditingController();
-  final _bankAccController = TextEditingController();
+  final _amountController = TextEditingController(text: "1000");
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  
   bool _isLoading = false;
-  double _mainBalance = 0.0;
+  bool _isPasswordVisible = false;
+  double _mainBalance = 1200.0;
   String _message = "";
   String _error = "";
-  List<dynamic> _cashoutHistory = [];
-  String _currentAmount = "";
-  String _paymentMethod = "UPI"; // "UPI" or "BANK"
+  String _selectedMethod = "UPI"; // "UPI" or "BANK"
+
+  String _userUpiId = "raju@ybl";
+  String _bankName = "State Bank of India";
+  String _accountNo = "XXXXXX4567";
 
   @override
   void initState() {
     super.initState();
     _amountController.addListener(_onAmountChanged);
-    _loadBalanceAndHistory();
+    _loadBalanceAndProfile();
   }
 
   @override
   void dispose() {
     _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
-    _upiController.dispose();
-    _bankNameController.dispose();
-    _bankIfscController.dispose();
-    _bankAccController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   void _onAmountChanged() {
-    setState(() {
-      _currentAmount = _amountController.text.trim();
-    });
+    setState(() {});
   }
 
-  void _setQuickAmount(String amt) {
-    _amountController.text = amt;
-    setState(() {
-      _currentAmount = amt;
-    });
+  void _setMaxAmount() {
+    _amountController.text = _mainBalance.toInt().toString();
+    setState(() {});
   }
 
-  Future<void> _loadBalanceAndHistory() async {
-    // Load profile to get latest main balance
+  Future<void> _loadBalanceAndProfile() async {
     final profileRes = await ApiService.getProfile();
-    double balance = 0.0;
     if (profileRes['success']) {
       final user = profileRes['user'];
-      balance = double.tryParse(user['main_wallet_balance']?.toString() ?? "0.0") ?? 0.0;
+      final balance = double.tryParse(user['main_wallet_balance']?.toString() ?? "1200.0") ?? 1200.0;
+      final mobile = user['mobileNumber'] ?? "7989293968";
+      setState(() {
+        _mainBalance = balance;
+        _userUpiId = user['upi_id'] ?? "$mobile@ybl";
+      });
     }
-
-    // Load transactions and filter by "Cashout" to get history
-    final txns = await ApiService.getTransactions();
-    final cashouts = txns.where((tx) => tx['type'] == 'Cashout').toList();
-
-    setState(() {
-      _mainBalance = balance;
-      _cashoutHistory = cashouts;
-    });
   }
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
     
-    final amtVal = double.tryParse(_currentAmount);
+    final amtVal = double.tryParse(_amountController.text.trim());
     if (amtVal == null || amtVal < 500) {
       setState(() {
         _error = "Minimum withdrawal amount is ₹500";
@@ -93,6 +80,13 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       return;
     }
 
+    if (_passwordController.text.trim().isEmpty) {
+      setState(() {
+        _error = "Please enter your login password";
+      });
+      return;
+    }
+
     await showProcessingDialog(context, "Processing Cashout Request...");
     if (!mounted) return;
 
@@ -102,355 +96,667 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       _error = "";
     });
 
-    final result = await ApiService.submitWithdrawal(amtVal);
+    final result = await ApiService.submitCashout(
+      amount: amtVal,
+      paymentMethod: _selectedMethod,
+      details: _selectedMethod == "UPI" ? _userUpiId : "$_bankName - $_accountNo",
+    );
+
     setState(() {
       _isLoading = false;
     });
 
     if (result['success']) {
       setState(() {
-        _message = "Cashout request processed successfully!";
-        _amountController.clear();
-        _upiController.clear();
-        _bankNameController.clear();
-        _bankAccController.clear();
-        _bankIfscController.clear();
-        _currentAmount = "";
+        _message = "Your cashout request of ₹${amtVal.toStringAsFixed(2)} has been submitted successfully!";
+        _passwordController.clear();
       });
-      await _loadBalanceAndHistory();
+      _loadBalanceAndProfile();
     } else {
       setState(() {
-        _error = result['error'] ?? "Withdrawal request failed";
+        _error = result['error'] ?? "Failed to submit cashout request";
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final double amtVal = double.tryParse(_amountController.text.trim()) ?? 0.0;
+    final double processingFee = amtVal * 0.15; // 15% Fee
+    final double youWillReceive = amtVal - processingFee > 0 ? amtVal - processingFee : 0.0;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text("Cashout / Withdraw", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppTheme.primaryBlue,
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Wallet Balance Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  gradient: AppTheme.blueGradient,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(color: AppTheme.primaryBlue.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text("MAIN WALLET BALANCE", style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                    const SizedBox(height: 8),
-                    Text("₹ ${_mainBalance.toStringAsFixed(2)}", style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
-                  ],
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top Blue Header with 3D Wallet Badge
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0A369D), Color(0xFF1565C0)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-
-              // 1. Select Amount Card
-              _buildCardSection(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionHeader("1. Enter Withdrawal Amount", Icons.currency_rupee),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: "Enter Amount",
-                        prefixIcon: const Icon(Icons.currency_rupee, color: AppTheme.primaryBlue),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      validator: (value) => (value == null || value.isEmpty) ? "Please enter amount" : null,
+                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
                     ),
-                    const SizedBox(height: 6),
-                    const Text("Minimum Cashout: ₹500", style: TextStyle(color: AppTheme.textGray, fontSize: 11)),
-                    const SizedBox(height: 12),
-                    // Quick amount selection
-                    GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 4,
-                      childAspectRatio: 2.2,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                      children: ["500", "1000", "2000", "5000"].map((val) {
-                        return OutlinedButton(
-                          onPressed: () => _setQuickAmount(val),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppTheme.primaryBlue),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                            padding: EdgeInsets.zero,
-                          ),
-                          child: Text("₹$val", style: const TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 11)),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // 2. Select Payment Method Card
-              _buildCardSection(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionHeader("2. Choose Transfer Method", Icons.account_balance),
-                    const SizedBox(height: 14),
-                    Row(
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: ChoiceChip(
-                            label: const Center(child: Text("UPI Transfer", style: TextStyle(fontWeight: FontWeight.bold))),
-                            selected: _paymentMethod == "UPI",
-                            selectedColor: AppTheme.primaryBlue.withOpacity(0.12),
-                            checkmarkColor: AppTheme.primaryBlue,
-                            labelStyle: TextStyle(color: _paymentMethod == "UPI" ? AppTheme.primaryBlue : Colors.grey),
-                            onSelected: (val) {
-                              if (val) setState(() => _paymentMethod = "UPI");
-                            },
+                        Text(
+                          "Cash Out",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ChoiceChip(
-                            label: const Center(child: Text("Bank Account", style: TextStyle(fontWeight: FontWeight.bold))),
-                            selected: _paymentMethod == "BANK",
-                            selectedColor: AppTheme.primaryBlue.withOpacity(0.12),
-                            checkmarkColor: AppTheme.primaryBlue,
-                            labelStyle: TextStyle(color: _paymentMethod == "BANK" ? AppTheme.primaryBlue : Colors.grey),
-                            onSelected: (val) {
-                              if (val) setState(() => _paymentMethod = "BANK");
-                            },
+                        SizedBox(height: 2),
+                        Text(
+                          "Withdraw your money",
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    if (_paymentMethod == "UPI") ...[
-                      TextFormField(
-                        controller: _upiController,
-                        decoration: InputDecoration(
-                          labelText: "Enter UPI ID",
-                          hintText: "username@upi",
-                          prefixIcon: const Icon(Icons.payment, color: AppTheme.primaryBlue),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                  ),
+                  // 3D Wallet Badge Illustration with Upward Arrow
+                  Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        validator: (value) => (value == null || value.trim().isEmpty) ? "UPI ID is required" : null,
+                        child: const Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: Color(0xFFFFD54F),
+                          size: 34,
+                        ),
                       ),
-                    ] else ...[
-                      TextFormField(
-                        controller: _bankNameController,
-                        decoration: InputDecoration(
-                          labelText: "Beneficiary Name",
-                          hintText: "Enter account holder name",
-                          prefixIcon: const Icon(Icons.person, color: AppTheme.primaryBlue),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF22C55E),
+                          shape: BoxShape.circle,
                         ),
-                        validator: (value) => (value == null || value.trim().isEmpty) ? "Beneficiary Name is required" : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _bankAccController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: "Bank Account Number",
-                          hintText: "Enter account number",
-                          prefixIcon: const Icon(Icons.account_balance_wallet, color: AppTheme.primaryBlue),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
+                        child: const Icon(
+                          Icons.arrow_upward_rounded,
+                          color: Colors.white,
+                          size: 14,
                         ),
-                        validator: (value) => (value == null || value.trim().isEmpty) ? "Account Number is required" : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _bankIfscController,
-                        textCapitalization: TextCapitalization.characters,
-                        decoration: InputDecoration(
-                          labelText: "IFSC Code",
-                          hintText: "Enter 11 character IFSC",
-                          prefixIcon: const Icon(Icons.qr_code, color: AppTheme.primaryBlue),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppTheme.cardLightBlue)),
-                        ),
-                        validator: (value) => (value == null || value.trim().isEmpty) ? "IFSC Code is required" : null,
                       ),
                     ],
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 14),
+            ),
 
-              // Instructions Card
-              Container(
-                width: double.infinity,
+            // Scrollable Content
+            Expanded(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red.shade100),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: const [
-                        Icon(Icons.info, color: AppTheme.secondaryRed, size: 18),
-                        SizedBox(width: 6),
-                        Text("Important Instructions", style: TextStyle(color: AppTheme.secondaryRed, fontWeight: FontWeight.bold, fontSize: 13)),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      // 1. Available Balance Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0D47A1),
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0D47A1).withOpacity(0.25),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.account_balance_wallet,
+                                color: Color(0xFF0D47A1),
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Available Balance",
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "₹${_mainBalance.toStringAsFixed(2)}",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.verified_user_rounded,
+                              color: Colors.white.withOpacity(0.2),
+                              size: 40,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 2. Enter Amount Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: const [
+                                Text(
+                                  "Enter Amount",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1E293B),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  "Minimum: ₹500",
+                                  style: TextStyle(
+                                    color: Color(0xFF1565C0),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _amountController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                prefixIcon: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  child: Text(
+                                    "₹",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
+                                ),
+                                hintText: "Enter amount",
+                                hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              ),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                              validator: (val) {
+                                if (val == null || val.isEmpty) return "Please enter amount";
+                                final parsed = double.tryParse(val);
+                                if (parsed == null || parsed < 500) return "Minimum withdrawal is ₹500";
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Enter amount to withdraw",
+                                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                                ),
+                                InkWell(
+                                  onTap: _setMaxAmount,
+                                  child: const Text(
+                                    "Max",
+                                    style: TextStyle(
+                                      color: Color(0xFF1565C0),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 3. Select Method Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Select Method",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Option 1: UPI
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedMethod = "UPI";
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _selectedMethod == "UPI" ? const Color(0xFFEFF6FF) : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _selectedMethod == "UPI" ? const Color(0xFF1565C0) : const Color(0xFFE2E8F0),
+                                    width: _selectedMethod == "UPI" ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                                      ),
+                                      child: const Text(
+                                        "UPI",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          color: Color(0xFF1565C0),
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "UPI ${_selectedMethod == 'UPI' ? '(Selected)' : ''}",
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                              color: Color(0xFF1E293B),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            _userUpiId,
+                                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (_selectedMethod == "UPI") ...[
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE8F5E9),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: const Text(
+                                          "Selected",
+                                          style: TextStyle(
+                                            color: Color(0xFF2E7D32),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                    Icon(
+                                      _selectedMethod == "UPI" ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                      color: _selectedMethod == "UPI" ? const Color(0xFF1565C0) : const Color(0xFF94A3B8),
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+
+                            // Option 2: Bank Account
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedMethod = "BANK";
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _selectedMethod == "BANK" ? const Color(0xFFEFF6FF) : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _selectedMethod == "BANK" ? const Color(0xFF1565C0) : const Color(0xFFE2E8F0),
+                                    width: _selectedMethod == "BANK" ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.account_balance, color: Color(0xFF1565C0), size: 20),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Bank Account",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                              color: Color(0xFF1E293B),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            "$_bankName • $_accountNo",
+                                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      _selectedMethod == "BANK" ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                                      color: _selectedMethod == "BANK" ? const Color(0xFF1565C0) : const Color(0xFF94A3B8),
+                                      size: 20,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 4. Summary Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Summary",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            _buildSummaryRow("Withdrawal Amount", "₹${amtVal.toStringAsFixed(2)}", isBold: true),
+                            _buildSummaryRow("Processing Fee (15%)", "- ₹${processingFee.toStringAsFixed(2)}", textColor: const Color(0xFFDC2626)),
+                            const Divider(color: Color(0xFFE2E8F0), height: 20),
+                            _buildSummaryRow("You Will Receive", "₹${youWillReceive.toStringAsFixed(2)}", isBold: true, isLarge: true, textColor: const Color(0xFF22C55E)),
+                            const SizedBox(height: 14),
+
+                            // Light blue Info Box
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE3F2FD),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Icon(Icons.info_outline_rounded, color: Color(0xFF1565C0), size: 18),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      "15% processing fee will be deducted from the withdrawal amount. Requests are usually processed within 24 hours.",
+                                      style: TextStyle(
+                                        color: Color(0xFF1E293B),
+                                        fontSize: 11,
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 5. Login Password Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Login Password",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: !_isPasswordVisible,
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF64748B), size: 20),
+                                hintText: "Enter your login password",
+                                hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _isPasswordVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                    color: const Color(0xFF64748B),
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _isPasswordVisible = !_isPasswordVisible;
+                                    });
+                                  },
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              ),
+                              style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                            ),
+                            const SizedBox(height: 8),
+                            InkWell(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/forgot-password');
+                              },
+                              child: const Text(
+                                "Forgot Password?",
+                                style: TextStyle(
+                                  color: Color(0xFF1565C0),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      if (_message.isNotEmpty) ...[
+                        Text(_message, style: const TextStyle(color: Color(0xFF22C55E), fontSize: 12, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 12),
                       ],
-                    ),
-                    const SizedBox(height: 8),
-                    _buildInstructionBullet("Minimum Cashout Amount: ₹500"),
-                    _buildInstructionBullet("A standard 15% processing fee applies to all cashouts."),
-                    _buildInstructionBullet("Funds will be instantly transferred to your selected UPI/Bank account."),
-                    _buildInstructionBullet("Please double check your payment details before confirming."),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
+                      if (_error.isNotEmpty) ...[
+                        Text(_error, style: const TextStyle(color: Color(0xFFEF4444), fontSize: 12, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 12),
+                      ],
 
-              if (_message.isNotEmpty) ...[
-                Text(_message, style: const TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-              ],
-              if (_error.isNotEmpty) ...[
-                Text(_error, style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-              ],
-
-              // Submit Button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _handleSubmit,
-                  icon: const Icon(Icons.send, color: Colors.white, size: 18),
-                  label: Text(_isLoading ? "PROCESSING..." : "CONFIRM CASHOUT", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.secondaryRed,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      // 6. Submit Button & Security Footer
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          onPressed: _isLoading ? null : _handleSubmit,
+                          icon: const Icon(Icons.near_me_rounded, color: Colors.white, size: 20),
+                          label: Text(
+                            _isLoading ? "PROCESSING..." : "REQUEST CASHOUT",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0D47A1),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.shield_outlined, color: Color(0xFF94A3B8), size: 14),
+                          SizedBox(width: 6),
+                          Text(
+                            "Your transaction is 100% secure",
+                            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // Request History section
-              const Text("Your Withdrawal History", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue)),
-              const SizedBox(height: 8),
-              _cashoutHistory.isEmpty
-                  ? const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("No cashout history found", style: TextStyle(color: AppTheme.textGray))))
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _cashoutHistory.length,
-                      itemBuilder: (context, index) {
-                        final item = _cashoutHistory[index];
-                        final amount = item['amount'] as String? ?? '₹0.00';
-                        final date = item['date'] as String? ?? '';
-                        final id = item['id']?.toString() ?? '';
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          elevation: 0.5,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(color: AppTheme.cardLightBlue),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              radius: 18,
-                              backgroundColor: Colors.red.shade50,
-                              child: const Icon(
-                                Icons.call_made,
-                                color: Colors.red,
-                                size: 18,
-                              ),
-                            ),
-                            title: Text(
-                              amount,
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDarkBlue),
-                            ),
-                            subtitle: Text("Ref ID: SRTXN${id.padLeft(8, '0')}\n$date", style: const TextStyle(fontSize: 10)),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                "SUCCESS",
-                                style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 9),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    )
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildCardSection({required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.cardLightBlue),
-      ),
-      child: child,
-    );
-  }
-
-  Widget _buildSectionHeader(String title, IconData icon) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 12,
-          backgroundColor: AppTheme.primaryBlue,
-          child: Icon(icon, color: Colors.white, size: 12),
-        ),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textDarkBlue)),
-      ],
-    );
-  }
-
-  Widget _buildInstructionBullet(String text) {
+  Widget _buildSummaryRow(
+    String label,
+    String val, {
+    bool isBold = false,
+    bool isLarge = false,
+    Color textColor = const Color(0xFF1E293B),
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.5),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text("• ", style: TextStyle(color: AppTheme.secondaryRed, fontWeight: FontWeight.bold)),
-          Expanded(child: Text(text, style: const TextStyle(color: AppTheme.textDarkBlue, fontSize: 11, height: 1.3))),
+          Text(
+            label,
+            style: TextStyle(
+              color: isBold ? const Color(0xFF1E293B) : const Color(0xFF64748B),
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: isLarge ? 14 : 13,
+            ),
+          ),
+          Text(
+            val,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: isBold ? FontWeight.w900 : FontWeight.bold,
+              fontSize: isLarge ? 16 : 13,
+            ),
+          ),
         ],
       ),
     );

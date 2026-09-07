@@ -596,6 +596,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildSocialIcon(IconData icon, Color color) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 6),

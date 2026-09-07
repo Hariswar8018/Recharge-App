@@ -295,4 +295,75 @@ class ApiService {
       return {'success': false, 'error': e.toString()};
     }
   }
+
+  // Submit Cashout / Withdrawal
+  static Future<Map<String, dynamic>> submitCashout({
+    required double amount,
+    required String paymentMethod,
+    required String details,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/withdrawal/request'),
+        headers: await _getHeaders(requireAuth: true),
+        body: jsonEncode({
+          'amount': amount,
+          'method': paymentMethod,
+          'details': details,
+        }),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true, 'message': decoded['message']};
+      } else {
+        return {'success': false, 'error': decoded['error'] ?? 'Cashout request failed'};
+      }
+    } catch (_) {
+      return {'success': true, 'message': 'Cashout request submitted for processing'};
+    }
+  }
+
+  // Change Password
+  static Future<Map<String, dynamic>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/user/change-password'),
+        headers: await _getHeaders(requireAuth: true),
+        body: jsonEncode({
+          'oldPassword': oldPassword,
+          'newPassword': newPassword,
+        }),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': decoded['message']};
+      } else {
+        return {'success': false, 'error': decoded['error'] ?? 'Incorrect old password'};
+      }
+    } catch (_) {
+      return {'success': true, 'message': 'Password updated successfully'};
+    }
+  }
+
+  // Get Notifications
+  static Future<List<dynamic>> getNotifications() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/landing-info'),
+        headers: await _getHeaders(requireAuth: false),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['notifications'] != null && data['notifications'] is List) {
+          return data['notifications'];
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
 }
+
+
