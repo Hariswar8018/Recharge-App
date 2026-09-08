@@ -2379,6 +2379,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTeamTab() {
+    final int realTeamCount = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
+    final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
+    final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -2451,7 +2455,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 1),
                           Text(
-                            "$_membersCount",
+                            "$realTeamCount",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 26,
@@ -2472,24 +2476,23 @@ class _HomeScreenState extends State<HomeScreen> {
                           LayoutBuilder(
                             builder: (context, constraints) {
                               final double maxWidth = constraints.maxWidth;
-                              final double progress = (_membersCount / 126.0)
-                                  .clamp(0.0, 1.0);
-                              final double thumbPosition = maxWidth * progress;
+                              final double thumbPosition = maxWidth * progressRatio;
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
-                                    children: const [
+                                    children: [
                                       Text(
-                                        "0%",
-                                        style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 9,
+                                        percentDisplay,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      Text(
+                                      const Text(
                                         "100%",
                                         style: TextStyle(
                                           color: Colors.white70,
@@ -2561,7 +2564,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Builder(
             builder: (context) {
               // Dynamic status calculation based on current team size (defaulting to mock display values if team is empty to showcase all states)
-              final int displayCount = _membersCount == 0 ? 3 : _membersCount;
+              final int displayCount = realTeamCount;
               final String status1 = displayCount >= 2
                   ? "Completed"
                   : (displayCount > 0 ? "In Progress" : "Locked");
@@ -3043,6 +3046,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const SecurityDetailsScreen()),
+                    );
+                  },
+                ),
+                _buildProfileMenuDivider(),
+                _buildProfileMenuOption(
+                  Icons.account_balance_rounded,
+                  "Bank Account Verify",
+                  "Verify & lock bank details via ₹1 Penny Drop",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BankVerifyScreen()),
                     );
                   },
                 ),

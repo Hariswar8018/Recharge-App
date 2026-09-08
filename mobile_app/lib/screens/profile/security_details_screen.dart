@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
+import 'bank_verify_screen.dart';
 
 class SecurityDetailsScreen extends StatefulWidget {
   const SecurityDetailsScreen({super.key});
@@ -172,7 +173,38 @@ class _SecurityDetailsScreenState extends State<SecurityDetailsScreen> {
                   style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
                 ),
               ),
-            )
+            ),
+
+            const SizedBox(height: 24),
+            const Divider(height: 32),
+            const SizedBox(height: 8),
+
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.account_balance_rounded, color: AppTheme.primaryBlue, size: 24),
+                ),
+                title: const Text("Bank Account Verify", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                subtitle: const Text("Verify and lock your bank details via ₹1 Penny Drop", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const BankVerifyScreen()),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

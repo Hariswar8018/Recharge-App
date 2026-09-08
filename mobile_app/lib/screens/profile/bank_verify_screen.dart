@@ -11,12 +11,12 @@ class BankVerifyScreen extends StatefulWidget {
 
 class _BankVerifyScreenState extends State<BankVerifyScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _bankNameController = TextEditingController(text: "State Bank of India");
-  final _holderNameController = TextEditingController(text: "Rajesh Reddy");
-  final _accountNoController = TextEditingController(text: "38927492817");
-  final _ifscController = TextEditingController(text: "SBIN0001234");
+  final _bankNameController = TextEditingController();
+  final _holderNameController = TextEditingController();
+  final _accountNoController = TextEditingController();
+  final _ifscController = TextEditingController();
 
-  bool _isVerified = true;
+  bool _isVerified = false;
   bool _isLoading = false;
 
   @override
@@ -35,23 +35,38 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
   }
 
   Future<void> _checkVerificationStatus() async {
+    setState(() => _isLoading = true);
     final res = await ApiService.getProfile();
+    setState(() => _isLoading = false);
+
     if (res['success'] == true && res['user'] != null) {
       final user = res['user'];
-      if (user['bank_verified'] == true || user['bank_account'] != null) {
-        setState(() {
-          _isVerified = true;
-          if (user['bank_name'] != null) _bankNameController.text = user['bank_name'];
-          if (user['account_holder'] != null) _holderNameController.text = user['account_holder'];
-          if (user['account_no'] != null) _accountNoController.text = user['account_no'];
-          if (user['ifsc'] != null) _ifscController.text = user['ifsc'];
-        });
-      }
+      final isVerified = user['bank_verified'] == 1 || user['bank_verified'] == true;
+      setState(() {
+        _isVerified = isVerified;
+        if (user['bank_name'] != null && user['bank_name'].toString().isNotEmpty) {
+          _bankNameController.text = user['bank_name'];
+        }
+        if (user['account_holder'] != null && user['account_holder'].toString().isNotEmpty) {
+          _holderNameController.text = user['account_holder'];
+        }
+        if (user['account_no'] != null && user['account_no'].toString().isNotEmpty) {
+          _accountNoController.text = user['account_no'];
+        }
+        if (user['ifsc'] != null && user['ifsc'].toString().isNotEmpty) {
+          _ifscController.text = user['ifsc'];
+        }
+      });
     }
   }
 
   Future<void> _handlePennyDropVerify() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final bankName = _bankNameController.text.trim();
+    final holderName = _holderNameController.text.trim();
+    final accountNo = _accountNoController.text.trim();
+    final ifsc = _ifscController.text.trim();
 
     await showProcessingDialog(context, "Initiating ₹1 Penny Drop Verification...");
     if (!mounted) return;
@@ -60,41 +75,57 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
       _isLoading = true;
     });
 
-    // Simulate backend Penny Drop Verification Call
-    await Future.delayed(const Duration(seconds: 2));
+    final res = await ApiService.verifyBankAccount(
+      bankName: bankName,
+      accountHolder: holderName,
+      accountNo: accountNo,
+      ifsc: ifsc,
+    );
 
     if (!mounted) return;
     setState(() {
       _isLoading = false;
-      _isVerified = true;
     });
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Icon(Icons.check_circle_rounded, color: Colors.green, size: 28),
-            SizedBox(width: 8),
-            Text("Verification Success", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+    if (res['success'] == true) {
+      setState(() {
+        _isVerified = true;
+      });
+
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.green, size: 28),
+              SizedBox(width: 8),
+              Text("Verification Success", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Text(
+            res['message'] ?? "₹1 Penny Drop verification successful! Your bank account details have been verified and locked securely.",
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0A369D),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text("OK", style: TextStyle(color: Colors.white)),
+            ),
           ],
         ),
-        content: const Text(
-          "₹1 Penny Drop verification successful! Your bank account details have been verified and locked securely.",
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['error'] ?? "Bank account verification failed"),
+          backgroundColor: Colors.red,
         ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0A369D),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text("OK", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildField({
