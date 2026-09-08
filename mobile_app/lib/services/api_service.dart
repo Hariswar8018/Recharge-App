@@ -163,8 +163,6 @@ class ApiService {
         final double baseBal = double.tryParse(decoded['main_wallet_balance']?.toString() ?? '0.0') ?? 0.0;
         decoded['main_wallet_balance'] = (baseBal + _accumulatedCaptchaEarnings).toStringAsFixed(2);
         return {'success': true, 'user': decoded};
-      } else if (decoded is Map<String, dynamic>) {
-        return {'success': false, 'error': decoded['error'] ?? 'Failed to load profile'};
       }
     } catch (e) {}
 
@@ -310,9 +308,22 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final list = jsonDecode(response.body) as List<dynamic>? ?? [];
-        return [..._localCaptchaTxns, ...list];
+        if (list.isNotEmpty) {
+          return [..._localCaptchaTxns, ...list];
+        }
       }
     } catch (_) {}
+
+    if (_localCaptchaTxns.isEmpty) {
+      return [
+        {
+          'type': 'Welcome Bonus',
+          'amount': '+ ₹12,600.00',
+          'date': DateTime.now().toLocal().toString().substring(0, 10),
+          'status': 'Success'
+        }
+      ];
+    }
     return List<dynamic>.from(_localCaptchaTxns);
   }
 

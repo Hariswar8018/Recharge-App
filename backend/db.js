@@ -58,6 +58,11 @@ async function initDb() {
         device_model VARCHAR(100) DEFAULT 'Unknown',
         app_version VARCHAR(20) DEFAULT '1.0.0',
         sponsor_id INT DEFAULT NULL,
+        bank_name VARCHAR(255) DEFAULT NULL,
+        account_holder VARCHAR(255) DEFAULT NULL,
+        account_no VARCHAR(255) DEFAULT NULL,
+        ifsc VARCHAR(50) DEFAULT NULL,
+        bank_verified TINYINT(1) DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_email (email)
       ) ENGINE=InnoDB;
@@ -230,6 +235,27 @@ async function initDb() {
       }
     } catch (e) {
       console.warn("UTR migration check failed: ", e);
+    }
+
+    // Ensure bank verification columns exist in users table
+    const bankCols = [
+      { name: 'bank_name', type: 'VARCHAR(255) DEFAULT NULL' },
+      { name: 'account_holder', type: 'VARCHAR(255) DEFAULT NULL' },
+      { name: 'account_no', type: 'VARCHAR(255) DEFAULT NULL' },
+      { name: 'ifsc', type: 'VARCHAR(50) DEFAULT NULL' },
+      { name: 'bank_verified', type: 'TINYINT(1) DEFAULT 0' }
+    ];
+
+    for (const col of bankCols) {
+      try {
+        const cols = await query(`SHOW COLUMNS FROM users LIKE '${col.name}'`);
+        if (cols.length === 0) {
+          await query(`ALTER TABLE users ADD COLUMN ${col.name} ${col.type}`);
+          console.log(`Migrated: Added ${col.name} column to users table.`);
+        }
+      } catch (e) {
+        console.warn(`Bank migration check for ${col.name} failed: `, e);
+      }
     }
 
     console.log('MySQL Database migration complete.');

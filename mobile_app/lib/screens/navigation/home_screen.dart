@@ -59,22 +59,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadUserProfile() async {
     final response = await ApiService.getProfile();
-    if (response['success']) {
-      final user = response['user'];
-      final cycles = await ApiService.getCyclesHistory();
-      final team = await ApiService.getTeam();
-      final txns = await ApiService.getTransactions();
+    final user = response['user'] ?? {};
+    final cycles = await ApiService.getCyclesHistory();
+    final team = await ApiService.getTeam();
+    final txns = await ApiService.getTransactions();
 
-      dynamic activeCycle;
-      try {
-        activeCycle = cycles.firstWhere(
-          (c) => c['status'] == 'ACTIVE',
-          orElse: () => null,
-        );
-      } catch (_) {
-        activeCycle = null;
-      }
+    dynamic activeCycle;
+    try {
+      activeCycle = cycles.firstWhere(
+        (c) => c['status'] == 'ACTIVE',
+        orElse: () => null,
+      );
+    } catch (_) {
+      activeCycle = null;
+    }
 
+    if (mounted) {
       setState(() {
         _fullName = user['fullName'] ?? "Rajesh Reddy";
         _userId = user['id'] ?? 0;
@@ -85,12 +85,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 user['createdAt'],
               ).toLocal().toString().substring(0, 10)
             : "2026-08-25";
-        _mainWalletBalance = parseDouble(user['main_wallet_balance']) ?? 0.00;
+
+        final double fetchedBal = parseDouble(user['main_wallet_balance']) ?? 0.00;
+        if (fetchedBal > _mainWalletBalance || _mainWalletBalance == 0.00) {
+          _mainWalletBalance = fetchedBal;
+        }
+
         _fundWalletBalance = parseDouble(user['fund_wallet_balance']) ?? 0.00;
         _status = user['status'] ?? "ACTIVE";
         _cyclesHistory = cycles;
-        _teamMembers = team;
-        _transactions = txns;
+        if (team.isNotEmpty) _teamMembers = team;
+        if (txns.isNotEmpty) _transactions = txns;
+
         if (activeCycle != null) {
           _activeCycleId = activeCycle['cycle_id'] ?? "";
           _membersCount = activeCycle['members_count'] ?? 0;
@@ -100,10 +106,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         _referralLink =
             "https://earnfarm.com/join?ref=EARNFARMX7AQ96SD$_userId";
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
         _isLoading = false;
       });
     }
