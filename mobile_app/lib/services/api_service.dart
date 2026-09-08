@@ -124,9 +124,34 @@ class ApiService {
   }
 
   static double _accumulatedCaptchaEarnings = 0.0;
+  static List<Map<String, dynamic>> _localCaptchaTxns = [];
+  static bool _isCaptchaDataLoaded = false;
+
+  static Future<void> _initCaptchaPersistence() async {
+    if (_isCaptchaDataLoaded) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _accumulatedCaptchaEarnings = prefs.getDouble('local_captcha_earnings') ?? 0.0;
+      final txnsJson = prefs.getString('local_captcha_txns');
+      if (txnsJson != null) {
+        final List<dynamic> decoded = jsonDecode(txnsJson);
+        _localCaptchaTxns = decoded.map((item) => Map<String, dynamic>.from(item)).toList();
+      }
+      _isCaptchaDataLoaded = true;
+    } catch (_) {}
+  }
+
+  static Future<void> _saveCaptchaPersistence() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('local_captcha_earnings', _accumulatedCaptchaEarnings);
+      await prefs.setString('local_captcha_txns', jsonEncode(_localCaptchaTxns));
+    } catch (_) {}
+  }
 
   // Get Profile
   static Future<Map<String, dynamic>> getProfile() async {
+    await _initCaptchaPersistence();
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/user/profile'),
@@ -275,10 +300,9 @@ class ApiService {
     return [];
   }
 
-  static final List<Map<String, dynamic>> _localCaptchaTxns = [];
-
   // Get User Transactions list
   static Future<List<dynamic>> getTransactions() async {
+    await _initCaptchaPersistence();
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/user/transactions'),
@@ -289,11 +313,12 @@ class ApiService {
         return [..._localCaptchaTxns, ...list];
       }
     } catch (_) {}
-    return _localCaptchaTxns;
+    return List<dynamic>.from(_localCaptchaTxns);
   }
 
   // Submit Captcha Earnings
   static Future<Map<String, dynamic>> submitCaptchaEarnings({double earnedAmount = 0.01}) async {
+    await _initCaptchaPersistence();
     _accumulatedCaptchaEarnings += earnedAmount;
     final newTx = {
       'type': 'Captcha Solve Reward',
@@ -302,6 +327,7 @@ class ApiService {
       'reference_id': 'TXN_CPT_${DateTime.now().millisecondsSinceEpoch}',
     };
     _localCaptchaTxns.insert(0, newTx);
+    await _saveCaptchaPersistence();
 
     try {
       final response = await http.post(

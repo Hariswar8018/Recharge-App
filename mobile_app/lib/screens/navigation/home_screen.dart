@@ -1275,16 +1275,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // New Captcha Solve & Earn Section
           CaptchaEarnWidget(
-            onEarn: (earnedAmount) {
+            onEarn: (earnedAmount) async {
               setState(() {
                 _mainWalletBalance += earnedAmount;
-                _transactions.insert(0, {
-                  'type': 'Captcha Solve Reward',
-                  'amount': '+ ₹${earnedAmount.toStringAsFixed(2)}',
-                  'date': DateTime.now().toLocal().toString().substring(0, 19).replaceAll('T', ' '),
-                  'reference_id': 'TXN_CPT_${DateTime.now().millisecondsSinceEpoch}',
-                });
               });
+              final updatedTxns = await ApiService.getTransactions();
+              if (mounted) {
+                setState(() {
+                  _transactions = updatedTxns;
+                });
+              }
             },
           ),
 
