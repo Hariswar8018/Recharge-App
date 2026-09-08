@@ -437,8 +437,10 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                             ),
                             const SizedBox(height: 10),
                             // Quick Amount Chips
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              alignment: WrapAlignment.center,
                               children: [100, 500, 1000, 2000, 5000].map((amt) {
                                 return ChoiceChip(
                                   label: Text("₹$amt", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),

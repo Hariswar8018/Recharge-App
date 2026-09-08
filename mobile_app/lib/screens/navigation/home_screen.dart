@@ -1539,16 +1539,50 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               _transactions.isEmpty
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        child: Text(
-                          "No transactions recorded yet",
-                          style: TextStyle(
-                            color: AppTheme.textGray,
-                            fontSize: 12,
+                  ? Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.history_toggle_off_rounded, color: Color(0xFF0A369D), size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "No Recent Transactions",
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B)),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  "Your wallet earnings and captcha rewards will appear here.",
+                                  style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : ListView.separated(

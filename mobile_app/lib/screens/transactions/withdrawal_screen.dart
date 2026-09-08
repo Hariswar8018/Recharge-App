@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../widgets/processing_dialog.dart';
 import '../recharge/id_subscription_screen.dart';
+import '../profile/bank_verify_screen.dart';
 
 class WithdrawalScreen extends StatefulWidget {
   const WithdrawalScreen({super.key});
@@ -23,8 +24,11 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   String _selectedMethod = "BANK"; // BANK only (UPI disabled)
 
   String _userUpiId = "raju@ybl";
-  String _bankName = "State Bank of India";
-  String _accountNo = "XXXXXX4567";
+  String _bankName = "";
+  String _accountNo = "";
+  String _accountHolder = "";
+  String _ifsc = "";
+  bool _isBankVerified = false;
   String _status = "INACTIVE";
 
   @override
@@ -57,10 +61,16 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       final user = profileRes['user'];
       final balance = double.tryParse(user['main_wallet_balance']?.toString() ?? "1200.0") ?? 1200.0;
       final mobile = user['mobileNumber'] ?? "7989293968";
+      final bool verified = user['bank_verified'] == 1 || user['bank_verified'] == true;
       setState(() {
         _mainBalance = balance;
         _userUpiId = user['upi_id'] ?? "$mobile@ybl";
         _status = (user['status'] ?? "INACTIVE").toString().toUpperCase();
+        _bankName = user['bank_name'] ?? "";
+        _accountNo = user['account_no'] ?? "";
+        _accountHolder = user['account_holder'] ?? "";
+        _ifsc = user['ifsc'] ?? "";
+        _isBankVerified = verified;
       });
     }
   }
@@ -99,6 +109,46 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text("Activate ID Now", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (!_isBankVerified || _bankName.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.account_balance, color: Colors.orange, size: 28),
+              SizedBox(width: 8),
+              Text("Bank Verify Required", style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: const Text(
+            "Please add and verify your bank account details before submitting a cashout request.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BankVerifyScreen()),
+                ).then((_) => _loadBalanceAndProfile());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0A369D),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text("Verify Bank Now", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -494,57 +544,121 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Bank Account Option Only
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFF1565C0),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFFCBD5E1)),
-                                    ),
-                                    child: const Icon(Icons.account_balance, color: Color(0xFF1565C0), size: 20),
+                             if (_isBankVerified && _bankName.isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF0FDF4),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(0xFF16A34A),
+                                    width: 1.5,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFF86EFAC)),
+                                      ),
+                                      child: const Icon(Icons.account_balance_rounded, color: Color(0xFF16A34A), size: 22),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: const [
+                                              Text(
+                                                "Bank Account Verified",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                  color: Color(0xFF15803D),
+                                                ),
+                                              ),
+                                              SizedBox(width: 4),
+                                              Icon(Icons.verified_rounded, color: Color(0xFF16A34A), size: 16),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            "$_bankName | A/C: $_accountNo",
+                                            style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 12),
+                                          ),
+                                          if (_accountHolder.isNotEmpty)
+                                            Text(
+                                              "Holder: $_accountHolder (${_ifsc})",
+                                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFBEB),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: const Color(0xFFFCD34D),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
                                       children: [
-                                        const Text(
-                                          "Bank Account (Verified)",
+                                        Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 22),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          "No Verified Bank Account",
                                           style: TextStyle(
+                                            color: Color(0xFFB45309),
                                             fontWeight: FontWeight.bold,
                                             fontSize: 13,
-                                            color: Color(0xFF1E293B),
                                           ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          "$_bankName • $_accountNo",
-                                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                  const Icon(
-                                    Icons.check_circle,
-                                    color: Color(0xFF1565C0),
-                                    size: 20,
-                                  ),
-                                ],
+                                    const SizedBox(height: 6),
+                                    const Text(
+                                      "You must add and verify your bank account details via ₹1 Penny Drop before withdrawing.",
+                                      style: TextStyle(color: Color(0xFF78350F), fontSize: 11),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 38,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(builder: (context) => const BankVerifyScreen()),
+                                          ).then((_) => _loadBalanceAndProfile());
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF0A369D),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
+                                        icon: const Icon(Icons.account_balance, size: 16, color: Colors.white),
+                                        label: const Text(
+                                          "Verify Bank Account Now",
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
                           ],
                         ),
                       ),
