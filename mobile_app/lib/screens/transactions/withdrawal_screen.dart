@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../widgets/processing_dialog.dart';
+import '../recharge/id_subscription_screen.dart';
 
 class WithdrawalScreen extends StatefulWidget {
   const WithdrawalScreen({super.key});
@@ -19,11 +20,12 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   double _mainBalance = 1200.0;
   String _message = "";
   String _error = "";
-  String _selectedMethod = "UPI"; // "UPI" or "BANK"
+  String _selectedMethod = "BANK"; // BANK only (UPI disabled)
 
   String _userUpiId = "raju@ybl";
   String _bankName = "State Bank of India";
   String _accountNo = "XXXXXX4567";
+  String _status = "INACTIVE";
 
   @override
   void initState() {
@@ -58,11 +60,52 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       setState(() {
         _mainBalance = balance;
         _userUpiId = user['upi_id'] ?? "$mobile@ybl";
+        _status = (user['status'] ?? "INACTIVE").toString().toUpperCase();
       });
     }
   }
 
   Future<void> _handleSubmit() async {
+    if (_status != "ACTIVE") {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.lock_rounded, color: Colors.orange, size: 28),
+              SizedBox(width: 8),
+              Text("Activation Required", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: const Text(
+            "Free/Inactive members cannot withdraw Main Wallet balance. Please activate your ID to enable cashouts.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const IdSubscriptionScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0A369D),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text("Activate ID Now", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
     
     final amtVal = double.tryParse(_amountController.text.trim());
@@ -219,6 +262,59 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
+                      if (_status != "ACTIVE") ...[
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFBEB),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFFCD34D)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline_rounded, color: Color(0xFFD97706), size: 24),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      "Account Status: INACTIVE / FREE",
+                                      style: TextStyle(
+                                        color: Color(0xFFB45309),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      "Free members can earn via Captcha. Activate your ID to enable Main Wallet withdrawals.",
+                                      style: TextStyle(color: Color(0xFF78350F), fontSize: 11),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const IdSubscriptionScreen()),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0A369D),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  minimumSize: const Size(60, 32),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text("Activate", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
                       // 1. Available Balance Card
                       Container(
                         width: double.infinity,
@@ -377,7 +473,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // 3. Select Method Card
+                      // 3. Select Method Card (Bank Account Only)
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -389,7 +485,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "Select Method",
+                              "Payout Method",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF1E293B),
@@ -398,149 +494,55 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Option 1: UPI
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedMethod = "UPI";
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: _selectedMethod == "UPI" ? const Color(0xFFEFF6FF) : Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: _selectedMethod == "UPI" ? const Color(0xFF1565C0) : const Color(0xFFE2E8F0),
-                                    width: _selectedMethod == "UPI" ? 1.5 : 1.0,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: const Color(0xFFCBD5E1)),
-                                      ),
-                                      child: const Text(
-                                        "UPI",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          color: Color(0xFF1565C0),
-                                          fontSize: 12,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "UPI ${_selectedMethod == 'UPI' ? '(Selected)' : ''}",
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13,
-                                              color: Color(0xFF1E293B),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            _userUpiId,
-                                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (_selectedMethod == "UPI") ...[
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFE8F5E9),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: const Text(
-                                          "Selected",
-                                          style: TextStyle(
-                                            color: Color(0xFF2E7D32),
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                    ],
-                                    Icon(
-                                      _selectedMethod == "UPI" ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                      color: _selectedMethod == "UPI" ? const Color(0xFF1565C0) : const Color(0xFF94A3B8),
-                                      size: 20,
-                                    ),
-                                  ],
+                            // Bank Account Option Only
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFF1565C0),
+                                  width: 1.5,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // Option 2: Bank Account
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedMethod = "BANK";
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: _selectedMethod == "BANK" ? const Color(0xFFEFF6FF) : Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: _selectedMethod == "BANK" ? const Color(0xFF1565C0) : const Color(0xFFE2E8F0),
-                                    width: _selectedMethod == "BANK" ? 1.5 : 1.0,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFCBD5E1)),
+                                    ),
+                                    child: const Icon(Icons.account_balance, color: Color(0xFF1565C0), size: 20),
                                   ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF1F5F9),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(Icons.account_balance, color: Color(0xFF1565C0), size: 20),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            "Bank Account",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13,
-                                              color: Color(0xFF1E293B),
-                                            ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Bank Account (Verified)",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                            color: Color(0xFF1E293B),
                                           ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            "$_bankName • $_accountNo",
-                                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          "$_bankName • $_accountNo",
+                                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                                        ),
+                                      ],
                                     ),
-                                    Icon(
-                                      _selectedMethod == "BANK" ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                                      color: _selectedMethod == "BANK" ? const Color(0xFF1565C0) : const Color(0xFF94A3B8),
-                                      size: 20,
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: Color(0xFF1565C0),
+                                    size: 20,
+                                  ),
+                                ],
                               ),
                             ),
                           ],

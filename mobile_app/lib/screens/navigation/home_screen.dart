@@ -2,21 +2,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_me/share_me.dart';
-import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/background_container.dart';
 import '../../widgets/processing_dialog.dart';
+import '../../widgets/captcha_earn_widget.dart';
 import '../../widgets/marquee_widget.dart';
 import '../../models/transaction_model.dart';
-import '../recharge/provider_selection_screen.dart';
 import '../recharge/id_subscription_screen.dart';
 import '../transactions/transaction_receipt_screen.dart';
 import '../profile/profile_details_screen.dart';
 import '../profile/security_details_screen.dart';
 import '../profile/notifications_screen.dart';
 import '../profile/policy_screen.dart';
+import '../profile/direct_team_screen.dart';
+import '../profile/bank_verify_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -42,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String _createdAt = "2026-08-25";
   List<dynamic> _teamMembers = [];
   List<dynamic> _transactions = [];
-  bool _isNetworkConnected = true;
   Timer? _healthCheckTimer;
 
   @override
@@ -379,19 +379,29 @@ class _HomeScreenState extends State<HomeScreen> {
                           endIndent: 16,
                         ),
                         _buildDrawerItem(
-                          Icons.help_outline,
-                          "About Seva Kendram",
+                          Icons.people_outline,
+                          "Direct Team Members",
                           () {
                             Navigator.pop(context);
-                            _openWebUrl("https://srdigitalseva.com");
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DirectTeamScreen(),
+                              ),
+                            );
                           },
                         ),
                         _buildDrawerItem(
-                          Icons.support_agent_outlined,
-                          "Customer Support",
+                          Icons.account_balance_outlined,
+                          "Bank Account Verify",
                           () {
                             Navigator.pop(context);
-                            _openWebUrl("https://srdigitalseva.com/contact");
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const BankVerifyScreen(),
+                              ),
+                            );
                           },
                         ),
                       ],
@@ -473,7 +483,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Color(0xFF0052CC),
                     size: 28,
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const InternalNotificationsScreen(),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -513,16 +530,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                             ),
                             const SizedBox(width: 8),
-                            const Expanded(
-                              child: Text(
-                                "Welcome to Affiliate Marketing    |    Grow your income with Smart Digital Services",
-                                style: TextStyle(
-                                  color: AppTheme.primaryBlue,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.4,
+                            Expanded(
+                              child: MarqueeWidget(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 50),
+                                  child: Text(
+                                    "⚡ Welcome to SR Digital Seva    |    Grow your income with Smart Digital Services & Instant Micro Earnings! 🚀",
+                                    style: const TextStyle(
+                                      color: AppTheme.primaryBlue,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -1253,10 +1273,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 10),
 
-          // Services Divided Grid Card (Prepaid, Electricity, DTH, FastTag, Insurance, Water Bill, Postpaid, More)
+          // New Captcha Solve & Earn Section
+          CaptchaEarnWidget(
+            onEarn: (earnedAmount) {
+              setState(() {
+                _mainWalletBalance += earnedAmount;
+                _transactions.insert(0, {
+                  'type': 'Captcha Solve Reward',
+                  'amount': '+ ₹${earnedAmount.toStringAsFixed(2)}',
+                  'date': DateTime.now().toLocal().toString().substring(0, 19).replaceAll('T', ' '),
+                  'reference_id': 'TXN_CPT_${DateTime.now().millisecondsSinceEpoch}',
+                });
+              });
+            },
+          ),
+
+          /*
+          // HIDDEN RECHARGE SECTION (Preserved as requested)
           Container(
-            //margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-            // padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(9),
@@ -1456,6 +1490,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          */
 
           const SizedBox(height: 24),
 
@@ -1519,9 +1554,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   : ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _transactions.length > 5
-                          ? 5
-                          : _transactions.length,
+                      itemCount: _transactions.isNotEmpty ? 1 : 0,
                       separatorBuilder: (context, index) => const Divider(
                         color: AppTheme.cardLightBlue,
                         height: 1,

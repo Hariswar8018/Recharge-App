@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/processing_dialog.dart';
 
@@ -20,15 +19,33 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
   String _joiningDate = "28-08-2025";
   bool _isLoading = true;
   bool _isSubmitting = false;
+  String _lookupUserName = "Raju Reddy";
 
   @override
   void initState() {
     super.initState();
+    _mobileController.addListener(_onMobileChanged);
     _loadUserData();
+  }
+
+  void _onMobileChanged() {
+    final text = _mobileController.text.trim();
+    if (text.length == 10) {
+      setState(() {
+        _lookupUserName = text == _userMobile ? _userName : "Raju Reddy";
+      });
+    } else {
+      if (_lookupUserName.isNotEmpty) {
+        setState(() {
+          _lookupUserName = "";
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
+    _mobileController.removeListener(_onMobileChanged);
     _mobileController.dispose();
     super.dispose();
   }
@@ -330,6 +347,44 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
                                 ),
                               ),
                             ),
+                            if (_lookupUserName.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF0FDF4),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF86EFAC)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 18),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        "User Name: $_lookupUserName",
+                                        style: const TextStyle(
+                                          color: Color(0xFF15803D),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF16A34A),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        "OK",
+                                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 6),
                             const Text(
                               "Enter the mobile number (ID) you want to subscribe.",

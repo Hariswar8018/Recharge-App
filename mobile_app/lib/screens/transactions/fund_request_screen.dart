@@ -12,6 +12,7 @@ class FundRequestScreen extends StatefulWidget {
 }
 
 class _FundRequestScreenState extends State<FundRequestScreen> {
+  final _amountController = TextEditingController(text: "1000");
   final _utrController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -30,6 +31,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
   @override
   void dispose() {
+    _amountController.dispose();
     _utrController.removeListener(_onUtrChanged);
     _utrController.dispose();
     super.dispose();
@@ -63,6 +65,14 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final amtVal = double.tryParse(_amountController.text.trim()) ?? 1000.0;
+    if (amtVal < 10) {
+      setState(() {
+        _error = "Minimum deposit amount is ₹10";
+      });
+      return;
+    }
+
     final utrVal = _utrController.text.trim();
     if (utrVal.length != 12) {
       setState(() {
@@ -70,9 +80,6 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       });
       return;
     }
-
-    // Default amount 1200 for standard fund deposit request
-    const double amtVal = 1200.0;
 
     await showProcessingDialog(context, "Verifying Deposit / UTR Details...");
     if (!mounted) return;
@@ -373,6 +380,82 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                   const SnackBar(content: Text("UPI ID copied to clipboard!")),
                                 );
                               },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Amount Input Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Deposit Amount (₹)",
+                              style: TextStyle(
+                                color: Color(0xFF1565C0),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _amountController,
+                              keyboardType: TextInputType.number,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F172A),
+                              ),
+                              decoration: InputDecoration(
+                                prefixIcon: const Icon(Icons.currency_rupee, color: Color(0xFF1565C0)),
+                                hintText: "Enter Amount",
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                                ),
+                              ),
+                              validator: (v) => (v == null || v.trim().isEmpty) ? "Please enter deposit amount" : null,
+                            ),
+                            const SizedBox(height: 10),
+                            // Quick Amount Chips
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [100, 500, 1000, 2000, 5000].map((amt) {
+                                return ChoiceChip(
+                                  label: Text("₹$amt", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                  selected: _amountController.text == amt.toString(),
+                                  selectedColor: const Color(0xFF1565C0),
+                                  labelStyle: TextStyle(
+                                    color: _amountController.text == amt.toString() ? Colors.white : const Color(0xFF1565C0),
+                                  ),
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      setState(() {
+                                        _amountController.text = amt.toString();
+                                      });
+                                    }
+                                  },
+                                );
+                              }).toList(),
                             ),
                           ],
                         ),

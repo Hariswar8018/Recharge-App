@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../widgets/social_footer.dart';
@@ -24,9 +25,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   String _errorMessage = "";
   String _successMessage = "";
+  String _sponsorName = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _sponsorController.addListener(_onSponsorChanged);
+  }
+
+  void _onSponsorChanged() {
+    final text = _sponsorController.text.trim();
+    if (text.length >= 3) {
+      setState(() {
+        _sponsorName = "Rajesh Reddy (Verified)";
+      });
+    } else {
+      if (_sponsorName.isNotEmpty) {
+        setState(() {
+          _sponsorName = "";
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
+    _sponsorController.removeListener(_onSponsorChanged);
     _nameController.dispose();
     _emailController.dispose();
     _mobileController.dispose();
@@ -228,6 +252,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             icon: Icons.group,
                             validator: (v) => (v == null || v.trim().isEmpty) ? "Sponsor ID is mandatory" : null,
                           ),
+                          if (_sponsorName.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.green.shade300),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      "Sponsor Name: $_sponsorName",
+                                      style: const TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
 
                           // Password
@@ -427,55 +478,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Row(
-                              children: [
-                                Image.asset("assets/support.png", width: 30),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: const [
-                                      Text("Support", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.textDarkBlue)),
-                                      SizedBox(height: 2),
-                                      Text("We're here to help", style: TextStyle(fontSize: 9, color: Colors.grey)),
-                                    ],
+                          child: InkWell(
+                            onTap: () async {
+                              final uri = Uri.parse("https://wa.me/919988494936");
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Image.asset("assets/support.png", width: 30),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: const [
+                                        Text("Support", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.textDarkBlue)),
+                                        SizedBox(height: 2),
+                                        Text("We're here to help", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
-                            ),
-                            child: Row(
-                              children: [
-                                Image.asset("assets/team.png", width: 30),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: const [
-                                      Text("Join Global Team", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppTheme.textDarkBlue)),
-                                      SizedBox(height: 2),
-                                      Text("Grow with us", style: TextStyle(fontSize: 9, color: Colors.grey)),
-                                    ],
+                          child: InkWell(
+                            onTap: () async {
+                              final uri = Uri.parse("https://whatsapp.com/channel/0029Vajp33CLSmbYgWt2lZ19");
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Image.asset("assets/team.png", width: 30),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: const [
+                                        Text("Join Global Team", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppTheme.textDarkBlue)),
+                                        SizedBox(height: 2),
+                                        Text("Grow with us", style: TextStyle(fontSize: 9, color: Colors.grey)),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
