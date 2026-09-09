@@ -403,25 +403,45 @@ export default {
 }
 
 /* Responsive Scaling for Mobile Screens */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .landing-page {
     padding: 0;
     background: #FFFFFF;
+    align-items: stretch;
   }
   .app-card {
+    max-width: 100%;
+    width: 100%;
     border-radius: 0;
     box-shadow: none;
     border: none;
-    padding: 24px 16px 20px 16px;
+    padding: 24px 16px 24px 16px;
+    min-height: 100vh;
+    justify-content: space-between;
+  }
+  .sr-logo-img {
+    height: 52px;
+  }
+  .title-blue {
+    font-size: 1.25rem;
+  }
+  .title-red {
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+  }
+  .hero-graphic {
+    max-width: 100%;
   }
   .headline-text {
-    font-size: 1.9rem;
+    font-size: 2rem;
   }
   .playstore-btn {
-    height: 58px;
+    width: 100%;
+    max-width: 100%;
+    height: 60px;
   }
   .btn-title {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
   }
 }
 </style>
