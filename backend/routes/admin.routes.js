@@ -206,6 +206,8 @@ router.get('/dashboard', verifyAdminToken, async (req, res) => {
     console.error('Error fetching admin dashboard:', err);
     res.status(500).json({ error: 'Failed to load admin dashboard data', details: err.message });
   }
+});
+
 // GET Admin Teams (Downline Affiliates / User Tree)
 router.get('/teams', verifyAdminToken, async (req, res) => {
   try {
