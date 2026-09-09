@@ -324,7 +324,31 @@
                     </div>
                     <div class="item">
                       <span>Affiliate Downline</span>
-                      <strong>14 Active Members</strong>
+                      <strong style="color: #0052cc;">{{ selectedUser.downlineCount || 0 }} Direct {{ (selectedUser.downlineCount || 0) === 1 ? 'Member' : 'Members' }}</strong>
+                    </div>
+                  </div>
+
+                  <!-- Reset User Password Box (Admin Only) -->
+                  <div style="margin-top: 1.25rem; padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                    <h4 style="margin: 0 0 0.35rem; font-size: 0.88rem; font-weight: 700; color: #1e293b;">🔑 Reset Member Password</h4>
+                    <p style="margin: 0 0 0.75rem; font-size: 0.78rem; color: #64748b;">Set a new password for {{ selectedUser.fullName || selectedUser.email }} directly.</p>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                      <input 
+                        type="text" 
+                        v-model="userNewPassword" 
+                        placeholder="Enter new password (min 4 chars)" 
+                        style="flex: 1; padding: 0.55rem 0.75rem; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85rem; outline: none; background: white;"
+                      />
+                      <button 
+                        @click="handleUpdateUserPassword(selectedUser.id)" 
+                        :disabled="updatingUserPassword"
+                        style="background: #2563eb; color: white; border: none; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap;"
+                      >
+                        {{ updatingUserPassword ? 'Saving...' : '🔑 Change Password' }}
+                      </button>
+                    </div>
+                    <div v-if="userPasswordMsg" :style="{ color: userPasswordSuccess ? '#16a34a' : '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 'bold' }">
+                      {{ userPasswordMsg }}
                     </div>
                   </div>
                 </div>
@@ -1051,6 +1075,11 @@ export default {
       systemError: '',
       systemSuccess: '',
       showRazorpaySecret: false,
+      // User Password Reset states
+      userNewPassword: '',
+      userPasswordMsg: '',
+      userPasswordSuccess: false,
+      updatingUserPassword: false,
       // Teams states
       teamsData: {
         teams: [],
@@ -1463,6 +1492,39 @@ export default {
     },
     selectUser(user) {
       this.selectedUser = user;
+      this.userNewPassword = '';
+      this.userPasswordMsg = '';
+      this.userPasswordSuccess = false;
+    },
+    async handleUpdateUserPassword(userId) {
+      if (!this.userNewPassword || this.userNewPassword.trim().length < 4) {
+        this.userPasswordMsg = 'Password must be at least 4 characters long.';
+        this.userPasswordSuccess = false;
+        return;
+      }
+      this.updatingUserPassword = true;
+      this.userPasswordMsg = '';
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/update-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ newPassword: this.userNewPassword })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update user password');
+        this.userPasswordMsg = data.message || 'User password updated successfully!';
+        this.userPasswordSuccess = true;
+        this.userNewPassword = '';
+      } catch (err) {
+        this.userPasswordMsg = err.message;
+        this.userPasswordSuccess = false;
+      } finally {
+        this.updatingUserPassword = false;
+      }
     },
     async processRequest(id, approve) {
       const token = localStorage.getItem('adminToken');

@@ -185,7 +185,10 @@ router.get('/dashboard', verifyAdminToken, async (req, res) => {
     const offset = (page - 1) * limit;
 
     const usersList = await query(
-      'SELECT * FROM users WHERE role != "admin" OR role IS NULL ORDER BY id DESC LIMIT ? OFFSET ?',
+      `SELECT u.*, (SELECT COUNT(d.id) FROM users d WHERE d.sponsor_id = u.id) as downlineCount 
+       FROM users u 
+       WHERE u.role != "admin" OR u.role IS NULL 
+       ORDER BY u.id DESC LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
@@ -336,6 +339,28 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
     }
   } catch (err) {
     res.status(500).json({ error: 'Transaction failed' });
+  }
+});
+
+// POST Update User Password (Admin feature)
+router.post('/users/:userId/update-password', verifyAdminToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.trim().length < 4) {
+      return res.status(400).json({ error: 'Password must be at least 4 characters long.' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(newPassword.trim(), salt);
+
+    await query('UPDATE users SET passwordHash = ? WHERE id = ?', [passwordHash, userId]);
+
+    res.json({ message: `Password for User #${userId} updated successfully.` });
+  } catch (err) {
+    console.error('Error updating user password:', err);
+    res.status(500).json({ error: 'Failed to update user password.' });
   }
 });
 
