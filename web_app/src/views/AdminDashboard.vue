@@ -512,135 +512,449 @@
 
           <!-- TAB: SHARED VARIABLES -->
           <div v-if="currentTab === 'shared_variable'" class="shared-variable-pane">
-            <div class="settings-nice-card">
-              <h3>🔗 Shared Variables & Global Controls</h3>
-              <p class="section-desc">Manage system amounts, gateway keys, wallet rules, and master feature ON/OFF controls.</p>
-              
-              <form @submit.prevent="handleSaveSystemSettings" class="settings-form">
-                <div class="form-horizontal-grid">
-                  <!-- Left Column: Master Amounts & Gateway Settings -->
-                  <div class="form-column">
-                    <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">💰 System Amounts & Parameters</h4>
-                    <div class="nice-input-group">
-                      <label for="minBalance">Minimum Wallet Balance (₹)</label>
-                      <input id="minBalance" type="number" step="0.01" v-model="systemSettings.min_wallet_balance" placeholder="e.g. 50.00" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="joinAmount">Join / Activation Amount (₹)</label>
-                      <input id="joinAmount" type="number" v-model="systemSettings.join_amount" placeholder="e.g. 1200" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="topUpAmount">Top-Up Amount (₹)</label>
-                      <input id="topUpAmount" type="number" v-model="systemSettings.top_up_amount" placeholder="e.g. 1200" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="directIncome">Direct Sponsor Income (₹)</label>
-                      <input id="directIncome" type="number" v-model="systemSettings.direct_income" placeholder="e.g. 300" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="levelPool">Level Pool Collection (₹)</label>
-                      <input id="levelPool" type="number" v-model="systemSettings.level_pool" placeholder="e.g. 600" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="companyMaintenance">Company Maintenance (₹)</label>
-                      <input id="companyMaintenance" type="number" v-model="systemSettings.company_maintenance" placeholder="e.g. 300" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="cycleSize">Cycle Size (Members)</label>
-                      <input id="cycleSize" type="number" v-model="systemSettings.cycle_size" placeholder="e.g. 126" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="withdrawPct">Withdrawal Deduction (%)</label>
-                      <input id="withdrawPct" type="number" v-model="systemSettings.withdrawal_percentage" placeholder="e.g. 15" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="minWithdraw">Minimum Withdrawal Amount (₹)</label>
-                      <input id="minWithdraw" type="number" v-model="systemSettings.minimum_withdrawal" placeholder="e.g. 500" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="withdrawDays">Allowed Withdrawal Days</label>
-                      <input id="withdrawDays" type="text" v-model="systemSettings.withdrawal_days" placeholder="e.g. Mon,Wed,Fri" required />
-                    </div>
+            <div class="sv-container">
+              <!-- Header Hero Banner -->
+              <div class="sv-hero-card">
+                <div class="sv-hero-info">
+                  <div class="sv-hero-badge">
+                    <span class="pulse-dot"></span> System Governance
                   </div>
-
-                  <!-- Right Column: Global ON/OFF Toggles & Payment Gateways -->
-                  <div class="form-column">
-                    <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">🎛️ Master Global ON/OFF Controls</h4>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
-                      <div class="nice-checkbox-group">
-                        <input id="regEnabled" type="checkbox" v-model="systemSettings.registration_enabled_bool" />
-                        <label for="regEnabled">User Registration Flow ON/OFF</label>
-                      </div>
-                      <div class="nice-checkbox-group">
-                        <input id="loginEnabled" type="checkbox" v-model="systemSettings.login_enabled_bool" />
-                        <label for="loginEnabled">User Login Flow ON/OFF</label>
-                      </div>
-                      <div class="nice-checkbox-group">
-                        <input id="otpEnabled" type="checkbox" v-model="systemSettings.otp_enabled_bool" />
-                        <label for="otpEnabled">OTP & Forgot Password Flow ON/OFF</label>
-                      </div>
-                      <div class="nice-checkbox-group">
-                        <input id="addMoneyEnabled" type="checkbox" v-model="systemSettings.add_money_enabled_bool" />
-                        <label for="addMoneyEnabled">Add Money & Fund Request ON/OFF</label>
-                      </div>
-                      <div class="nice-checkbox-group">
-                        <input id="withdrawEnabled" type="checkbox" v-model="systemSettings.withdrawal_enabled_bool" />
-                        <label for="withdrawEnabled">Cash Out & Withdrawal Requests ON/OFF</label>
-                      </div>
-                      <div class="nice-checkbox-group">
-                        <input id="captchaEnabled" type="checkbox" v-model="systemSettings.captcha_enabled_bool" />
-                        <label for="captchaEnabled">CAPTCHA Verification Requirement ON/OFF</label>
-                      </div>
-                      <div class="nice-checkbox-group">
-                        <input id="maintMode" type="checkbox" v-model="systemSettings.maintenance_mode_bool" />
-                        <label for="maintMode">Enable Platform Maintenance Mode</label>
-                      </div>
-                    </div>
-
-                    <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">💳 Gateways & App Config</h4>
-                    <div class="nice-input-group">
-                      <label for="forceVersion">Force Android App Version</label>
-                      <input id="forceVersion" type="text" v-model="systemSettings.force_update_version" placeholder="e.g. 1.0.0" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.5rem;">
-                      <label for="scrizaMode">Scriza API Active Mode</label>
-                      <select id="scrizaMode" v-model="systemSettings.scriza_api_mode">
-                        <option value="simulation">Simulation Mode</option>
-                        <option value="production">Production Live Mode</option>
-                      </select>
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.5rem;">
-                      <label for="razorpayMode">Razorpay Checkout Gateway</label>
-                      <select id="razorpayMode" v-model="systemSettings.razorpay_api_mode">
-                        <option value="test">Test Payments Mode</option>
-                        <option value="live">Live Payments Mode</option>
-                      </select>
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.5rem;">
-                      <label for="razorpayKeyId">Razorpay Key ID</label>
-                      <input id="razorpayKeyId" type="text" v-model="systemSettings.razorpay_key_id" placeholder="Enter Razorpay Key ID" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.5rem;">
-                      <label for="razorpayKeySecret">Razorpay Key Secret</label>
-                      <input id="razorpayKeySecret" type="password" v-model="systemSettings.razorpay_key_secret" placeholder="Enter Razorpay Key Secret" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.5rem;">
-                      <label for="upiVpaId">Company UPI VPA ID</label>
-                      <input id="upiVpaId" type="text" v-model="systemSettings.upi_vpa_id" placeholder="e.g. vp110064@okaxis" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.5rem;">
-                      <label for="upiPayeeName">Company UPI Payee Name</label>
-                      <input id="upiPayeeName" type="text" v-model="systemSettings.upi_payee_name" placeholder="e.g. EarnFarm" required />
-                    </div>
-
-                    <div v-if="systemError" class="error-msg" style="margin-top: 1rem;">{{ systemError }}</div>
-                    <div v-if="systemSuccess" class="success-msg" style="margin-top: 1rem;">{{ systemSuccess }}</div>
-                    <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn" style="width: 100%; margin-top: 1.5rem;">
-                      <span v-if="loadingSystem">Saving System Preferences...</span>
-                      <span v-else>Save System Preferences</span>
-                    </button>
+                  <h2>🔗 Shared Variables & Global Controls</h2>
+                  <p>Manage system financial limits, commission distribution parameters, payment gateway mode configurations, and instant feature ON/OFF master toggles.</p>
+                </div>
+                <div class="sv-hero-meta">
+                  <div class="meta-pill" :class="systemSettings.maintenance_mode_bool ? 'danger' : 'success'">
+                    <span class="meta-dot"></span>
+                    Maintenance: <strong>{{ systemSettings.maintenance_mode_bool ? 'ENABLED' : 'OFF' }}</strong>
+                  </div>
+                  <div class="meta-pill blue">
+                    <span class="meta-dot"></span>
+                    Scriza: <strong>{{ (systemSettings.scriza_api_mode || 'simulation').toUpperCase() }}</strong>
+                  </div>
+                  <div class="meta-pill purple">
+                    <span class="meta-dot"></span>
+                    Razorpay: <strong>{{ (systemSettings.razorpay_api_mode || 'test').toUpperCase() }}</strong>
                   </div>
                 </div>
+              </div>
+
+              <form @submit.prevent="handleSaveSystemSettings" class="sv-form">
+                
+                <!-- Section 1: Financial & Commission Parameters -->
+                <div class="sv-section-card">
+                  <div class="sv-section-header">
+                    <div class="sv-section-icon bg-blue-light">💰</div>
+                    <div>
+                      <h3>System Financial & Commission Parameters</h3>
+                      <p>Set wallet minimums, registration fees, commission payouts, and withdrawal rules.</p>
+                    </div>
+                  </div>
+
+                  <div class="sv-grid-3">
+                    <!-- Min Balance -->
+                    <div class="sv-input-card">
+                      <label for="minBalance">
+                        <span class="lbl-text">Minimum Wallet Balance</span>
+                        <span class="unit-badge">₹ INR</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">💼</span>
+                        <input id="minBalance" type="number" step="0.01" v-model="systemSettings.min_wallet_balance" placeholder="50.00" required />
+                      </div>
+                      <span class="input-help">Minimum balance user must maintain in wallet</span>
+                    </div>
+
+                    <!-- Join Amount -->
+                    <div class="sv-input-card">
+                      <label for="joinAmount">
+                        <span class="lbl-text">Join / Activation Amount</span>
+                        <span class="unit-badge">₹ INR</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">🚀</span>
+                        <input id="joinAmount" type="number" v-model="systemSettings.join_amount" placeholder="1200" required />
+                      </div>
+                      <span class="input-help">Account activation cost for new users</span>
+                    </div>
+
+                    <!-- Top-Up Amount -->
+                    <div class="sv-input-card">
+                      <label for="topUpAmount">
+                        <span class="lbl-text">Top-Up Amount</span>
+                        <span class="unit-badge">₹ INR</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">⚡</span>
+                        <input id="topUpAmount" type="number" v-model="systemSettings.top_up_amount" placeholder="1200" required />
+                      </div>
+                      <span class="input-help">Default top-up fee per cycle</span>
+                    </div>
+
+                    <!-- Direct Income -->
+                    <div class="sv-input-card">
+                      <label for="directIncome">
+                        <span class="lbl-text">Direct Sponsor Income</span>
+                        <span class="unit-badge">₹ INR</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">🎁</span>
+                        <input id="directIncome" type="number" v-model="systemSettings.direct_income" placeholder="300" required />
+                      </div>
+                      <span class="input-help">Commission credited to direct sponsor</span>
+                    </div>
+
+                    <!-- Level Pool -->
+                    <div class="sv-input-card">
+                      <label for="levelPool">
+                        <span class="lbl-text">Level Pool Collection</span>
+                        <span class="unit-badge">₹ INR</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">🌐</span>
+                        <input id="levelPool" type="number" v-model="systemSettings.level_pool" placeholder="600" required />
+                      </div>
+                      <span class="input-help">Amount allocated towards level pool</span>
+                    </div>
+
+                    <!-- Company Maintenance -->
+                    <div class="sv-input-card">
+                      <label for="companyMaintenance">
+                        <span class="lbl-text">Company Maintenance</span>
+                        <span class="unit-badge">₹ INR</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">🏢</span>
+                        <input id="companyMaintenance" type="number" v-model="systemSettings.company_maintenance" placeholder="300" required />
+                      </div>
+                      <span class="input-help">Company operational fee portion</span>
+                    </div>
+
+                    <!-- Cycle Size -->
+                    <div class="sv-input-card">
+                      <label for="cycleSize">
+                        <span class="lbl-text">Cycle Size</span>
+                        <span class="unit-badge">Members</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">🔄</span>
+                        <input id="cycleSize" type="number" v-model="systemSettings.cycle_size" placeholder="126" required />
+                      </div>
+                      <span class="input-help">Required downline members per cycle</span>
+                    </div>
+
+                    <!-- Withdrawal Percentage -->
+                    <div class="sv-input-card">
+                      <label for="withdrawPct">
+                        <span class="lbl-text">Withdrawal Deduction</span>
+                        <span class="unit-badge">% Percent</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">📊</span>
+                        <input id="withdrawPct" type="number" v-model="systemSettings.withdrawal_percentage" placeholder="15" required />
+                      </div>
+                      <span class="input-help">TDS / admin charge deduction %</span>
+                    </div>
+
+                    <!-- Minimum Withdrawal -->
+                    <div class="sv-input-card">
+                      <label for="minWithdraw">
+                        <span class="lbl-text">Minimum Withdrawal</span>
+                        <span class="unit-badge">₹ INR</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">💸</span>
+                        <input id="minWithdraw" type="number" v-model="systemSettings.minimum_withdrawal" placeholder="500" required />
+                      </div>
+                      <span class="input-help">Minimum payout request threshold</span>
+                    </div>
+
+                    <!-- Allowed Withdrawal Days -->
+                    <div class="sv-input-card span-full">
+                      <label for="withdrawDays">
+                        <span class="lbl-text">Allowed Withdrawal Days</span>
+                        <span class="unit-badge">Schedule</span>
+                      </label>
+                      <div class="input-with-icon">
+                        <span class="field-icon">📅</span>
+                        <input id="withdrawDays" type="text" v-model="systemSettings.withdrawal_days" placeholder="Mon,Wed,Fri" required />
+                      </div>
+                      <span class="input-help">Comma-separated days when cash out requests are allowed</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 2: Master Feature ON/OFF Switches -->
+                <div class="sv-section-card" style="margin-top: 1.5rem;">
+                  <div class="sv-section-header">
+                    <div class="sv-section-icon bg-purple-light">🎛️</div>
+                    <div>
+                      <h3>Master Global Feature Switches</h3>
+                      <p>Turn core features ON or OFF across the entire mobile & web platform instantly.</p>
+                    </div>
+                  </div>
+
+                  <div class="toggles-grid">
+                    <!-- Toggle 1: User Registration -->
+                    <div class="toggle-card" :class="{ 'active': systemSettings.registration_enabled_bool }">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">👤</span>
+                        <div>
+                          <strong class="toggle-title">User Registration Flow</strong>
+                          <p class="toggle-desc">Allow new members to sign up</p>
+                        </div>
+                      </div>
+                      <div class="toggle-action">
+                        <label class="switch">
+                          <input type="checkbox" v-model="systemSettings.registration_enabled_bool" />
+                          <span class="slider round"></span>
+                        </label>
+                        <span class="state-badge" :class="systemSettings.registration_enabled_bool ? 'badge-on' : 'badge-off'">
+                          {{ systemSettings.registration_enabled_bool ? 'ACTIVE' : 'OFF' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Toggle 2: User Login -->
+                    <div class="toggle-card" :class="{ 'active': systemSettings.login_enabled_bool }">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">🔑</span>
+                        <div>
+                          <strong class="toggle-title">User Login Flow</strong>
+                          <p class="toggle-desc">Enable member authentication</p>
+                        </div>
+                      </div>
+                      <div class="toggle-action">
+                        <label class="switch">
+                          <input type="checkbox" v-model="systemSettings.login_enabled_bool" />
+                          <span class="slider round"></span>
+                        </label>
+                        <span class="state-badge" :class="systemSettings.login_enabled_bool ? 'badge-on' : 'badge-off'">
+                          {{ systemSettings.login_enabled_bool ? 'ACTIVE' : 'OFF' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Toggle 3: OTP & Forgot Password -->
+                    <div class="toggle-card" :class="{ 'active': systemSettings.otp_enabled_bool }">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">📲</span>
+                        <div>
+                          <strong class="toggle-title">OTP & Password Recovery</strong>
+                          <p class="toggle-desc">Send SMS OTP verification codes</p>
+                        </div>
+                      </div>
+                      <div class="toggle-action">
+                        <label class="switch">
+                          <input type="checkbox" v-model="systemSettings.otp_enabled_bool" />
+                          <span class="slider round"></span>
+                        </label>
+                        <span class="state-badge" :class="systemSettings.otp_enabled_bool ? 'badge-on' : 'badge-off'">
+                          {{ systemSettings.otp_enabled_bool ? 'ACTIVE' : 'OFF' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Toggle 4: Add Money & Fund Request -->
+                    <div class="toggle-card" :class="{ 'active': systemSettings.add_money_enabled_bool }">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">💳</span>
+                        <div>
+                          <strong class="toggle-title">Add Money & Fund Requests</strong>
+                          <p class="toggle-desc">Allow online payments & UPI loads</p>
+                        </div>
+                      </div>
+                      <div class="toggle-action">
+                        <label class="switch">
+                          <input type="checkbox" v-model="systemSettings.add_money_enabled_bool" />
+                          <span class="slider round"></span>
+                        </label>
+                        <span class="state-badge" :class="systemSettings.add_money_enabled_bool ? 'badge-on' : 'badge-off'">
+                          {{ systemSettings.add_money_enabled_bool ? 'ACTIVE' : 'OFF' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Toggle 5: Withdrawal Requests -->
+                    <div class="toggle-card" :class="{ 'active': systemSettings.withdrawal_enabled_bool }">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">💸</span>
+                        <div>
+                          <strong class="toggle-title">Cash Out & Withdrawals</strong>
+                          <p class="toggle-desc">Allow users to request bank payouts</p>
+                        </div>
+                      </div>
+                      <div class="toggle-action">
+                        <label class="switch">
+                          <input type="checkbox" v-model="systemSettings.withdrawal_enabled_bool" />
+                          <span class="slider round"></span>
+                        </label>
+                        <span class="state-badge" :class="systemSettings.withdrawal_enabled_bool ? 'badge-on' : 'badge-off'">
+                          {{ systemSettings.withdrawal_enabled_bool ? 'ACTIVE' : 'OFF' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Toggle 6: CAPTCHA Requirement -->
+                    <div class="toggle-card" :class="{ 'active': systemSettings.captcha_enabled_bool }">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">🛡️</span>
+                        <div>
+                          <strong class="toggle-title">CAPTCHA Verification</strong>
+                          <p class="toggle-desc">Require anti-bot CAPTCHA on forms</p>
+                        </div>
+                      </div>
+                      <div class="toggle-action">
+                        <label class="switch">
+                          <input type="checkbox" v-model="systemSettings.captcha_enabled_bool" />
+                          <span class="slider round"></span>
+                        </label>
+                        <span class="state-badge" :class="systemSettings.captcha_enabled_bool ? 'badge-on' : 'badge-off'">
+                          {{ systemSettings.captcha_enabled_bool ? 'ACTIVE' : 'OFF' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Toggle 7: Maintenance Mode -->
+                    <div class="toggle-card danger-toggle" :class="{ 'active-danger': systemSettings.maintenance_mode_bool }">
+                      <div class="toggle-info">
+                        <span class="toggle-icon">⚠️</span>
+                        <div>
+                          <strong class="toggle-title" style="color: #dc2626;">Platform Maintenance Mode</strong>
+                          <p class="toggle-desc">Block user access with maintenance screen</p>
+                        </div>
+                      </div>
+                      <div class="toggle-action">
+                        <label class="switch switch-danger">
+                          <input type="checkbox" v-model="systemSettings.maintenance_mode_bool" />
+                          <span class="slider round"></span>
+                        </label>
+                        <span class="state-badge" :class="systemSettings.maintenance_mode_bool ? 'badge-danger' : 'badge-off'">
+                          {{ systemSettings.maintenance_mode_bool ? 'ENABLED' : 'OFF' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Section 3: Payment Gateways & API Integration Controls -->
+                <div class="sv-section-card" style="margin-top: 1.5rem;">
+                  <div class="sv-section-header">
+                    <div class="sv-section-icon bg-green-light">💳</div>
+                    <div>
+                      <h3>Payment Gateways & App Updates Config</h3>
+                      <p>Manage Razorpay keys, Scriza API environment, company UPI handle, and version enforcement.</p>
+                    </div>
+                  </div>
+
+                  <div class="gateways-grid">
+                    <!-- Scriza API Mode Card -->
+                    <div class="gateway-box">
+                      <div class="gateway-box-header">
+                        <span class="gw-title">⚡ Scriza Recharge API Mode</span>
+                        <span class="gw-tag" :class="systemSettings.scriza_api_mode === 'production' ? 'tag-live' : 'tag-sim'">
+                          {{ systemSettings.scriza_api_mode === 'production' ? 'PRODUCTION LIVE' : 'SIMULATION' }}
+                        </span>
+                      </div>
+                      <div class="sv-input-card">
+                        <label for="scrizaMode">Active Environment</label>
+                        <select id="scrizaMode" v-model="systemSettings.scriza_api_mode" class="styled-select">
+                          <option value="simulation">🧪 Simulation Mode (Test Responses)</option>
+                          <option value="production">🟢 Production Live Mode (Real Recharges)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Razorpay Mode Card -->
+                    <div class="gateway-box">
+                      <div class="gateway-box-header">
+                        <span class="gw-title">🔷 Razorpay Payment Gateway</span>
+                        <span class="gw-tag" :class="systemSettings.razorpay_api_mode === 'live' ? 'tag-live' : 'tag-sim'">
+                          {{ systemSettings.razorpay_api_mode === 'live' ? 'LIVE PAYMENTS' : 'TEST MODE' }}
+                        </span>
+                      </div>
+                      <div class="sv-input-card">
+                        <label for="razorpayMode">Environment Mode</label>
+                        <select id="razorpayMode" v-model="systemSettings.razorpay_api_mode" class="styled-select">
+                          <option value="test">🧪 Test Payments Mode (Sandbox Keys)</option>
+                          <option value="live">🟢 Live Payments Mode (Real Money Payouts)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Razorpay Key ID -->
+                    <div class="gateway-box">
+                      <div class="sv-input-card">
+                        <label for="razorpayKeyId">
+                          <span class="lbl-text">Razorpay Key ID</span>
+                        </label>
+                        <input id="razorpayKeyId" type="text" v-model="systemSettings.razorpay_key_id" placeholder="rzp_live_xxxxxxxx" required />
+                      </div>
+                    </div>
+
+                    <!-- Razorpay Key Secret -->
+                    <div class="gateway-box">
+                      <div class="sv-input-card">
+                        <label for="razorpayKeySecret">
+                          <span class="lbl-text">Razorpay Key Secret</span>
+                        </label>
+                        <div class="input-with-button">
+                          <input id="razorpayKeySecret" :type="showRazorpaySecret ? 'text' : 'password'" v-model="systemSettings.razorpay_key_secret" placeholder="Enter Key Secret" required />
+                          <button type="button" @click="showRazorpaySecret = !showRazorpaySecret" class="btn-toggle-eye">
+                            {{ showRazorpaySecret ? '🔒 Hide' : '👁️ Show' }}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- UPI Direct VPA -->
+                    <div class="gateway-box">
+                      <div class="sv-input-card">
+                        <label for="upiVpaId">
+                          <span class="lbl-text">Company UPI VPA Address</span>
+                        </label>
+                        <input id="upiVpaId" type="text" v-model="systemSettings.upi_vpa_id" placeholder="vp110064@okaxis" required />
+                      </div>
+                    </div>
+
+                    <!-- UPI Payee Name -->
+                    <div class="gateway-box">
+                      <div class="sv-input-card">
+                        <label for="upiPayeeName">
+                          <span class="lbl-text">Company UPI Payee Name</span>
+                        </label>
+                        <input id="upiPayeeName" type="text" v-model="systemSettings.upi_payee_name" placeholder="EarnFarm Official" required />
+                      </div>
+                    </div>
+
+                    <!-- Force Update Version -->
+                    <div class="gateway-box span-full">
+                      <div class="sv-input-card">
+                        <label for="forceVersion">
+                          <span class="lbl-text">Force Update Android App Version</span>
+                          <span class="unit-badge">App Build</span>
+                        </label>
+                        <input id="forceVersion" type="text" v-model="systemSettings.force_update_version" placeholder="1.0.0" required />
+                        <span class="input-help">Mobile app builds below this version string will prompt force update</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Footer Bar -->
+                <div class="sv-action-bar" style="margin-top: 1.5rem;">
+                  <div class="sv-action-info">
+                    <div v-if="systemError" class="alert-box alert-error">⚠️ {{ systemError }}</div>
+                    <div v-if="systemSuccess" class="alert-box alert-success">✅ {{ systemSuccess }}</div>
+                    <span v-if="!systemError && !systemSuccess" class="status-tip">
+                      💡 Changes take effect immediately across all connected client applications.
+                    </span>
+                  </div>
+                  <button type="submit" :disabled="loadingSystem" class="sv-save-btn">
+                    <span v-if="loadingSystem" class="spinner-icon">🔄</span>
+                    <span>{{ loadingSystem ? 'Saving System Preferences...' : '💾 Save System Preferences' }}</span>
+                  </button>
+                </div>
+
               </form>
             </div>
           </div>
@@ -736,6 +1050,7 @@ export default {
       loadingSystem: false,
       systemError: '',
       systemSuccess: '',
+      showRazorpaySecret: false,
       // Teams states
       teamsData: {
         teams: [],
@@ -1193,9 +1508,10 @@ export default {
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: #f4f6f9;
+  background: #1e283d; /* Dark background matching sidebar color for infinite down fill */
   font-family: 'Inter', system-ui, sans-serif;
   color: #3e5569;
+  position: relative;
 }
 
 /* Sidebar styling (Classic Dark theme) */
@@ -1206,9 +1522,16 @@ export default {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  bottom: 0;
   height: 100vh;
+  height: 100dvh;
+  min-height: 100%;
+  z-index: 100;
+  overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-brand {
@@ -1306,6 +1629,8 @@ export default {
 /* Main Section Content */
 .main-section {
   flex: 1;
+  margin-left: 250px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -2262,6 +2587,500 @@ export default {
 
 .btn-add-img:hover {
   opacity: 0.9;
+}
+
+/* Shared System Variables Redesign Styles */
+.sv-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+.sv-hero-card {
+  background: linear-gradient(135deg, #1e283d 0%, #0f172a 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+}
+
+.sv-hero-info h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0.4rem 0 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.sv-hero-info p {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  max-width: 650px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.sv-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(37, 99, 235, 0.4);
+  color: #60a5fa;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #3b82f6;
+}
+
+.sv-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.meta-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.meta-pill.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.meta-pill.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.meta-pill.blue {
+  background: rgba(37, 99, 235, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(37, 99, 235, 0.3);
+}
+
+.meta-pill.purple {
+  background: rgba(168, 85, 247, 0.15);
+  color: #e9d5ff;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sv-section-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.sv-section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sv-section-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.bg-blue-light { background: #eff6ff; color: #2563eb; }
+.bg-purple-light { background: #faf5ff; color: #9333ea; }
+.bg-green-light { background: #f0fdf4; color: #16a34a; }
+
+.sv-section-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.2rem;
+}
+
+.sv-section-header p {
+  color: #64748b;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.sv-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.sv-input-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.sv-input-card:focus-within {
+  background: white;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.sv-input-card label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.unit-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 0.65rem;
+}
+
+.input-with-icon .field-icon {
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+}
+
+.input-with-icon input,
+.sv-input-card input,
+.styled-select {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.65rem 0;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+  background: transparent;
+}
+
+.sv-input-card input[type="text"],
+.sv-input-card input[type="number"],
+.sv-input-card input[type="password"] {
+  width: 100%;
+}
+
+.styled-select {
+  width: 100%;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.input-help {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.span-full {
+  grid-column: 1 / -1;
+}
+
+/* Switches & Toggles Grid */
+.toggles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.toggle-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.toggle-card.active {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.toggle-card.danger-toggle.active-danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.toggle-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.toggle-icon {
+  font-size: 1.4rem;
+}
+
+.toggle-title {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.toggle-desc {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.toggle-action {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Custom iOS Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #cbd5e1;
+  transition: .3s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+}
+
+input:checked + .slider {
+  background-color: #10b981;
+}
+
+.switch-danger input:checked + .slider {
+  background-color: #ef4444;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+.slider.round {
+  border-radius: 24px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.state-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  min-width: 48px;
+  text-align: center;
+}
+
+.badge-on { background: #dcfce7; color: #15803d; }
+.badge-off { background: #f1f5f9; color: #64748b; }
+.badge-danger { background: #fee2e2; color: #b91c1c; }
+
+/* Gateways section */
+.gateways-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.gateway-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.1rem;
+}
+
+.gateway-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.gw-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #1e293b;
+}
+
+.gw-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.tag-live { background: #dcfce7; color: #15803d; }
+.tag-sim { background: #feefc3; color: #b45309; }
+
+.input-with-button {
+  display: flex;
+  gap: 0.5rem;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 0.5rem;
+  align-items: center;
+}
+
+.btn-toggle-eye {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.btn-toggle-eye:hover {
+  background: #e2e8f0;
+}
+
+/* Action Footer */
+.sv-action-bar {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.25rem 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.sv-save-btn {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 0.85rem 2.25rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
+}
+
+.sv-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+}
+
+.alert-box {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.status-tip {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
