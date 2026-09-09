@@ -63,6 +63,11 @@ export default {
       loading: false
     }
   },
+  mounted() {
+    if (localStorage.getItem('adminToken')) {
+      this.$router.push('/admin-dashboard');
+    }
+  },
   methods: {
     async handleLogin() {
       this.error = '';

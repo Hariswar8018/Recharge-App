@@ -113,91 +113,15 @@
         </div>
 
         <div v-else class="tab-content-area">
-          <!-- TAB 1: DASHBOARD -->
+          <!-- TAB 1: DASHBOARD OVERVIEW (100% REAL DATA) -->
           <div v-if="currentTab === 'dashboard'" class="dashboard-panes">
-            <!-- Dashboard Analytics Grid -->
-            <div class="analytics-grid">
-              <!-- Left: Campaign Donut -->
-              <div class="anal-card campaign-card">
-                <h3>Campaign</h3>
-                <div class="donut-wrapper">
-                  <svg viewBox="0 0 100 100" width="120" height="120" class="donut-svg">
-                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f1f5f9" stroke-width="10" />
-                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#0052cc" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="100.4" />
-                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10b981" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="165.8" transform="rotate(216 50 50)" />
-                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ffab00" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="216.0" transform="rotate(310 50 50)" />
-                  </svg>
-                  <div class="donut-center">
-                    <span class="donut-val">₹769</span>
-                    <span class="donut-lbl">Earnings</span>
-                  </div>
-                </div>
-                <div class="donut-labels">
-                  <div class="lbl-item"><span class="dot bg-blue"></span> 60% Open</div>
-                  <div class="lbl-item"><span class="dot bg-green"></span> 26% Click</div>
-                  <div class="lbl-item"><span class="dot bg-orange"></span> 18% Bounce</div>
-                </div>
-              </div>
-
-              <!-- Middle: Line Chart -->
-              <div class="anal-card ratio-card">
-                <div class="ratio-header">
-                  <h3>Sales Ratio</h3>
-                  <div class="ratio-legends">
-                    <span class="legend"><span class="line-dot bg-blue"></span> This Week</span>
-                    <span class="legend"><span class="line-dot bg-grey"></span> Last Week</span>
-                  </div>
-                </div>
-                <div class="line-chart-wrapper">
-                  <svg viewBox="0 0 500 200" class="svg-chart">
-                    <line x1="30" y1="20" x2="480" y2="20" stroke="#f1f5f9" stroke-width="1" />
-                    <line x1="30" y1="60" x2="480" y2="60" stroke="#f1f5f9" stroke-width="1" />
-                    <line x1="30" y1="100" x2="480" y2="100" stroke="#f1f5f9" stroke-width="1" />
-                    <line x1="30" y1="140" x2="480" y2="140" stroke="#f1f5f9" stroke-width="1" />
-                    <line x1="30" y1="170" x2="480" y2="170" stroke="#cbd5e1" stroke-width="2" />
-                    <polyline fill="none" stroke="#e2e8f0" stroke-width="3" points="30,150 100,140 170,135 240,110 310,130 380,95 450,110" />
-                    <polyline fill="none" stroke="#0052cc" stroke-width="4" points="30,120 100,105 170,115 240,80 310,65 380,90 450,45" />
-                    <circle cx="240" cy="80" r="4" fill="#0052cc" />
-                    <circle cx="310" cy="65" r="4" fill="#0052cc" />
-                  </svg>
-                </div>
-              </div>
-
-              <!-- Right: Weather & User rates -->
-              <div class="anal-card weather-card">
-                <div class="weather-header">
-                  <div>
-                    <h4>Thursday</h4>
-                    <span>12th April, 2026</span>
-                  </div>
-                  <h3>☀️ 35°</h3>
-                </div>
-                <div class="users-rate-box">
-                  <div class="users-rate-header">
-                    <span>Users</span>
-                    <h3>35,658 <span class="green-text">+23%</span></h3>
-                  </div>
-                  <div class="users-splits">
-                    <div>
-                      <strong>58%</strong>
-                      <span>New Users</span>
-                    </div>
-                    <div>
-                      <strong>42%</strong>
-                      <span>Repeat Users</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-              <div class="nice-stat-card border-blue">
+            <!-- Primary Platform Metrics (Real Database Stats) -->
+            <div class="stats-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+              <div class="nice-stat-card border-blue" @click="currentTab = 'users'" style="cursor: pointer;">
                 <div class="stat-body">
                   <div class="stat-left">
                     <span class="icon-indicator">👤</span>
-                    <span class="stat-card-title">Total Users</span>
+                    <span class="stat-card-title">Total Registered Users</span>
                   </div>
                   <span class="stat-card-val">{{ stats.totalUsers }}</span>
                 </div>
@@ -208,9 +132,9 @@
                 <div class="stat-body">
                   <div class="stat-left">
                     <span class="icon-indicator">💼</span>
-                    <span class="stat-card-title">Main Wallet</span>
+                    <span class="stat-card-title">Main Wallet Total</span>
                   </div>
-                  <span class="stat-card-val">₹{{ stats.totalMainWallet.toLocaleString('en-IN') }}</span>
+                  <span class="stat-card-val">₹{{ (stats.totalMainWallet || 0).toLocaleString('en-IN') }}</span>
                 </div>
                 <div class="progress-bar bg-green"></div>
               </div>
@@ -219,29 +143,44 @@
                 <div class="stat-body">
                   <div class="stat-left">
                     <span class="icon-indicator">📥</span>
-                    <span class="stat-card-title">Fund Wallet</span>
+                    <span class="stat-card-title">Fund Wallet Total</span>
                   </div>
-                  <span class="stat-card-val">₹{{ stats.totalFundWallet.toLocaleString('en-IN') }}</span>
+                  <span class="stat-card-val">₹{{ (stats.totalFundWallet || 0).toLocaleString('en-IN') }}</span>
                 </div>
                 <div class="progress-bar bg-purple"></div>
               </div>
 
-              <div class="nice-stat-card border-orange">
+              <div class="nice-stat-card border-orange" @click="currentTab = 'transactions'" style="cursor: pointer;">
                 <div class="stat-body">
                   <div class="stat-left">
                     <span class="icon-indicator">📈</span>
-                    <span class="stat-card-title">Total Txns</span>
+                    <span class="stat-card-title">Total Transactions</span>
                   </div>
                   <span class="stat-card-val">{{ stats.totalTransactions }}</span>
                 </div>
                 <div class="progress-bar bg-orange"></div>
               </div>
+
+              <div class="nice-stat-card border-red" @click="currentTab = 'requests'" style="cursor: pointer;">
+                <div class="stat-body">
+                  <div class="stat-left">
+                    <span class="icon-indicator">⏳</span>
+                    <span class="stat-card-title">Pending Requests</span>
+                  </div>
+                  <span class="stat-card-val">{{ pendingRequestsCount }}</span>
+                </div>
+                <div class="progress-bar bg-red" style="background: #ef4444;"></div>
+              </div>
             </div>
 
-            <!-- Bottom Analytics Grid -->
-            <div class="bottom-analytics">
-              <div class="anal-card sales-table-card">
-                <h3>Latest Transactions</h3>
+            <!-- Real Activity & Operational Summary Split Grid -->
+            <div class="bottom-analytics" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+              <!-- Real Transactions Log Table -->
+              <div class="anal-card sales-table-card" style="margin: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                  <h3 style="margin: 0;">Recent Real Platform Transactions</h3>
+                  <button @click="currentTab = 'transactions'" class="btn-add-img" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">View All Txns &rarr;</button>
+                </div>
                 <div class="table-container">
                   <table class="nice-table">
                     <thead>
@@ -250,42 +189,54 @@
                         <th>User ID</th>
                         <th>Wallet</th>
                         <th>Amount</th>
+                        <th>Date & Time</th>
                         <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="txn in transactions.slice(0, 5)" :key="txn.id">
-                        <td>#{{ txn.id }}</td>
+                      <tr v-if="transactions.length === 0">
+                        <td colspan="6" style="text-align: center; color: #94a3b8; padding: 1.5rem;">No transactions recorded in database yet.</td>
+                      </tr>
+                      <tr v-for="txn in transactions.slice(0, 8)" :key="txn.id">
+                        <td class="font-bold">#{{ txn.id }}</td>
                         <td>#{{ txn.user_id }}</td>
-                        <td><span class="lbl-wallet" :class="txn.wallet_type.toLowerCase()">{{ txn.wallet_type }}</span></td>
-                        <td class="font-bold">{{ txn.amount }}</td>
-                        <td><span class="nice-badge-success">Success</span></td>
+                        <td><span class="lbl-wallet" :class="(txn.wallet_type || 'main').toLowerCase()">{{ txn.wallet_type }}</span></td>
+                        <td class="font-bold" style="color: #10b981;">{{ txn.amount }}</td>
+                        <td style="font-size: 0.8rem; color: #64748b;">{{ txn.date || 'N/A' }}</td>
+                        <td>
+                          <span :class="txn.status === 'Success' || txn.status === 'APPROVED' ? 'nice-badge-success' : 'nice-badge-pending'">
+                            {{ txn.status || 'Success' }}
+                          </span>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              <div class="anal-card region-card">
-                <h3>Top Indian States Sales</h3>
-                <div class="bar-chart-container">
-                  <svg viewBox="0 0 400 150" class="svg-chart">
-                    <line x1="20" y1="120" x2="380" y2="120" stroke="#cbd5e1" stroke-width="2" />
-                    <rect x="40" y="40" width="18" height="80" fill="#3b82f6" rx="3" />
-                    <rect x="90" y="20" width="18" height="100" fill="#f59e0b" rx="3" />
-                    <rect x="140" y="50" width="18" height="70" fill="#8b5cf6" rx="3" />
-                    <rect x="190" y="60" width="18" height="60" fill="#ef4444" rx="3" />
-                    <rect x="240" y="70" width="18" height="50" fill="#10b981" rx="3" />
-                    <rect x="290" y="30" width="18" height="90" fill="#3b82f6" rx="3" />
-                  </svg>
-                  <div class="region-stats">
-                    <div>
-                      <span class="green-text font-bold">Uttar Pradesh (+23%)</span>
-                    </div>
-                    <div>
-                      <span class="blue-text font-bold">Maharashtra (+8.4%)</span>
-                    </div>
-                  </div>
+              <!-- Quick Control & Platform Shortcuts -->
+              <div class="anal-card" style="margin: 0; display: flex; flex-direction: column; gap: 1rem;">
+                <h3 style="margin: 0;">⚡ Quick Operational Panel</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <button @click="currentTab = 'requests'" class="menu-item" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 0.75rem; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📥 Deposit Requests Approval</span>
+                    <span v-if="pendingRequestsCount > 0" class="badge-count" style="background: #dc2626; color: white;">{{ pendingRequestsCount }} Pending</span>
+                  </button>
+
+                  <button @click="currentTab = 'users'" class="menu-item" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 8px; padding: 0.75rem; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                    <span>👥 Manage Portal Users ({{ stats.totalUsers }})</span>
+                    <span>&rarr;</span>
+                  </button>
+
+                  <button @click="currentTab = 'notifications'" class="menu-item" style="background: #faf5ff; border: 1px solid #e9d5ff; color: #6b21a8; border-radius: 8px; padding: 0.75rem; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📢 Send Broadcast Notice</span>
+                    <span>&rarr;</span>
+                  </button>
+
+                  <button @click="currentTab = 'shared_variable'" class="menu-item" style="background: #fff7ed; border: 1px solid #ffedd5; color: #c2410c; border-radius: 8px; padding: 0.75rem; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                    <span>⚙️ Shared System Variables</span>
+                    <span>&rarr;</span>
+                  </button>
                 </div>
               </div>
             </div>
