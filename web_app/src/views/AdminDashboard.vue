@@ -1,42 +1,48 @@
 <template>
   <div class="admin-layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
+    <!-- Backdrop overlay for mobile drawer -->
+    <div v-if="mobileMenuOpen" class="mobile-drawer-backdrop" @click="mobileMenuOpen = false"></div>
+
+    <!-- Sidebar (Desktop fixed, Mobile slide-over drawer) -->
+    <aside class="sidebar" :class="{ 'open-drawer': mobileMenuOpen }">
       <div class="sidebar-brand">
-        <div class="brand-icon">N</div>
-        <span class="brand-text">ADMIN</span>
+        <div class="brand-left">
+          <div class="brand-icon">N</div>
+          <span class="brand-text">ADMIN</span>
+        </div>
+        <button @click="mobileMenuOpen = false" class="close-drawer-btn" title="Close Drawer">&times;</button>
       </div>
       
       <div class="sidebar-menu">
         <div class="menu-label">PERSONAL</div>
-        <button @click="currentTab = 'dashboard'" class="menu-item" :class="{ active: currentTab === 'dashboard' }">
+        <button @click="switchTab('dashboard')" class="menu-item" :class="{ active: currentTab === 'dashboard' }">
           <span class="icon">📊</span> Dashboards
         </button>
-        <button @click="currentTab = 'users'" class="menu-item" :class="{ active: currentTab === 'users' }">
+        <button @click="switchTab('users')" class="menu-item" :class="{ active: currentTab === 'users' }">
           <span class="icon">👤</span> Users List
         </button>
-        <button @click="currentTab = 'requests'" class="menu-item" :class="{ active: currentTab === 'requests' }">
+        <button @click="switchTab('requests')" class="menu-item" :class="{ active: currentTab === 'requests' }">
           <span class="icon">📥</span> Fund Requests
           <span v-if="pendingRequestsCount > 0" class="badge-count">{{ pendingRequestsCount }}</span>
         </button>
-        <button @click="currentTab = 'transactions'" class="menu-item" :class="{ active: currentTab === 'transactions' }">
+        <button @click="switchTab('transactions')" class="menu-item" :class="{ active: currentTab === 'transactions' }">
           <span class="icon">📈</span> All Transactions
         </button>
-        <button @click="currentTab = 'teams'" class="menu-item" :class="{ active: currentTab === 'teams' }">
+        <button @click="switchTab('teams')" class="menu-item" :class="{ active: currentTab === 'teams' }">
           <span class="icon">👥</span> User Teams
         </button>
 
         <div class="menu-label">GLOBAL</div>
-        <button @click="currentTab = 'notifications'" class="menu-item" :class="{ active: currentTab === 'notifications' }">
+        <button @click="switchTab('notifications')" class="menu-item" :class="{ active: currentTab === 'notifications' }">
           <span class="icon">📢</span> Send Notification
         </button>
-        <button @click="currentTab = 'shared_variable'" class="menu-item" :class="{ active: currentTab === 'shared_variable' }">
+        <button @click="switchTab('shared_variable')" class="menu-item" :class="{ active: currentTab === 'shared_variable' }">
           <span class="icon">🔗</span> Shared Variable
         </button>
-        <button @click="currentTab = 'admins'" class="menu-item" :class="{ active: currentTab === 'admins' }">
+        <button @click="switchTab('admins')" class="menu-item" :class="{ active: currentTab === 'admins' }">
           <span class="icon">🛡️</span> System Admins
         </button>
-        <button @click="currentTab = 'settings'" class="menu-item" :class="{ active: currentTab === 'settings' }">
+        <button @click="switchTab('settings')" class="menu-item" :class="{ active: currentTab === 'settings' }">
           <span class="icon">⚙️</span> Change Password
         </button>
       </div>
@@ -52,9 +58,17 @@
     <div class="main-section">
       <!-- Topbar Header -->
       <header class="topbar">
-        <div class="topbar-left-placeholder"></div>
+        <div class="topbar-left">
+          <button @click="mobileMenuOpen = !mobileMenuOpen" class="hamburger-btn" aria-label="Toggle Menu">
+            <span class="hamburger-icon">☰</span>
+          </button>
+          <div class="topbar-brand-mobile">
+            <div class="brand-icon">N</div>
+            <span class="brand-text">ADMIN</span>
+          </div>
+        </div>
         <div class="topbar-actions">
-          <span class="action-icon" @click="currentTab = 'notifications'" title="Send Broadcast Notification">✉️</span>
+          <span class="action-icon" @click="switchTab('notifications')" title="Send Broadcast Notification">✉️</span>
           
           <div class="admin-profile-badge">
             <div class="avatar">{{ adminEmail[0].toUpperCase() }}</div>
@@ -1034,6 +1048,7 @@ export default {
   data() {
     return {
       currentTab: 'dashboard',
+      mobileMenuOpen: false,
       adminEmail: localStorage.getItem('adminEmail') || 'haris@gmail.com',
       stats: {
         totalUsers: 0,
@@ -1489,6 +1504,10 @@ export default {
       } finally {
         this.sendingNotif = false;
       }
+    },
+    switchTab(tab) {
+      this.currentTab = tab;
+      this.mobileMenuOpen = false;
     },
     selectUser(user) {
       this.selectedUser = user;
@@ -3148,31 +3167,188 @@ input:checked + .slider:before {
   font-weight: 500;
 }
 
+/* Topbar Left Controls & Mobile Brand */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.hamburger-btn {
+  display: none;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #1e293b;
+  font-size: 1.25rem;
+  transition: all 0.15s ease;
+}
+
+.hamburger-btn:hover {
+  background: #e2e8f0;
+}
+
+.topbar-brand-mobile {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.topbar-brand-mobile .brand-icon {
+  background: #2563eb;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1rem;
+}
+
+.topbar-brand-mobile .brand-text {
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+.close-drawer-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.6rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+}
+
+.close-drawer-btn:hover {
+  color: white;
+}
+
+.sidebar-brand {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.brand-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 @media (max-width: 768px) {
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .topbar-brand-mobile {
+    display: flex;
+  }
+
+  .close-drawer-btn {
+    display: block;
+  }
+
   .admin-layout {
     flex-direction: column;
     width: 100%;
+    min-height: 100vh;
   }
+
+  /* Off-canvas Slide Drawer for Mobile */
   .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
+    width: 280px;
+    max-width: 85vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.3);
   }
-  .sidebar-menu {
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 0.5rem;
-    white-space: nowrap;
+
+  .sidebar.open-drawer {
+    transform: translateX(0);
   }
+
+  .mobile-drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+  }
+
+  .main-section {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  .topbar {
+    padding: 0 1rem;
+    height: 58px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .topbar-actions {
+    gap: 0.75rem;
+  }
+
+  .profile-name {
+    display: none;
+  }
+
   .content-body {
     padding: 1rem;
     width: 100%;
     box-sizing: border-box;
   }
-  .topbar {
-    padding: 0 1rem;
+
+  .content-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .content-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     width: 100%;
-    box-sizing: border-box;
+  }
+
+  .nice-table {
+    min-width: 650px;
+  }
+
+  .slide-over {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 </style>
