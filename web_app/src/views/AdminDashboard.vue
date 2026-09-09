@@ -1508,7 +1508,7 @@ export default {
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: #1e283d; /* Dark background matching sidebar color for infinite down fill */
+  background: #ffffff;
   font-family: 'Inter', system-ui, sans-serif;
   color: #3e5569;
   position: relative;
@@ -1634,6 +1634,9 @@ export default {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: #ffffff;
+  width: calc(100% - 250px);
+  box-sizing: border-box;
 }
 
 /* Topbar */
