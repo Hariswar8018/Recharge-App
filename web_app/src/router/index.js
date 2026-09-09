@@ -16,7 +16,7 @@ const routes = [
   },
   {
     path: '/admin-login',
-    alias: ['/admin-panel/login', '/admin/login', '/admin-panel', '/admin'],
+    alias: ['/admin-panel/login', '/admin/login', '/admin-panel', '/admin', '/admin/', '/admin-panel/'],
     name: 'AdminLogin',
     component: AdminLogin
   },
