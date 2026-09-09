@@ -20,6 +20,14 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
 
     const minWithdraw = parseFloat(settings['minimum_withdrawal'] || '500');
     const feePercent = parseFloat(settings['withdrawal_percentage'] || '15');
+    const allowedDaysStr = settings['withdrawal_days'] || 'Mon,Wed,Fri';
+    
+    // Check allowed days
+    const currentDayName = new Date().toLocaleDateString('en-US', { weekday: 'short' }); // e.g. "Mon", "Tue"
+    const allowedDaysList = allowedDaysStr.split(',').map(d => d.trim().toLowerCase());
+    if (!allowedDaysList.includes(currentDayName.toLowerCase())) {
+      return res.status(400).json({ error: `Withdrawals are allowed only on ${allowedDaysStr}. Today (${currentDayName}) is not an allowed withdrawal day.` });
+    }
 
     if (amt < minWithdraw) {
       return res.status(400).json({ error: `Minimum withdrawal amount is ₹${minWithdraw}` });

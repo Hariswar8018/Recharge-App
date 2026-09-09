@@ -28,12 +28,21 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
     _loadUserData();
   }
 
-  void _onMobileChanged() {
+  void _onMobileChanged() async {
     final text = _mobileController.text.trim();
-    if (text.length == 10) {
-      setState(() {
-        _lookupUserName = text == _userMobile ? _userName : "Raju Reddy";
-      });
+    if (text.length >= 1) {
+      final res = await ApiService.lookupUserById(text);
+      if (mounted) {
+        if (res['success'] == true && res['user'] != null) {
+          setState(() {
+            _lookupUserName = res['user']['fullName'] ?? "User Found";
+          });
+        } else {
+          setState(() {
+            _lookupUserName = "User Not Found";
+          });
+        }
+      }
     } else {
       if (_lookupUserName.isNotEmpty) {
         setState(() {

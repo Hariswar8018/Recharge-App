@@ -12,7 +12,7 @@ class FundRequestScreen extends StatefulWidget {
 }
 
 class _FundRequestScreenState extends State<FundRequestScreen> {
-  final _amountController = TextEditingController(text: "1000");
+  final _amountController = TextEditingController(text: "1200");
   final _utrController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -65,10 +65,10 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final amtVal = double.tryParse(_amountController.text.trim()) ?? 1000.0;
-    if (amtVal < 10) {
+    final amtVal = double.tryParse(_amountController.text.trim()) ?? 1200.0;
+    if (amtVal < 1200.0 || amtVal > 12000.0 || (amtVal % 1200.0 != 0)) {
       setState(() {
-        _error = "Minimum deposit amount is ₹10";
+        _error = "Deposit amount must be between ₹1,200 and ₹12,000 in multiples of ₹1,200";
       });
       return;
     }

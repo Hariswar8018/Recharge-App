@@ -149,9 +149,26 @@ class ApiService {
     } catch (_) {}
   }
 
+  // Lookup User by ID or Mobile Number
+  static Future<Map<String, dynamic>> lookupUserById(String idOrMobile) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/user/by-id/$idOrMobile'),
+        headers: await _getHeaders(),
+      );
+      final decoded = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'user': decoded};
+      } else {
+        return {'success': false, 'error': decoded['error'] ?? 'User not found'};
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Could not look up user'};
+    }
+  }
+
   // Get Profile
   static Future<Map<String, dynamic>> getProfile() async {
-    await _initCaptchaPersistence();
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/user/profile'),
@@ -160,22 +177,13 @@ class ApiService {
 
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200 && decoded is Map<String, dynamic>) {
-        final double baseBal = double.tryParse(decoded['main_wallet_balance']?.toString() ?? '0.0') ?? 0.0;
-        decoded['main_wallet_balance'] = (baseBal + _accumulatedCaptchaEarnings).toStringAsFixed(2);
         return {'success': true, 'user': decoded};
       }
     } catch (e) {}
 
     return {
-      'success': true,
-      'user': {
-        'fullName': 'Rajesh Reddy',
-        'email': 'user@srdigitalseva.com',
-        'mobileNumber': '9988494936',
-        'fund_wallet_balance': '0.00',
-        'main_wallet_balance': _accumulatedCaptchaEarnings.toStringAsFixed(2),
-        'status': 'INACTIVE'
-      }
+      'success': false,
+      'error': 'Failed to load user profile'
     };
   }
 
@@ -300,31 +308,16 @@ class ApiService {
 
   // Get User Transactions list
   static Future<List<dynamic>> getTransactions() async {
-    await _initCaptchaPersistence();
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/user/transactions'),
         headers: await _getHeaders(requireAuth: true),
       );
       if (response.statusCode == 200) {
-        final list = jsonDecode(response.body) as List<dynamic>? ?? [];
-        if (list.isNotEmpty) {
-          return [..._localCaptchaTxns, ...list];
-        }
+        return jsonDecode(response.body) as List<dynamic>? ?? [];
       }
     } catch (_) {}
-
-    if (_localCaptchaTxns.isEmpty) {
-      return [
-        {
-          'type': 'Welcome Bonus',
-          'amount': '+ ₹12,600.00',
-          'date': DateTime.now().toLocal().toString().substring(0, 10),
-          'status': 'Success'
-        }
-      ];
-    }
-    return List<dynamic>.from(_localCaptchaTxns);
+    return [];
   }
 
   // Submit Captcha Earnings

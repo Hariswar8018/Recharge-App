@@ -20,45 +20,21 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
   }
 
   Future<void> _loadDirectTeam() async {
-    final response = await ApiService.getProfile();
-    if (response['success'] == true && response['user'] != null) {
-      final team = response['user']['team'] as List<dynamic>? ?? [];
-      // Filter ONLY direct level 1 members
-      final directOnly = team.where((m) {
-        final level = m['level']?.toString() ?? '1';
-        return level == '1';
-      }).toList();
+    final teamList = await ApiService.getTeam();
+    setState(() {
+      _directMembers = teamList;
+      _isLoading = false;
+    });
+  }
 
-      setState(() {
-        _directMembers = directOnly.isNotEmpty
-            ? directOnly
-            : [
-                {
-                  'name': 'Ramesh Kumar',
-                  'mobile': '9876543210',
-                  'status': 'ACTIVE',
-                  'created_at': '2026-08-28',
-                },
-                {
-                  'name': 'Suresh Reddy',
-                  'mobile': '9123456789',
-                  'status': 'ACTIVE',
-                  'created_at': '2026-08-29',
-                },
-                {
-                  'name': 'Anil Sharma',
-                  'mobile': '9988776655',
-                  'status': 'INACTIVE',
-                  'created_at': '2026-08-30',
-                },
-              ];
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
+  String _getFirstNameMax15(String fullName) {
+    if (fullName.isEmpty) return 'Member';
+    final parts = fullName.trim().split(' ');
+    String firstName = parts[0];
+    if (firstName.length > 15) {
+      firstName = firstName.substring(0, 15);
     }
+    return firstName;
   }
 
   @override
@@ -120,7 +96,7 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                   child: _directMembers.isEmpty
                       ? const Center(
                           child: Text(
-                            "No direct members found.",
+                            "No direct members found in your team.",
                             style: TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                         )
@@ -130,11 +106,16 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                           separatorBuilder: (context, index) => const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final member = _directMembers[index];
-                            final name = member['name'] ?? 'Member';
-                            final mobile = member['mobile'] ?? 'N/A';
+                            final rawId = member['id']?.toString() ?? '${index + 1}';
+                            final userFormattedId = "SRM${rawId.padLeft(6, '0')}";
+                            final rawName = member['fullName'] ?? member['name'] ?? 'Member';
+                            final firstName = _getFirstNameMax15(rawName);
+                            final mobile = member['mobileNumber'] ?? member['mobile'] ?? 'N/A';
                             final status = (member['status'] ?? 'ACTIVE').toString().toUpperCase();
                             final isActive = status == 'ACTIVE';
-                            final createdAt = member['created_at']?.toString() ?? '2026-08-28';
+                            final rawIncome = member['main_wallet_balance'] ?? member['income'] ?? '0.00';
+                            final incomeVal = double.tryParse(rawIncome.toString()) ?? 0.0;
+                            final createdAt = member['createdAt']?.toString().substring(0, 10) ?? member['created_at']?.toString() ?? 'N/A';
 
                             return Container(
                               padding: const EdgeInsets.all(16),
@@ -165,22 +146,42 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          name,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            color: Color(0xFF0F172A),
-                                          ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              firstName,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                                color: Color(0xFF0F172A),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              "($userFormattedId)",
+                                              style: const TextStyle(
+                                                color: Color(0xFF0052CC),
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                         const SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            const Icon(Icons.phone_android, size: 14, color: Colors.grey),
+                                            const Icon(Icons.phone_android, size: 13, color: Colors.grey),
                                             const SizedBox(width: 4),
                                             Text(
                                               mobile,
-                                              style: const TextStyle(color: Color(0xFF475569), fontSize: 13),
+                                              style: const TextStyle(color: Color(0xFF475569), fontSize: 12),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            const Icon(Icons.account_balance_wallet, size: 13, color: Color(0xFF16A34A)),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              "₹ ${incomeVal.toStringAsFixed(2)}",
+                                              style: const TextStyle(color: Color(0xFF16A34A), fontWeight: FontWeight.bold, fontSize: 12),
                                             ),
                                           ],
                                         ),

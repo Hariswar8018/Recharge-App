@@ -539,7 +539,7 @@
           <div v-if="currentTab === 'uiux'" class="uiux-pane">
             <div class="settings-nice-card">
               <h3>🎨 UI / UX Configuration</h3>
-              <p class="section-desc">Manage marquee text announcements and landing page infinite banner image links.</p>
+              <p class="section-desc">Manage marquee text announcements, landing page infinite banners, popup announcements, and support links.</p>
               
               <form @submit.prevent="handleSaveSystemSettings" class="settings-form">
                 <div class="form-horizontal-grid">
@@ -547,7 +547,42 @@
                   <div class="form-column">
                     <div class="nice-input-group">
                       <label for="marqueeText">Homepage Scrolling Marquee Text</label>
-                      <textarea id="marqueeText" v-model="systemSettings.marquee_text" rows="5" placeholder="Enter scrolling notice..." style="padding: 0.65rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc;" required></textarea>
+                      <textarea id="marqueeText" v-model="systemSettings.marquee_text" rows="4" placeholder="Enter scrolling notice..." style="padding: 0.65rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc;" required></textarea>
+                    </div>
+
+                    <!-- User Popup Banner Config (Item 33 & 34) -->
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="popupBannerImg">User Panel Popup Banner Image URL</label>
+                      <input id="popupBannerImg" type="text" v-model="systemSettings.popup_banner_image" placeholder="Paste popup banner image URL here..." />
+                    </div>
+                    <div class="nice-checkbox-group" style="margin-top: 0.5rem;">
+                      <input id="popupBannerEnabled" type="checkbox" v-model="systemSettings.popup_banner_enabled_bool" />
+                      <label for="popupBannerEnabled">Enable User Panel Popup Banner</label>
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.5rem;">
+                      <label for="popupDisplayMode">Popup Display Control Mode</label>
+                      <select id="popupDisplayMode" v-model="systemSettings.popup_banner_display_mode">
+                        <option value="once">Show Once Per Session</option>
+                        <option value="every_time">Show Every Time Screen Opens</option>
+                      </select>
+                    </div>
+
+                    <!-- WhatsApp Links Config (Item 38 & 39) -->
+                    <div class="nice-input-group" style="margin-top: 1rem;">
+                      <label for="waSupportLink">WhatsApp Support Direct Link / Number</label>
+                      <input id="waSupportLink" type="text" v-model="systemSettings.whatsapp_support_link" placeholder="e.g. https://wa.me/919876543210" />
+                    </div>
+                    <div class="nice-checkbox-group" style="margin-top: 0.5rem;">
+                      <input id="waSupportEnabled" type="checkbox" v-model="systemSettings.whatsapp_support_enabled_bool" />
+                      <label for="waSupportEnabled">Enable WhatsApp Support Link</label>
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="waGroupLink">Join Global Team WhatsApp Group Link</label>
+                      <input id="waGroupLink" type="text" v-model="systemSettings.whatsapp_group_link" placeholder="e.g. https://chat.whatsapp.com/EarnFarmGlobalTeam" />
+                    </div>
+                    <div class="nice-checkbox-group" style="margin-top: 0.5rem;">
+                      <input id="waGroupEnabled" type="checkbox" v-model="systemSettings.whatsapp_group_enabled_bool" />
+                      <label for="waGroupEnabled">Enable Join Global Team WhatsApp Link</label>
                     </div>
                   </div>
 
@@ -581,7 +616,7 @@
                     <div v-if="systemError" class="error-msg" style="margin-top: 1rem;">{{ systemError }}</div>
                     <div v-if="systemSuccess" class="success-msg" style="margin-top: 1rem;">{{ systemSuccess }}</div>
                     <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn" style="width: 100%; margin-top: 2rem;">
-                      <span v-if="loadingSystem">Saving Marquee UI Preferences...</span>
+                      <span v-if="loadingSystem">Saving UI/UX Preferences...</span>
                       <span v-else>Save UI/UX Configurations</span>
                     </button>
                   </div>
@@ -593,99 +628,130 @@
           <!-- TAB: SHARED VARIABLES -->
           <div v-if="currentTab === 'shared_variable'" class="shared-variable-pane">
             <div class="settings-nice-card">
-              <h3>🔗 Shared Variables & Gateway Keys</h3>
-              <p class="section-desc">Manage Razorpay keys, wallets constraints, and active modes.</p>
+              <h3>🔗 Shared Variables & Global Controls</h3>
+              <p class="section-desc">Manage system amounts, gateway keys, wallet rules, and master feature ON/OFF controls.</p>
               
               <form @submit.prevent="handleSaveSystemSettings" class="settings-form">
                 <div class="form-horizontal-grid">
-                  <!-- Left Column -->
+                  <!-- Left Column: Master Amounts & Gateway Settings -->
                   <div class="form-column">
+                    <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">💰 System Amounts & Parameters</h4>
                     <div class="nice-input-group">
                       <label for="minBalance">Minimum Wallet Balance (₹)</label>
                       <input id="minBalance" type="number" step="0.01" v-model="systemSettings.min_wallet_balance" placeholder="e.g. 50.00" required />
                     </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="joinAmount">Join / Activation Amount (₹)</label>
+                      <input id="joinAmount" type="number" v-model="systemSettings.join_amount" placeholder="e.g. 1200" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="topUpAmount">Top-Up Amount (₹)</label>
+                      <input id="topUpAmount" type="number" v-model="systemSettings.top_up_amount" placeholder="e.g. 1200" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="directIncome">Direct Sponsor Income (₹)</label>
+                      <input id="directIncome" type="number" v-model="systemSettings.direct_income" placeholder="e.g. 300" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="levelPool">Level Pool Collection (₹)</label>
+                      <input id="levelPool" type="number" v-model="systemSettings.level_pool" placeholder="e.g. 600" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="companyMaintenance">Company Maintenance (₹)</label>
+                      <input id="companyMaintenance" type="number" v-model="systemSettings.company_maintenance" placeholder="e.g. 300" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="cycleSize">Cycle Size (Members)</label>
+                      <input id="cycleSize" type="number" v-model="systemSettings.cycle_size" placeholder="e.g. 126" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="withdrawPct">Withdrawal Deduction (%)</label>
+                      <input id="withdrawPct" type="number" v-model="systemSettings.withdrawal_percentage" placeholder="e.g. 15" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="minWithdraw">Minimum Withdrawal Amount (₹)</label>
+                      <input id="minWithdraw" type="number" v-model="systemSettings.minimum_withdrawal" placeholder="e.g. 500" required />
+                    </div>
+                    <div class="nice-input-group" style="margin-top: 0.75rem;">
+                      <label for="withdrawDays">Allowed Withdrawal Days</label>
+                      <input id="withdrawDays" type="text" v-model="systemSettings.withdrawal_days" placeholder="e.g. Mon,Wed,Fri" required />
+                    </div>
+                  </div>
+
+                  <!-- Right Column: Global ON/OFF Toggles & Payment Gateways -->
+                  <div class="form-column">
+                    <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">🎛️ Master Global ON/OFF Controls</h4>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                      <div class="nice-checkbox-group">
+                        <input id="regEnabled" type="checkbox" v-model="systemSettings.registration_enabled_bool" />
+                        <label for="regEnabled">User Registration Flow ON/OFF</label>
+                      </div>
+                      <div class="nice-checkbox-group">
+                        <input id="loginEnabled" type="checkbox" v-model="systemSettings.login_enabled_bool" />
+                        <label for="loginEnabled">User Login Flow ON/OFF</label>
+                      </div>
+                      <div class="nice-checkbox-group">
+                        <input id="otpEnabled" type="checkbox" v-model="systemSettings.otp_enabled_bool" />
+                        <label for="otpEnabled">OTP & Forgot Password Flow ON/OFF</label>
+                      </div>
+                      <div class="nice-checkbox-group">
+                        <input id="addMoneyEnabled" type="checkbox" v-model="systemSettings.add_money_enabled_bool" />
+                        <label for="addMoneyEnabled">Add Money & Fund Request ON/OFF</label>
+                      </div>
+                      <div class="nice-checkbox-group">
+                        <input id="withdrawEnabled" type="checkbox" v-model="systemSettings.withdrawal_enabled_bool" />
+                        <label for="withdrawEnabled">Cash Out & Withdrawal Requests ON/OFF</label>
+                      </div>
+                      <div class="nice-checkbox-group">
+                        <input id="captchaEnabled" type="checkbox" v-model="systemSettings.captcha_enabled_bool" />
+                        <label for="captchaEnabled">CAPTCHA Verification Requirement ON/OFF</label>
+                      </div>
+                      <div class="nice-checkbox-group">
+                        <input id="maintMode" type="checkbox" v-model="systemSettings.maintenance_mode_bool" />
+                        <label for="maintMode">Enable Platform Maintenance Mode</label>
+                      </div>
+                    </div>
+
+                    <h4 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">💳 Gateways & App Config</h4>
+                    <div class="nice-input-group">
                       <label for="forceVersion">Force Android App Version</label>
                       <input id="forceVersion" type="text" v-model="systemSettings.force_update_version" placeholder="e.g. 1.0.0" required />
                     </div>
-                    <div class="nice-checkbox-group" style="margin-top: 1rem;">
-                      <input id="maintenanceMode" type="checkbox" v-model="systemSettings.maintenance_mode_bool" />
-                      <label for="maintenanceMode">Enable Platform Maintenance Mode</label>
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
+                    <div class="nice-input-group" style="margin-top: 0.5rem;">
                       <label for="scrizaMode">Scriza API Active Mode</label>
                       <select id="scrizaMode" v-model="systemSettings.scriza_api_mode">
                         <option value="simulation">Simulation Mode</option>
                         <option value="production">Production Live Mode</option>
                       </select>
                     </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="joinAmount">Join / Activation Amount (₹)</label>
-                      <input id="joinAmount" type="number" v-model="systemSettings.join_amount" placeholder="e.g. 1200" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="topUpAmount">Top-Up Amount (₹)</label>
-                      <input id="topUpAmount" type="number" v-model="systemSettings.top_up_amount" placeholder="e.g. 1200" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="directIncome">Direct Sponsor Income (₹)</label>
-                      <input id="directIncome" type="number" v-model="systemSettings.direct_income" placeholder="e.g. 300" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="levelPool">Level Pool Collection (₹)</label>
-                      <input id="levelPool" type="number" v-model="systemSettings.level_pool" placeholder="e.g. 600" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="companyMaintenance">Company Maintenance (₹)</label>
-                      <input id="companyMaintenance" type="number" v-model="systemSettings.company_maintenance" placeholder="e.g. 300" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="cycleSize">Cycle Size (Members)</label>
-                      <input id="cycleSize" type="number" v-model="systemSettings.cycle_size" placeholder="e.g. 126" required />
-                    </div>
-                  </div>
-
-                  <!-- Right Column -->
-                  <div class="form-column">
-                    <div class="nice-input-group">
+                    <div class="nice-input-group" style="margin-top: 0.5rem;">
                       <label for="razorpayMode">Razorpay Checkout Gateway</label>
                       <select id="razorpayMode" v-model="systemSettings.razorpay_api_mode">
                         <option value="test">Test Payments Mode</option>
                         <option value="live">Live Payments Mode</option>
                       </select>
                     </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
+                    <div class="nice-input-group" style="margin-top: 0.5rem;">
                       <label for="razorpayKeyId">Razorpay Key ID</label>
                       <input id="razorpayKeyId" type="text" v-model="systemSettings.razorpay_key_id" placeholder="Enter Razorpay Key ID" required />
                     </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
+                    <div class="nice-input-group" style="margin-top: 0.5rem;">
                       <label for="razorpayKeySecret">Razorpay Key Secret</label>
                       <input id="razorpayKeySecret" type="password" v-model="systemSettings.razorpay_key_secret" placeholder="Enter Razorpay Key Secret" required />
                     </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="withdrawPct">Withdrawal Deduction (%)</label>
-                      <input id="withdrawPct" type="number" v-model="systemSettings.withdrawal_percentage" placeholder="e.g. 15" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="minWithdraw">Minimum Withdrawal Amount (₹)</label>
-                      <input id="minWithdraw" type="number" v-model="systemSettings.minimum_withdrawal" placeholder="e.g. 500" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="withdrawDays">Allowed Withdrawal Days</label>
-                      <input id="withdrawDays" type="text" v-model="systemSettings.withdrawal_days" placeholder="e.g. Mon,Wed,Fri" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
+                    <div class="nice-input-group" style="margin-top: 0.5rem;">
                       <label for="upiVpaId">Company UPI VPA ID</label>
                       <input id="upiVpaId" type="text" v-model="systemSettings.upi_vpa_id" placeholder="e.g. vp110064@okaxis" required />
                     </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
+                    <div class="nice-input-group" style="margin-top: 0.5rem;">
                       <label for="upiPayeeName">Company UPI Payee Name</label>
                       <input id="upiPayeeName" type="text" v-model="systemSettings.upi_payee_name" placeholder="e.g. EarnFarm" required />
                     </div>
+
                     <div v-if="systemError" class="error-msg" style="margin-top: 1rem;">{{ systemError }}</div>
                     <div v-if="systemSuccess" class="success-msg" style="margin-top: 1rem;">{{ systemSuccess }}</div>
                     <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn" style="width: 100%; margin-top: 1.5rem;">
-                      <span v-if="loadingSystem">Saving Shared Variables...</span>
+                      <span v-if="loadingSystem">Saving System Preferences...</span>
                       <span v-else>Save System Preferences</span>
                     </button>
                   </div>
@@ -797,7 +863,31 @@ export default {
         razorpay_key_id: '',
         razorpay_key_secret: '',
         marquee_text: '',
-        marquee_images: ''
+        marquee_images: '',
+        join_amount: '1200',
+        top_up_amount: '1200',
+        direct_income: '300',
+        level_pool: '600',
+        company_maintenance: '300',
+        cycle_size: '126',
+        withdrawal_percentage: '15',
+        minimum_withdrawal: '500',
+        withdrawal_days: 'Mon,Wed,Fri',
+        upi_vpa_id: 'vp110064@okaxis',
+        upi_payee_name: 'EarnFarm',
+        whatsapp_support_link: 'https://wa.me/919876543210',
+        whatsapp_support_enabled_bool: true,
+        whatsapp_group_link: 'https://chat.whatsapp.com/EarnFarmGlobalTeam',
+        whatsapp_group_enabled_bool: true,
+        popup_banner_image: 'https://placehold.co/600x400/0052cc/ffffff?text=Special+Promotion+Banner',
+        popup_banner_enabled_bool: true,
+        popup_banner_display_mode: 'once',
+        registration_enabled_bool: true,
+        login_enabled_bool: true,
+        otp_enabled_bool: true,
+        add_money_enabled_bool: true,
+        withdrawal_enabled_bool: true,
+        captcha_enabled_bool: true
       }
     }
   },
@@ -989,6 +1079,33 @@ export default {
         this.systemSettings.marquee_images = data.marquee_images || '';
         this.systemSettings.maintenance_mode = data.maintenance_mode || 'false';
         this.systemSettings.maintenance_mode_bool = data.maintenance_mode === 'true';
+        this.systemSettings.join_amount = data.join_amount || '1200';
+        this.systemSettings.top_up_amount = data.top_up_amount || '1200';
+        this.systemSettings.direct_income = data.direct_income || '300';
+        this.systemSettings.level_pool = data.level_pool || '600';
+        this.systemSettings.company_maintenance = data.company_maintenance || '300';
+        this.systemSettings.cycle_size = data.cycle_size || '126';
+        this.systemSettings.withdrawal_percentage = data.withdrawal_percentage || '15';
+        this.systemSettings.minimum_withdrawal = data.minimum_withdrawal || '500';
+        this.systemSettings.withdrawal_days = data.withdrawal_days || 'Mon,Wed,Fri';
+        this.systemSettings.upi_vpa_id = data.upi_vpa_id || 'vp110064@okaxis';
+        this.systemSettings.upi_payee_name = data.upi_payee_name || 'EarnFarm';
+
+        this.systemSettings.whatsapp_support_link = data.whatsapp_support_link || 'https://wa.me/919876543210';
+        this.systemSettings.whatsapp_support_enabled_bool = data.whatsapp_support_enabled !== 'false';
+        this.systemSettings.whatsapp_group_link = data.whatsapp_group_link || 'https://chat.whatsapp.com/EarnFarmGlobalTeam';
+        this.systemSettings.whatsapp_group_enabled_bool = data.whatsapp_group_enabled !== 'false';
+        this.systemSettings.popup_banner_image = data.popup_banner_image || '';
+        this.systemSettings.popup_banner_enabled_bool = data.popup_banner_enabled === 'true';
+        this.systemSettings.popup_banner_display_mode = data.popup_banner_display_mode || 'once';
+
+        this.systemSettings.registration_enabled_bool = data.registration_enabled !== 'false';
+        this.systemSettings.login_enabled_bool = data.login_enabled !== 'false';
+        this.systemSettings.otp_enabled_bool = data.otp_enabled !== 'false';
+        this.systemSettings.add_money_enabled_bool = data.add_money_enabled !== 'false';
+        this.systemSettings.withdrawal_enabled_bool = data.withdrawal_enabled !== 'false';
+        this.systemSettings.captcha_enabled_bool = data.captcha_enabled !== 'false';
+
         this.marqueeImagesList = (data.marquee_images || '').split(',').map(s => s.trim()).filter(Boolean);
       } catch (err) {
         console.error(err);
@@ -1018,7 +1135,31 @@ export default {
             razorpay_key_id: this.systemSettings.razorpay_key_id,
             razorpay_key_secret: this.systemSettings.razorpay_key_secret,
             marquee_text: this.systemSettings.marquee_text,
-            marquee_images: this.systemSettings.marquee_images
+            marquee_images: this.systemSettings.marquee_images,
+            join_amount: this.systemSettings.join_amount,
+            top_up_amount: this.systemSettings.top_up_amount,
+            direct_income: this.systemSettings.direct_income,
+            level_pool: this.systemSettings.level_pool,
+            company_maintenance: this.systemSettings.company_maintenance,
+            cycle_size: this.systemSettings.cycle_size,
+            withdrawal_percentage: this.systemSettings.withdrawal_percentage,
+            minimum_withdrawal: this.systemSettings.minimum_withdrawal,
+            withdrawal_days: this.systemSettings.withdrawal_days,
+            upi_vpa_id: this.systemSettings.upi_vpa_id,
+            upi_payee_name: this.systemSettings.upi_payee_name,
+            whatsapp_support_link: this.systemSettings.whatsapp_support_link,
+            whatsapp_support_enabled: this.systemSettings.whatsapp_support_enabled_bool ? 'true' : 'false',
+            whatsapp_group_link: this.systemSettings.whatsapp_group_link,
+            whatsapp_group_enabled: this.systemSettings.whatsapp_group_enabled_bool ? 'true' : 'false',
+            popup_banner_image: this.systemSettings.popup_banner_image,
+            popup_banner_enabled: this.systemSettings.popup_banner_enabled_bool ? 'true' : 'false',
+            popup_banner_display_mode: this.systemSettings.popup_banner_display_mode,
+            registration_enabled: this.systemSettings.registration_enabled_bool ? 'true' : 'false',
+            login_enabled: this.systemSettings.login_enabled_bool ? 'true' : 'false',
+            otp_enabled: this.systemSettings.otp_enabled_bool ? 'true' : 'false',
+            add_money_enabled: this.systemSettings.add_money_enabled_bool ? 'true' : 'false',
+            withdrawal_enabled: this.systemSettings.withdrawal_enabled_bool ? 'true' : 'false',
+            captcha_enabled: this.systemSettings.captcha_enabled_bool ? 'true' : 'false'
           })
         });
         const data = await response.json();

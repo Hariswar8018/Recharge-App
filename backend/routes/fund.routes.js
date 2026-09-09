@@ -9,56 +9,39 @@ const router = express.Router();
 // User creates fund request
 router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
   const { amount, utr } = req.body;
-  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+  const numericAmt = parseFloat(amount);
+  if (!amount || isNaN(numericAmt)) {
     return res.status(400).json({ error: 'Invalid request amount' });
   }
-  if (!utr || utr.trim().length === 0) {
-    return res.status(400).json({ error: 'UTR number is required' });
+
+  if (numericAmt < 1200 || numericAmt > 12000 || numericAmt % 1200 !== 0) {
+    return res.status(400).json({ error: 'Deposit amount must be between ₹1,200 and ₹12,000 in multiples of ₹1,200' });
+  }
+
+  const cleanUtr = (utr || '').toString().trim();
+  if (!/^\d{12}$/.test(cleanUtr)) {
+    return res.status(400).json({ error: 'UTR number must be exactly 12 digits' });
   }
 
   try {
-    const existing = await query('SELECT id FROM fund_requests WHERE utr = ?', [utr.trim()]);
+    const existing = await query('SELECT id FROM fund_requests WHERE utr = ?', [cleanUtr]);
     if (existing.length > 0) {
       return res.status(400).json({ error: 'Duplicate UTR number submitted' });
     }
 
-    await transaction(async (conn) => {
-      // 1. Insert approved fund request
-      await conn.execute(
-        'INSERT INTO fund_requests (user_id, amount, utr, status) VALUES (?, ?, ?, "APPROVED")',
-        [req.user.id, parseFloat(amount), utr.trim()]
-      );
-
-      // 2. Credit user's fund wallet
-      await conn.execute(
-        'UPDATE users SET fund_wallet_balance = fund_wallet_balance + ? WHERE id = ?',
-        [parseFloat(amount), req.user.id]
-      );
-
-      // 3. Log transaction success
-      const dateStr = new Date().toLocaleString('en-US', { hour12: true });
-      await conn.execute(
-        'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "FUND", ?, "Fund Deposit", ?, "Success")',
-        [req.user.id, `₹${parseFloat(amount).toFixed(2)}`, dateStr]
-      );
-    });
+    // Insert as PENDING for admin approval
+    await query(
+      'INSERT INTO fund_requests (user_id, amount, utr, status) VALUES (?, ?, ?, "PENDING")',
+      [req.user.id, numericAmt, cleanUtr]
+    );
 
     await invalidateCache(`user_profile_${req.user.id}`);
     await invalidateCache('admin_stats');
 
-    query('SELECT fullName FROM users WHERE id = ?', [req.user.id]).then((users) => {
-      if (users.length > 0) {
-        sendNotificationEmail(req.user.email, "Fund Deposit Approved - EarnFarm", `
-          <h3>Hi ${users[0].fullName},</h3>
-          <p>Your deposit of <strong>₹${parseFloat(amount).toFixed(2)}</strong> has been processed successfully. The funds are now available in your Fund Wallet.</p>
-        `);
-      }
-    }).catch(e => console.error(e));
-
-    res.status(201).json({ message: 'Funds added directly to your Fund Wallet successfully!' });
+    res.status(201).json({ message: 'Fund deposit request submitted successfully! Pending admin verification and approval.' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to add funds directly' });
+    res.status(500).json({ error: 'Failed to submit fund request' });
   }
 });
 

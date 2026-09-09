@@ -12,6 +12,11 @@ router.post('/verify', verifyAppToken, verifyUserToken, async (req, res) => {
   }
 
   try {
+    const existing = await query('SELECT bank_verified FROM users WHERE id = ?', [req.user.id]);
+    if (existing.length > 0 && (existing[0].bank_verified === 1 || existing[0].bank_verified === true)) {
+      return res.status(400).json({ error: 'Bank details are already verified and locked. Only Admin can modify verified bank details.' });
+    }
+
     await query(
       'UPDATE users SET bank_name = ?, account_holder = ?, account_no = ?, ifsc = ?, bank_verified = 1 WHERE id = ?',
       [bank_name, account_holder, account_no, ifsc, req.user.id]

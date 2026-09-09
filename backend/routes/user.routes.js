@@ -53,7 +53,7 @@ router.post('/update', verifyAppToken, verifyUserToken, async (req, res) => {
 router.get('/team', verifyAppToken, verifyUserToken, async (req, res) => {
   try {
     const team = await query(
-      'SELECT id, fullName, email, mobileNumber, status, createdAt FROM users WHERE sponsor_id = ? ORDER BY id DESC',
+      'SELECT id, fullName, email, mobileNumber, status, main_wallet_balance, createdAt FROM users WHERE sponsor_id = ? ORDER BY id DESC',
       [req.user.id]
     );
     res.json(team);
@@ -75,7 +75,7 @@ router.get('/transactions', verifyAppToken, verifyUserToken, async (req, res) =>
   }
 });
 
-// Lookup User by ID (for sponsor confirmation or ID subscription check)
+// Lookup User by ID or Mobile Number (for sponsor confirmation or ID subscription check)
 router.get('/by-id/:id', verifyAppToken, async (req, res) => {
   let targetId = req.params.id.toString().trim().toUpperCase();
   if (targetId.startsWith('EARNFARMX7AQ96SD')) {
@@ -84,10 +84,19 @@ router.get('/by-id/:id', verifyAppToken, async (req, res) => {
     targetId = targetId.replace('EARNFARM', '');
   } else if (targetId.startsWith('EARNKARO97US77')) {
     targetId = targetId.replace('EARNKARO97US77', '');
+  } else if (targetId.startsWith('SRM')) {
+    targetId = targetId.replace('SRM', '');
+  } else if (targetId.startsWith('SRSPO')) {
+    targetId = targetId.replace('SRSPO', '');
   }
+  // Remove leading zeros for numeric ID comparison
+  const numericId = parseInt(targetId, 10);
 
   try {
-    const users = await query('SELECT id, fullName, mobileNumber, status FROM users WHERE id = ?', [targetId]);
+    const users = await query(
+      'SELECT id, fullName, mobileNumber, status, main_wallet_balance FROM users WHERE id = ? OR mobileNumber = ?',
+      [isNaN(numericId) ? targetId : numericId, targetId]
+    );
     if (users.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }

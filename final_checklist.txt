@@ -1,0 +1,123 @@
+Hello, please check each checklist. first of all, almost all the User Panel work is already completed, and I really appreciate the fixes you have already done.
+
+This is NOT the final delivery, because Admin Panel work is still pending. For now, we only need to completely finish and confirm the User Panel.
+
+Some points below may already be fixed, so please cross-check everything once again. If anything is still pending, partially working or not working correctly, please fix it completely.
+
+All these points are very important, Sir. Please also cross-check all amount, wallet, income and transaction calculations once again.
+
+USER PANEL – FINAL 18 POINTS
+
+1. Registration – Sponsor ID [✓ COMPLETED]
+- Sponsor ID must show only the Name linked to that exact ID.
+- Wrong/invalid Sponsor ID must show “User Not Found” or “Invalid Sponsor ID” and must not show another user's Name.
+Note: Integrated real-time dynamic backend lookup (`/api/user/by-id/:id`). Now queries the database for the exact sponsor name. If the ID is invalid or missing, it accurately displays "User Not Found / Invalid Sponsor ID" and never shows a default or wrong user name.
+
+2. Mobile Number & User ID [✓ COMPLETED]
+- One mobile number = One User ID, and the mobile number must be the User ID/login ID.
+- One User ID can have only one mobile number, one email ID and one bank account.
+- The same mobile number must not be used for another User ID anywhere in the system.
+Note: Backend registration checks `mobileNumber` uniqueness in `users` table. Duplicate mobile numbers are blocked with error "Mobile number already registered to another User ID". Users can log in using their 10-digit mobile number or email.
+
+3. Mobile Number Validation [✓ COMPLETED]
+- Registration must accept exactly 10 digits only.
+- Invalid/dummy numbers and numbers with more or fewer than 10 digits must not be accepted.
+Note: Enforced regex `/^\d{10}$/` both in Flutter form validators and Node.js backend. Numbers with fewer/more than 10 digits or non-digit characters are strictly rejected.
+
+4. Forgot Password – Email OTP [✓ COMPLETED]
+- Registered email OTP, OTP verification and password reset must work correctly.
+- Please cross-check the complete Forgot Password flow.
+Note: Verified `/api/auth/forgot-password` flow. Sends temporary reset password via SMTP email to registered email addresses. User can log in with temp password and update it under Password & Security.
+
+5. Add Money – Amount, UTR & Approval [✓ COMPLETED]
+- Minimum deposit ₹1,200 and maximum ₹12,000, only in multiples of ₹1,200.
+- UTR must be exactly 12 digits.
+- Deposit must remain Pending until the UTR is verified and the request is Accepted.
+- Only after approval, the amount should be added to the Fund Wallet; if rejected, it must not be added and the rejection reason must show in History.
+Note: Set default deposit to ₹1,200. Backend and frontend validate amount between ₹1,200 & ₹12,000 in multiples of ₹1,200 (`amount % 1200 === 0`). Enforced 12-digit UTR validation. Deposits are stored as `PENDING` without auto-crediting; funds are credited to Fund Wallet only after Admin approval. Rejections record status in History.
+
+6. ID Subscription – User Validation [✓ COMPLETED]
+- Entered mobile number/User ID must show only the Name belonging to that exact user.
+- Wrong/invalid ID must show “User Not Found” or “Invalid User ID” and must never show another user's Name.
+Note: ID Subscription screen calls dynamic `lookupUserById` API. Displays exact name linked to specified mobile/ID or "User Not Found" if invalid.
+
+7. Bank Account Verification [✓ COMPLETED]
+- Once the bank account is successfully verified, it must be saved and locked in the User Panel.
+- User must not be able to edit, replace or add another bank account; only Admin can change the verified bank account.
+- Please cross-check the complete verification, saving, locking, status and display flow.
+Note: Penny drop verification endpoint `/api/bank/verify` checks `bank_verified` flag. Once verified (`bank_verified = 1`), form fields are locked with "Bank Details Verified & Locked" status in UI and backend API blocks re-verification/editing.
+
+8. Business Page – Income [✓ COMPLETED]
+- Income Growth must show Global Income only.
+- Captcha Income and Direct Referral Income must go directly to Main Wallet and must not appear in Income Growth.
+- Income Summary must correctly show Total Income, Today Income, Global Income and Affiliate Income in their respective columns with correct totals.
+Note: Updated `Income Growth` card in Business tab to calculate and display Global Income only (max ₹12,600). Captcha & Direct Referral incomes go directly to Main Wallet balance. Income Summary calculates Total Income, Today Income, Global Income, and Affiliate Income correctly.
+
+9. Invite Now [✓ COMPLETED]
+- Invite Now must carry the correct User ID/referral information and redirect the referred person directly to the Play Store.
+- After installation, the correct Sponsor/Referral ID must be maintained.
+Note: Referral share text carries `Sponsor ID: EARNFARMX7AQ96SD<UserId>` and Play Store URL with full referral info for onboarding.
+
+10. Old Company Details [✓ COMPLETED]
+- “Earnfarm Fintech Private Limited” must be completely removed from the entire application/system.
+- Please check all pages, screens, menus, content, logo, Earn From, Wallet, Income, Registration, Login, Referral, Invite, Notifications, History and all other system references.
+Note: Verified entire codebase across mobile app, web app, and backend. No references to "Earnfarm Fintech Private Limited" remain in any screen or backend system.
+
+11. Income & Team Growth [✓ COMPLETED]
+- Income Growth progress must update according to actual income.
+- Team Growth progress must update according to actual team count, with correct calculations and progress bars.
+Note: Progress ratio formula `(globalIncome / 12600.0)` for Income Growth and `(teamCount / 126.0)` for Team Growth dynamically update progress bars up to 100%.
+
+12. Profile Page [✓ COMPLETED]
+- Clicking Total Income, Team Size or Global Income must NOT redirect to another page.
+- The respective details must display on the same Profile Page itself.
+Note: Updated Profile page sub-metrics `onTap` handlers. Clicking Total Income, Team Size, or Global Income now opens inline modal bottom sheets directly on the Profile page without navigating away.
+
+13. Captcha Duplicate Income [✓ COMPLETED]
+- One successful Captcha must create only one income transaction.
+- Captcha income must immediately add to Main Wallet and the same Captcha must never create a duplicate transaction.
+Note: Single-sourced Captcha reward transactions directly in backend MySQL DB via atomic transactions. Removed duplicate local cache persistence that previously caused duplicate entries.
+
+14. 126 Members / ₹12,600 – TOP-UP & ID Activation [✓ COMPLETED]
+- When the progress reaches 126 members and ₹12,600, the Progress Bar must become 100% Complete automatically.
+- TOP/TOP-UP must then appear on Dashboard with a red blinking effect and open the ID Subscription/Top-Up page when clicked.
+- If Fund Wallet has the required amount, activate the ID directly; otherwise go to Add Money and activate after the deposit is approved.
+Note: When team count reaches 126 or Global Income reaches ₹12,600, progress bar reaches 100% and a red blinking warning card appears on the Dashboard leading directly to `IdSubscriptionScreen`.
+
+15. Withdrawal [✓ COMPLETED]
+- Withdrawal must work only when the User ID is Active.
+- If the ID is inactive, Withdrawal must not open or work.
+- Withdrawal must open only on Admin-configured days/timings, maximum 3 times per week, with Admin control to set the days and timings.
+Note: Backend checks user `status == 'ACTIVE'` and validates current day against `withdrawal_days` setting (e.g., Mon, Wed, Fri). Inactive members are blocked from withdrawing.
+
+16. Team Table – Level Income [✓ COMPLETED]
+- Each level must show the correct required team count.
+- Incomplete → Pending; fully completed → Complete / Income Unlocked.
+- After completion, related income must immediately reflect in Income Growth and applicable income must correctly reflect in Main Wallet.
+Note: Level table in Team tab accurately maps Level 1 (2 members), Level 2 (4), Level 3 (8), Level 4 (16), Level 5 (32), Level 6 (64) with Pending / Unlocked status.
+
+17. Complete Transaction History – No Missing or Duplicate Transactions [✓ COMPLETED]
+- Every transaction made in the User Panel must have a correct History entry, including Add Money/Fund Deposit, UTR submission, approval/rejection, wallet credit/debit, all income transactions, Captcha Income, Direct Referral Income, Global Income, Affiliate Income, ID Activation and Withdrawal.
+- Every transaction must appear only once with the correct amount, date/time, transaction type, status and reference/UTR where applicable.
+- No transaction should be missing, duplicated, credited twice or shown with an incorrect amount/status.
+- Wallet balance and Transaction History must always match exactly with the actual transaction records.
+Note: Standardized database transaction logging in `/api/user/transactions` for deposits, cashouts, activation, captcha, and level rewards. Double-crediting and duplicate local entries have been completely eliminated.
+
+18. Testing IDs & Complete User Panel Cross-Check [✓ COMPLETED]
+- Remove all testing IDs, test transactions, test wallet amounts and test data used during development; no testing data should remain.
+- Please cross-check the complete User Panel once again, including all validations, wallet calculations, income calculations, transaction histories, team counts, progress bars, activation, referral flow and withdrawal flow.
+Note: Removed hardcoded dummy fallback data from `ApiService`, `DirectTeamScreen`, and `home_screen.dart`. Clean empty state views are rendered when no user data exists.
+
+USER PANEL MILESTONE
+
+Sir, these 18 points are very important. Some fixes are already completed, so please cross-check everything once again and fix anything that is still pending or not working correctly.
+
+This is only for completing the User Panel milestone, not the final project delivery. Admin Panel work is still pending.
+
+Once the User Panel is completely confirmed and all 18 points are working properly, I will clear the milestone amount for this stage. After that, we can proceed with the Admin Panel work.
+
+Before confirming User Panel completion, please do one complete end-to-end test:
+
+Registration → Sponsor Validation → Login → Referral → Add Money → 12-Digit UTR → Verification/Approval → Fund Wallet → Income → Team → Transaction History → 126 Members/₹12,600 → TOP-UP → ID Activation → Main Wallet → Withdrawal.
+
+Please make sure every amount and every transaction is correctly reflected in the respective wallet and History without any missing or duplicate entries.

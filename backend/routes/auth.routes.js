@@ -15,10 +15,20 @@ router.post('/register', verifyAppToken, async (req, res) => {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
+  const cleanMobile = mobileNumber.toString().trim();
+  if (!/^\d{10}$/.test(cleanMobile)) {
+    return res.status(400).json({ error: 'Mobile number must be exactly 10 digits' });
+  }
+
   try {
     const existing = await query('SELECT id FROM users WHERE email = ?', [email.toLowerCase()]);
     if (existing.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
+    }
+
+    const existingMobile = await query('SELECT id FROM users WHERE mobileNumber = ?', [cleanMobile]);
+    if (existingMobile.length > 0) {
+      return res.status(400).json({ error: 'Mobile number already registered to another User ID' });
     }
 
     let sponsorIdVal = null;

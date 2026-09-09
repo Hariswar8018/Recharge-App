@@ -33,12 +33,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _sponsorController.addListener(_onSponsorChanged);
   }
 
-  void _onSponsorChanged() {
+  void _onSponsorChanged() async {
     final text = _sponsorController.text.trim();
-    if (text.length >= 3) {
-      setState(() {
-        _sponsorName = "Rajesh Reddy (Verified)";
-      });
+    if (text.length >= 1) {
+      final res = await ApiService.lookupUserById(text);
+      if (mounted) {
+        if (res['success'] == true && res['user'] != null) {
+          setState(() {
+            _sponsorName = "${res['user']['fullName']} (Verified)";
+          });
+        } else {
+          setState(() {
+            _sponsorName = "User Not Found / Invalid Sponsor ID";
+          });
+        }
+      }
     } else {
       if (_sponsorName.isNotEmpty) {
         setState(() {

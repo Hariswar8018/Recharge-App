@@ -197,12 +197,45 @@ async function initDb() {
         ['level_5_members', '32'],
         ['level_5_income', '3200'],
         ['level_6_members', '64'],
-        ['level_6_income', '6400']
+        ['level_6_income', '6400'],
+        ['whatsapp_support_link', 'https://wa.me/919876543210'],
+        ['whatsapp_support_enabled', 'true'],
+        ['whatsapp_group_link', 'https://chat.whatsapp.com/EarnFarmGlobalTeam'],
+        ['whatsapp_group_enabled', 'true'],
+        ['popup_banner_image', 'https://placehold.co/600x400/0052cc/ffffff?text=Special+Promotion+Banner'],
+        ['popup_banner_enabled', 'true'],
+        ['popup_banner_display_mode', 'once'],
+        ['registration_enabled', 'true'],
+        ['login_enabled', 'true'],
+        ['otp_enabled', 'true'],
+        ['add_money_enabled', 'true'],
+        ['withdrawal_enabled', 'true'],
+        ['captcha_enabled', 'true']
       ];
       for (const [k, v] of settings) {
         await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);
       }
       console.log('Production default system settings seeded.');
+    }
+
+    // Ensure new system settings exist even if table was already created
+    const extraSettings = [
+      ['whatsapp_support_link', 'https://wa.me/919876543210'],
+      ['whatsapp_support_enabled', 'true'],
+      ['whatsapp_group_link', 'https://chat.whatsapp.com/EarnFarmGlobalTeam'],
+      ['whatsapp_group_enabled', 'true'],
+      ['popup_banner_image', 'https://placehold.co/600x400/0052cc/ffffff?text=Special+Promotion+Banner'],
+      ['popup_banner_enabled', 'true'],
+      ['popup_banner_display_mode', 'once'],
+      ['registration_enabled', 'true'],
+      ['login_enabled', 'true'],
+      ['otp_enabled', 'true'],
+      ['add_money_enabled', 'true'],
+      ['withdrawal_enabled', 'true'],
+      ['captcha_enabled', 'true']
+    ];
+    for (const [k, v] of extraSettings) {
+      await query('INSERT IGNORE INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);
     }
 
     // Create Notifications Table

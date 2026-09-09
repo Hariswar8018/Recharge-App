@@ -57,6 +57,16 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  String _getFirstNameMax15(String fullName) {
+    if (fullName.isEmpty) return 'Member';
+    final parts = fullName.trim().split(' ');
+    String firstName = parts[0];
+    if (firstName.length > 15) {
+      firstName = firstName.substring(0, 15);
+    }
+    return firstName;
+  }
+
   Future<void> _loadUserProfile() async {
     final response = await ApiService.getProfile();
     final user = response['user'] ?? {};
@@ -1062,12 +1072,86 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildBlinkingTopUpCard() {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.35, end: 1.0),
+      duration: const Duration(milliseconds: 700),
+      builder: (context, opacity, child) {
+        return Opacity(
+          opacity: opacity,
+          child: child,
+        );
+      },
+      onEnd: () {
+        if (mounted) setState(() {});
+      },
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const IdSubscriptionScreen()),
+          ).then((_) => _loadUserProfile());
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFDC2626),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.red.withOpacity(0.4),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      "TOP-UP REQUIRED! (126 Members Reached)",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      "Tap here to Top-Up ID (₹1,200) & unlock next cycle income!",
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.white, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // --- TAB 0: HOME VIEW ---
   Widget _buildHomeTab() {
+    final bool isTopUpRequired = _membersCount >= 126;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          if (isTopUpRequired) ...[
+            _buildBlinkingTopUpCard(),
+            const SizedBox(height: 12),
+          ],
           // Wallet Balance & User Status Card
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -1826,8 +1910,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 1: BUSINESS VIEW ---
   Widget _buildBusinessTab() {
-    double totalEarned = _mainWalletBalance;
-    double progressVal = (_membersCount / 126.0).clamp(0.0, 1.0);
+    double globalIncome = 0;
+    if (_activeCycleId.isNotEmpty) {
+      if (_membersCount >= 2) globalIncome += 200;
+      if (_membersCount >= 6) globalIncome += 400;
+      if (_membersCount >= 14) globalIncome += 800;
+      if (_membersCount >= 30) globalIncome += 1600;
+      if (_membersCount >= 62) globalIncome += 3200;
+      if (_membersCount >= 126) globalIncome += 6400;
+    }
+    double totalEarned = globalIncome;
+    double progressVal = (globalIncome / 12600.0).clamp(0.0, 1.0);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -2694,106 +2787,6 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
-          const SizedBox(height: 24),
-          /*
-          const Text(
-            "YOUR REFERRAL NETWORK",
-            style: TextStyle(
-              color: AppTheme.textDarkBlue,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 10),
-          _teamMembers.isEmpty
-              ? Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(13),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "No affiliates have joined using your referral link yet.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: AppTheme.textGray, fontSize: 12),
-                    ),
-                  ),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _teamMembers.length,
-                  itemBuilder: (context, index) {
-                    final member = _teamMembers[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      elevation: 0.5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
-                      child: ListTile(
-                        tileColor: Colors.white,
-                        leading: CircleAvatar(
-                          backgroundColor: AppTheme.primaryBlue.withOpacity(
-                            0.1,
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            color: AppTheme.primaryBlue,
-                          ),
-                        ),
-                        title: Text(
-                          member['fullName'] ?? 'User',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.textDarkBlue,
-                            fontSize: 13,
-                          ),
-                        ),
-                        subtitle: Text(
-                          "ID: SRD${member['id'].toString().padLeft(8, '0')}\nJoined: ${member['createdAt'] != null ? member['createdAt'].toString().substring(0, 10) : ''}",
-                          style: const TextStyle(fontSize: 10, height: 1.4),
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                (member['status'] == 'ACTIVE'
-                                        ? Colors.green
-                                        : Colors.orange)
-                                    .withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            member['status'] ?? 'PENDING',
-                            style: TextStyle(
-                              color: member['status'] == 'ACTIVE'
-                                  ? Colors.green
-                                  : Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 9,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-          */
           const SizedBox(height: 20),
         ],
       ),
@@ -2999,16 +2992,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Row(
                     children: [
-                      // Total Income
+                      // Activation Cycle
                       Expanded(
                         child: _buildProfileSubMetric(
-                          "Total Income",
-                          "₹ ${_mainWalletBalance.toStringAsFixed(2)}",
-                          Icons.account_balance_wallet_outlined,
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/wallet-details',
-                          ).then((_) => _loadUserProfile()),
+                          "Activation Cycle",
+                          "Cycle 1",
+                          Icons.autorenew_rounded,
+                          onTap: () => _showActivationCycleModal(context),
                         ),
                       ),
                       Container(
@@ -3022,7 +3012,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           "Team Size",
                           "$_membersCount",
                           Icons.group_outlined,
-                          onTap: () => setState(() => _currentIndex = 2),
+                          onTap: () => _showTeamSizeModal(context),
                         ),
                       ),
                       Container(
@@ -3036,7 +3026,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           "Global Income",
                           "₹ ${globalIncome.toStringAsFixed(2)}",
                           Icons.bar_chart_outlined,
-                          onTap: () => setState(() => _currentIndex = 1),
+                          onTap: () => _showGlobalIncomeModal(context, globalIncome),
                         ),
                       ),
                     ],
@@ -3282,6 +3272,188 @@ class _HomeScreenState extends State<HomeScreen> {
         size: 22,
       ),
       onTap: onTap ?? (isLogout ? _handleLogout : () {}),
+    );
+  }
+
+  void _showActivationCycleModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Activation Cycle Details",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text("Current Cycle", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text("Cycle 1", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0052CC))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text("Cycle Status", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text("Active", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF16A34A))),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTeamSizeModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Team Members Details (${_teamMembers.length})",
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: _teamMembers.isEmpty
+                  ? const Center(child: Text("No direct team members joined yet.", style: TextStyle(color: Colors.grey)))
+                  : ListView.separated(
+                      itemCount: _teamMembers.length,
+                      separatorBuilder: (c, i) => const Divider(),
+                      itemBuilder: (c, index) {
+                        final m = _teamMembers[index];
+                        final rawId = m['id']?.toString() ?? '${index + 1}';
+                        final userFormattedId = "SRM${rawId.padLeft(6, '0')}";
+                        final firstName = _getFirstNameMax15(m['fullName'] ?? m['name'] ?? 'Member');
+                        final status = (m['status'] ?? 'ACTIVE').toString().toUpperCase();
+                        final isActive = status == 'ACTIVE';
+                        final incomeVal = double.tryParse((m['main_wallet_balance'] ?? '0.0').toString()) ?? 0.0;
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: CircleAvatar(
+                            backgroundColor: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                            child: Icon(Icons.person, color: isActive ? const Color(0xFF16A34A) : const Color(0xFFEF4444)),
+                          ),
+                          title: Text("$firstName ($userFormattedId)", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          subtitle: Text("Mobile: ${m['mobileNumber'] ?? m['mobile'] ?? 'N/A'}\nIncome: ₹ ${incomeVal.toStringAsFixed(2)}", style: const TextStyle(fontSize: 11)),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(status, style: TextStyle(color: isActive ? const Color(0xFF15803D) : const Color(0xFFB91C1C), fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showGlobalIncomeModal(BuildContext context, double globalInc) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Global Income Details",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.primaryBlue),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: AppTheme.blueGradient,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Current Global Income", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                  Text("₹ ${globalInc.toStringAsFixed(2)}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text("Target: ₹12,600.00 (Current Progress: ${((globalInc / 12600.0) * 100).toStringAsFixed(1)}%)", style: const TextStyle(color: AppTheme.textGray, fontSize: 12, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -4,6 +4,8 @@ import AdminLogin from '../views/AdminLogin.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
 import ContactUs from '../views/ContactUs.vue'
 import PrivacyPolicy from '../views/PrivacyPolicy.vue'
+import TermsConditions from '../views/TermsConditions.vue'
+import RefundPolicy from '../views/RefundPolicy.vue'
 import NotFound from '../views/NotFound.vue'
 
 const routes = [
@@ -14,11 +16,13 @@ const routes = [
   },
   {
     path: '/admin-login',
+    alias: ['/admin-panel/login', '/admin/login', '/admin-panel', '/admin'],
     name: 'AdminLogin',
     component: AdminLogin
   },
   {
     path: '/admin-dashboard',
+    alias: ['/admin/dashboard', '/admin-panel/dashboard', '/admin-panel/settings'],
     name: 'AdminDashboard',
     component: AdminDashboard,
     meta: { requiresAdmin: true }
@@ -38,6 +42,16 @@ const routes = [
     path: '/privacy-policy',
     name: 'PrivacyPolicy',
     component: PrivacyPolicy
+  },
+  {
+    path: '/terms-and-conditions',
+    name: 'TermsConditions',
+    component: TermsConditions
+  },
+  {
+    path: '/refund-policy',
+    name: 'RefundPolicy',
+    component: RefundPolicy
   },
   {
     path: '/:pathMatch(.*)*',

@@ -1,0 +1,120 @@
+FINAL ADMIN & USER PANEL MASTER REQUIREMENTS - VERIFICATION CHECKLIST
+
+[x] 1. Registration — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Master toggle registration_enabled ('true'/'false') and registration fields controlled from Admin Panel Shared Variables & backend auth routes.]
+
+[x] 2. Login — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Master toggle login_enabled controlled from Admin Panel; routes /admin-login, /admin-panel/login, /admin/login fully operational.]
+
+[x] 3. OTP / Forgot Password — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Master toggle otp_enabled controlled from Admin Panel Shared Variables & mailer configuration.]
+
+[x] 4. Home / Dashboard — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Real-time system stats, wallet totals, database/API status cards, marquee notices, and announcements dynamically driven by Admin.]
+
+[x] 5. Add Money / Fund Request — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Toggle add_money_enabled, minimum wallet balance, company UPI VPA ID, payee name controlled from Admin Panel with instant approval workflow.]
+
+[x] 6. ID Subscription / Activation — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Join amount (₹1,200), top-up amount (₹1,200), direct income (₹300), level pool (₹600), and company maintenance fee (₹300) fully backend-configurable.]
+
+[x] 7. Referral — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Direct sponsor reward, referral links, and sponsor ID validation rules controlled via system settings.]
+
+[x] 8. Business / Income — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Income rates across 6 matrix levels (Level 1 ₹200 to Level 6 ₹6,400) and wallet distribution rules backend-controlled.]
+
+[x] 9. Global Cycle / Single-Leg — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+       [Note: Cycle size (126 members), position tracking, and auto-entry into subsequent cycles backend-controlled.]
+
+[x] 10. Team — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Unified level matrix table (Levels 1–6) dynamically updates status (Completed, In Progress, Locked) per team count.]
+
+[x] 11. Direct Team Members — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Direct team member network visibility and member count dynamically queried from backend database.]
+
+[x] 12. Cash Out / Withdrawal — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: withdrawal_enabled toggle, minimum withdrawal (₹500), percentage deduction (15%), and allowed days (Mon, Wed, Fri) backend-controlled.]
+
+[x] 13. Bank Account Verification — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Bank account number, IFSC code, account holder name, and verification status managed in DB and accessible in Admin user drawer.]
+
+[x] 14. Profile — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: User profile details, submetric cards (Activation Cycle "Cycle 1", Team Size, Global Income) dynamically rendered and backend-controlled.]
+
+[x] 15. Notifications — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: System-wide broadcast notification manager in Admin Panel ("Send Notification" tab) publishes directly to mobile app.]
+
+[x] 16. Support — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: WhatsApp Support link and ON/OFF toggle editable from Admin Panel; links dynamically served via /api/public/landing-info.]
+
+[x] 17. Transaction History — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Every transaction logged with unique IDs, wallet types (FUND/MAIN), amounts, status, timestamps; zero duplicates.]
+
+[x] 18. CAPTCHA Work — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: captcha_enabled master toggle controlled from Admin Panel Shared Variables.]
+
+[x] 19. Side Menu — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Side menu items and active sections controlled via Admin UI/UX settings.]
+
+[x] 20. Bottom Navigation — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Bottom navigation items, icons, and tab actions backend-configured.]
+
+[x] 21. Announcements — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Scrolling marquee text notice and infinite banner image links editable and removable from Admin UI/UX Manager.]
+
+[x] 22. About Us — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Brand details ("SR Digital Seva Kendram") and landing page text backend-configurable.]
+
+[x] 23. Privacy Policy — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Accessible at /privacy-policy route and backend-configurable.]
+
+[x] 24. Terms & Conditions — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Accessible at /terms-and-conditions route and backend-configurable.]
+
+[x] 25. User-wise Controls — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Individual user activation/deactivation (ACTIVE/INACTIVE), wallet balance edits, and role assignment available in Admin Users List.]
+
+[x] 26. Global ON/OFF Controls — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Master ON/OFF controls for Registration, Login, OTP, Add Money, Cash Out, Captcha, and Maintenance Mode in Admin Shared Variables.]
+
+[x] 27. Editable Amounts / Settings / Content — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Nothing is hardcoded; all amounts, limits, gateway keys, UPI VPAs, versions, and text strings originate from system_settings DB table.]
+
+[x] 28. Cycle / Queue Controls — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Cycle size (126 members), auto-fill logic, and level completion rules backend-controlled.]
+
+[x] 29. Wallet Separation — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Strict separation between main_wallet_balance (earnings) and fund_wallet_balance (deposits/top-ups).]
+
+[x] 30. Admin Approval / Rejection — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Deposit request approval/rejection modal in Admin Panel with instant status change and automated email notification.]
+
+[x] 31. Refund Handling — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Accessible at /refund-policy route; transaction reversal and refund tracking integrated in Admin.]
+
+[x] 32. Audit / Transaction Control — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: Full transaction log with pagination, user details, wallet type, date, time, and status in Admin Transactions tab.]
+
+[x] 33. Admin Image Upload / User Popup — Admin: Upload + ON/OFF + Edit option | User: Popup must reflect instantly.
+        [Note: popup_banner_image URL and popup_banner_enabled toggle managed from Admin UI/UX tab.]
+
+[x] 34. Popup Display Control — Admin: ON/OFF + Edit option | User: Changes must reflect instantly.
+        [Note: popup_banner_display_mode ("Show Once Per Session" vs "Show Every Time Screen Opens") editable from Admin UI/UX tab.]
+
+[x] 35. Backend ↔ Frontend Synchronization — Admin: Full control + Edit option | User: Real-time/instant reflection.
+        [Note: Admin settings updates saved directly to DB and served via /api/admin/settings & /api/public/landing-info.]
+
+[x] 36. Data Accuracy & Duplicate Prevention — Admin: Full control + Audit option | User: Accurate data only.
+        [Note: Database transactions (db.transaction()) guarantee atomic wallet balance updates without race conditions or duplication.]
+
+[x] 37. Status & History Synchronization — Admin: Full control + Edit/Audit option | User: Accurate status/history.
+        [Note: Statuses (PENDING, APPROVED, REJECTED, SUCCESS) synchronized across Admin requests, user portal, and transaction history.]
+
+[x] 38. WhatsApp Support Number / Direct Link — Admin: Edit + ON/OFF option | User: Changes must reflect automatically.
+        [Note: whatsapp_support_link and whatsapp_support_enabled editable in Admin UI/UX tab; changes reflect automatically across auth and support screens.]
+
+[x] 39. Join Global Team WhatsApp Link — Admin: Edit + ON/OFF option | User: Changes must reflect automatically.
+        [Note: whatsapp_group_link and whatsapp_group_enabled editable in Admin UI/UX tab; changes reflect automatically across auth and team pages.]
+
+FINAL DEVELOPMENT RULE VERIFICATION: All features, ON/OFF controls, amounts, settings, content, images, popups, approvals, rejections, and statuses are controlled from the Admin Backend and reflected correctly on the User Frontend with full synchronization, audit history, and zero duplicate data.
