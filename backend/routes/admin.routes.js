@@ -206,6 +206,49 @@ router.get('/dashboard', verifyAdminToken, async (req, res) => {
     console.error('Error fetching admin dashboard:', err);
     res.status(500).json({ error: 'Failed to load admin dashboard data', details: err.message });
   }
+// GET Admin Teams (Downline Affiliates / User Tree)
+router.get('/teams', verifyAdminToken, async (req, res) => {
+  try {
+    const users = await query(
+      `SELECT u.id, u.fullName, u.email, u.mobileNumber, u.sponsor_id, u.status, u.main_wallet_balance, u.createdAt,
+              s.fullName as sponsorName, s.email as sponsorEmail
+       FROM users u
+       LEFT JOIN users s ON u.sponsor_id = s.id
+       WHERE u.role != "admin" OR u.role IS NULL
+       ORDER BY u.id DESC`
+    );
+
+    const sponsorsMap = {};
+    const unassigned = [];
+
+    users.forEach(user => {
+      if (user.sponsor_id) {
+        if (!sponsorsMap[user.sponsor_id]) {
+          sponsorsMap[user.sponsor_id] = {
+            sponsorId: user.sponsor_id,
+            sponsorName: user.sponsorName || `User #${user.sponsor_id}`,
+            sponsorEmail: user.sponsorEmail || '',
+            downlines: []
+          };
+        }
+        sponsorsMap[user.sponsor_id].downlines.push(user);
+      } else {
+        unassigned.push(user);
+      }
+    });
+
+    const teams = Object.values(sponsorsMap);
+
+    res.json({
+      teams,
+      allUsers: users,
+      directSponsorsCount: teams.length,
+      totalUsersCount: users.length
+    });
+  } catch (err) {
+    console.error('Error fetching admin teams:', err);
+    res.status(500).json({ error: 'Failed to fetch user teams', details: err.message });
+  }
 });
 
 // Admin lists all user Fund Requests

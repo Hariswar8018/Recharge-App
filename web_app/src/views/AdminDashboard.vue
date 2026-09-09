@@ -30,9 +30,6 @@
         <button @click="currentTab = 'notifications'" class="menu-item" :class="{ active: currentTab === 'notifications' }">
           <span class="icon">📢</span> Send Notification
         </button>
-        <button @click="currentTab = 'uiux'" class="menu-item" :class="{ active: currentTab === 'uiux' }">
-          <span class="icon">🎨</span> UI / UX
-        </button>
         <button @click="currentTab = 'shared_variable'" class="menu-item" :class="{ active: currentTab === 'shared_variable' }">
           <span class="icon">🔗</span> Shared Variable
         </button>
@@ -441,138 +438,75 @@
             </div>
           </div>
 
-          <!-- TAB: TEAMS VIEW -->
+          <!-- TAB: TEAMS VIEW (DOWNLINE NETWORKS & USER TREE) -->
           <div v-if="currentTab === 'teams'" class="teams-pane">
-            <div class="table-card" style="text-align: center; padding: 4rem;">
-              <h2>👥 Downline Networks & Teams</h2>
-              <p style="color: #94a3b8; margin-top: 1rem;">No active affiliate downline teams registered yet. User networks and downline trees will list here dynamically as users register partners.</p>
-            </div>
-          </div>
+            <div class="table-card">
+              <div class="table-header-row" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <h3 style="margin: 0;">👥 User Downline Affiliate Teams</h3>
+                  <p style="font-size: 0.82rem; color: #64748b; margin-top: 4px;">View registered partners who have joined under other users across your network.</p>
+                </div>
+                <button @click="fetchTeamsData" class="btn-add-img" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">🔄 Refresh Teams</button>
+              </div>
 
-          <!-- TAB: BROADCAST NOTIFICATION -->
-          <div v-if="currentTab === 'notifications'" class="notifications-pane">
-            <div class="settings-nice-card">
-              <h3>📢 Send Push Notification</h3>
-              <p class="section-desc">Broadcast a message system-wide. Users will see it in their Android App dashboard.</p>
-              
-              <form @submit.prevent="handleSendNotification" class="settings-form">
-                <div class="form-horizontal-grid">
-                  <!-- Left Column -->
-                  <div class="form-column">
-                    <div class="nice-input-group">
-                      <label for="notifTitle">Notification Title</label>
-                      <input id="notifTitle" type="text" v-model="notifTitle" placeholder="e.g. Server Maintenance Notice" required />
+              <div v-if="loadingTeams" class="loading-box">
+                Loading team tree data...
+              </div>
+
+              <div v-else-if="!teamsData.teams || teamsData.teams.length === 0" style="text-align: center; padding: 3rem; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                <p style="color: #64748b; font-size: 0.95rem; font-weight: 600; margin: 0;">No multi-user downline relationships recorded yet.</p>
+                <p style="color: #94a3b8; font-size: 0.82rem; margin-top: 4px;">When users register using another member's Sponsor ID, their affiliate networks will automatically display here.</p>
+              </div>
+
+              <div v-else class="teams-tree-container" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                <div v-for="group in teamsData.teams" :key="group.sponsorId" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                  <!-- Sponsor Header -->
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.85rem; border-bottom: 1px solid #f1f5f9; margin-bottom: 0.85rem;">
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-weight: 800; font-size: 1.05rem; color: #0052cc;">{{ group.sponsorName }}</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #475569; background: #f1f5f9; padding: 2px 8px; border-radius: 6px;">SRM{{ String(group.sponsorId).padStart(6, '0') }}</span>
+                      </div>
+                      <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">{{ group.sponsorEmail }}</div>
                     </div>
-                    <div style="margin-top: 1.5rem;">
-                      <p style="font-size: 0.85rem; color: #64748b; line-height: 1.5;">This message is sent system-wide immediately. Please verify content for grammar and links before broadcasting to prevent user confusion.</p>
-                    </div>
+                    <span style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; border: 1px solid #86efac;">
+                      {{ group.downlines.length }} Direct {{ group.downlines.length === 1 ? 'Member' : 'Members' }}
+                    </span>
                   </div>
-                  
-                  <!-- Right Column -->
-                  <div class="form-column">
-                    <div class="nice-input-group">
-                      <label for="notifMessage">Message Body</label>
-                      <textarea id="notifMessage" v-model="notifMessage" rows="5" placeholder="Enter broadcast details..." style="padding: 0.65rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc;" required></textarea>
-                    </div>
-                    <div v-if="notifError" class="error-msg" style="margin-top: 1rem;">{{ notifError }}</div>
-                    <div v-if="notifSuccess" class="success-msg" style="margin-top: 1rem;">{{ notifSuccess }}</div>
-                    <button type="submit" :disabled="sendingNotif" class="nice-save-btn bg-blue-btn" style="width: 100%; margin-top: 1rem;">
-                      <span v-if="sendingNotif">Broadcasting...</span>
-                      <span v-else>Send Broadcast Notification</span>
-                    </button>
+
+                  <!-- Downlines Table -->
+                  <div class="table-container">
+                    <table class="nice-table">
+                      <thead>
+                        <tr>
+                          <th>Member ID</th>
+                          <th>Full Name</th>
+                          <th>Email</th>
+                          <th>Mobile</th>
+                          <th>Main Wallet</th>
+                          <th>Status</th>
+                          <th>Joined Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="member in group.downlines" :key="member.id">
+                          <td><strong style="color: #0052cc;">SRM{{ String(member.id).padStart(6, '0') }}</strong></td>
+                          <td class="font-bold">{{ member.fullName }}</td>
+                          <td style="color: #475569;">{{ member.email }}</td>
+                          <td>{{ member.mobileNumber || 'N/A' }}</td>
+                          <td class="font-bold" style="color: #16a34a;">₹{{ parseFloat(member.main_wallet_balance || 0).toFixed(2) }}</td>
+                          <td>
+                            <span :class="member.status === 'ACTIVE' || member.status === 'active' ? 'nice-badge-success' : 'nice-badge-pending'">
+                              {{ (member.status || 'ACTIVE').toUpperCase() }}
+                            </span>
+                          </td>
+                          <td style="font-size: 0.8rem; color: #64748b;">{{ member.createdAt ? String(member.createdAt).substring(0, 10) : 'N/A' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              </form>
-            </div>
-          </div>
-
-          <!-- TAB: UI/UX MANAGEMENT (HORIZONTAL LAYOUT) -->
-          <div v-if="currentTab === 'uiux'" class="uiux-pane">
-            <div class="settings-nice-card">
-              <h3>🎨 UI / UX Configuration</h3>
-              <p class="section-desc">Manage marquee text announcements, landing page infinite banners, popup announcements, and support links.</p>
-              
-              <form @submit.prevent="handleSaveSystemSettings" class="settings-form">
-                <div class="form-horizontal-grid">
-                  <!-- Left Column -->
-                  <div class="form-column">
-                    <div class="nice-input-group">
-                      <label for="marqueeText">Homepage Scrolling Marquee Text</label>
-                      <textarea id="marqueeText" v-model="systemSettings.marquee_text" rows="4" placeholder="Enter scrolling notice..." style="padding: 0.65rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc;" required></textarea>
-                    </div>
-
-                    <!-- User Popup Banner Config (Item 33 & 34) -->
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="popupBannerImg">User Panel Popup Banner Image URL</label>
-                      <input id="popupBannerImg" type="text" v-model="systemSettings.popup_banner_image" placeholder="Paste popup banner image URL here..." />
-                    </div>
-                    <div class="nice-checkbox-group" style="margin-top: 0.5rem;">
-                      <input id="popupBannerEnabled" type="checkbox" v-model="systemSettings.popup_banner_enabled_bool" />
-                      <label for="popupBannerEnabled">Enable User Panel Popup Banner</label>
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.5rem;">
-                      <label for="popupDisplayMode">Popup Display Control Mode</label>
-                      <select id="popupDisplayMode" v-model="systemSettings.popup_banner_display_mode">
-                        <option value="once">Show Once Per Session</option>
-                        <option value="every_time">Show Every Time Screen Opens</option>
-                      </select>
-                    </div>
-
-                    <!-- WhatsApp Links Config (Item 38 & 39) -->
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="waSupportLink">WhatsApp Support Direct Link / Number</label>
-                      <input id="waSupportLink" type="text" v-model="systemSettings.whatsapp_support_link" placeholder="e.g. https://wa.me/919876543210" />
-                    </div>
-                    <div class="nice-checkbox-group" style="margin-top: 0.5rem;">
-                      <input id="waSupportEnabled" type="checkbox" v-model="systemSettings.whatsapp_support_enabled_bool" />
-                      <label for="waSupportEnabled">Enable WhatsApp Support Link</label>
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 0.75rem;">
-                      <label for="waGroupLink">Join Global Team WhatsApp Group Link</label>
-                      <input id="waGroupLink" type="text" v-model="systemSettings.whatsapp_group_link" placeholder="e.g. https://chat.whatsapp.com/EarnFarmGlobalTeam" />
-                    </div>
-                    <div class="nice-checkbox-group" style="margin-top: 0.5rem;">
-                      <input id="waGroupEnabled" type="checkbox" v-model="systemSettings.whatsapp_group_enabled_bool" />
-                      <label for="waGroupEnabled">Enable Join Global Team WhatsApp Link</label>
-                    </div>
-                  </div>
-
-                  <!-- Right Column -->
-                  <div class="form-column">
-                    <!-- Configured Marquee images List representation with delete triggers -->
-                    <div class="nice-input-group">
-                      <label>Currently Configured Marquee Banner Images</label>
-                      <div v-if="marqueeImagesList.length === 0" style="color: #94a3b8; font-size: 0.85rem; padding: 0.5rem; background: #f8fafc; border-radius: 6px; border: 1px dashed #cbd5e1; text-align: center;">
-                        No images configured. Queue a new URL below.
-                      </div>
-                      <div v-else class="marquee-images-config-list">
-                        <div v-for="(imgUrl, idx) in marqueeImagesList" :key="idx" class="marquee-image-config-item">
-                          <img :src="imgUrl" class="config-thumb" @error="$event.target.src='https://placehold.co/60x30?text=Error'" />
-                          <span class="config-url" :title="imgUrl">{{ imgUrl }}</span>
-                          <button type="button" @click="removeMarqueeImage(idx)" class="btn-delete-img">&times;</button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Input block to append single image queue entries -->
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="newImageUrl">Queue New Marquee Image URL</label>
-                      <div style="display: flex; gap: 0.5rem;">
-                        <input id="newImageUrl" type="text" v-model="newImageUrl" placeholder="Paste network image URL here..." style="flex: 1;" @keyup.enter="addMarqueeImage" />
-                        <button type="button" @click="addMarqueeImage" class="btn-add-img">Add Image</button>
-                      </div>
-                      <span style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Click 'Add Image' to append, then click 'Save' below to commit changes.</span>
-                    </div>
-
-                    <div v-if="systemError" class="error-msg" style="margin-top: 1rem;">{{ systemError }}</div>
-                    <div v-if="systemSuccess" class="success-msg" style="margin-top: 1rem;">{{ systemSuccess }}</div>
-                    <button type="submit" :disabled="loadingSystem" class="nice-save-btn bg-blue-btn" style="width: 100%; margin-top: 2rem;">
-                      <span v-if="loadingSystem">Saving UI/UX Preferences...</span>
-                      <span v-else>Save UI/UX Configurations</span>
-                    </button>
-                  </div>
-                </div>
-              </form>
+              </div>
             </div>
           </div>
 
@@ -802,8 +736,14 @@ export default {
       loadingSystem: false,
       systemError: '',
       systemSuccess: '',
-      newImageUrl: '',
-      marqueeImagesList: [],
+      // Teams states
+      teamsData: {
+        teams: [],
+        allUsers: [],
+        directSponsorsCount: 0,
+        totalUsersCount: 0
+      },
+      loadingTeams: false,
       systemSettings: {
         min_wallet_balance: '50.00',
         maintenance_mode: 'false',
@@ -851,7 +791,6 @@ export default {
         case 'transactions': return 'All Portal Transactions';
         case 'teams': return 'Downline Affiliate Networks';
         case 'notifications': return 'Broadcast Notification';
-        case 'uiux': return 'UI / UX Manager';
         case 'shared_variable': return 'Shared System Variables';
         case 'admins': return 'System Administrator Staff';
         case 'settings': return 'Change Password';
@@ -862,7 +801,7 @@ export default {
       return this.fundRequests.filter(r => r.status === 'PENDING').length;
     },
     isGlobalTab() {
-      return ['notifications', 'uiux', 'shared_variable', 'admins'].includes(this.currentTab);
+      return ['notifications', 'shared_variable', 'admins'].includes(this.currentTab);
     }
   },
   watch: {
@@ -880,12 +819,15 @@ export default {
       } else if (newTab === 'transactions') {
         if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
         this.fetchAllTransactions();
+      } else if (newTab === 'teams') {
+        if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
+        this.fetchTeamsData();
       } else if (newTab === 'admins') {
         if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
         this.fetchAdminsList();
       } else if (newTab === 'settings') {
         if (this.$route.path !== '/admin-settings') this.$router.push('/admin-settings');
-      } else if (newTab === 'uiux' || newTab === 'shared_variable') {
+      } else if (newTab === 'shared_variable') {
         if (this.$route.path !== '/admin-settings') this.$router.push('/admin-settings');
         this.fetchSystemSettings();
       }
@@ -902,18 +844,25 @@ export default {
   },
   methods: {
     syncTabFromPath() {
-      if (this.$route.path === '/admin-settings' && !['uiux', 'shared_variable'].includes(this.currentTab)) {
+      if (this.$route.path === '/admin-settings' && this.currentTab !== 'shared_variable') {
         this.currentTab = 'settings';
       }
     },
-    addMarqueeImage() {
-      if (!this.newImageUrl.trim()) return;
-      const urls = this.newImageUrl.split(',').map(s => s.trim()).filter(Boolean);
-      this.marqueeImagesList.push(...urls);
-      this.newImageUrl = '';
-    },
-    removeMarqueeImage(index) {
-      this.marqueeImagesList.splice(index, 1);
+    async fetchTeamsData() {
+      this.loadingTeams = true;
+      const token = localStorage.getItem('adminToken');
+      if (!token) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/teams`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to load teams data');
+        this.teamsData = await response.json();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        this.loadingTeams = false;
+      }
     },
     async checkGatewayStatus() {
       const token = localStorage.getItem('adminToken');
