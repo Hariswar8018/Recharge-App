@@ -1,55 +1,149 @@
 <template>
   <div class="admin-layout">
-    <!-- Backdrop overlay for mobile drawer -->
+    <!-- Mobile Drawer Backdrop -->
     <div v-if="mobileMenuOpen" class="mobile-drawer-backdrop" @click="mobileMenuOpen = false"></div>
 
-    <!-- Sidebar (Desktop fixed, Mobile slide-over drawer) -->
+    <!-- Sidebar -->
     <aside class="sidebar" :class="{ 'open-drawer': mobileMenuOpen }">
+      <!-- Sidebar Header / Brand -->
       <div class="sidebar-brand">
-        <div class="brand-left">
-          <div class="brand-icon">N</div>
-          <span class="brand-text">ADMIN</span>
+        <div class="brand-crown-icon">👑</div>
+        <div class="brand-text-container">
+          <span class="brand-title">Admin Panel</span>
+          <span class="brand-subtitle">Control Everything</span>
         </div>
         <button @click="mobileMenuOpen = false" class="close-drawer-btn" title="Close Drawer">&times;</button>
       </div>
       
+      <!-- Sidebar Navigation Menu -->
       <div class="sidebar-menu">
-        <div class="menu-label">PERSONAL</div>
+        <!-- Dashboard Item -->
         <button @click="switchTab('dashboard')" class="menu-item" :class="{ active: currentTab === 'dashboard' }">
-          <span class="icon">📊</span> Dashboards
-        </button>
-        <button @click="switchTab('users')" class="menu-item" :class="{ active: currentTab === 'users' }">
-          <span class="icon">👤</span> Users List
-        </button>
-        <button @click="switchTab('requests')" class="menu-item" :class="{ active: currentTab === 'requests' }">
-          <span class="icon">📥</span> Fund Requests
-          <span v-if="pendingRequestsCount > 0" class="badge-count">{{ pendingRequestsCount }}</span>
-        </button>
-        <button @click="switchTab('transactions')" class="menu-item" :class="{ active: currentTab === 'transactions' }">
-          <span class="icon">📈</span> All Transactions
-        </button>
-        <button @click="switchTab('teams')" class="menu-item" :class="{ active: currentTab === 'teams' }">
-          <span class="icon">👥</span> User Teams
+          <span class="icon">📊</span>
+          <span class="menu-text">Dashboard</span>
         </button>
 
-        <div class="menu-label">GLOBAL</div>
-        <button @click="switchTab('notifications')" class="menu-item" :class="{ active: currentTab === 'notifications' }">
-          <span class="icon">📢</span> Send Notification
-        </button>
-        <button @click="switchTab('shared_variable')" class="menu-item" :class="{ active: currentTab === 'shared_variable' }">
-          <span class="icon">🔗</span> Shared Variable
-        </button>
-        <button @click="switchTab('admins')" class="menu-item" :class="{ active: currentTab === 'admins' }">
-          <span class="icon">🛡️</span> System Admins
-        </button>
-        <button @click="switchTab('settings')" class="menu-item" :class="{ active: currentTab === 'settings' }">
-          <span class="icon">⚙️</span> Change Password
-        </button>
+        <!-- User Management Group -->
+        <div class="menu-group">
+          <button @click="toggleGroup('user_management')" class="group-header-btn">
+            <div class="group-header-left">
+              <span class="icon">👤</span>
+              <span class="group-title">User Management</span>
+            </div>
+            <span class="chevron-icon" :class="{ open: expandedGroups.user_management }">▾</span>
+          </button>
+
+          <div v-show="expandedGroups.user_management" class="group-items">
+            <button @click="switchTab('sec_registration')" class="sub-menu-item" :class="{ active: currentTab === 'sec_registration' }">
+              1. Registration
+            </button>
+            <button @click="switchTab('sec_login')" class="sub-menu-item" :class="{ active: currentTab === 'sec_login' }">
+              2. Login
+            </button>
+            <button @click="switchTab('sec_otp')" class="sub-menu-item" :class="{ active: currentTab === 'sec_otp' }">
+              3. OTP / Forgot Password
+            </button>
+            <button @click="switchTab('sec_home')" class="sub-menu-item" :class="{ active: currentTab === 'sec_home' }">
+              4. Home / Dashboard
+            </button>
+
+            <!-- Add Money / Fund Sub-Menu -->
+            <div class="nested-sub-menu">
+              <button @click="switchTab('sec_add_money')" class="sub-menu-item" :class="{ active: currentTab === 'sec_add_money' || currentTab === 'requests' }">
+                5. Add Money / Fund
+              </button>
+              <div v-if="currentTab === 'sec_add_money' || currentTab === 'requests'" class="sub-tab-pills-menu">
+                <button @click="switchTab('sec_add_money')" class="pill-item" :class="{ active: currentTab === 'sec_add_money' }">
+                  💳 Add Money Settings
+                </button>
+                <button @click="switchTab('requests')" class="pill-item" :class="{ active: currentTab === 'requests' }">
+                  📥 Fund Request
+                  <span v-if="pendingRequestsCount > 0" class="menu-badge-count">{{ pendingRequestsCount }}</span>
+                </button>
+              </div>
+            </div>
+
+            <button @click="switchTab('sec_subscription')" class="sub-menu-item" :class="{ active: currentTab === 'sec_subscription' }">
+              6. ID Subscription
+            </button>
+            <button @click="switchTab('sec_referral')" class="sub-menu-item" :class="{ active: currentTab === 'sec_referral' }">
+              7. Referral
+            </button>
+
+            <!-- Business / Income Nested Group -->
+            <button @click="switchTab('sec_business_income')" class="sub-menu-item" :class="{ active: currentTab === 'sec_business_income' }">
+              8. Business / Income ▾
+            </button>
+
+            <button @click="switchTab('sec_global_cycle')" class="sub-menu-item" :class="{ active: currentTab === 'sec_global_cycle' }">
+              9. Global Cycle
+            </button>
+            <button @click="switchTab('teams')" class="sub-menu-item" :class="{ active: currentTab === 'teams' }">
+              10. Team
+            </button>
+            <button @click="switchTab('sec_direct_members')" class="sub-menu-item" :class="{ active: currentTab === 'sec_direct_members' }">
+              11. Direct Team Members
+            </button>
+            <button @click="switchTab('sec_cashout')" class="sub-menu-item" :class="{ active: currentTab === 'sec_cashout' }">
+              12. Cash Out / Withdrawal
+            </button>
+            <button @click="switchTab('sec_bank_verification')" class="sub-menu-item" :class="{ active: currentTab === 'sec_bank_verification' }">
+              13. Bank Account Verification
+            </button>
+            <button @click="switchTab('users')" class="sub-menu-item" :class="{ active: currentTab === 'users' }">
+              14. Profile
+            </button>
+            <button @click="switchTab('notifications')" class="sub-menu-item" :class="{ active: currentTab === 'notifications' }">
+              15. Notifications
+            </button>
+            <button @click="switchTab('sec_support')" class="sub-menu-item" :class="{ active: currentTab === 'sec_support' }">
+              16. Support
+            </button>
+            <button @click="switchTab('transactions')" class="sub-menu-item" :class="{ active: currentTab === 'transactions' }">
+              17. Transaction History
+            </button>
+            <button @click="switchTab('sec_captcha')" class="sub-menu-item" :class="{ active: currentTab === 'sec_captcha' }">
+              18. CAPTCHA Work
+            </button>
+            <button @click="switchTab('sec_side_menu')" class="sub-menu-item" :class="{ active: currentTab === 'sec_side_menu' }">
+              19. Side Menu
+            </button>
+          </div>
+        </div>
+
+        <!-- Global Settings Group -->
+        <div class="menu-group" style="margin-top: 0.5rem;">
+          <button @click="toggleGroup('global_settings')" class="group-header-btn">
+            <div class="group-header-left">
+              <span class="icon">⚙️</span>
+              <span class="group-title">Settings</span>
+            </div>
+            <span class="chevron-icon" :class="{ open: expandedGroups.global_settings }">▾</span>
+          </button>
+
+          <div v-show="expandedGroups.global_settings" class="group-items">
+            <button @click="switchTab('shared_variable')" class="sub-menu-item" :class="{ active: currentTab === 'shared_variable' }">
+              Shared Variable
+            </button>
+            <button @click="switchTab('admins')" class="sub-menu-item" :class="{ active: currentTab === 'admins' }">
+              System Admins
+            </button>
+            <button @click="switchTab('settings')" class="sub-menu-item" :class="{ active: currentTab === 'settings' }">
+              Change Password
+            </button>
+          </div>
+        </div>
       </div>
 
+      <!-- Sidebar Footer -->
       <div class="sidebar-footer">
+        <div class="footer-version-card">
+          <div class="crown-small">👑 Version 1.0.0</div>
+          <div class="version-sub">Build a Better Tomorrow</div>
+        </div>
         <button @click="handleLogout" class="logout-btn">
-          Logout &rarr;
+          <span>Logout</span>
+          <span>📤</span>
         </button>
       </div>
     </aside>
@@ -60,981 +154,1679 @@
       <header class="topbar">
         <div class="topbar-left">
           <button @click="mobileMenuOpen = !mobileMenuOpen" class="hamburger-btn" aria-label="Toggle Menu">
-            <span class="hamburger-icon">☰</span>
+            ☰
           </button>
-          <div class="topbar-brand-mobile">
-            <div class="brand-icon">N</div>
-            <span class="brand-text">ADMIN</span>
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" v-model="globalSearch" placeholder="Search here..." />
           </div>
         </div>
-        <div class="topbar-actions">
-          <span class="action-icon" @click="switchTab('notifications')" title="Send Broadcast Notification">✉️</span>
-          
-          <div class="admin-profile-badge">
-            <div class="avatar">{{ adminEmail[0].toUpperCase() }}</div>
-            <span class="profile-name">{{ adminEmail.split('@')[0] }}</span>
+
+        <div class="topbar-right">
+          <!-- Notification Bell -->
+          <div class="notif-bell-btn" @click="switchTab('notifications')" title="Notifications">
+            🔔
+            <span class="notif-badge">3</span>
           </div>
 
-          <button @click="handleLogout" class="topbar-logout-btn">
-            Logout 📤
-          </button>
+          <!-- Admin Profile Pill -->
+          <div class="admin-user-pill">
+            <div class="admin-avatar">👤</div>
+            <div class="admin-info">
+              <span class="admin-name">Admin</span>
+              <span class="admin-role">Super Admin</span>
+            </div>
+          </div>
         </div>
       </header>
 
       <!-- Main Content Container -->
       <main class="content-body">
-        <div class="content-header">
-          <h2>{{ tabTitle }}</h2>
-          <div class="breadcrumbs">Dashboard &gt; {{ tabTitle }}</div>
-        </div>
-
-        <!-- Global Warning Banner -->
-        <div v-if="isGlobalTab" class="global-warning-banner">
-          ⚠️ WARNING: Please perform all modifications in this section with full attention. Changing these global configurations impacts live app behavior and payment gateways immediately.
-        </div>
-
-        <!-- System & API Operational Status Cards -->
-        <section v-if="currentTab === 'dashboard'" class="op-status-section-new">
-          <div class="op-card-header-new">
-            <h4>🖥️ Systems & API Operational Status</h4>
-            <button @click="checkGatewayStatus" class="refresh-op-btn-new">🔄 Refresh Status</button>
+        
+        <!-- SECTION 1: DASHBOARD OVERVIEW -->
+        <div v-if="currentTab === 'dashboard'" class="dashboard-panes">
+          <div class="dashboard-hero-header">
+            <div>
+              <h2 class="dash-title">📊 Platform Dashboard Overview</h2>
+              <p class="dash-subtitle">Real-time stats from database & API infrastructure operational status.</p>
+            </div>
+            <button @click="checkGatewayStatus" class="refresh-op-btn">🔄 Refresh Operational Status</button>
           </div>
-          <div class="op-grid-new">
-            <div class="op-item-new green-border">
-              <span class="op-lbl">Database Connection</span>
-              <strong class="op-val">{{ gatewayStatus.database }}</strong>
+
+          <!-- Systems & API Operational Status Cards -->
+          <div class="op-grid">
+            <div class="op-card green">
+              <span class="op-label">Database Connection</span>
+              <strong class="op-value">{{ gatewayStatus.database }}</strong>
             </div>
-            <div class="op-item-new green-border">
-              <span class="op-lbl">Recharge API Server</span>
-              <strong class="op-val">{{ gatewayStatus.app_api }}</strong>
+            <div class="op-card green">
+              <span class="op-label">Recharge API Server</span>
+              <strong class="op-value">{{ gatewayStatus.app_api }}</strong>
             </div>
-            <div class="op-item-new orange-border">
-              <span class="op-lbl">Scriza Gateway API</span>
-              <strong class="op-val">{{ gatewayStatus.scriza_api }}</strong>
+            <div class="op-card orange">
+              <span class="op-label">Scriza Gateway API</span>
+              <strong class="op-value">{{ gatewayStatus.scriza_api }}</strong>
             </div>
-            <div class="op-item-new orange-border">
-              <span class="op-lbl">Razorpay Gateway API</span>
-              <strong class="op-val">{{ gatewayStatus.razorpay_gateway }}</strong>
+            <div class="op-card orange">
+              <span class="op-label">Razorpay Gateway API</span>
+              <strong class="op-value">{{ gatewayStatus.razorpay_gateway }}</strong>
             </div>
           </div>
-        </section>
 
-        <div v-if="loading && !['settings', 'notifications', 'uiux', 'shared_variable'].includes(currentTab)" class="loading-box">
-          Loading dashboard content...
+          <!-- Real Metrics Cards -->
+          <div class="stats-grid" style="margin-top: 1.5rem;">
+            <div class="nice-stat-card border-blue" @click="switchTab('users')" style="cursor: pointer;">
+              <div class="stat-body">
+                <div class="stat-left">
+                  <span class="icon-indicator">👤</span>
+                  <span class="stat-card-title">Total Registered Users</span>
+                </div>
+                <span class="stat-card-val">{{ stats.totalUsers }}</span>
+              </div>
+              <div class="progress-bar bg-blue"></div>
+            </div>
+
+            <div class="nice-stat-card border-green">
+              <div class="stat-body">
+                <div class="stat-left">
+                  <span class="icon-indicator">💼</span>
+                  <span class="stat-card-title">Main Wallet Total</span>
+                </div>
+                <span class="stat-card-val">₹{{ (stats.totalMainWallet || 0).toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="progress-bar bg-green"></div>
+            </div>
+
+            <div class="nice-stat-card border-purple">
+              <div class="stat-body">
+                <div class="stat-left">
+                  <span class="icon-indicator">📥</span>
+                  <span class="stat-card-title">Fund Wallet Total</span>
+                </div>
+                <span class="stat-card-val">₹{{ (stats.totalFundWallet || 0).toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="progress-bar bg-purple"></div>
+            </div>
+
+            <div class="nice-stat-card border-orange">
+              <div class="stat-body">
+                <div class="stat-left">
+                  <span class="icon-indicator">📈</span>
+                  <span class="stat-card-title">Total System Transactions</span>
+                </div>
+                <span class="stat-card-val">{{ stats.totalTransactions }}</span>
+              </div>
+              <div class="progress-bar bg-orange"></div>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Cards -->
+          <div class="quick-nav-section" style="margin-top: 1.5rem;">
+            <h3>⚡ Quick Section Management</h3>
+            <div class="quick-nav-grid">
+              <div class="qnav-card" @click="switchTab('sec_add_money')">
+                <span class="qnav-icon">💳</span>
+                <span class="qnav-title">5. Add Money / Fund Settings</span>
+                <span class="qnav-arrow">&rarr;</span>
+              </div>
+              <div class="qnav-card" @click="switchTab('requests')">
+                <span class="qnav-icon">📥</span>
+                <span class="qnav-title">Fund Requests ({{ pendingRequestsCount }} Pending)</span>
+                <span class="qnav-arrow">&rarr;</span>
+              </div>
+              <div class="qnav-card" @click="switchTab('sec_subscription')">
+                <span class="qnav-icon">👑</span>
+                <span class="qnav-title">6. ID Subscription / Activation</span>
+                <span class="qnav-arrow">&rarr;</span>
+              </div>
+              <div class="qnav-card" @click="switchTab('sec_referral')">
+                <span class="qnav-icon">👥</span>
+                <span class="qnav-title">7. Referral Rewards</span>
+                <span class="qnav-arrow">&rarr;</span>
+              </div>
+              <div class="qnav-card" @click="switchTab('sec_cashout')">
+                <span class="qnav-icon">🏦</span>
+                <span class="qnav-title">12. Cash Out / Withdrawal</span>
+                <span class="qnav-arrow">&rarr;</span>
+              </div>
+              <div class="qnav-card" @click="switchTab('shared_variable')">
+                <span class="qnav-icon">🔗</span>
+                <span class="qnav-title">Shared Variables</span>
+                <span class="qnav-arrow">&rarr;</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div v-else class="tab-content-area">
-          <!-- TAB 1: DASHBOARD OVERVIEW (100% REAL DATA) -->
-          <div v-if="currentTab === 'dashboard'" class="dashboard-panes">
-            <!-- Primary Platform Metrics (Real Database Stats) -->
-            <div class="stats-grid" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-              <div class="nice-stat-card border-blue" @click="currentTab = 'users'" style="cursor: pointer;">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">👤</span>
-                    <span class="stat-card-title">Total Registered Users</span>
-                  </div>
-                  <span class="stat-card-val">{{ stats.totalUsers }}</span>
+        <!-- SECTION: 5. ADD MONEY / FUND SETTINGS (Image 1) -->
+        <div v-if="currentTab === 'sec_add_money'" class="section-settings-pane">
+          <!-- Banner Header -->
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box blue-bg">💳</div>
+              <div>
+                <h2>5. Add Money / Fund Request</h2>
+                <p>Manage add money page settings, limits and instructions.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">Add Money / Fund</span>
+              <label class="switch">
+                <input type="checkbox" v-model="systemSettings.add_money_enabled_bool" />
+                <span class="slider round"></span>
+              </label>
+              <span class="main-on-badge" :class="systemSettings.add_money_enabled_bool ? 'badge-on' : 'badge-off'">
+                {{ systemSettings.add_money_enabled_bool ? 'ON' : 'OFF' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Blue Info Alert -->
+          <div class="blue-alert-bar">
+            <span>ℹ️ Enable or disable the add money page and edit the required settings. Changes will reflect instantly on the user panel.</span>
+          </div>
+
+          <!-- Sub-Tab Switcher Bar -->
+          <div class="sub-tab-switcher">
+            <button @click="currentTab = 'sec_add_money'" class="sub-tab-btn active">💳 Add Money Settings</button>
+            <button @click="currentTab = 'requests'" class="sub-tab-btn">📥 Fund Request List ({{ pendingRequestsCount }})</button>
+          </div>
+
+          <!-- Two Column Settings & Live Phone Preview -->
+          <div class="settings-preview-grid">
+            <!-- Left Column: Settings Table -->
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">⚙️</span>
+                  <h3>Add Money Settings</h3>
                 </div>
-                <div class="progress-bar bg-blue"></div>
+                <button @click="resetAddMoneySettings" class="btn-reset-default">↺ Reset to Default</button>
+              </div>
+              <p class="card-desc">Configure amounts, limits, payment details and instructions.</p>
+
+              <div class="table-container">
+                <table class="nice-table settings-edit-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px;">#</th>
+                      <th>Setting</th>
+                      <th>Value (As per your choice)</th>
+                      <th style="width: 100px;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Row 1: UPI QR Code -->
+                    <tr>
+                      <td>1</td>
+                      <td class="font-bold">UPI QR Code</td>
+                      <td>
+                        <div class="file-upload-row">
+                          <input type="text" v-model="systemSettings.upi_qr_url" placeholder="https://..." class="table-input" />
+                          <label class="btn-upload-file">
+                            📤 Upload QR Code
+                            <input type="file" @change="handleFileUpload($event, 'upi_qr_url')" accept="image/*" style="display: none;" />
+                          </label>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small">
+                            <input type="checkbox" v-model="systemSettings.status_upi_qr" />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 2: UPI ID -->
+                    <tr>
+                      <td>2</td>
+                      <td class="font-bold">UPI ID</td>
+                      <td>
+                        <input type="text" v-model="systemSettings.upi_vpa_id" placeholder="vp110064@okaxis" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small">
+                            <input type="checkbox" v-model="systemSettings.status_upi_id" />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 3: Minimum Add Money Amount -->
+                    <tr>
+                      <td>3</td>
+                      <td class="font-bold">Minimum Add Money Amount (₹)</td>
+                      <td>
+                        <input type="number" v-model="systemSettings.min_add_money" placeholder="1200" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small">
+                            <input type="checkbox" v-model="systemSettings.status_min_add_money" />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 4: Maximum Add Money Amount -->
+                    <tr>
+                      <td>4</td>
+                      <td class="font-bold">Maximum Add Money Amount (₹)</td>
+                      <td>
+                        <input type="number" v-model="systemSettings.max_add_money" placeholder="12000" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small">
+                            <input type="checkbox" v-model="systemSettings.status_max_add_money" />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 5: Preset Amount Buttons -->
+                    <tr>
+                      <td>5</td>
+                      <td class="font-bold">Preset Amount Buttons (₹)</td>
+                      <td>
+                        <input type="text" v-model="systemSettings.preset_amounts" placeholder="100,500,1000,2000,5000" class="table-input" />
+                        <span class="input-subnote">(Comma separated amounts)</span>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small">
+                            <input type="checkbox" v-model="systemSettings.status_preset_amounts" />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 6: UTR Number -->
+                    <tr>
+                      <td>6</td>
+                      <td class="font-bold">UTR Number</td>
+                      <td>
+                        <select v-model="systemSettings.utr_number_rule" class="table-select">
+                          <option value="Enable (Required)">Enable (Required)</option>
+                          <option value="Optional">Optional</option>
+                          <option value="Disabled">Disabled</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small">
+                            <input type="checkbox" v-model="systemSettings.status_utr_rule" />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 7: Important Instructions -->
+                    <tr>
+                      <td>7</td>
+                      <td class="font-bold">Important Instructions</td>
+                      <td>
+                        <textarea v-model="systemSettings.add_money_instructions" rows="4" class="table-textarea" placeholder="Minimum Add Money: ₹1200..."></textarea>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small">
+                            <input type="checkbox" v-model="systemSettings.status_add_instructions" />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
-              <div class="nice-stat-card border-green">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">💼</span>
-                    <span class="stat-card-title">Main Wallet Total</span>
-                  </div>
-                  <span class="stat-card-val">₹{{ (stats.totalMainWallet || 0).toLocaleString('en-IN') }}</span>
-                </div>
-                <div class="progress-bar bg-green"></div>
-              </div>
-
-              <div class="nice-stat-card border-purple">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">📥</span>
-                    <span class="stat-card-title">Fund Wallet Total</span>
-                  </div>
-                  <span class="stat-card-val">₹{{ (stats.totalFundWallet || 0).toLocaleString('en-IN') }}</span>
-                </div>
-                <div class="progress-bar bg-purple"></div>
-              </div>
-
-              <div class="nice-stat-card border-orange" @click="currentTab = 'transactions'" style="cursor: pointer;">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">📈</span>
-                    <span class="stat-card-title">Total Transactions</span>
-                  </div>
-                  <span class="stat-card-val">{{ stats.totalTransactions }}</span>
-                </div>
-                <div class="progress-bar bg-orange"></div>
-              </div>
-
-              <div class="nice-stat-card border-red" @click="currentTab = 'requests'" style="cursor: pointer;">
-                <div class="stat-body">
-                  <div class="stat-left">
-                    <span class="icon-indicator">⏳</span>
-                    <span class="stat-card-title">Pending Requests</span>
-                  </div>
-                  <span class="stat-card-val">{{ pendingRequestsCount }}</span>
-                </div>
-                <div class="progress-bar bg-red" style="background: #ef4444;"></div>
+              <!-- Form Action Buttons -->
+              <div class="form-action-row">
+                <button @click="handleSaveSystemSettings" :disabled="loadingSystem" class="btn-blue-save">
+                  <span>💾 {{ loadingSystem ? 'Saving...' : 'Save Changes' }}</span>
+                </button>
+                <button @click="resetAddMoneySettings" class="btn-white-reset">↺ Reset</button>
               </div>
             </div>
 
-            <!-- Real Activity & Operational Summary Split Grid -->
-            <div class="bottom-analytics" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
-              <!-- Real Transactions Log Table -->
-              <div class="anal-card sales-table-card" style="margin: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                  <h3 style="margin: 0;">Recent Real Platform Transactions</h3>
-                  <button @click="currentTab = 'transactions'" class="btn-add-img" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">View All Txns &rarr;</button>
+            <!-- Right Column: Live Phone Screen Preview -->
+            <div class="preview-card">
+              <div class="preview-card-header">
+                <span class="icon">👁️</span>
+                <div>
+                  <h4>Preview (User Add Money Page)</h4>
+                  <p>This is how it will appear to users in real time.</p>
                 </div>
+              </div>
+
+              <!-- Smartphone Mockup Frame -->
+              <div class="phone-frame">
+                <div class="phone-screen">
+                  <!-- App Header -->
+                  <div class="phone-app-header blue-bg">
+                    <span class="back-arrow">←</span>
+                    <div>
+                      <h5 class="header-title">Add Money</h5>
+                      <span class="header-sub">Add funds to your wallet</span>
+                    </div>
+                    <span class="header-wallet-icon">💼+</span>
+                  </div>
+
+                  <div class="phone-app-body">
+                    <!-- Scan & Pay Block -->
+                    <div class="scan-pay-card">
+                      <span class="scan-tag">Scan & Pay</span>
+                      <p class="scan-sub">Scan QR Code using any UPI App</p>
+                      
+                      <div class="qr-box">
+                        <img :src="systemSettings.upi_qr_url || 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=' + systemSettings.upi_vpa_id" alt="UPI QR Code" />
+                      </div>
+
+                      <div class="or-divider"><span>OR</span></div>
+                      
+                      <div class="upi-method-badge">
+                        <span>🏛️ UPI</span>
+                        <span class="check-green">✓</span>
+                      </div>
+                    </div>
+
+                    <!-- UPI ID Card -->
+                    <div class="upi-id-card">
+                      <div class="upi-id-info">
+                        <span class="lbl">UPI ID</span>
+                        <strong class="val">{{ systemSettings.upi_vpa_id || 'vp110064@okaxis' }}</strong>
+                      </div>
+                      <button class="btn-copy-icon">📋</button>
+                    </div>
+
+                    <!-- Deposit Amount Box -->
+                    <div class="phone-input-block">
+                      <label>Deposit Amount (₹)</label>
+                      <div class="amount-input-box">
+                        <span class="curr">₹</span>
+                        <input type="number" :value="systemSettings.min_add_money || 1200" readonly />
+                      </div>
+                    </div>
+
+                    <!-- Preset Amount Pills -->
+                    <div class="phone-pills-row">
+                      <span v-for="amt in (systemSettings.preset_amounts || '100,500,1000,2000,5000').split(',')" :key="amt" class="phone-amt-pill">
+                        ₹{{ amt.trim() }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Footer Note -->
+          <div class="section-footer-note">
+            <span>ℹ️ Note: Any changes you make here will reflect instantly on the user add money page.</span>
+            <span class="last-updated">Last Updated: 13 Sep 2026, 10:45 AM</span>
+          </div>
+        </div>
+
+        <!-- SECTION: 6. ID SUBSCRIPTION / ACTIVATION (Image 2) -->
+        <div v-if="currentTab === 'sec_subscription'" class="section-settings-pane">
+          <!-- Banner Header -->
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box royal-bg">👑</div>
+              <div>
+                <h2>6. ID Subscription / Activation</h2>
+                <p>Manage subscription amount, activation settings and visibility.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">ID Subscription</span>
+              <label class="switch">
+                <input type="checkbox" v-model="systemSettings.id_subscription_enabled_bool" />
+                <span class="slider round"></span>
+              </label>
+              <span class="main-on-badge" :class="systemSettings.id_subscription_enabled_bool ? 'badge-on' : 'badge-off'">
+                {{ systemSettings.id_subscription_enabled_bool ? 'ON' : 'OFF' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="blue-alert-bar">
+            <span>ℹ️ Enable or disable the ID subscription page and edit the required settings. Changes will reflect instantly on the user panel.</span>
+          </div>
+
+          <!-- Two Column Settings & Live Phone Preview -->
+          <div class="settings-preview-grid">
+            <!-- Left Column: Settings Table -->
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">⚙️</span>
+                  <h3>ID Subscription Settings</h3>
+                </div>
+                <button @click="resetSubSettings" class="btn-reset-default">↺ Reset to Default</button>
+              </div>
+              <p class="card-desc">Configure amount, activation and instructions for the user subscription page.</p>
+
+              <div class="table-container">
+                <table class="nice-table settings-edit-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px;">#</th>
+                      <th>Setting</th>
+                      <th>Value (As per your choice)</th>
+                      <th style="width: 100px;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td class="font-bold">User Details Section</td>
+                      <td>
+                        <select v-model="systemSettings.sub_user_details_visibility" class="table-select">
+                          <option value="Show">Show</option>
+                          <option value="Hide">Hide</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_sub_user_details" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td class="font-bold">Subscription Amount (₹)</td>
+                      <td>
+                        <input type="number" v-model="systemSettings.join_amount" placeholder="1200" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_sub_amount" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td class="font-bold">Wallet Balance Display</td>
+                      <td>
+                        <select v-model="systemSettings.sub_wallet_visibility" class="table-select">
+                          <option value="Show">Show</option>
+                          <option value="Hide">Hide</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_sub_wallet" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td class="font-bold">Important Instructions</td>
+                      <td>
+                        <textarea v-model="systemSettings.sub_instructions" rows="4" class="table-textarea" placeholder="Subscription amount is non-refundable..."></textarea>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_sub_instructions" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>5</td>
+                      <td class="font-bold">Subscribe Button</td>
+                      <td>
+                        <select v-model="systemSettings.sub_button_visibility" class="table-select">
+                          <option value="Show">Show</option>
+                          <option value="Hide">Hide</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_sub_button" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>6</td>
+                      <td class="font-bold">Activation After Payment</td>
+                      <td>
+                        <select v-model="systemSettings.sub_auto_activation" class="table-select">
+                          <option value="Enable">Enable</option>
+                          <option value="Disable">Disable</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_sub_activation" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>7</td>
+                      <td class="font-bold">Breadcrumbs / Back Button</td>
+                      <td>
+                        <select v-model="systemSettings.sub_back_button" class="table-select">
+                          <option value="Show">Show</option>
+                          <option value="Hide">Hide</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_sub_back" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="form-action-row">
+                <button @click="handleSaveSystemSettings" :disabled="loadingSystem" class="btn-blue-save">
+                  <span>💾 {{ loadingSystem ? 'Saving...' : 'Save Changes' }}</span>
+                </button>
+                <button @click="resetSubSettings" class="btn-white-reset">↺ Reset</button>
+              </div>
+            </div>
+
+            <!-- Right Column: Live Phone Screen Preview -->
+            <div class="preview-card">
+              <div class="preview-card-header">
+                <span class="icon">👁️</span>
+                <div>
+                  <h4>Preview (User ID Subscription Page)</h4>
+                  <p>This is how it will appear to users.</p>
+                </div>
+              </div>
+
+              <!-- Smartphone Mockup Frame -->
+              <div class="phone-frame">
+                <div class="phone-screen">
+                  <div class="phone-app-header blue-bg">
+                    <span class="back-arrow">←</span>
+                    <div>
+                      <h5 class="header-title">ID Subscription</h5>
+                      <span class="header-sub">Subscribe to your ID</span>
+                    </div>
+                    <span class="header-wallet-icon">💳</span>
+                  </div>
+
+                  <div class="phone-app-body">
+                    <!-- Fund Wallet Bar -->
+                    <div class="wallet-bar-preview">
+                      <span>💼 Fund Wallet Balance</span>
+                      <strong class="val-blue">₹100.00</strong>
+                    </div>
+
+                    <!-- Mobile Verification Field -->
+                    <div class="phone-input-block" style="margin-top: 0.75rem;">
+                      <label>Enter Mobile Number</label>
+                      <div class="mobile-check-box">
+                        <span class="phone-icon">📞</span>
+                        <input type="text" value="7989293968" readonly />
+                      </div>
+                      <div class="user-ok-badge">
+                        <span>User Name: Raju Reddy</span>
+                        <span class="ok-pill">OK</span>
+                      </div>
+                    </div>
+
+                    <!-- User Details Box -->
+                    <div class="user-details-card" v-if="systemSettings.sub_user_details_visibility !== 'Hide'">
+                      <div class="card-sec-head">👤 User Details</div>
+                      <div class="u-row"><span>🆔 ID Number</span><strong>7989293968</strong></div>
+                      <div class="u-row"><span>👤 Name</span><strong>Raju Reddy</strong></div>
+                      <div class="u-row"><span>📞 Mobile Number</span><strong>7989293968</strong></div>
+                      <div class="u-row"><span>✉️ Email ID</span><strong>ravikanth@gmail.com</strong></div>
+                      <div class="u-row"><span>📅 Joining Date</span><strong>28-08-2025</strong></div>
+                    </div>
+
+                    <!-- Amount to Pay -->
+                    <div class="pay-amount-box">
+                      <span class="lbl">₹ Amount to Pay</span>
+                      <div class="amt-row">
+                        <span>Subscription Amount</span>
+                        <strong class="amt">₹{{ systemSettings.join_amount || 1200 }}.00</strong>
+                      </div>
+                    </div>
+
+                    <!-- Subscribe Now Button -->
+                    <button class="phone-btn-submit blue-grad-btn" v-if="systemSettings.sub_button_visibility !== 'Hide'">
+                      💳 SUBSCRIBE NOW
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-footer-note">
+            <span>ℹ️ Note: Any changes you make here will reflect instantly on the user ID subscription page.</span>
+            <span class="last-updated">Last Updated: 13 Sep 2026, 10:45 AM</span>
+          </div>
+        </div>
+
+        <!-- SECTION: 7. REFERRAL (Image 3) -->
+        <div v-if="currentTab === 'sec_referral'" class="section-settings-pane">
+          <!-- Banner Header -->
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box purple-bg">👥</div>
+              <div>
+                <h2>7. Referral</h2>
+                <p>Manage referral settings, rewards and visibility.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">Referral</span>
+              <label class="switch">
+                <input type="checkbox" v-model="systemSettings.referral_enabled_bool" />
+                <span class="slider round"></span>
+              </label>
+              <span class="main-on-badge" :class="systemSettings.referral_enabled_bool ? 'badge-on' : 'badge-off'">
+                {{ systemSettings.referral_enabled_bool ? 'ON' : 'OFF' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="blue-alert-bar">
+            <span>ℹ️ Enable or disable the referral section and edit the reward amount and related settings. Changes will reflect instantly on the user panel.</span>
+          </div>
+
+          <!-- Two Column Settings & Live Phone Preview -->
+          <div class="settings-preview-grid">
+            <!-- Left Column: Settings Table -->
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">⚙️</span>
+                  <h3>Referral Settings</h3>
+                </div>
+                <button @click="resetRefSettings" class="btn-reset-default">↺ Reset to Default</button>
+              </div>
+              <p class="card-desc">Configure referral reward amount and content for the user referral section.</p>
+
+              <div class="table-container">
+                <table class="nice-table settings-edit-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px;">#</th>
+                      <th>Setting</th>
+                      <th>Value (As per your choice)</th>
+                      <th style="width: 100px;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td class="font-bold">Referral Section</td>
+                      <td>
+                        <select v-model="systemSettings.ref_section_visibility" class="table-select">
+                          <option value="Show">Show</option>
+                          <option value="Hide">Hide</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_ref_section" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td class="font-bold">Referral Reward Amount (₹)</td>
+                      <td>
+                        <input type="number" v-model="systemSettings.direct_income" placeholder="300" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_ref_reward" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td class="font-bold">Referral Text</td>
+                      <td>
+                        <input type="text" v-model="systemSettings.referral_text" placeholder="Refer App Earn ₹ 300.00" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_ref_text" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td class="font-bold">Sub Text</td>
+                      <td>
+                        <input type="text" v-model="systemSettings.referral_subtext" placeholder="Each Referral" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_ref_subtext" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>5</td>
+                      <td class="font-bold">Invite Now Button</td>
+                      <td>
+                        <select v-model="systemSettings.ref_invite_button_visibility" class="table-select">
+                          <option value="Show">Show</option>
+                          <option value="Hide">Hide</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_ref_button" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>6</td>
+                      <td class="font-bold">Important Instructions</td>
+                      <td>
+                        <textarea v-model="systemSettings.referral_instructions" rows="4" class="table-textarea" placeholder="Share your referral link with friends and earn rewards."></textarea>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_ref_instructions" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="form-action-row">
+                <button @click="handleSaveSystemSettings" :disabled="loadingSystem" class="btn-blue-save">
+                  <span>💾 {{ loadingSystem ? 'Saving...' : 'Save Changes' }}</span>
+                </button>
+                <button @click="resetRefSettings" class="btn-white-reset">↺ Reset</button>
+              </div>
+            </div>
+
+            <!-- Right Column: Live Phone Screen Preview -->
+            <div class="preview-card">
+              <div class="preview-card-header">
+                <span class="icon">👁️</span>
+                <div>
+                  <h4>Preview (User Referral Section)</h4>
+                  <p>This is how it will appear to users.</p>
+                </div>
+              </div>
+
+              <!-- Smartphone Mockup Frame -->
+              <div class="phone-frame">
+                <div class="phone-screen light-blue-bg">
+                  <div class="phone-app-body text-center">
+                    <!-- Gift Illustration -->
+                    <div class="gift-icon-container">
+                      <span class="gift-emoji">🎁</span>
+                    </div>
+
+                    <h3 class="referral-title-preview">{{ systemSettings.referral_text || 'Refer App Earn ₹ 300.00' }}</h3>
+                    <p class="referral-subtext-preview">{{ systemSettings.referral_subtext || 'Each Referral' }}</p>
+
+                    <!-- Instructions Alert Box -->
+                    <div class="ref-instructions-box">
+                      <span class="info-icon">ℹ️</span>
+                      <p>{{ systemSettings.referral_instructions || 'Share your referral link with friends and earn rewards.' }}</p>
+                    </div>
+
+                    <!-- Invite Button -->
+                    <button class="phone-btn-submit blue-grad-btn" v-if="systemSettings.ref_invite_button_visibility !== 'Hide'">
+                      INVITE NOW &rarr;
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-footer-note">
+            <span>ℹ️ Note: Any changes you make here will reflect instantly on the user referral section.</span>
+            <span class="last-updated">Last Updated: 13 Sep 2026, 10:45 AM</span>
+          </div>
+        </div>
+
+        <!-- SECTION: 12. CASH OUT / WITHDRAWAL (Image 4) -->
+        <div v-if="currentTab === 'sec_cashout'" class="section-settings-pane">
+          <!-- Banner Header -->
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box navy-bg">🏦</div>
+              <div>
+                <h2>12. Cash Out / Withdrawal</h2>
+                <p>Manage cash out page settings, limits, charges and visibility.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">Cash Out / Withdrawal</span>
+              <label class="switch">
+                <input type="checkbox" v-model="systemSettings.withdrawal_enabled_bool" />
+                <span class="slider round"></span>
+              </label>
+              <span class="main-on-badge" :class="systemSettings.withdrawal_enabled_bool ? 'badge-on' : 'badge-off'">
+                {{ systemSettings.withdrawal_enabled_bool ? 'ON' : 'OFF' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="blue-alert-bar">
+            <span>ℹ️ Enable or disable the cash out page and edit the required settings. Changes will reflect instantly on the user panel.</span>
+          </div>
+
+          <!-- Two Column Settings & Live Phone Preview -->
+          <div class="settings-preview-grid">
+            <!-- Left Column: Settings Table -->
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">⚙️</span>
+                  <h3>Cash Out / Withdrawal Settings</h3>
+                </div>
+                <button @click="resetCashoutSettings" class="btn-reset-default">↺ Reset to Default</button>
+              </div>
+              <p class="card-desc">Configure withdrawal limits, charges and instructions for the user cash out page.</p>
+
+              <div class="table-container">
+                <table class="nice-table settings-edit-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px;">#</th>
+                      <th>Setting</th>
+                      <th>Value (As per your choice)</th>
+                      <th style="width: 100px;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td class="font-bold">Cash Out Section</td>
+                      <td>
+                        <select v-model="systemSettings.cashout_section_visibility" class="table-select">
+                          <option value="Show">Show</option>
+                          <option value="Hide">Hide</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_cashout_section" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td class="font-bold">Minimum Withdrawal Amount (₹)</td>
+                      <td>
+                        <input type="number" v-model="systemSettings.minimum_withdrawal" placeholder="200" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_min_withdraw" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>3</td>
+                      <td class="font-bold">Maximum Withdrawal Amount (₹)</td>
+                      <td>
+                        <input type="number" v-model="systemSettings.max_withdrawal" placeholder="25000" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_max_withdraw" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>4</td>
+                      <td class="font-bold">Withdrawal Charges (%)</td>
+                      <td>
+                        <input type="number" v-model="systemSettings.withdrawal_percentage" placeholder="0" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_withdraw_charges" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>5</td>
+                      <td class="font-bold">Withdrawal Charges Type</td>
+                      <td>
+                        <select v-model="systemSettings.withdrawal_charges_type" class="table-select">
+                          <option value="Percentage">Percentage</option>
+                          <option value="Flat Fee">Flat Fee</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_charges_type" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>6</td>
+                      <td class="font-bold">Bank Account Verification</td>
+                      <td>
+                        <select v-model="systemSettings.bank_verification_rule" class="table-select">
+                          <option value="Must be Verified">Must be Verified</option>
+                          <option value="Optional">Optional</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_bank_rule" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>7</td>
+                      <td class="font-bold">Withdrawal Request Note</td>
+                      <td>
+                        <textarea v-model="systemSettings.cashout_instructions" rows="4" class="table-textarea" placeholder="Withdrawal will be processed within 24 hours after admin approval."></textarea>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_cashout_instructions" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>8</td>
+                      <td class="font-bold">Submit Button</td>
+                      <td>
+                        <select v-model="systemSettings.cashout_submit_button_visibility" class="table-select">
+                          <option value="Show">Show</option>
+                          <option value="Hide">Hide</option>
+                        </select>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_cashout_button" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="form-action-row">
+                <button @click="handleSaveSystemSettings" :disabled="loadingSystem" class="btn-blue-save">
+                  <span>💾 {{ loadingSystem ? 'Saving...' : 'Save Changes' }}</span>
+                </button>
+                <button @click="resetCashoutSettings" class="btn-white-reset">↺ Reset</button>
+              </div>
+            </div>
+
+            <!-- Right Column: Live Phone Screen Preview -->
+            <div class="preview-card">
+              <div class="preview-card-header">
+                <span class="icon">👁️</span>
+                <div>
+                  <h4>Preview (User Cash Out Page)</h4>
+                  <p>This is how it will appear to users.</p>
+                </div>
+              </div>
+
+              <!-- Smartphone Mockup Frame -->
+              <div class="phone-frame">
+                <div class="phone-screen">
+                  <div class="phone-app-header blue-bg">
+                    <span class="back-arrow">←</span>
+                    <div>
+                      <h5 class="header-title">Cash Out</h5>
+                      <span class="header-sub">Withdraw your earnings</span>
+                    </div>
+                    <span class="header-wallet-icon">🏦</span>
+                  </div>
+
+                  <div class="phone-app-body">
+                    <!-- Balance Box -->
+                    <div class="wallet-bar-preview">
+                      <span>💼 Available Balance</span>
+                      <strong class="val-blue">₹ 2,450.00</strong>
+                    </div>
+
+                    <!-- Input Block -->
+                    <div class="phone-input-block" style="margin-top: 0.75rem;">
+                      <label>Withdrawal Amount</label>
+                      <div class="amount-input-box">
+                        <span class="curr">₹</span>
+                        <input type="text" :placeholder="'Enter Amount (Min. ₹ ' + (systemSettings.minimum_withdrawal || 200) + ')'" readonly />
+                      </div>
+                    </div>
+
+                    <!-- Summary Card -->
+                    <div class="summary-details-card">
+                      <div class="u-row"><span>Minimum Amount</span><strong>: ₹ {{ systemSettings.minimum_withdrawal || 200 }}</strong></div>
+                      <div class="u-row"><span>Maximum Amount</span><strong>: ₹ {{ systemSettings.max_withdrawal || 25000 }}</strong></div>
+                      <div class="u-row"><span>Withdrawal Charges</span><strong>: {{ systemSettings.withdrawal_percentage || 0 }}%</strong></div>
+                      <div class="u-row"><span>You Will Get</span><strong class="text-blue">: ₹ 0.00</strong></div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button class="phone-btn-submit blue-grad-btn" v-if="systemSettings.cashout_submit_button_visibility !== 'Hide'">
+                      Submit Request
+                    </button>
+
+                    <!-- Instructions Box -->
+                    <div class="phone-info-note">
+                      <span>ℹ️ {{ systemSettings.cashout_instructions || 'Withdrawal will be processed within 24 hours after admin approval.' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-footer-note">
+            <span>ℹ️ Note: Any changes you make here will reflect instantly on the user cash out page.</span>
+            <span class="last-updated">Last Updated: 13 Sep 2026, 10:45 AM</span>
+          </div>
+        </div>
+
+        <!-- SECTION: FUND REQUEST LIST (Image 5) -->
+        <div v-if="currentTab === 'requests'" class="requests-pane">
+          <!-- Banner Header -->
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box blue-bg">📥</div>
+              <div>
+                <h2>Fund Request</h2>
+                <p>Manage user fund requests, verify UTR and approve or reject.</p>
+              </div>
+            </div>
+            <div class="banner-breadcrumbs">
+              <span>Home</span> &gt; <span>Add Money / Fund</span> &gt; <span class="active">Fund Request</span>
+            </div>
+          </div>
+
+          <!-- Status Filter Tabs -->
+          <div class="status-tab-pills">
+            <button @click="reqFilterStatus = 'PENDING'" class="pill-btn" :class="{ active: reqFilterStatus === 'PENDING' }">
+              Pending ({{ getReqCount('PENDING') }})
+            </button>
+            <button @click="reqFilterStatus = 'APPROVED'" class="pill-btn" :class="{ active: reqFilterStatus === 'APPROVED' }">
+              Approved ({{ getReqCount('APPROVED') }})
+            </button>
+            <button @click="reqFilterStatus = 'REJECTED'" class="pill-btn" :class="{ active: reqFilterStatus === 'REJECTED' }">
+              Rejected ({{ getReqCount('REJECTED') }})
+            </button>
+            <button @click="reqFilterStatus = 'CANCELLED'" class="pill-btn" :class="{ active: reqFilterStatus === 'CANCELLED' }">
+              Cancelled ({{ getReqCount('CANCELLED') }})
+            </button>
+          </div>
+
+          <!-- Filter & Action Bar -->
+          <div class="filter-action-row">
+            <div class="filter-inputs">
+              <div class="search-input-wrap">
+                <span class="icon">🔍</span>
+                <input type="text" v-model="reqSearchQuery" placeholder="Search by Name, Mobile, UTR..." />
+              </div>
+              <select v-model="reqPaymentModeFilter" class="filter-select">
+                <option value="">All Payment Modes</option>
+                <option value="GPay">Google Pay (GPay)</option>
+                <option value="PhonePe">PhonePe</option>
+                <option value="Paytm">Paytm</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+              </select>
+              <select v-model="reqAmountFilter" class="filter-select">
+                <option value="">All Amounts</option>
+                <option value="500">₹500</option>
+                <option value="1000">₹1,000</option>
+                <option value="1200">₹1,200</option>
+                <option value="2500">₹2,500</option>
+              </select>
+              <button @click="applyReqFilters" class="btn-filter-blue">🔍 Filter</button>
+              <button @click="resetReqFilters" class="btn-filter-reset">Reset</button>
+            </div>
+
+            <div class="filter-right-actions">
+              <div class="date-picker-wrap">
+                📅 <span>13 Sep 2026 - 13 Sep 2026</span> ▾
+              </div>
+              <button @click="exportRequestsCSV" class="btn-export-blue">📥 Export</button>
+            </div>
+          </div>
+
+          <!-- Fund Requests Table -->
+          <div class="table-card">
+            <div class="table-container">
+              <table class="nice-table">
+                <thead>
+                  <tr>
+                    <th style="width: 30px;"><input type="checkbox" /></th>
+                    <th>#</th>
+                    <th>User Details</th>
+                    <th>Amount (₹)</th>
+                    <th>Payment Mode</th>
+                    <th>UTR Number</th>
+                    <th>Request Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-if="filteredRequests.length === 0">
+                    <td colspan="9" style="text-align: center; padding: 2rem; color: #64748b;">
+                      No fund deposit requests match your filter criteria.
+                    </td>
+                  </tr>
+                  <tr v-for="(req, idx) in filteredRequests" :key="req.id">
+                    <td><input type="checkbox" /></td>
+                    <td>{{ idx + 1 }}</td>
+                    <td>
+                      <div class="user-table-cell">
+                        <div class="user-avatar-circle">{{ (req.fullName || 'U')[0].toUpperCase() }}</div>
+                        <div>
+                          <strong class="u-name">{{ req.fullName || 'User #' + req.user_id }}</strong>
+                          <div class="u-sub">ID: SR{{ req.user_id }}</div>
+                          <div class="u-sub">{{ req.mobileNumber || '7989293968' }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="font-bold text-lg">₹{{ parseFloat(req.amount || 0).toFixed(2) }}</td>
+                    <td>
+                      <span class="pm-badge" :class="getPMClass(req.payment_method)">
+                        {{ req.payment_method || 'UPI / GPay' }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="utr-copy-cell">
+                        <code>{{ req.utr_number || 'UTR1234567890' }}</code>
+                        <button class="btn-copy-utr" @click="copyToClipboard(req.utr_number || 'UTR1234567890')" title="Copy UTR">📋</button>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="date-cell">
+                        <div>{{ (req.created_at || '13 Sep 2026').substring(0, 10) }}</div>
+                        <div class="time-sub">10:15 AM</div>
+                      </div>
+                    </td>
+                    <td>
+                      <span :class="getStatusBadgeClass(req.status)">
+                        {{ req.status === 'PENDING' ? '🟡 Pending' : req.status === 'APPROVED' ? '🟢 Approved' : '🔴 Rejected' }}
+                      </span>
+                    </td>
+                    <td>
+                      <button @click="selectedRequest = req" class="btn-action-view">👁️ View</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Table Pagination -->
+            <div class="table-pagination-bar">
+              <span>Showing 1 to {{ filteredRequests.length }} of {{ fundRequests.length }} requests</span>
+              <div class="page-pills">
+                <button class="page-pill active">1</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-footer-note">
+            <span>ℹ️ Note: After approval, the amount will be added to the user's wallet automatically. Rejected requests will be cancelled and will not be credited.</span>
+            <span class="last-updated">Last Updated: 13 Sep 2026, 10:45 AM</span>
+          </div>
+
+          <!-- Fund Request Details Slide-Over Drawer (Right Side Image 5) -->
+          <div v-if="selectedRequest" class="slide-over-backdrop" @click="selectedRequest = null">
+            <div class="slide-over-panel" @click.stop>
+              <div class="drawer-header">
+                <h3>Fund Request Details</h3>
+                <button @click="selectedRequest = null" class="btn-close-x">&times;</button>
+              </div>
+
+              <div class="drawer-body">
+                <!-- User Header Pill -->
+                <div class="drawer-user-pill">
+                  <div class="avatar-large">{{ (selectedRequest.fullName || 'U')[0].toUpperCase() }}</div>
+                  <div>
+                    <h4>{{ selectedRequest.fullName || 'User #' + selectedRequest.user_id }}</h4>
+                    <div class="u-meta">ID: SR{{ selectedRequest.user_id }}</div>
+                    <div class="u-meta">Mobile: {{ selectedRequest.mobileNumber || '7989293968' }}</div>
+                  </div>
+                </div>
+
+                <!-- Request Information Block -->
+                <div class="drawer-info-block">
+                  <h5>📋 Request Information</h5>
+                  <div class="info-grid">
+                    <div class="i-row"><span>Request ID</span><strong>: FR{{ selectedRequest.id }}</strong></div>
+                    <div class="i-row"><span>Request Date</span><strong>: {{ (selectedRequest.created_at || '13 Sep 2026').substring(0, 10) }} 10:15 AM</strong></div>
+                    <div class="i-row"><span>Amount (₹)</span><strong class="text-blue">: ₹{{ parseFloat(selectedRequest.amount || 0).toFixed(2) }}</strong></div>
+                    <div class="i-row"><span>Payment Mode</span><strong>: {{ selectedRequest.payment_method || 'Google Pay' }}</strong></div>
+                    <div class="i-row">
+                      <span>UTR Number</span>
+                      <strong>: {{ selectedRequest.utr_number || 'UTR1234567890' }} <button class="btn-copy-sm" @click="copyToClipboard(selectedRequest.utr_number || 'UTR1234567890')">📋</button></strong>
+                    </div>
+                    <div class="i-row"><span>Transaction Date</span><strong>: 13 Sep 2026, 10:12 AM</strong></div>
+                    <div class="i-row">
+                      <span>Screenshot</span>
+                      <strong>: <a :href="selectedRequest.screenshot_url || '#'" target="_blank" class="screenshot-link">📄 View Screenshot</a></strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- User Details Block -->
+                <div class="drawer-info-block">
+                  <h5>👤 User Details</h5>
+                  <div class="info-grid">
+                    <div class="i-row"><span>Name</span><strong>: {{ selectedRequest.fullName || 'Raju Reddy' }}</strong></div>
+                    <div class="i-row"><span>Email</span><strong>: {{ selectedRequest.email || 'rajureddy@gmail.com' }}</strong></div>
+                    <div class="i-row"><span>Sponsor ID</span><strong>: SR1001</strong></div>
+                    <div class="i-row"><span>Wallet Balance</span><strong>: ₹120.00</strong></div>
+                  </div>
+                </div>
+
+                <!-- Admin Action Block -->
+                <div class="drawer-action-block" v-if="selectedRequest.status === 'PENDING'">
+                  <h5>⚡ Admin Action</h5>
+                  <div class="action-btn-group">
+                    <button @click="processRequest(selectedRequest.id, true)" class="btn-approve-green">✓ Approve</button>
+                    <button @click="processRequest(selectedRequest.id, false)" class="btn-reject-red">✕ Reject</button>
+                  </div>
+
+                  <div class="remarks-group">
+                    <label>Remarks (Optional)</label>
+                    <textarea v-model="requestRemark" placeholder="Enter remarks here..." rows="3"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: USERS LIST & PROFILE (14. Profile) -->
+        <div v-if="currentTab === 'users'" class="users-list-pane">
+          <div class="table-card">
+            <div class="table-header-row">
+              <h3>Registered Mobile App Users</h3>
+              <div class="pagination-controls">
+                <button @click="changeUserPage(-1)" :disabled="userPage === 1" class="page-btn">&larr; Prev</button>
+                <span class="page-num">Page {{ userPage }}</span>
+                <button @click="changeUserPage(1)" :disabled="users.length < 10" class="page-btn">Next &rarr;</button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="nice-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Mobile Number</th>
+                    <th>Main Wallet</th>
+                    <th>Fund Wallet</th>
+                    <th>Affiliate Downlines</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="user in users" :key="user.id" class="clickable-row" @click="selectUser(user)">
+                    <td>#{{ user.id }}</td>
+                    <td class="font-bold">{{ user.fullName }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.mobileNumber }}</td>
+                    <td>₹{{ parseFloat(user.main_wallet_balance || 0).toFixed(2) }}</td>
+                    <td>₹{{ parseFloat(user.fund_wallet_balance || 0).toFixed(2) }}</td>
+                    <td>
+                      <span class="badge-status-active">{{ user.downlineCount || 0 }} Members</span>
+                    </td>
+                    <td>
+                      <button class="btn-action-view">View Profile</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Slide-Over User details -->
+          <div v-if="selectedUser" class="slide-over-backdrop" @click="selectedUser = null">
+            <div class="slide-over-panel" @click.stop>
+              <div class="drawer-header">
+                <h3>User Profile</h3>
+                <button @click="selectedUser = null" class="btn-close-x">&times;</button>
+              </div>
+              <div class="drawer-body">
+                <div class="drawer-user-pill">
+                  <div class="avatar-large">{{ selectedUser.fullName[0].toUpperCase() }}</div>
+                  <div>
+                    <h4>{{ selectedUser.fullName }}</h4>
+                    <span class="badge-status-active">Active Account</span>
+                  </div>
+                </div>
+
+                <div class="wallets-row" style="display: flex; gap: 1rem; margin-top: 1rem;">
+                  <div class="stat-card border-blue" style="flex: 1; padding: 1rem; background: #eff6ff; border-radius: 8px;">
+                    <span>Main Wallet</span>
+                    <h4 style="color: #2563eb; font-size: 1.2rem; margin: 4px 0 0;">₹{{ parseFloat(selectedUser.main_wallet_balance || 0).toFixed(2) }}</h4>
+                  </div>
+                  <div class="stat-card border-purple" style="flex: 1; padding: 1rem; background: #faf5ff; border-radius: 8px;">
+                    <span>Fund Wallet</span>
+                    <h4 style="color: #9333ea; font-size: 1.2rem; margin: 4px 0 0;">₹{{ parseFloat(selectedUser.fund_wallet_balance || 0).toFixed(2) }}</h4>
+                  </div>
+                </div>
+
+                <!-- Reset User Password Box (Admin Only) -->
+                <div style="margin-top: 1.25rem; padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                  <h4 style="margin: 0 0 0.35rem; font-size: 0.88rem; font-weight: 700; color: #1e293b;">🔑 Reset Member Password</h4>
+                  <p style="margin: 0 0 0.75rem; font-size: 0.78rem; color: #64748b;">Set a new password for {{ selectedUser.fullName || selectedUser.email }} directly.</p>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input 
+                      type="text" 
+                      v-model="userNewPassword" 
+                      placeholder="Enter new password (min 4 chars)" 
+                      style="flex: 1; padding: 0.55rem 0.75rem; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85rem; outline: none; background: white;"
+                    />
+                    <button 
+                      @click="handleUpdateUserPassword(selectedUser.id)" 
+                      :disabled="updatingUserPassword"
+                      style="background: #2563eb; color: white; border: none; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap;"
+                    >
+                      {{ updatingUserPassword ? 'Saving...' : '🔑 Change Password' }}
+                    </button>
+                  </div>
+                  <div v-if="userPasswordMsg" :style="{ color: userPasswordSuccess ? '#16a34a' : '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 'bold' }">
+                    {{ userPasswordMsg }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: USER TEAMS (10. Team & 11. Direct Team Members) -->
+        <div v-if="currentTab === 'teams' || currentTab === 'sec_team' || currentTab === 'sec_direct_members'" class="teams-pane">
+          <div class="table-card">
+            <div class="card-title-row">
+              <h3>👥 User Teams & Multi-Level Affiliate Downlines</h3>
+            </div>
+            <p class="card-desc">Real-time sponsor tree queried directly from user registrations.</p>
+            
+            <div v-if="loadingTeams" class="loading-box">Loading team tree data...</div>
+            
+            <div v-else-if="!teamsData.teams || teamsData.teams.length === 0" class="empty-box">
+              <p>No multi-user downline relationships recorded yet.</p>
+              <p>When users register using another member's Sponsor ID, their affiliate networks will automatically display here.</p>
+            </div>
+
+            <div v-else class="teams-tree-container" style="display: flex; flex-direction: column; gap: 1.25rem;">
+              <div v-for="group in teamsData.teams" :key="group.sponsorId" class="team-group-card">
+                <div class="team-group-header">
+                  <div>
+                    <span class="sponsor-name">{{ group.sponsorName }}</span>
+                    <span class="sponsor-id-badge">SRM{{ String(group.sponsorId).padStart(6, '0') }}</span>
+                    <div class="sponsor-email">{{ group.sponsorEmail }}</div>
+                  </div>
+                  <span class="members-count-badge">{{ group.downlines.length }} Direct Members</span>
+                </div>
+
                 <div class="table-container">
                   <table class="nice-table">
                     <thead>
                       <tr>
-                        <th>Txn ID</th>
-                        <th>User ID</th>
-                        <th>Wallet</th>
-                        <th>Amount</th>
-                        <th>Date & Time</th>
+                        <th>Member ID</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Mobile</th>
+                        <th>Main Wallet</th>
                         <th>Status</th>
+                        <th>Joined Date</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-if="transactions.length === 0">
-                        <td colspan="6" style="text-align: center; color: #94a3b8; padding: 1.5rem;">No transactions recorded in database yet.</td>
-                      </tr>
-                      <tr v-for="txn in transactions.slice(0, 8)" :key="txn.id">
-                        <td class="font-bold">#{{ txn.id }}</td>
-                        <td>#{{ txn.user_id }}</td>
-                        <td><span class="lbl-wallet" :class="(txn.wallet_type || 'main').toLowerCase()">{{ txn.wallet_type }}</span></td>
-                        <td class="font-bold" style="color: #10b981;">{{ txn.amount }}</td>
-                        <td style="font-size: 0.8rem; color: #64748b;">{{ txn.date || 'N/A' }}</td>
-                        <td>
-                          <span :class="txn.status === 'Success' || txn.status === 'APPROVED' ? 'nice-badge-success' : 'nice-badge-pending'">
-                            {{ txn.status || 'Success' }}
-                          </span>
-                        </td>
+                      <tr v-for="member in group.downlines" :key="member.id">
+                        <td><strong>SRM{{ String(member.id).padStart(6, '0') }}</strong></td>
+                        <td class="font-bold">{{ member.fullName }}</td>
+                        <td>{{ member.email }}</td>
+                        <td>{{ member.mobileNumber || 'N/A' }}</td>
+                        <td class="font-bold text-green">₹{{ parseFloat(member.main_wallet_balance || 0).toFixed(2) }}</td>
+                        <td><span class="badge-status-active">{{ (member.status || 'ACTIVE').toUpperCase() }}</span></td>
+                        <td>{{ member.createdAt ? String(member.createdAt).substring(0, 10) : 'N/A' }}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
-
-              <!-- Quick Control & Platform Shortcuts -->
-              <div class="anal-card" style="margin: 0; display: flex; flex-direction: column; gap: 1rem;">
-                <h3 style="margin: 0;">⚡ Quick Operational Panel</h3>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                  <button @click="currentTab = 'requests'" class="menu-item" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 8px; padding: 0.75rem; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center;">
-                    <span>📥 Deposit Requests Approval</span>
-                    <span v-if="pendingRequestsCount > 0" class="badge-count" style="background: #dc2626; color: white;">{{ pendingRequestsCount }} Pending</span>
-                  </button>
-
-                  <button @click="currentTab = 'users'" class="menu-item" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 8px; padding: 0.75rem; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center;">
-                    <span>👥 Manage Portal Users ({{ stats.totalUsers }})</span>
-                    <span>&rarr;</span>
-                  </button>
-
-                  <button @click="currentTab = 'notifications'" class="menu-item" style="background: #faf5ff; border: 1px solid #e9d5ff; color: #6b21a8; border-radius: 8px; padding: 0.75rem; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center;">
-                    <span>📢 Send Broadcast Notice</span>
-                    <span>&rarr;</span>
-                  </button>
-
-                  <button @click="currentTab = 'shared_variable'" class="menu-item" style="background: #fff7ed; border: 1px solid #ffedd5; color: #c2410c; border-radius: 8px; padding: 0.75rem; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center;">
-                    <span>⚙️ Shared System Variables</span>
-                    <span>&rarr;</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 2: USERS VIEW -->
-          <div v-if="currentTab === 'users'" class="users-list-pane">
-            <div class="table-card">
-              <div class="table-header-row">
-                <h3>Registered Mobile App Users</h3>
-                <div class="pagination-controls">
-                  <button @click="changeUserPage(-1)" :disabled="userPage === 1" class="page-btn page-nav-btn">&larr; Prev</button>
-                  <span class="page-num">Page {{ userPage }}</span>
-                  <button @click="changeUserPage(1)" :disabled="users.length < 10" class="page-btn page-nav-btn">Next &rarr;</button>
-                </div>
-              </div>
-              <div class="table-container">
-                <table class="nice-table">
-                  <thead>
-                    <tr>
-                      <th>User ID</th>
-                      <th>Full Name</th>
-                      <th>Email</th>
-                      <th>Mobile Number</th>
-                      <th>Main Wallet</th>
-                      <th>Fund Wallet</th>
-                      <th>Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="user in users" :key="user.id" class="clickable-row" @click="selectUser(user)">
-                      <td>#{{ user.id }}</td>
-                      <td class="font-bold">{{ user.fullName }}</td>
-                      <td>{{ user.email }}</td>
-                      <td>{{ user.mobileNumber }}</td>
-                      <td>₹{{ parseFloat(user.main_wallet_balance).toFixed(2) }}</td>
-                      <td>₹{{ parseFloat(user.fund_wallet_balance).toFixed(2) }}</td>
-                      <td>
-                        <button class="action-view-btn">View Profile</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Slide-Over User details -->
-            <div v-if="selectedUser" class="slide-over-backdrop" @click="selectedUser = null">
-              <div class="slide-over" @click.stop>
-                <div class="slide-header">
-                  <h3>User Profile</h3>
-                  <button @click="selectedUser = null" class="close-btn">&times;</button>
-                </div>
-                <div class="slide-body">
-                  <div class="profile-avatar-area">
-                    <div class="large-avatar">{{ selectedUser.fullName[0].toUpperCase() }}</div>
-                    <h4>{{ selectedUser.fullName }}</h4>
-                    <span class="status-lbl green">Active Account</span>
-                  </div>
-
-                  <div class="wallets-row">
-                    <div class="wallet-stat bg-blue-grad">
-                      <span>Main Wallet</span>
-                      <h4>₹{{ parseFloat(selectedUser.main_wallet_balance).toFixed(2) }}</h4>
-                    </div>
-                    <div class="wallet-stat bg-purple-grad">
-                      <span>Fund Wallet</span>
-                      <h4>₹{{ parseFloat(selectedUser.fund_wallet_balance).toFixed(2) }}</h4>
-                    </div>
-                  </div>
-
-                  <div class="details-list">
-                    <div class="item">
-                      <span>Email</span>
-                      <strong>{{ selectedUser.email }}</strong>
-                    </div>
-                    <div class="item">
-                      <span>Mobile</span>
-                      <strong>{{ selectedUser.mobileNumber }}</strong>
-                    </div>
-                    <div class="item">
-                      <span>Device OS Info</span>
-                      <strong style="color: #0052cc;">{{ selectedUser.device_model || 'Android / Unknown' }}</strong>
-                    </div>
-                    <div class="item">
-                      <span>App Version</span>
-                      <strong>v{{ selectedUser.app_version || '1.0.0' }}</strong>
-                    </div>
-                    <div class="item">
-                      <span>Affiliate Downline</span>
-                      <strong style="color: #0052cc;">{{ selectedUser.downlineCount || 0 }} Direct {{ (selectedUser.downlineCount || 0) === 1 ? 'Member' : 'Members' }}</strong>
-                    </div>
-                  </div>
-
-                  <!-- Reset User Password Box (Admin Only) -->
-                  <div style="margin-top: 1.25rem; padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
-                    <h4 style="margin: 0 0 0.35rem; font-size: 0.88rem; font-weight: 700; color: #1e293b;">🔑 Reset Member Password</h4>
-                    <p style="margin: 0 0 0.75rem; font-size: 0.78rem; color: #64748b;">Set a new password for {{ selectedUser.fullName || selectedUser.email }} directly.</p>
-                    <div style="display: flex; gap: 0.5rem; align-items: center;">
-                      <input 
-                        type="text" 
-                        v-model="userNewPassword" 
-                        placeholder="Enter new password (min 4 chars)" 
-                        style="flex: 1; padding: 0.55rem 0.75rem; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.85rem; outline: none; background: white;"
-                      />
-                      <button 
-                        @click="handleUpdateUserPassword(selectedUser.id)" 
-                        :disabled="updatingUserPassword"
-                        style="background: #2563eb; color: white; border: none; padding: 0.55rem 1rem; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap;"
-                      >
-                        {{ updatingUserPassword ? 'Saving...' : '🔑 Change Password' }}
-                      </button>
-                    </div>
-                    <div v-if="userPasswordMsg" :style="{ color: userPasswordSuccess ? '#16a34a' : '#ef4444', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 'bold' }">
-                      {{ userPasswordMsg }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 3: PENDING APPROVALS -->
-          <div v-if="currentTab === 'requests'" class="requests-pane">
-            <div class="table-card">
-              <h3>Pending Fund Requests</h3>
-              <div class="table-container">
-                <table class="nice-table">
-                  <thead>
-                    <tr>
-                      <th>Req ID</th>
-                      <th>User</th>
-                      <th>Email</th>
-                      <th>Requested Amount</th>
-                      <th>Date</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="req in fundRequests" :key="req.id">
-                      <td>#{{ req.id }}</td>
-                      <td class="font-bold">{{ req.fullName }}</td>
-                      <td>{{ req.email }}</td>
-                      <td class="font-bold text-blue">₹{{ parseFloat(req.amount).toFixed(2) }}</td>
-                      <td>{{ new Date(req.createdAt).toLocaleDateString() }}</td>
-                      <td>
-                        <div v-if="req.status === 'PENDING'" class="row-actions">
-                          <button @click="processRequest(req.id, true)" class="btn-approve">Approve</button>
-                          <button @click="processRequest(req.id, false)" class="btn-reject">Reject</button>
-                        </div>
-                        <span v-else class="txt-processed">{{ req.status }}</span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 4: SYSTEM ADMINS -->
-          <div v-if="currentTab === 'admins'" class="admins-pane">
-            <div class="table-card">
-              <h3>System Administrators</h3>
-              <div class="table-container">
-                <table class="nice-table">
-                  <thead>
-                    <tr>
-                      <th>Admin ID</th>
-                      <th>Full Name</th>
-                      <th>Email Address</th>
-                      <th>Mobile</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="admin in adminsList" :key="admin.id">
-                      <td>#{{ admin.id }}</td>
-                      <td class="font-bold">{{ admin.fullName }}</td>
-                      <td>{{ admin.email }}</td>
-                      <td>{{ admin.mobileNumber }}</td>
-                      <td><span class="nice-badge-success">Active</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB: ALL TRANSACTIONS -->
-          <div v-if="currentTab === 'transactions'" class="transactions-pane">
-            <div class="table-card">
-              <div class="table-header-row">
-                <h3>All Portal Transactions</h3>
-                <div class="pagination-controls">
-                  <button @click="changeTxnPage(-1)" :disabled="txnPage === 1" class="page-btn page-nav-btn">&larr; Prev</button>
-                  <span class="page-num">Page {{ txnPage }}</span>
-                  <button @click="changeTxnPage(1)" :disabled="allTransactions.length < 15" class="page-btn page-nav-btn">Next &rarr;</button>
-                </div>
-              </div>
-              <div class="table-container">
-                <table class="nice-table">
-                  <thead>
-                    <tr>
-                      <th>Txn ID</th>
-                      <th>User ID</th>
-                      <th>Wallet Type</th>
-                      <th>Amount</th>
-                      <th>Type</th>
-                      <th>Date</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="txn in allTransactions" :key="txn.id">
-                      <td>#{{ txn.id }}</td>
-                      <td>#{{ txn.user_id }}</td>
-                      <td><span class="lbl-wallet" :class="txn.wallet_type.toLowerCase()">{{ txn.wallet_type }}</span></td>
-                      <td class="font-bold">{{ txn.amount }}</td>
-                      <td>{{ txn.type }}</td>
-                      <td>{{ txn.date }}</td>
-                      <td><span class="nice-badge-success">{{ txn.status }}</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB: TEAMS VIEW (DOWNLINE NETWORKS & USER TREE) -->
-          <div v-if="currentTab === 'teams'" class="teams-pane">
-            <div class="table-card">
-              <div class="table-header-row" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <h3 style="margin: 0;">👥 User Downline Affiliate Teams</h3>
-                  <p style="font-size: 0.82rem; color: #64748b; margin-top: 4px;">View registered partners who have joined under other users across your network.</p>
-                </div>
-                <button @click="fetchTeamsData" class="btn-add-img" style="font-size: 0.85rem; padding: 0.4rem 0.85rem;">🔄 Refresh Teams</button>
-              </div>
-
-              <div v-if="loadingTeams" class="loading-box">
-                Loading team tree data...
-              </div>
-
-              <div v-else-if="!teamsData.teams || teamsData.teams.length === 0" style="text-align: center; padding: 3rem; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
-                <p style="color: #64748b; font-size: 0.95rem; font-weight: 600; margin: 0;">No multi-user downline relationships recorded yet.</p>
-                <p style="color: #94a3b8; font-size: 0.82rem; margin-top: 4px;">When users register using another member's Sponsor ID, their affiliate networks will automatically display here.</p>
-              </div>
-
-              <div v-else class="teams-tree-container" style="display: flex; flex-direction: column; gap: 1.25rem;">
-                <div v-for="group in teamsData.teams" :key="group.sponsorId" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                  <!-- Sponsor Header -->
-                  <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.85rem; border-bottom: 1px solid #f1f5f9; margin-bottom: 0.85rem;">
-                    <div>
-                      <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-weight: 800; font-size: 1.05rem; color: #0052cc;">{{ group.sponsorName }}</span>
-                        <span style="font-size: 0.8rem; font-weight: 700; color: #475569; background: #f1f5f9; padding: 2px 8px; border-radius: 6px;">SRM{{ String(group.sponsorId).padStart(6, '0') }}</span>
-                      </div>
-                      <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">{{ group.sponsorEmail }}</div>
-                    </div>
-                    <span style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; border: 1px solid #86efac;">
-                      {{ group.downlines.length }} Direct {{ group.downlines.length === 1 ? 'Member' : 'Members' }}
-                    </span>
-                  </div>
-
-                  <!-- Downlines Table -->
-                  <div class="table-container">
-                    <table class="nice-table">
-                      <thead>
-                        <tr>
-                          <th>Member ID</th>
-                          <th>Full Name</th>
-                          <th>Email</th>
-                          <th>Mobile</th>
-                          <th>Main Wallet</th>
-                          <th>Status</th>
-                          <th>Joined Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="member in group.downlines" :key="member.id">
-                          <td><strong style="color: #0052cc;">SRM{{ String(member.id).padStart(6, '0') }}</strong></td>
-                          <td class="font-bold">{{ member.fullName }}</td>
-                          <td style="color: #475569;">{{ member.email }}</td>
-                          <td>{{ member.mobileNumber || 'N/A' }}</td>
-                          <td class="font-bold" style="color: #16a34a;">₹{{ parseFloat(member.main_wallet_balance || 0).toFixed(2) }}</td>
-                          <td>
-                            <span :class="member.status === 'ACTIVE' || member.status === 'active' ? 'nice-badge-success' : 'nice-badge-pending'">
-                              {{ (member.status || 'ACTIVE').toUpperCase() }}
-                            </span>
-                          </td>
-                          <td style="font-size: 0.8rem; color: #64748b;">{{ member.createdAt ? String(member.createdAt).substring(0, 10) : 'N/A' }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB: SHARED VARIABLES -->
-          <div v-if="currentTab === 'shared_variable'" class="shared-variable-pane">
-            <div class="sv-container">
-              <!-- Header Hero Banner -->
-              <div class="sv-hero-card">
-                <div class="sv-hero-info">
-                  <div class="sv-hero-badge">
-                    <span class="pulse-dot"></span> System Governance
-                  </div>
-                  <h2>🔗 Shared Variables & Global Controls</h2>
-                  <p>Manage system financial limits, commission distribution parameters, payment gateway mode configurations, and instant feature ON/OFF master toggles.</p>
-                </div>
-                <div class="sv-hero-meta">
-                  <div class="meta-pill" :class="systemSettings.maintenance_mode_bool ? 'danger' : 'success'">
-                    <span class="meta-dot"></span>
-                    Maintenance: <strong>{{ systemSettings.maintenance_mode_bool ? 'ENABLED' : 'OFF' }}</strong>
-                  </div>
-                  <div class="meta-pill blue">
-                    <span class="meta-dot"></span>
-                    Scriza: <strong>{{ (systemSettings.scriza_api_mode || 'simulation').toUpperCase() }}</strong>
-                  </div>
-                  <div class="meta-pill purple">
-                    <span class="meta-dot"></span>
-                    Razorpay: <strong>{{ (systemSettings.razorpay_api_mode || 'test').toUpperCase() }}</strong>
-                  </div>
-                </div>
-              </div>
-
-              <form @submit.prevent="handleSaveSystemSettings" class="sv-form">
-                
-                <!-- Section 1: Financial & Commission Parameters -->
-                <div class="sv-section-card">
-                  <div class="sv-section-header">
-                    <div class="sv-section-icon bg-blue-light">💰</div>
-                    <div>
-                      <h3>System Financial & Commission Parameters</h3>
-                      <p>Set wallet minimums, registration fees, commission payouts, and withdrawal rules.</p>
-                    </div>
-                  </div>
-
-                  <div class="sv-grid-3">
-                    <!-- Min Balance -->
-                    <div class="sv-input-card">
-                      <label for="minBalance">
-                        <span class="lbl-text">Minimum Wallet Balance</span>
-                        <span class="unit-badge">₹ INR</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">💼</span>
-                        <input id="minBalance" type="number" step="0.01" v-model="systemSettings.min_wallet_balance" placeholder="50.00" required />
-                      </div>
-                      <span class="input-help">Minimum balance user must maintain in wallet</span>
-                    </div>
-
-                    <!-- Join Amount -->
-                    <div class="sv-input-card">
-                      <label for="joinAmount">
-                        <span class="lbl-text">Join / Activation Amount</span>
-                        <span class="unit-badge">₹ INR</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">🚀</span>
-                        <input id="joinAmount" type="number" v-model="systemSettings.join_amount" placeholder="1200" required />
-                      </div>
-                      <span class="input-help">Account activation cost for new users</span>
-                    </div>
-
-                    <!-- Top-Up Amount -->
-                    <div class="sv-input-card">
-                      <label for="topUpAmount">
-                        <span class="lbl-text">Top-Up Amount</span>
-                        <span class="unit-badge">₹ INR</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">⚡</span>
-                        <input id="topUpAmount" type="number" v-model="systemSettings.top_up_amount" placeholder="1200" required />
-                      </div>
-                      <span class="input-help">Default top-up fee per cycle</span>
-                    </div>
-
-                    <!-- Direct Income -->
-                    <div class="sv-input-card">
-                      <label for="directIncome">
-                        <span class="lbl-text">Direct Sponsor Income</span>
-                        <span class="unit-badge">₹ INR</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">🎁</span>
-                        <input id="directIncome" type="number" v-model="systemSettings.direct_income" placeholder="300" required />
-                      </div>
-                      <span class="input-help">Commission credited to direct sponsor</span>
-                    </div>
-
-                    <!-- Level Pool -->
-                    <div class="sv-input-card">
-                      <label for="levelPool">
-                        <span class="lbl-text">Level Pool Collection</span>
-                        <span class="unit-badge">₹ INR</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">🌐</span>
-                        <input id="levelPool" type="number" v-model="systemSettings.level_pool" placeholder="600" required />
-                      </div>
-                      <span class="input-help">Amount allocated towards level pool</span>
-                    </div>
-
-                    <!-- Company Maintenance -->
-                    <div class="sv-input-card">
-                      <label for="companyMaintenance">
-                        <span class="lbl-text">Company Maintenance</span>
-                        <span class="unit-badge">₹ INR</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">🏢</span>
-                        <input id="companyMaintenance" type="number" v-model="systemSettings.company_maintenance" placeholder="300" required />
-                      </div>
-                      <span class="input-help">Company operational fee portion</span>
-                    </div>
-
-                    <!-- Cycle Size -->
-                    <div class="sv-input-card">
-                      <label for="cycleSize">
-                        <span class="lbl-text">Cycle Size</span>
-                        <span class="unit-badge">Members</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">🔄</span>
-                        <input id="cycleSize" type="number" v-model="systemSettings.cycle_size" placeholder="126" required />
-                      </div>
-                      <span class="input-help">Required downline members per cycle</span>
-                    </div>
-
-                    <!-- Withdrawal Percentage -->
-                    <div class="sv-input-card">
-                      <label for="withdrawPct">
-                        <span class="lbl-text">Withdrawal Deduction</span>
-                        <span class="unit-badge">% Percent</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">📊</span>
-                        <input id="withdrawPct" type="number" v-model="systemSettings.withdrawal_percentage" placeholder="15" required />
-                      </div>
-                      <span class="input-help">TDS / admin charge deduction %</span>
-                    </div>
-
-                    <!-- Minimum Withdrawal -->
-                    <div class="sv-input-card">
-                      <label for="minWithdraw">
-                        <span class="lbl-text">Minimum Withdrawal</span>
-                        <span class="unit-badge">₹ INR</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">💸</span>
-                        <input id="minWithdraw" type="number" v-model="systemSettings.minimum_withdrawal" placeholder="500" required />
-                      </div>
-                      <span class="input-help">Minimum payout request threshold</span>
-                    </div>
-
-                    <!-- Allowed Withdrawal Days -->
-                    <div class="sv-input-card span-full">
-                      <label for="withdrawDays">
-                        <span class="lbl-text">Allowed Withdrawal Days</span>
-                        <span class="unit-badge">Schedule</span>
-                      </label>
-                      <div class="input-with-icon">
-                        <span class="field-icon">📅</span>
-                        <input id="withdrawDays" type="text" v-model="systemSettings.withdrawal_days" placeholder="Mon,Wed,Fri" required />
-                      </div>
-                      <span class="input-help">Comma-separated days when cash out requests are allowed</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Section 2: Master Feature ON/OFF Switches -->
-                <div class="sv-section-card" style="margin-top: 1.5rem;">
-                  <div class="sv-section-header">
-                    <div class="sv-section-icon bg-purple-light">🎛️</div>
-                    <div>
-                      <h3>Master Global Feature Switches</h3>
-                      <p>Turn core features ON or OFF across the entire mobile & web platform instantly.</p>
-                    </div>
-                  </div>
-
-                  <div class="toggles-grid">
-                    <!-- Toggle 1: User Registration -->
-                    <div class="toggle-card" :class="{ 'active': systemSettings.registration_enabled_bool }">
-                      <div class="toggle-info">
-                        <span class="toggle-icon">👤</span>
-                        <div>
-                          <strong class="toggle-title">User Registration Flow</strong>
-                          <p class="toggle-desc">Allow new members to sign up</p>
-                        </div>
-                      </div>
-                      <div class="toggle-action">
-                        <label class="switch">
-                          <input type="checkbox" v-model="systemSettings.registration_enabled_bool" />
-                          <span class="slider round"></span>
-                        </label>
-                        <span class="state-badge" :class="systemSettings.registration_enabled_bool ? 'badge-on' : 'badge-off'">
-                          {{ systemSettings.registration_enabled_bool ? 'ACTIVE' : 'OFF' }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Toggle 2: User Login -->
-                    <div class="toggle-card" :class="{ 'active': systemSettings.login_enabled_bool }">
-                      <div class="toggle-info">
-                        <span class="toggle-icon">🔑</span>
-                        <div>
-                          <strong class="toggle-title">User Login Flow</strong>
-                          <p class="toggle-desc">Enable member authentication</p>
-                        </div>
-                      </div>
-                      <div class="toggle-action">
-                        <label class="switch">
-                          <input type="checkbox" v-model="systemSettings.login_enabled_bool" />
-                          <span class="slider round"></span>
-                        </label>
-                        <span class="state-badge" :class="systemSettings.login_enabled_bool ? 'badge-on' : 'badge-off'">
-                          {{ systemSettings.login_enabled_bool ? 'ACTIVE' : 'OFF' }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Toggle 3: OTP & Forgot Password -->
-                    <div class="toggle-card" :class="{ 'active': systemSettings.otp_enabled_bool }">
-                      <div class="toggle-info">
-                        <span class="toggle-icon">📲</span>
-                        <div>
-                          <strong class="toggle-title">OTP & Password Recovery</strong>
-                          <p class="toggle-desc">Send SMS OTP verification codes</p>
-                        </div>
-                      </div>
-                      <div class="toggle-action">
-                        <label class="switch">
-                          <input type="checkbox" v-model="systemSettings.otp_enabled_bool" />
-                          <span class="slider round"></span>
-                        </label>
-                        <span class="state-badge" :class="systemSettings.otp_enabled_bool ? 'badge-on' : 'badge-off'">
-                          {{ systemSettings.otp_enabled_bool ? 'ACTIVE' : 'OFF' }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Toggle 4: Add Money & Fund Request -->
-                    <div class="toggle-card" :class="{ 'active': systemSettings.add_money_enabled_bool }">
-                      <div class="toggle-info">
-                        <span class="toggle-icon">💳</span>
-                        <div>
-                          <strong class="toggle-title">Add Money & Fund Requests</strong>
-                          <p class="toggle-desc">Allow online payments & UPI loads</p>
-                        </div>
-                      </div>
-                      <div class="toggle-action">
-                        <label class="switch">
-                          <input type="checkbox" v-model="systemSettings.add_money_enabled_bool" />
-                          <span class="slider round"></span>
-                        </label>
-                        <span class="state-badge" :class="systemSettings.add_money_enabled_bool ? 'badge-on' : 'badge-off'">
-                          {{ systemSettings.add_money_enabled_bool ? 'ACTIVE' : 'OFF' }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Toggle 5: Withdrawal Requests -->
-                    <div class="toggle-card" :class="{ 'active': systemSettings.withdrawal_enabled_bool }">
-                      <div class="toggle-info">
-                        <span class="toggle-icon">💸</span>
-                        <div>
-                          <strong class="toggle-title">Cash Out & Withdrawals</strong>
-                          <p class="toggle-desc">Allow users to request bank payouts</p>
-                        </div>
-                      </div>
-                      <div class="toggle-action">
-                        <label class="switch">
-                          <input type="checkbox" v-model="systemSettings.withdrawal_enabled_bool" />
-                          <span class="slider round"></span>
-                        </label>
-                        <span class="state-badge" :class="systemSettings.withdrawal_enabled_bool ? 'badge-on' : 'badge-off'">
-                          {{ systemSettings.withdrawal_enabled_bool ? 'ACTIVE' : 'OFF' }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Toggle 6: CAPTCHA Requirement -->
-                    <div class="toggle-card" :class="{ 'active': systemSettings.captcha_enabled_bool }">
-                      <div class="toggle-info">
-                        <span class="toggle-icon">🛡️</span>
-                        <div>
-                          <strong class="toggle-title">CAPTCHA Verification</strong>
-                          <p class="toggle-desc">Require anti-bot CAPTCHA on forms</p>
-                        </div>
-                      </div>
-                      <div class="toggle-action">
-                        <label class="switch">
-                          <input type="checkbox" v-model="systemSettings.captcha_enabled_bool" />
-                          <span class="slider round"></span>
-                        </label>
-                        <span class="state-badge" :class="systemSettings.captcha_enabled_bool ? 'badge-on' : 'badge-off'">
-                          {{ systemSettings.captcha_enabled_bool ? 'ACTIVE' : 'OFF' }}
-                        </span>
-                      </div>
-                    </div>
-
-                    <!-- Toggle 7: Maintenance Mode -->
-                    <div class="toggle-card danger-toggle" :class="{ 'active-danger': systemSettings.maintenance_mode_bool }">
-                      <div class="toggle-info">
-                        <span class="toggle-icon">⚠️</span>
-                        <div>
-                          <strong class="toggle-title" style="color: #dc2626;">Platform Maintenance Mode</strong>
-                          <p class="toggle-desc">Block user access with maintenance screen</p>
-                        </div>
-                      </div>
-                      <div class="toggle-action">
-                        <label class="switch switch-danger">
-                          <input type="checkbox" v-model="systemSettings.maintenance_mode_bool" />
-                          <span class="slider round"></span>
-                        </label>
-                        <span class="state-badge" :class="systemSettings.maintenance_mode_bool ? 'badge-danger' : 'badge-off'">
-                          {{ systemSettings.maintenance_mode_bool ? 'ENABLED' : 'OFF' }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Section 3: Payment Gateways & API Integration Controls -->
-                <div class="sv-section-card" style="margin-top: 1.5rem;">
-                  <div class="sv-section-header">
-                    <div class="sv-section-icon bg-green-light">💳</div>
-                    <div>
-                      <h3>Payment Gateways & App Updates Config</h3>
-                      <p>Manage Razorpay keys, Scriza API environment, company UPI handle, and version enforcement.</p>
-                    </div>
-                  </div>
-
-                  <div class="gateways-grid">
-                    <!-- Scriza API Mode Card -->
-                    <div class="gateway-box">
-                      <div class="gateway-box-header">
-                        <span class="gw-title">⚡ Scriza Recharge API Mode</span>
-                        <span class="gw-tag" :class="systemSettings.scriza_api_mode === 'production' ? 'tag-live' : 'tag-sim'">
-                          {{ systemSettings.scriza_api_mode === 'production' ? 'PRODUCTION LIVE' : 'SIMULATION' }}
-                        </span>
-                      </div>
-                      <div class="sv-input-card">
-                        <label for="scrizaMode">Active Environment</label>
-                        <select id="scrizaMode" v-model="systemSettings.scriza_api_mode" class="styled-select">
-                          <option value="simulation">🧪 Simulation Mode (Test Responses)</option>
-                          <option value="production">🟢 Production Live Mode (Real Recharges)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <!-- Razorpay Mode Card -->
-                    <div class="gateway-box">
-                      <div class="gateway-box-header">
-                        <span class="gw-title">🔷 Razorpay Payment Gateway</span>
-                        <span class="gw-tag" :class="systemSettings.razorpay_api_mode === 'live' ? 'tag-live' : 'tag-sim'">
-                          {{ systemSettings.razorpay_api_mode === 'live' ? 'LIVE PAYMENTS' : 'TEST MODE' }}
-                        </span>
-                      </div>
-                      <div class="sv-input-card">
-                        <label for="razorpayMode">Environment Mode</label>
-                        <select id="razorpayMode" v-model="systemSettings.razorpay_api_mode" class="styled-select">
-                          <option value="test">🧪 Test Payments Mode (Sandbox Keys)</option>
-                          <option value="live">🟢 Live Payments Mode (Real Money Payouts)</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <!-- Razorpay Key ID -->
-                    <div class="gateway-box">
-                      <div class="sv-input-card">
-                        <label for="razorpayKeyId">
-                          <span class="lbl-text">Razorpay Key ID</span>
-                        </label>
-                        <input id="razorpayKeyId" type="text" v-model="systemSettings.razorpay_key_id" placeholder="rzp_live_xxxxxxxx" required />
-                      </div>
-                    </div>
-
-                    <!-- Razorpay Key Secret -->
-                    <div class="gateway-box">
-                      <div class="sv-input-card">
-                        <label for="razorpayKeySecret">
-                          <span class="lbl-text">Razorpay Key Secret</span>
-                        </label>
-                        <div class="input-with-button">
-                          <input id="razorpayKeySecret" :type="showRazorpaySecret ? 'text' : 'password'" v-model="systemSettings.razorpay_key_secret" placeholder="Enter Key Secret" required />
-                          <button type="button" @click="showRazorpaySecret = !showRazorpaySecret" class="btn-toggle-eye">
-                            {{ showRazorpaySecret ? '🔒 Hide' : '👁️ Show' }}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- UPI Direct VPA -->
-                    <div class="gateway-box">
-                      <div class="sv-input-card">
-                        <label for="upiVpaId">
-                          <span class="lbl-text">Company UPI VPA Address</span>
-                        </label>
-                        <input id="upiVpaId" type="text" v-model="systemSettings.upi_vpa_id" placeholder="vp110064@okaxis" required />
-                      </div>
-                    </div>
-
-                    <!-- UPI Payee Name -->
-                    <div class="gateway-box">
-                      <div class="sv-input-card">
-                        <label for="upiPayeeName">
-                          <span class="lbl-text">Company UPI Payee Name</span>
-                        </label>
-                        <input id="upiPayeeName" type="text" v-model="systemSettings.upi_payee_name" placeholder="EarnFarm Official" required />
-                      </div>
-                    </div>
-
-                    <!-- Force Update Version -->
-                    <div class="gateway-box span-full">
-                      <div class="sv-input-card">
-                        <label for="forceVersion">
-                          <span class="lbl-text">Force Update Android App Version</span>
-                          <span class="unit-badge">App Build</span>
-                        </label>
-                        <input id="forceVersion" type="text" v-model="systemSettings.force_update_version" placeholder="1.0.0" required />
-                        <span class="input-help">Mobile app builds below this version string will prompt force update</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Action Footer Bar -->
-                <div class="sv-action-bar" style="margin-top: 1.5rem;">
-                  <div class="sv-action-info">
-                    <div v-if="systemError" class="alert-box alert-error">⚠️ {{ systemError }}</div>
-                    <div v-if="systemSuccess" class="alert-box alert-success">✅ {{ systemSuccess }}</div>
-                    <span v-if="!systemError && !systemSuccess" class="status-tip">
-                      💡 Changes take effect immediately across all connected client applications.
-                    </span>
-                  </div>
-                  <button type="submit" :disabled="loadingSystem" class="sv-save-btn">
-                    <span v-if="loadingSystem" class="spinner-icon">🔄</span>
-                    <span>{{ loadingSystem ? 'Saving System Preferences...' : '💾 Save System Preferences' }}</span>
-                  </button>
-                </div>
-
-              </form>
-            </div>
-          </div>
-
-          <!-- TAB: CHANGE PASSWORD -->
-          <div v-if="currentTab === 'settings'" class="settings-pane">
-            <div class="settings-nice-card">
-              <h3>Change Admin Password</h3>
-              <p class="section-desc">Change the password used to access the administrator dashboard.</p>
-              
-              <form @submit.prevent="handleChangePassword" class="settings-form">
-                <div class="form-horizontal-grid">
-                  <!-- Left Column -->
-                  <div class="form-column">
-                    <div class="nice-input-group">
-                      <label for="oldPassword">Current Password</label>
-                      <input id="oldPassword" type="password" v-model="oldPassword" placeholder="Enter current password" required />
-                    </div>
-                    <div class="nice-input-group" style="margin-top: 1rem;">
-                      <label for="newPassword">New Password</label>
-                      <input id="newPassword" type="password" v-model="newPassword" placeholder="Enter new password" required />
-                    </div>
-                  </div>
-
-                  <!-- Right Column -->
-                  <div class="form-column">
-                    <div class="nice-input-group">
-                      <label for="confirmPassword">Confirm New Password</label>
-                      <input id="confirmPassword" type="password" v-model="confirmPassword" placeholder="Confirm new password" required />
-                    </div>
-                    <div v-if="passwordError" class="error-msg" style="margin-top: 1rem;">{{ passwordError }}</div>
-                    <div v-if="passwordSuccess" class="success-msg" style="margin-top: 1rem;">{{ passwordSuccess }}</div>
-                    <button type="submit" :disabled="loadingPassword" class="nice-save-btn" style="width: 100%; margin-top: 2rem;">
-                      <span v-if="loadingPassword">Updating password...</span>
-                      <span v-else>Update Password</span>
-                    </button>
-                  </div>
-                </div>
-              </form>
             </div>
           </div>
         </div>
+
+        <!-- SECTION: ALL TRANSACTIONS (17. Transaction History) -->
+        <div v-if="currentTab === 'transactions' || currentTab === 'sec_transactions'" class="transactions-pane">
+          <div class="table-card">
+            <div class="table-header-row">
+              <h3>All Platform Ledger Transactions</h3>
+              <div class="pagination-controls">
+                <button @click="changeTxnPage(-1)" :disabled="txnPage === 1" class="page-btn">&larr; Prev</button>
+                <span class="page-num">Page {{ txnPage }}</span>
+                <button @click="changeTxnPage(1)" :disabled="allTransactions.length < 15" class="page-btn">Next &rarr;</button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="nice-table">
+                <thead>
+                  <tr>
+                    <th>Txn ID</th>
+                    <th>User ID</th>
+                    <th>Wallet Type</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="txn in allTransactions" :key="txn.id">
+                    <td>#{{ txn.id }}</td>
+                    <td>User #{{ txn.user_id }}</td>
+                    <td>{{ txn.wallet_type }}</td>
+                    <td class="font-bold">{{ txn.amount }}</td>
+                    <td>{{ txn.type }}</td>
+                    <td><span class="badge-status-active">{{ txn.status }}</span></td>
+                    <td>{{ txn.date }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: SEND NOTIFICATIONS (15. Notifications) -->
+        <div v-if="currentTab === 'notifications' || currentTab === 'sec_notifications'" class="notifications-pane">
+          <div class="settings-table-card">
+            <h3>📢 Broadcast Mobile Push Notification</h3>
+            <p class="card-desc">Send push alerts and announcements to all registered mobile app users.</p>
+            
+            <form @submit.prevent="handleSendNotification" class="notif-form">
+              <div class="nice-input-group">
+                <label>Notification Title</label>
+                <input type="text" v-model="notifTitle" placeholder="e.g. 🎉 Special Cashback Offer Active!" required />
+              </div>
+              <div class="nice-input-group" style="margin-top: 1rem;">
+                <label>Message Content</label>
+                <textarea v-model="notifMessage" rows="4" placeholder="Enter notification description here..." required></textarea>
+              </div>
+
+              <div v-if="notifError" class="alert-box alert-error" style="margin-top: 1rem;">⚠️ {{ notifError }}</div>
+              <div v-if="notifSuccess" class="alert-box alert-success" style="margin-top: 1rem;">✅ {{ notifSuccess }}</div>
+
+              <button type="submit" :disabled="sendingNotif" class="btn-blue-save" style="margin-top: 1.5rem; width: 100%;">
+                <span>📢 {{ sendingNotif ? 'Broadcasting Notice...' : 'Send Broadcast Notice' }}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- SECTION: SHARED VARIABLE (Global Settings) -->
+        <div v-if="currentTab === 'shared_variable'" class="shared-variable-pane">
+          <div class="settings-table-card">
+            <h3>🔗 Shared Variables & Global System Parameters</h3>
+            <p class="card-desc">Configure financial limits, cycle rules, gateway modes, and global ON/OFF toggles.</p>
+
+            <form @submit.prevent="handleSaveSystemSettings">
+              <div class="form-action-row" style="margin-top: 1.5rem;">
+                <button type="submit" :disabled="loadingSystem" class="btn-blue-save" style="width: 100%;">
+                  <span>💾 {{ loadingSystem ? 'Saving All Settings...' : 'Save All Settings' }}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- SECTION: CHANGE PASSWORD -->
+        <div v-if="currentTab === 'settings'" class="settings-pane">
+          <div class="settings-table-card">
+            <h3>🔑 Change Admin Password</h3>
+            <p class="card-desc">Update the master credentials used to access the administrator dashboard.</p>
+            
+            <form @submit.prevent="handleChangePassword">
+              <div class="nice-input-group">
+                <label>Current Password</label>
+                <input type="password" v-model="oldPassword" placeholder="Enter current password" required />
+              </div>
+              <div class="nice-input-group" style="margin-top: 1rem;">
+                <label>New Password</label>
+                <input type="password" v-model="newPassword" placeholder="Enter new password" required />
+              </div>
+              <div class="nice-input-group" style="margin-top: 1rem;">
+                <label>Confirm New Password</label>
+                <input type="password" v-model="confirmPassword" placeholder="Confirm new password" required />
+              </div>
+
+              <div v-if="passwordError" class="alert-box alert-error" style="margin-top: 1rem;">⚠️ {{ passwordError }}</div>
+              <div v-if="passwordSuccess" class="alert-box alert-success" style="margin-top: 1rem;">✅ {{ passwordSuccess }}</div>
+
+              <button type="submit" :disabled="loadingPassword" class="btn-blue-save" style="margin-top: 1.5rem; width: 100%;">
+                <span>🔑 {{ loadingPassword ? 'Updating...' : 'Update Password' }}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- GENERIC DUMMY FALLBACK FOR OTHER SECTIONS (1-19) -->
+        <div v-if="['sec_registration', 'sec_login', 'sec_otp', 'sec_home', 'sec_business_income', 'sec_global_cycle', 'sec_bank_verification', 'sec_support', 'sec_captcha', 'sec_side_menu'].includes(currentTab)" class="generic-section-pane">
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box blue-bg">⚙️</div>
+              <div>
+                <h2>{{ getSectionTitle(currentTab) }}</h2>
+                <p>Configure section settings, rules, limits and user panel visibility.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">Active Section</span>
+              <label class="switch">
+                <input type="checkbox" checked />
+                <span class="slider round"></span>
+              </label>
+              <span class="main-on-badge badge-on">ON</span>
+            </div>
+          </div>
+
+          <div class="blue-alert-bar">
+            <span>ℹ️ Edit section rules below. All modifications will reflect on the live user panel immediately after saving.</span>
+          </div>
+
+          <div class="settings-table-card">
+            <h3>⚙️ {{ getSectionTitle(currentTab) }} Settings</h3>
+            <p class="card-desc">Configure rules, limits and display parameters for this feature.</p>
+            <div class="table-container">
+              <table class="nice-table settings-edit-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Setting</th>
+                    <th>Value (As per your choice)</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td class="font-bold">Feature Display Visibility</td>
+                    <td>
+                      <select class="table-select"><option value="Show">Show</option><option value="Hide">Hide</option></select>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td class="font-bold">Feature Master Rule Mode</td>
+                    <td>
+                      <input type="text" value="Enabled (Standard)" class="table-input" />
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td class="font-bold">Important User Notice</td>
+                    <td>
+                      <textarea rows="3" class="table-textarea" placeholder="Enter notice content for users..."></textarea>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="form-action-row">
+              <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
+              <button class="btn-white-reset">↺ Reset</button>
+            </div>
+          </div>
+
+          <div class="section-footer-note">
+            <span>ℹ️ Note: Any changes you make here will reflect instantly on the user panel.</span>
+            <span class="last-updated">Last Updated: 13 Sep 2026, 10:45 AM</span>
+          </div>
+        </div>
+
       </main>
     </div>
   </div>
@@ -1047,9 +1839,14 @@ export default {
   name: 'AdminDashboard',
   data() {
     return {
-      currentTab: 'dashboard',
+      currentTab: 'sec_add_money',
       mobileMenuOpen: false,
+      globalSearch: '',
       adminEmail: localStorage.getItem('adminEmail') || 'haris@gmail.com',
+      expandedGroups: {
+        user_management: true,
+        global_settings: true
+      },
       stats: {
         totalUsers: 0,
         totalFundWallet: 0,
@@ -1062,6 +1859,12 @@ export default {
       fundRequests: [],
       adminsList: [],
       selectedUser: null,
+      selectedRequest: null,
+      requestRemark: '',
+      reqFilterStatus: 'PENDING',
+      reqSearchQuery: '',
+      reqPaymentModeFilter: '',
+      reqAmountFilter: '',
       userPage: 1,
       txnPage: 1,
       loading: true,
@@ -1105,15 +1908,12 @@ export default {
       loadingTeams: false,
       systemSettings: {
         min_wallet_balance: '50.00',
-        maintenance_mode: 'false',
         maintenance_mode_bool: false,
         force_update_version: '1.0.0',
         scriza_api_mode: 'simulation',
         razorpay_api_mode: 'test',
         razorpay_key_id: '',
         razorpay_key_secret: '',
-        marquee_text: '',
-        marquee_images: '',
         join_amount: '1200',
         top_up_amount: '1200',
         direct_income: '300',
@@ -1121,119 +1921,194 @@ export default {
         company_maintenance: '300',
         cycle_size: '126',
         withdrawal_percentage: '15',
-        minimum_withdrawal: '500',
+        minimum_withdrawal: '200',
+        max_withdrawal: '25000',
         withdrawal_days: 'Mon,Wed,Fri',
         upi_vpa_id: 'vp110064@okaxis',
         upi_payee_name: 'EarnFarm',
-        whatsapp_support_link: 'https://wa.me/919876543210',
-        whatsapp_support_enabled_bool: true,
-        whatsapp_group_link: 'https://chat.whatsapp.com/EarnFarmGlobalTeam',
-        whatsapp_group_enabled_bool: true,
-        popup_banner_image: 'https://placehold.co/600x400/0052cc/ffffff?text=Special+Promotion+Banner',
-        popup_banner_enabled_bool: true,
-        popup_banner_display_mode: 'once',
-        registration_enabled_bool: true,
-        login_enabled_bool: true,
-        otp_enabled_bool: true,
+        upi_qr_url: '',
+        min_add_money: '1200',
+        max_add_money: '12000',
+        preset_amounts: '100,500,1000,2000,5000',
+        utr_number_rule: 'Enable (Required)',
+        add_money_instructions: 'Minimum Add Money: ₹1200\nMaximum Add Money: ₹12000\nOnly 12 Digit UTR number is allowed.\nFunds will be added after Admin approval.\nIt may take some time for approval.',
         add_money_enabled_bool: true,
+        id_subscription_enabled_bool: true,
+        sub_user_details_visibility: 'Show',
+        sub_wallet_visibility: 'Show',
+        sub_button_visibility: 'Show',
+        sub_auto_activation: 'Enable',
+        sub_back_button: 'Show',
+        sub_instructions: 'Subscription amount is non-refundable. Ensure the mobile number is correct. Your ID will be activated after successful payment. Contact support for any issues.',
+        referral_enabled_bool: true,
+        ref_section_visibility: 'Show',
+        referral_text: 'Refer App Earn ₹ 300.00',
+        referral_subtext: 'Each Referral',
+        ref_invite_button_visibility: 'Show',
+        referral_instructions: 'Share your referral link with friends and earn rewards.',
         withdrawal_enabled_bool: true,
-        captcha_enabled_bool: true
+        cashout_section_visibility: 'Show',
+        withdrawal_charges_type: 'Percentage',
+        bank_verification_rule: 'Must be Verified',
+        cashout_instructions: 'Withdrawal will be processed within 24 hours after admin approval.',
+        cashout_submit_button_visibility: 'Show',
+        status_upi_qr: true,
+        status_upi_id: true,
+        status_min_add_money: true,
+        status_max_add_money: true,
+        status_preset_amounts: true,
+        status_utr_rule: true,
+        status_add_instructions: true,
+        status_sub_user_details: true,
+        status_sub_amount: true,
+        status_sub_wallet: true,
+        status_sub_instructions: true,
+        status_sub_button: true,
+        status_sub_activation: true,
+        status_sub_back: true,
+        status_ref_section: true,
+        status_ref_reward: true,
+        status_ref_text: true,
+        status_ref_subtext: true,
+        status_ref_button: true,
+        status_ref_instructions: true,
+        status_cashout_section: true,
+        status_min_withdraw: true,
+        status_max_withdraw: true,
+        status_withdraw_charges: true,
+        status_charges_type: true,
+        status_bank_rule: true,
+        status_cashout_instructions: true,
+        status_cashout_button: true
       }
-    }
+    };
   },
   computed: {
-    tabTitle() {
-      switch (this.currentTab) {
-        case 'dashboard': return 'Dashboard Overview';
-        case 'users': return 'Mobile Portal Users';
-        case 'requests': return 'Deposit Requests Approval';
-        case 'transactions': return 'All Portal Transactions';
-        case 'teams': return 'Downline Affiliate Networks';
-        case 'notifications': return 'Broadcast Notification';
-        case 'shared_variable': return 'Shared System Variables';
-        case 'admins': return 'System Administrator Staff';
-        case 'settings': return 'Change Password';
-        default: return 'Management Console';
-      }
-    },
     pendingRequestsCount() {
       return this.fundRequests.filter(r => r.status === 'PENDING').length;
     },
-    isGlobalTab() {
-      return ['notifications', 'shared_variable', 'admins'].includes(this.currentTab);
-    }
-  },
-  watch: {
-    currentTab(newTab) {
-      if (newTab === 'dashboard') {
-        if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
-        this.fetchDashboardData();
-        this.checkGatewayStatus();
-      } else if (newTab === 'users') {
-        if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
-        this.fetchUsers();
-      } else if (newTab === 'requests') {
-        if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
-        this.fetchFundRequests();
-      } else if (newTab === 'transactions') {
-        if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
-        this.fetchAllTransactions();
-      } else if (newTab === 'teams') {
-        if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
-        this.fetchTeamsData();
-      } else if (newTab === 'admins') {
-        if (this.$route.path !== '/admin-dashboard') this.$router.push('/admin-dashboard');
-        this.fetchAdminsList();
-      } else if (newTab === 'settings') {
-        if (this.$route.path !== '/admin-settings') this.$router.push('/admin-settings');
-      } else if (newTab === 'shared_variable') {
-        if (this.$route.path !== '/admin-settings') this.$router.push('/admin-settings');
-        this.fetchSystemSettings();
-      }
-    },
-    '$route.path'(newPath) {
-      this.syncTabFromPath();
+    filteredRequests() {
+      return this.fundRequests.filter(req => {
+        const matchesStatus = !this.reqFilterStatus || req.status === this.reqFilterStatus;
+        const q = this.reqSearchQuery.toLowerCase();
+        const matchesQuery = !q || 
+          (req.fullName && req.fullName.toLowerCase().includes(q)) ||
+          (req.mobileNumber && req.mobileNumber.includes(q)) ||
+          (req.utr_number && req.utr_number.toLowerCase().includes(q));
+        const matchesPM = !this.reqPaymentModeFilter || (req.payment_method && req.payment_method.includes(this.reqPaymentModeFilter));
+        const matchesAmt = !this.reqAmountFilter || String(req.amount) === this.reqAmountFilter;
+        return matchesStatus && matchesQuery && matchesPM && matchesAmt;
+      });
     }
   },
   mounted() {
-    this.syncTabFromPath();
-    this.fetchDashboardData();
     this.checkGatewayStatus();
+    this.fetchDashboardData();
+    this.fetchSystemSettings();
     this.fetchFundRequests();
+    this.fetchTeamsData();
   },
   methods: {
-    syncTabFromPath() {
-      if (this.$route.path === '/admin-settings' && this.currentTab !== 'shared_variable') {
-        this.currentTab = 'settings';
+    toggleGroup(groupKey) {
+      this.expandedGroups[groupKey] = !this.expandedGroups[groupKey];
+    },
+    switchTab(tab) {
+      this.currentTab = tab;
+      this.mobileMenuOpen = false;
+    },
+    getSectionTitle(tabKey) {
+      const titles = {
+        sec_registration: '1. Registration',
+        sec_login: '2. Login',
+        sec_otp: '3. OTP / Forgot Password',
+        sec_home: '4. Home / Dashboard',
+        sec_business_income: '8. Business / Income',
+        sec_global_cycle: '9. Global Cycle',
+        sec_bank_verification: '13. Bank Account Verification',
+        sec_support: '16. Support',
+        sec_captcha: '18. CAPTCHA Work',
+        sec_side_menu: '19. Side Menu'
+      };
+      return titles[tabKey] || 'Section Configuration';
+    },
+    getReqCount(status) {
+      return this.fundRequests.filter(r => r.status === status).length;
+    },
+    getPMClass(pm) {
+      if (!pm) return 'pm-gpay';
+      if (pm.includes('PhonePe')) return 'pm-phonepe';
+      if (pm.includes('Paytm')) return 'pm-paytm';
+      if (pm.includes('Bank')) return 'pm-bank';
+      return 'pm-gpay';
+    },
+    getStatusBadgeClass(status) {
+      if (status === 'APPROVED') return 'badge-status-approved';
+      if (status === 'REJECTED') return 'badge-status-rejected';
+      return 'badge-status-pending';
+    },
+    copyToClipboard(text) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+        alert('Copied to clipboard: ' + text);
       }
     },
-    async fetchTeamsData() {
-      this.loadingTeams = true;
-      const token = localStorage.getItem('adminToken');
-      if (!token) return;
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/teams`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!response.ok) throw new Error('Failed to load teams data');
-        this.teamsData = await response.json();
-      } catch (err) {
-        console.error(err);
-      } finally {
-        this.loadingTeams = false;
+    handleFileUpload(event, field) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.systemSettings[field] = e.target.result;
+        };
+        reader.readAsDataURL(file);
       }
+    },
+    resetAddMoneySettings() {
+      this.systemSettings.upi_vpa_id = 'vp110064@okaxis';
+      this.systemSettings.min_add_money = '1200';
+      this.systemSettings.max_add_money = '12000';
+      this.systemSettings.preset_amounts = '100,500,1000,2000,5000';
+      this.systemSettings.utr_number_rule = 'Enable (Required)';
+    },
+    resetSubSettings() {
+      this.systemSettings.sub_user_details_visibility = 'Show';
+      this.systemSettings.join_amount = '1200';
+      this.systemSettings.sub_wallet_visibility = 'Show';
+    },
+    resetRefSettings() {
+      this.systemSettings.ref_section_visibility = 'Show';
+      this.systemSettings.direct_income = '300';
+      this.systemSettings.referral_text = 'Refer App Earn ₹ 300.00';
+    },
+    resetCashoutSettings() {
+      this.systemSettings.cashout_section_visibility = 'Show';
+      this.systemSettings.minimum_withdrawal = '200';
+      this.systemSettings.max_withdrawal = '25000';
+    },
+    applyReqFilters() {
+      // Filters are computed dynamically via filteredRequests
+    },
+    resetReqFilters() {
+      this.reqSearchQuery = '';
+      this.reqPaymentModeFilter = '';
+      this.reqAmountFilter = '';
+      this.reqFilterStatus = 'PENDING';
+    },
+    exportRequestsCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,ID,User,Amount,PaymentMode,UTR,Date,Status\n";
+      this.filteredRequests.forEach(r => {
+        csvContent += `${r.id},"${r.fullName || 'User'}","${r.amount}","${r.payment_method || 'UPI'}","${r.utr_number || ''}","${r.created_at || ''}","${r.status}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Fund_Requests_${new Date().toISOString().substring(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     },
     async checkGatewayStatus() {
       const token = localStorage.getItem('adminToken');
-      if (!token) {
-        this.gatewayStatus = {
-          database: 'Operational (Online)',
-          app_api: 'Operational (Online)',
-          scriza_api: 'Operational (Live)',
-          razorpay_gateway: 'Operational (Live)'
-        };
-        return;
-      }
+      if (!token) return;
       try {
         const response = await fetch(`${API_BASE_URL}/api/admin/gateway-status`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -1257,7 +2132,6 @@ export default {
     },
     async fetchDashboardData() {
       this.loading = true;
-      this.error = '';
       const token = localStorage.getItem('adminToken');
       if (!token) {
         this.$router.push('/admin-login');
@@ -1267,68 +2141,13 @@ export default {
         const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (!response.ok) throw new Error('Unauthorized');
         const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || 'Failed to load dashboard data');
-        }
-        this.stats = data.stats;
-        this.transactions = data.transactions;
+        this.stats = data.stats || this.stats;
+        this.users = data.users || [];
+        this.allTransactions = data.transactions || [];
       } catch (err) {
         this.error = err.message;
-      } finally {
-        this.loading = false;
-      }
-    },
-    async fetchUsers() {
-      this.loading = true;
-      const token = localStorage.getItem('adminToken');
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/dashboard?page=${this.userPage}&limit=10`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        this.users = data.users;
-      } catch (err) {
-        this.error = err.message;
-      } finally {
-        this.loading = false;
-      }
-    },
-    async fetchAllTransactions() {
-      this.loading = true;
-      const token = localStorage.getItem('adminToken');
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/transactions?page=${this.txnPage}&limit=15`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        this.allTransactions = await response.json();
-      } catch (e) {
-        console.error(e);
-      } finally {
-        this.loading = false;
-      }
-    },
-    async fetchFundRequests() {
-      const token = localStorage.getItem('adminToken');
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        this.fundRequests = await response.json();
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    async fetchAdminsList() {
-      this.loading = true;
-      const token = localStorage.getItem('adminToken');
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/list`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        this.adminsList = await response.json();
-      } catch (e) {
-        console.error(e);
       } finally {
         this.loading = false;
       }
@@ -1337,177 +2156,109 @@ export default {
       const token = localStorage.getItem('adminToken');
       if (!token) return;
       try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/settings`, {
+        const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) throw new Error('Failed to load settings');
-        const data = await response.json();
-        this.systemSettings.min_wallet_balance = data.min_wallet_balance || '50.00';
-        this.systemSettings.force_update_version = data.force_update_version || '1.0.0';
-        this.systemSettings.scriza_api_mode = data.scriza_api_mode || 'simulation';
-        this.systemSettings.razorpay_api_mode = data.razorpay_api_mode || 'test';
-        this.systemSettings.razorpay_key_id = data.razorpay_key_id || '';
-        this.systemSettings.razorpay_key_secret = data.razorpay_key_secret || '';
-        this.systemSettings.marquee_text = data.marquee_text || '';
-        this.systemSettings.marquee_images = data.marquee_images || '';
-        this.systemSettings.maintenance_mode = data.maintenance_mode || 'false';
-        this.systemSettings.maintenance_mode_bool = data.maintenance_mode === 'true';
-        this.systemSettings.join_amount = data.join_amount || '1200';
-        this.systemSettings.top_up_amount = data.top_up_amount || '1200';
-        this.systemSettings.direct_income = data.direct_income || '300';
-        this.systemSettings.level_pool = data.level_pool || '600';
-        this.systemSettings.company_maintenance = data.company_maintenance || '300';
-        this.systemSettings.cycle_size = data.cycle_size || '126';
-        this.systemSettings.withdrawal_percentage = data.withdrawal_percentage || '15';
-        this.systemSettings.minimum_withdrawal = data.minimum_withdrawal || '500';
-        this.systemSettings.withdrawal_days = data.withdrawal_days || 'Mon,Wed,Fri';
-        this.systemSettings.upi_vpa_id = data.upi_vpa_id || 'vp110064@okaxis';
-        this.systemSettings.upi_payee_name = data.upi_payee_name || 'EarnFarm';
-
-        this.systemSettings.whatsapp_support_link = data.whatsapp_support_link || 'https://wa.me/919876543210';
-        this.systemSettings.whatsapp_support_enabled_bool = data.whatsapp_support_enabled !== 'false';
-        this.systemSettings.whatsapp_group_link = data.whatsapp_group_link || 'https://chat.whatsapp.com/EarnFarmGlobalTeam';
-        this.systemSettings.whatsapp_group_enabled_bool = data.whatsapp_group_enabled !== 'false';
-        this.systemSettings.popup_banner_image = data.popup_banner_image || '';
-        this.systemSettings.popup_banner_enabled_bool = data.popup_banner_enabled === 'true';
-        this.systemSettings.popup_banner_display_mode = data.popup_banner_display_mode || 'once';
-
-        this.systemSettings.registration_enabled_bool = data.registration_enabled !== 'false';
-        this.systemSettings.login_enabled_bool = data.login_enabled !== 'false';
-        this.systemSettings.otp_enabled_bool = data.otp_enabled !== 'false';
-        this.systemSettings.add_money_enabled_bool = data.add_money_enabled !== 'false';
-        this.systemSettings.withdrawal_enabled_bool = data.withdrawal_enabled !== 'false';
-        this.systemSettings.captcha_enabled_bool = data.captcha_enabled !== 'false';
-
-        this.marqueeImagesList = (data.marquee_images || '').split(',').map(s => s.trim()).filter(Boolean);
-      } catch (err) {
-        console.error(err);
+        if (res.ok) {
+          const data = await res.json();
+          Object.keys(data).forEach(key => {
+            if (key in this.systemSettings) {
+              if (key.endsWith('_bool')) {
+                this.systemSettings[key] = (data[key] === 'true' || data[key] === true);
+              } else {
+                this.systemSettings[key] = data[key];
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Failed to load system settings:', e);
+      }
+    },
+    async fetchFundRequests() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          this.fundRequests = data.requests || [];
+        }
+      } catch (e) {
+        console.error('Failed to load fund requests:', e);
+      }
+    },
+    async fetchTeamsData() {
+      this.loadingTeams = true;
+      const token = localStorage.getItem('adminToken');
+      if (!token) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/teams`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          this.teamsData = data;
+        }
+      } catch (e) {
+        console.error('Failed to load teams data:', e);
+      } finally {
+        this.loadingTeams = false;
       }
     },
     async handleSaveSystemSettings() {
+      this.loadingSystem = true;
       this.systemError = '';
       this.systemSuccess = '';
-      this.loadingSystem = true;
       const token = localStorage.getItem('adminToken');
-      this.systemSettings.maintenance_mode = this.systemSettings.maintenance_mode_bool ? 'true' : 'false';
-      this.systemSettings.marquee_images = this.marqueeImagesList.join(',');
-
       try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/settings`, {
+        const payload = {};
+        Object.keys(this.systemSettings).forEach(k => {
+          payload[k] = String(this.systemSettings[k]);
+        });
+        const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({
-            min_wallet_balance: this.systemSettings.min_wallet_balance,
-            maintenance_mode: this.systemSettings.maintenance_mode,
-            force_update_version: this.systemSettings.force_update_version,
-            scriza_api_mode: this.systemSettings.scriza_api_mode,
-            razorpay_api_mode: this.systemSettings.razorpay_api_mode,
-            razorpay_key_id: this.systemSettings.razorpay_key_id,
-            razorpay_key_secret: this.systemSettings.razorpay_key_secret,
-            marquee_text: this.systemSettings.marquee_text,
-            marquee_images: this.systemSettings.marquee_images,
-            join_amount: this.systemSettings.join_amount,
-            top_up_amount: this.systemSettings.top_up_amount,
-            direct_income: this.systemSettings.direct_income,
-            level_pool: this.systemSettings.level_pool,
-            company_maintenance: this.systemSettings.company_maintenance,
-            cycle_size: this.systemSettings.cycle_size,
-            withdrawal_percentage: this.systemSettings.withdrawal_percentage,
-            minimum_withdrawal: this.systemSettings.minimum_withdrawal,
-            withdrawal_days: this.systemSettings.withdrawal_days,
-            upi_vpa_id: this.systemSettings.upi_vpa_id,
-            upi_payee_name: this.systemSettings.upi_payee_name,
-            whatsapp_support_link: this.systemSettings.whatsapp_support_link,
-            whatsapp_support_enabled: this.systemSettings.whatsapp_support_enabled_bool ? 'true' : 'false',
-            whatsapp_group_link: this.systemSettings.whatsapp_group_link,
-            whatsapp_group_enabled: this.systemSettings.whatsapp_group_enabled_bool ? 'true' : 'false',
-            popup_banner_image: this.systemSettings.popup_banner_image,
-            popup_banner_enabled: this.systemSettings.popup_banner_enabled_bool ? 'true' : 'false',
-            popup_banner_display_mode: this.systemSettings.popup_banner_display_mode,
-            registration_enabled: this.systemSettings.registration_enabled_bool ? 'true' : 'false',
-            login_enabled: this.systemSettings.login_enabled_bool ? 'true' : 'false',
-            otp_enabled: this.systemSettings.otp_enabled_bool ? 'true' : 'false',
-            add_money_enabled: this.systemSettings.add_money_enabled_bool ? 'true' : 'false',
-            withdrawal_enabled: this.systemSettings.withdrawal_enabled_bool ? 'true' : 'false',
-            captcha_enabled: this.systemSettings.captcha_enabled_bool ? 'true' : 'false'
-          })
+          body: JSON.stringify(payload)
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to save settings');
-        this.systemSuccess = 'System configurations saved successfully.';
-      } catch (err) {
-        this.systemError = err.message;
+        if (!res.ok) throw new Error('Failed to update system settings');
+        this.systemSuccess = 'System settings saved successfully and live on user panel!';
+        alert('✅ Settings saved successfully!');
+      } catch (e) {
+        this.systemError = e.message;
       } finally {
         this.loadingSystem = false;
       }
     },
-    async handleChangePassword() {
-      this.passwordError = '';
-      this.passwordSuccess = '';
-      if (this.newPassword !== this.confirmPassword) {
-        this.passwordError = 'New passwords do not match';
-        return;
-      }
-      this.loadingPassword = true;
+    async processRequest(id, approve) {
       const token = localStorage.getItem('adminToken');
       try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/change-password`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests/${id}/approve`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({
-            oldPassword: this.oldPassword,
-            newPassword: this.newPassword
-          })
+          body: JSON.stringify({ approve, remark: this.requestRemark })
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to update password');
-        this.passwordSuccess = 'Admin password has been changed successfully.';
-        this.oldPassword = '';
-        this.newPassword = '';
-        this.confirmPassword = '';
-      } catch (err) {
-        this.passwordError = err.message;
-      } finally {
-        this.loadingPassword = false;
-      }
-    },
-    async handleSendNotification() {
-      this.notifError = '';
-      this.notifSuccess = '';
-      this.sendingNotif = true;
-      const token = localStorage.getItem('adminToken');
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/notifications`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            title: this.notifTitle,
-            message: this.notifMessage
-          })
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to send notification');
-        this.notifSuccess = 'Notification successfully broadcasted to mobile users!';
-        this.notifTitle = '';
-        this.notifMessage = '';
+        if (!response.ok) {
+          alert(data.error || 'Failed to process request');
+          return;
+        }
+        alert(data.message);
+        this.selectedRequest = null;
+        this.requestRemark = '';
+        this.fetchFundRequests();
+        this.fetchDashboardData();
       } catch (e) {
-        this.notifError = e.message;
-      } finally {
-        this.sendingNotif = false;
+        alert('Error: ' + e.message);
       }
-    },
-    switchTab(tab) {
-      this.currentTab = tab;
-      this.mobileMenuOpen = false;
     },
     selectUser(user) {
       this.selectedUser = user;
@@ -1545,36 +2296,74 @@ export default {
         this.updatingUserPassword = false;
       }
     },
-    async processRequest(id, approve) {
+    async handleSendNotification() {
+      this.sendingNotif = true;
+      this.notifSuccess = '';
+      this.notifError = '';
       const token = localStorage.getItem('adminToken');
       try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests/${id}/approve`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/send-notification`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ approve })
+          body: JSON.stringify({
+            title: this.notifTitle,
+            message: this.notifMessage
+          })
         });
         const data = await response.json();
-        if (!response.ok) {
-          alert(data.error || 'Failed to update request');
-          return;
-        }
-        alert(data.message);
-        this.fetchFundRequests();
-        this.fetchDashboardData();
-      } catch (err) {
-        alert(err.message);
+        if (!response.ok) throw new Error(data.error || 'Failed to send notification');
+        this.notifSuccess = 'Notification successfully broadcasted to mobile users!';
+        this.notifTitle = '';
+        this.notifMessage = '';
+      } catch (e) {
+        this.notifError = e.message;
+      } finally {
+        this.sendingNotif = false;
+      }
+    },
+    async handleChangePassword() {
+      if (this.newPassword !== this.confirmPassword) {
+        this.passwordError = 'New passwords do not match';
+        return;
+      }
+      this.loadingPassword = true;
+      this.passwordError = '';
+      this.passwordSuccess = '';
+      const token = localStorage.getItem('adminToken');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/change-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            oldPassword: this.oldPassword,
+            newPassword: this.newPassword
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to change password');
+        this.passwordSuccess = 'Admin password changed successfully!';
+        this.oldPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
+      } catch (e) {
+        this.passwordError = e.message;
+      } finally {
+        this.loadingPassword = false;
       }
     },
     changeUserPage(delta) {
       this.userPage += delta;
-      this.fetchUsers();
+      this.fetchDashboardData();
     },
     changeTxnPage(delta) {
       this.txnPage += delta;
-      this.fetchAllTransactions();
+      this.fetchDashboardData();
     },
     handleLogout() {
       localStorage.removeItem('adminToken');
@@ -1586,20 +2375,20 @@ export default {
 </script>
 
 <style scoped>
+/* Main Admin Panel Design System - Matches Mockup Images */
 .admin-layout {
   display: flex;
   min-height: 100vh;
-  background: #ffffff;
-  font-family: 'Inter', system-ui, sans-serif;
-  color: #3e5569;
-  position: relative;
+  background: #f4f6f8;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #172b4d;
 }
 
-/* Sidebar styling (Classic Dark theme) */
+/* Sidebar styling (Classic Royal Blue Theme) */
 .sidebar {
-  width: 250px;
-  background: #1e283d;
-  color: #a3afc7;
+  width: 260px;
+  background: #091e42;
+  color: #ebecf0;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -1608,581 +2397,1115 @@ export default {
   left: 0;
   bottom: 0;
   height: 100vh;
-  height: 100dvh;
-  min-height: 100%;
   z-index: 100;
   overflow-y: auto;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 2px 0 12px rgba(9, 30, 66, 0.15);
 }
 
 .sidebar-brand {
   height: 64px;
+  background: linear-gradient(135deg, #0052cc 0%, #0747a6 100%);
   display: flex;
   align-items: center;
-  padding: 0 1.5rem;
-  background: rgba(0, 0, 0, 0.15);
-  gap: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.brand-icon {
-  background: #2563eb;
+  justify-content: space-between;
+  padding: 0 1.25rem;
   color: white;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.brand-text {
+.brand-crown-icon {
+  font-size: 1.6rem;
+  margin-right: 0.6rem;
+}
+
+.brand-text-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.brand-title {
+  font-size: 1.05rem;
   font-weight: 800;
+  letter-spacing: 0.3px;
   color: white;
-  font-size: 1rem;
-  letter-spacing: 0.5px;
+}
+
+.brand-subtitle {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
 }
 
 .sidebar-menu {
-  padding: 1rem;
+  padding: 0.75rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   flex: 1;
-  overflow-y: auto;
-}
-
-.menu-label {
-  font-size: 0.7rem;
-  font-weight: bold;
-  color: #62728c;
-  padding: 0.75rem 1rem 0.25rem;
-  letter-spacing: 0.5px;
 }
 
 .menu-item {
   background: transparent;
   border: none;
-  color: #a3afc7;
-  padding: 0.7rem 1rem;
-  border-radius: 6px;
+  color: #b3bac5;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   cursor: pointer;
   width: 100%;
   text-align: left;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 }
 
 .menu-item:hover, .menu-item.active {
   color: white;
+  background: #0052cc;
+}
+
+.menu-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-header-btn {
+  background: transparent;
+  border: none;
+  color: #b3bac5;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s ease;
+}
+
+.group-header-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.group-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chevron-icon {
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.chevron-icon.open {
+  transform: rotate(180deg);
+}
+
+.group-items {
+  display: flex;
+  flex-direction: column;
+  padding-left: 0.5rem;
+  gap: 0.1rem;
+}
+
+.sub-menu-item {
+  background: transparent;
+  border: none;
+  color: #97a0af;
+  padding: 0.55rem 0.85rem 0.55rem 1.75rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.sub-menu-item:hover, .sub-menu-item.active {
+  color: white;
+  background: #0052cc;
+  font-weight: 700;
+}
+
+.sub-tab-pills-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 2rem;
+  margin: 2px 0;
+}
+
+.pill-item {
   background: rgba(255, 255, 255, 0.05);
+  border: none;
+  color: #b3bac5;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pill-item.active, .pill-item:hover {
+  background: #0065ff;
+  color: white;
+}
+
+.menu-badge-count {
+  background: #de350b;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
 }
 
 .sidebar-footer {
-  padding: 1.5rem 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: #1e283d;
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #071325;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-version-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+}
+
+.crown-small {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: white;
+}
+
+.version-sub {
+  font-size: 0.7rem;
+  color: #97a0af;
 }
 
 .logout-btn {
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(222, 53, 11, 0.15);
+  color: #ffbdad;
+  border: 1px solid rgba(222, 53, 11, 0.3);
   width: 100%;
-  padding: 0.65rem;
+  padding: 0.55rem;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
-  transition: all 0.2s;
+  font-weight: 700;
+  font-size: 0.82rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .logout-btn:hover {
-  background: #ef4444;
+  background: #de350b;
   color: white;
 }
 
 /* Main Section Content */
 .main-section {
   flex: 1;
-  margin-left: 250px;
+  margin-left: 260px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: #ffffff;
-  width: calc(100% - 250px);
-  box-sizing: border-box;
+  background: #f4f6f8;
 }
 
-/* Topbar */
+/* Topbar Header */
 .topbar {
   height: 64px;
   background: white;
-  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid #e1e4e8;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
-  box-sizing: border-box;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 90;
 }
 
-.topbar-left-placeholder {
-  flex: 1;
-}
-
-.topbar-actions {
+.topbar-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
-.action-icon {
-  font-size: 1.35rem;
+.hamburger-btn {
+  display: none;
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
   cursor: pointer;
-  opacity: 0.85;
-  transition: transform 0.2s;
 }
 
-.action-icon:hover {
-  transform: scale(1.1);
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  border-radius: 20px;
+  padding: 0.4rem 0.85rem;
+  width: 280px;
 }
 
-.topbar-logout-btn {
+.search-icon {
+  margin-right: 0.5rem;
+  font-size: 0.85rem;
+  color: #6b778c;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
   background: transparent;
-  border: 1px solid #cbd5e1;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-weight: bold;
   font-size: 0.85rem;
-  color: #ef4444;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.topbar-logout-btn:hover {
-  background: #ef4444;
-  color: white;
-  border-color: #ef4444;
-}
-
-.admin-profile-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #cbd5e1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  color: #1e293d;
-  font-size: 0.85rem;
-}
-
-.profile-name {
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #3e5569;
-}
-
-/* Content Body */
-.content-body {
-  padding: 2rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.content-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-}
-
-.content-header h2 {
-  font-weight: 800;
-  font-size: 1.35rem;
-  color: #3e5569;
-  margin: 0;
-}
-
-.breadcrumbs {
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-/* Global Warning Banner */
-.global-warning-banner {
-  background: #fee2e2;
-  border: 1px solid #fca5a5;
-  color: #b91c1c;
-  padding: 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  line-height: 1.4;
-}
-
-/* Upgraded Operational status cards layout */
-.op-status-section-new {
-  margin-bottom: 2rem;
-}
-
-.op-card-header-new {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.op-card-header-new h4 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 800;
-  color: #3e5569;
-}
-
-.refresh-op-btn-new {
-  background: #fff;
-  border: 1px solid #cbd5e1;
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 0.35rem 0.75rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.refresh-op-btn-new:hover {
-  background: #f1f5f9;
-}
-
-.op-grid-new {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.op-item-new {
-  background: white;
-  padding: 1.25rem;
-  border-radius: 8px;
-  box-shadow: 0 1px 15px rgba(0,0,0,0.02);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  box-sizing: border-box;
-}
-
-.op-item-new.green-border {
-  border-left: 4px solid #10b981;
-}
-
-.op-item-new.orange-border {
-  border-left: 4px solid #f59e0b;
-}
-
-.op-lbl {
-  font-size: 0.75rem;
-  color: #64748b;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.op-val {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: #3e5569;
-}
-
-/* Nice Stats Card (underlined accent style) */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.nice-stat-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 15px rgba(0,0,0,0.02);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.stat-body {
-  padding: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.stat-left {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-}
-
-.stat-card-title {
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: #64748b;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.icon-indicator {
-  font-size: 1.25rem;
-}
-
-.stat-card-val {
-  font-size: 1.65rem;
-  font-weight: 800;
-  color: #3e5569;
-  text-align: right;
-  white-space: nowrap;
-  padding-left: 0.5rem;
-}
-
-.progress-bar {
-  height: 4px;
+  color: #172b4d;
   width: 100%;
 }
 
-.bg-blue { background: #3b82f6; }
-.bg-green { background: #10b981; }
-.bg-purple { background: #8b5cf6; }
-.bg-orange { background: #ff7849; }
-
-.border-blue { border-top: 3px solid #3b82f6; }
-.border-green { border-top: 3px solid #10b981; }
-.border-purple { border-top: 3px solid #8b5cf6; }
-.border-orange { border-top: 3px solid #ff7849; }
-
-/* Analytics grid */
-.analytics-grid {
-  display: grid;
-  grid-template-columns: 0.9fr 1.3fr 0.8fr;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
 }
 
-@media (max-width: 1024px) {
-  .analytics-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.anal-card {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 15px rgba(0,0,0,0.02);
-}
-
-.anal-card h3 {
-  font-size: 1rem;
-  margin: 0 0 1.25rem;
-  font-weight: 800;
-  color: #3e5569;
-}
-
-/* Donut Chart Campaign */
-.donut-wrapper {
+.notif-bell-btn {
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 120px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.3rem;
 }
 
-.donut-center {
+.notif-badge {
   position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #de350b;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+}
+
+.admin-avatar {
+  background: #0052cc;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.admin-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
-.donut-val {
-  font-size: 1.25rem;
-  font-weight: 900;
-  color: #3e5569;
+.admin-name {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #172b4d;
 }
 
-.donut-lbl {
-  font-size: 0.65rem;
-  color: #94a3b8;
-  text-transform: uppercase;
+.admin-role {
+  font-size: 0.7rem;
+  color: #6b778c;
 }
 
-.donut-labels {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 1.5rem;
-  font-size: 0.75rem;
-  font-weight: bold;
+/* Content Body Canvas */
+.content-body {
+  padding: 1.5rem;
+  flex: 1;
 }
 
-.lbl-item {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-/* Sales ratio line chart */
-.ratio-header {
+/* Section Header Banners (Matches Images 1-4) */
+.section-banner {
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.ratio-legends {
-  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
-  font-size: 0.75rem;
-  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(9, 30, 66, 0.04);
 }
 
-.legend {
+.banner-left {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 1rem;
 }
 
-.line-dot {
-  width: 12px;
-  height: 3px;
-  display: inline-block;
-  border-radius: 2px;
+.banner-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
 }
 
-.bg-grey { background: #cbd5e1; }
+.blue-bg { background: linear-gradient(135deg, #0052cc 0%, #0747a6 100%); }
+.royal-bg { background: linear-gradient(135deg, #0065ff 0%, #0052cc 100%); }
+.purple-bg { background: linear-gradient(135deg, #6554c0 0%, #5243aa 100%); }
+.navy-bg { background: linear-gradient(135deg, #091e42 0%, #172b4d 100%); }
 
-.line-chart-wrapper {
+.banner-left h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #091e42;
+  margin: 0 0 0.2rem;
+}
+
+.banner-left p {
+  color: #5e6c84;
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.banner-toggle-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f4f5f7;
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
+  border: 1px solid #dfe1e6;
+}
+
+.toggle-text {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #091e42;
+}
+
+.main-on-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.badge-on { background: #e3fcef; color: #006644; }
+.badge-off { background: #ffebe6; color: #de350b; }
+
+.blue-alert-bar {
+  background: #deebff;
+  border: 1px solid #b3d4ff;
+  color: #0747a6;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.sub-tab-switcher {
+  display: flex;
+  gap: 0.5rem;
   margin-top: 1rem;
 }
 
-/* Weather & users widget */
-.weather-header {
+.sub-tab-btn {
+  background: white;
+  border: 1px solid #dfe1e6;
+  color: #5e6c84;
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.sub-tab-btn.active {
+  background: #0052cc;
+  color: white;
+  border-color: #0052cc;
+}
+
+/* Two Column Settings & Live Phone Preview Grid */
+.settings-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.settings-table-card {
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(9, 30, 66, 0.04);
+}
+
+.card-title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 1rem;
+}
+
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.title-left h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #091e42;
+  margin: 0;
+}
+
+.btn-reset-default {
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  color: #0052cc;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.card-desc {
+  font-size: 0.82rem;
+  color: #5e6c84;
+  margin: 0.25rem 0 1rem;
+}
+
+/* Editable Settings Table */
+.settings-edit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.settings-edit-table th {
+  background: #f4f5f7;
+  color: #5e6c84;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid #dfe1e6;
+}
+
+.settings-edit-table td {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid #f4f5f7;
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+.table-input, .table-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: #fafbfc;
+  color: #091e42;
+  box-sizing: border-box;
+}
+
+.table-input:focus, .table-select:focus, .table-textarea:focus {
+  outline: none;
+  background: white;
+  border-color: #0052cc;
+  box-shadow: 0 0 0 2px rgba(0, 82, 204, 0.2);
+}
+
+.table-textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  background: #fafbfc;
+  color: #091e42;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.file-upload-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-upload-file {
+  background: #0052cc;
+  color: white;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.input-subnote {
+  font-size: 0.72rem;
+  color: #6b778c;
+  display: block;
+  margin-top: 2px;
+}
+
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge-status-active {
+  background: #e3fcef;
+  color: #006644;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Custom Switch Sliders */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+
+.switch.small {
+  width: 38px;
+  height: 20px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #c1c7d0;
+  transition: .2s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .2s;
+}
+
+.switch.small .slider:before {
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+}
+
+input:checked + .slider { background-color: #0052cc; }
+
+input:checked + .slider:before { transform: translateX(22px); }
+.switch.small input:checked + .slider:before { transform: translateX(18px); }
+
+.slider.round { border-radius: 22px; }
+.slider.round:before { border-radius: 50%; }
+
+.form-action-row {
+  display: flex;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+}
+
+.btn-blue-save {
+  background: #0052cc;
+  color: white;
+  border: none;
+  padding: 0.65rem 1.75rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 82, 204, 0.3);
+}
+
+.btn-blue-save:hover { background: #0065ff; }
+
+.btn-white-reset {
+  background: white;
+  color: #091e42;
+  border: 1px solid #dfe1e6;
+  padding: 0.65rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Right Column Smartphone Mockup Frame */
+.preview-card {
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(9, 30, 66, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
   margin-bottom: 1rem;
 }
 
-.weather-header h4 {
-  margin: 0 0 0.15rem;
+.preview-card-header h4 {
+  font-size: 0.95rem;
   font-weight: 800;
+  color: #091e42;
+  margin: 0;
 }
 
-.weather-header span {
-  font-size: 0.75rem;
-  color: #94a3b8;
+.preview-card-header p {
+  font-size: 0.78rem;
+  color: #5e6c84;
+  margin: 0;
 }
 
-.users-rate-box {
+.phone-frame {
+  width: 290px;
+  background: #0f172a;
+  border: 8px solid #1e293b;
+  border-radius: 28px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.phone-screen {
+  background: #f8fafc;
+  min-height: 480px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 
-.users-rate-header span {
-  font-size: 0.75rem;
+.phone-screen.light-blue-bg { background: #eff6ff; }
+
+.phone-app-header {
+  padding: 0.85rem 1rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.back-arrow { font-size: 1.1rem; cursor: pointer; }
+
+.header-title { font-size: 0.9rem; font-weight: 800; margin: 0; }
+.header-sub { font-size: 0.7rem; opacity: 0.85; }
+
+.phone-app-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.scan-pay-card {
+  background: white;
+  border-radius: 12px;
+  padding: 0.85rem;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.scan-tag { font-weight: 800; color: #0052cc; font-size: 0.85rem; }
+.scan-sub { font-size: 0.72rem; color: #64748b; margin: 2px 0 8px; }
+
+.qr-box {
+  width: 130px;
+  height: 130px;
+  margin: 0 auto;
+  padding: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+
+.qr-box img { width: 100%; height: 100%; object-fit: contain; }
+
+.or-divider {
+  position: relative;
+  text-align: center;
+  margin: 8px 0;
+}
+
+.or-divider span {
+  background: white;
+  padding: 0 6px;
+  font-size: 0.7rem;
   color: #94a3b8;
-  font-weight: bold;
+  font-weight: 700;
 }
 
-.users-rate-header h3 {
-  margin: 0.15rem 0 0;
-  font-size: 1.35rem;
-  font-weight: 900;
+.upi-method-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #eff6ff;
+  color: #0052cc;
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 12px;
 }
 
-.green-text { color: #10b981; }
-.blue-text { color: #0052cc; }
-
-.users-splits {
+.upi-id-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 0.75rem;
-}
-
-.users-splits div {
-  display: flex;
-  flex-direction: column;
-}
-
-.users-splits span {
-  font-size: 0.65rem;
-  color: #94a3b8;
-}
-
-/* Bottom Analytics Grid */
-.bottom-analytics {
-  display: grid;
-  grid-template-columns: 1.3fr 0.7fr;
-  gap: 1.5rem;
-}
-
-@media (max-width: 1024px) {
-  .bottom-analytics {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Region sales chart */
-.bar-chart-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.region-stats {
-  display: flex;
-  justify-content: space-around;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 0.75rem;
-  font-size: 0.8rem;
-}
-
-.region-stats div {
-  display: flex;
-  flex-direction: column;
   align-items: center;
 }
 
-/* Nice tables styles */
-.table-container {
+.upi-id-info .lbl { font-size: 0.68rem; color: #64748b; display: block; }
+.upi-id-info .val { font-size: 0.82rem; color: #0f172a; font-weight: 800; }
+
+.btn-copy-icon { background: none; border: none; font-size: 1rem; cursor: pointer; }
+
+.phone-input-block label { font-size: 0.75rem; font-weight: 700; color: #334155; }
+
+.amount-input-box {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.4rem 0.65rem;
+  margin-top: 4px;
+}
+
+.amount-input-box .curr { font-weight: 800; color: #0f172a; margin-right: 4px; }
+.amount-input-box input { border: none; outline: none; width: 100%; font-weight: 800; font-size: 0.9rem; color: #0f172a; }
+
+.phone-pills-row { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.phone-amt-pill {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.wallet-bar-preview {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.val-blue { color: #0052cc; font-size: 0.9rem; }
+
+.mobile-check-box {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.4rem 0.65rem;
+}
+
+.mobile-check-box input { border: none; outline: none; font-weight: 700; font-size: 0.85rem; }
+
+.user-ok-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #16a34a;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.ok-pill { background: #dcfce7; padding: 1px 6px; border-radius: 4px; font-size: 0.68rem; }
+
+.user-details-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+
+.card-sec-head { font-weight: 800; font-size: 0.78rem; color: #0f172a; margin-bottom: 6px; }
+
+.u-row { display: flex; justify-content: space-between; font-size: 0.72rem; padding: 2px 0; }
+.u-row span { color: #64748b; }
+.u-row strong { color: #0f172a; }
+
+.pay-amount-box {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+
+.pay-amount-box .lbl { font-size: 0.75rem; font-weight: 800; color: #1e40af; }
+.amt-row { display: flex; justify-content: space-between; font-size: 0.78rem; margin-top: 4px; }
+.amt-row .amt { color: #0052cc; font-weight: 800; }
+
+.phone-btn-submit {
   width: 100%;
-  overflow-x: auto;
+  padding: 0.65rem;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.blue-grad-btn { background: linear-gradient(135deg, #0052cc 0%, #0747a6 100%); }
+
+.summary-details-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem;
+}
+
+.phone-info-note {
+  font-size: 0.7rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.gift-icon-container {
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px auto 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.gift-emoji { font-size: 2rem; }
+
+.referral-title-preview { font-size: 1rem; font-weight: 800; color: #0f172a; margin: 4px 0 2px; }
+.referral-subtext-preview { font-size: 0.78rem; color: #64748b; margin: 0 0 10px; }
+
+.ref-instructions-box {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.65rem;
+  font-size: 0.72rem;
+  color: #334155;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+.section-footer-note {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: #5e6c84;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dfe1e6;
+}
+
+/* Fund Request Table View (Image 5) */
+.status-tab-pills {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.pill-btn {
+  background: white;
+  border: 1px solid #dfe1e6;
+  color: #5e6c84;
+  padding: 0.55rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pill-btn.active {
+  background: #0052cc;
+  color: white;
+  border-color: #0052cc;
+}
+
+.filter-action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  background: white;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #e1e4e8;
+}
+
+.filter-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  padding: 0.35rem 0.65rem;
+  width: 220px;
+}
+
+.search-input-wrap input { border: none; outline: none; background: transparent; font-size: 0.82rem; width: 100%; }
+
+.filter-select {
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #dfe1e6;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  background: #f4f5f7;
+}
+
+.btn-filter-blue {
+  background: #0052cc;
+  color: white;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.btn-filter-reset {
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  color: #5e6c84;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.filter-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.date-picker-wrap {
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #091e42;
+}
+
+.btn-export-blue {
+  background: #0052cc;
+  color: white;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.table-card {
+  background: white;
+  border: 1px solid #e1e4e8;
+  border-radius: 12px;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(9, 30, 66, 0.04);
+  overflow: hidden;
 }
 
 .nice-table {
@@ -2190,1165 +3513,232 @@ export default {
   border-collapse: collapse;
 }
 
-.nice-table th, .nice-table td {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 0.85rem;
-}
-
 .nice-table th {
-  color: #94a3b8;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-size: 0.75rem;
+  background: #f4f5f7;
+  color: #5e6c84;
+  font-weight: 700;
+  font-size: 0.82rem;
   text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #dfe1e6;
 }
 
 .nice-table td {
-  color: #3e5569;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f4f5f7;
+  font-size: 0.85rem;
+  color: #172b4d;
 }
 
-.clickable-row {
+.user-table-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.user-avatar-circle {
+  width: 32px;
+  height: 32px;
+  background: #deebff;
+  color: #0052cc;
+  font-weight: 800;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.u-name { font-size: 0.88rem; color: #091e42; display: block; }
+.u-sub { font-size: 0.75rem; color: #5e6c84; }
+
+.pm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.pm-gpay { background: #e8f0fe; color: #1a73e8; }
+.pm-phonepe { background: #f3e8ff; color: #6b21a8; }
+.pm-paytm { background: #e0f2fe; color: #0369a1; }
+.pm-bank { background: #f1f5f9; color: #475569; }
+
+.utr-copy-cell { display: flex; align-items: center; gap: 4px; }
+.btn-copy-utr, .btn-copy-sm { background: none; border: none; cursor: pointer; font-size: 0.85rem; }
+
+.badge-status-pending { background: #fffae6; color: #ff8b00; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; }
+.badge-status-approved { background: #e3fcef; color: #006644; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; }
+.badge-status-rejected { background: #ffebe6; color: #de350b; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; }
+
+.btn-action-view {
+  background: #0052cc;
+  color: white;
+  border: none;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.78rem;
   cursor: pointer;
 }
 
-.clickable-row:hover {
-  background: #f8fafc;
+.table-pagination-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: white;
+  border-top: 1px solid #dfe1e6;
+  font-size: 0.82rem;
+  color: #5e6c84;
 }
 
-.lbl-wallet {
-  padding: 0.2rem 0.4rem;
+.page-pills .page-pill {
+  background: #0052cc;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
   border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: bold;
+  font-weight: 800;
 }
 
-.lbl-wallet.main {
-  background: #e6f0ff;
-  color: #0052cc;
-}
-
-.lbl-wallet.fund {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-.nice-badge-success {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-/* Slide-Over Drawer with ENABLED Scrolling */
+/* Slide-Over Drawer Details Panel (Image 5 Right Side) */
 .slide-over-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(9, 30, 66, 0.5);
+  backdrop-filter: blur(2px);
   z-index: 1000;
   display: flex;
   justify-content: flex-end;
 }
 
-.slide-over {
-  width: 100%;
-  max-width: 400px;
+.slide-over-panel {
+  width: 380px;
+  max-width: 90vw;
   background: white;
-  height: 100vh;
-  box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+  height: 100%;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
 }
 
-.slide-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #f1f5f9;
+.drawer-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #dfe1e6;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
 }
 
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #64748b;
-  cursor: pointer;
-}
+.drawer-header h3 { font-size: 1.05rem; font-weight: 800; color: #091e42; margin: 0; }
+.btn-close-x { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #5e6c84; }
 
-.slide-body {
-  padding: 2rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  flex: 1;
+.drawer-body {
+  padding: 1.25rem;
   overflow-y: auto;
-}
-
-.profile-avatar-area {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
+  gap: 1.25rem;
 }
 
-.large-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+.drawer-user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #f4f5f7;
+  padding: 0.85rem;
+  border-radius: 10px;
+}
+
+.avatar-large {
+  width: 44px;
+  height: 44px;
   background: #0052cc;
   color: white;
-  font-weight: bold;
+  font-weight: 800;
+  font-size: 1.2rem;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
 }
 
-.status-lbl {
-  padding: 0.2rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-.status-lbl.green {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-}
-
-.wallets-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  flex-shrink: 0;
-}
-
-.wallet-stat {
-  padding: 1rem;
-  border-radius: 10px;
-  color: white;
-}
-
-.wallet-stat span {
-  font-size: 0.65rem;
-  opacity: 0.8;
-}
-
-.wallet-stat h4 {
-  margin: 0.25rem 0 0;
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
-.bg-blue-grad {
-  background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
-}
-
-.bg-purple-grad {
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-}
-
-.details-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 1rem;
-}
-
-.details-list .item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-}
-
-.details-list span {
-  color: #94a3b8;
-  font-weight: bold;
-}
-
-.details-list strong {
-  color: #3e5569;
-}
-
-.action-view-btn {
-  background: #e6f0ff;
-  color: #0052cc;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* Visibility enhancements for Pagination controls */
-.table-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.page-nav-btn {
-  background: #2563eb !important;
-  color: white !important;
-  border: 1px solid #1d4ed8 !important;
-  padding: 0.45rem 1rem !important;
-  border-radius: 6px !important;
-  font-size: 0.85rem !important;
-  font-weight: 800 !important;
-  cursor: pointer !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-  transition: background 0.15s, opacity 0.15s;
-}
-
-.page-nav-btn:hover {
-  background: #1d4ed8 !important;
-}
-
-.page-nav-btn:disabled {
-  background: #cbd5e1 !important;
-  color: #94a3b8 !important;
-  border-color: #e2e8f0 !important;
-  cursor: not-allowed !important;
-  box-shadow: none;
-}
-
-.page-num {
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #3e5569;
-}
-
-.btn-approve {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-reject {
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.loading-box {
-  padding: 4rem;
-  text-align: center;
+.drawer-info-block {
   background: white;
-  border-radius: 8px;
-  font-weight: bold;
+  border: 1px solid #e1e4e8;
+  border-radius: 10px;
+  padding: 1rem;
 }
 
-/* Horizontal Grid forms styling */
-.form-horizontal-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.5rem;
-  width: 100%;
+.drawer-info-block h5 { font-size: 0.88rem; font-weight: 800; color: #091e42; margin: 0 0 0.75rem; }
+
+.info-grid { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.82rem; }
+
+.i-row { display: flex; justify-content: space-between; }
+.i-row span { color: #5e6c84; }
+.i-row strong { color: #091e42; }
+
+.screenshot-link { color: #0052cc; font-weight: 700; text-decoration: none; }
+
+.drawer-action-block {
+  background: #fafbfc;
+  border: 1px solid #dfe1e6;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.drawer-action-block h5 { font-size: 0.88rem; font-weight: 800; color: #091e42; margin: 0 0 0.75rem; }
+
+.action-btn-group { display: flex; gap: 0.75rem; margin-bottom: 0.85rem; }
+
+.btn-approve-green {
+  flex: 1;
+  background: #36b37e;
+  color: white;
+  border: none;
+  padding: 0.65rem;
+  border-radius: 6px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-reject-red {
+  flex: 1;
+  background: #de350b;
+  color: white;
+  border: none;
+  padding: 0.65rem;
+  border-radius: 6px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.remarks-group label { font-size: 0.78rem; font-weight: 700; color: #5e6c84; display: block; margin-bottom: 4px; }
+.remarks-group textarea { width: 100%; border: 1px solid #dfe1e6; border-radius: 6px; padding: 0.5rem; font-family: inherit; font-size: 0.82rem; box-sizing: border-box; }
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .settings-preview-grid { grid-template-columns: 1fr; }
+  .phone-frame { margin: 0 auto; }
 }
 
 @media (max-width: 768px) {
-  .form-horizontal-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-}
-
-.form-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.settings-nice-card {
-  background: white;
-  border-radius: 8px;
-  padding: 2.5rem;
-  box-shadow: 0 1px 15px rgba(0,0,0,0.02);
-  border-top: 3px solid #3e5569;
-  box-sizing: border-box;
-}
-
-.settings-nice-card h3 {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #3e5569;
-  margin: 0 0 0.5rem;
-}
-
-.section-desc {
-  color: #94a3b8;
-  font-size: 0.85rem;
-  margin-bottom: 2rem;
-}
-
-.settings-form {
-  width: 100%;
-}
-
-.nice-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.nice-input-group label {
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: #64748b;
-}
-
-.nice-input-group input,
-.nice-input-group select {
-  padding: 0.65rem 0.85rem;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  font-family: inherit;
-  font-size: 0.9rem;
-  background: #f8fafc;
-  color: #3e5569;
-}
-
-.nice-checkbox-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0.5rem 0;
-}
-
-.nice-checkbox-group input {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.nice-checkbox-group label {
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #64748b;
-  cursor: pointer;
-}
-
-.nice-save-btn {
-  background: #1e283d;
-  color: white;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  font-size: 0.85rem;
-}
-
-.nice-save-btn:hover {
-  opacity: 0.9;
-}
-
-.nice-save-btn.bg-blue-btn {
-  background: #2563eb;
-}
-
-.error-msg {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.05);
-  border: 1px solid rgba(239, 68, 68, 0.1);
-  padding: 0.6rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: bold;
-}
-
-.success-msg {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.05);
-  border: 1px solid rgba(16, 185, 129, 0.1);
-  padding: 0.6rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: bold;
-}
-
-/* Custom configured marquee images styling */
-.marquee-images-config-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-height: 220px;
-  overflow-y: auto;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 0.5rem;
-  background: #f8fafc;
-}
-
-.marquee-image-config-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background: white;
-  padding: 0.4rem 0.6rem;
-  border-radius: 4px;
-  border: 1px solid #e2e8f0;
-}
-
-.config-thumb {
-  width: 50px;
-  height: 28px;
-  object-fit: contain;
-  border-radius: 3px;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-}
-
-.config-url {
-  flex: 1;
-  font-size: 0.8rem;
-  color: #3e5569;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.btn-delete-img {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: none;
-  border-radius: 4px;
-  width: 24px;
-  height: 24px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-}
-
-.btn-delete-img:hover {
-  background: #ef4444;
-  color: white;
-}
-
-.btn-add-img {
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0 1.25rem;
-  font-weight: bold;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.btn-add-img:hover {
-  opacity: 0.9;
-}
-
-/* Shared System Variables Redesign Styles */
-.sv-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding-bottom: 2rem;
-}
-
-.sv-hero-card {
-  background: linear-gradient(135deg, #1e283d 0%, #0f172a 100%);
-  border-radius: 16px;
-  padding: 2rem;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
-}
-
-.sv-hero-info h2 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  margin: 0.4rem 0 0.5rem;
-  letter-spacing: -0.5px;
-}
-
-.sv-hero-info p {
-  color: #94a3b8;
-  font-size: 0.9rem;
-  max-width: 650px;
-  margin: 0;
-  line-height: 1.5;
-}
-
-.sv-hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(37, 99, 235, 0.2);
-  border: 1px solid rgba(37, 99, 235, 0.4);
-  color: #60a5fa;
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.pulse-dot {
-  width: 8px;
-  height: 8px;
-  background: #3b82f6;
-  border-radius: 50%;
-  box-shadow: 0 0 8px #3b82f6;
-}
-
-.sv-hero-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.meta-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.meta-pill.success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.meta-pill.danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.meta-pill.blue {
-  background: rgba(37, 99, 235, 0.15);
-  color: #93c5fd;
-  border: 1px solid rgba(37, 99, 235, 0.3);
-}
-
-.meta-pill.purple {
-  background: rgba(168, 85, 247, 0.15);
-  color: #e9d5ff;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.meta-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.sv-section-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.75rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-}
-
-.sv-section-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.sv-section-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-}
-
-.bg-blue-light { background: #eff6ff; color: #2563eb; }
-.bg-purple-light { background: #faf5ff; color: #9333ea; }
-.bg-green-light { background: #f0fdf4; color: #16a34a; }
-
-.sv-section-header h3 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 0.2rem;
-}
-
-.sv-section-header p {
-  color: #64748b;
-  font-size: 0.85rem;
-  margin: 0;
-}
-
-.sv-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem;
-}
-
-.sv-input-card {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 1rem;
-  transition: all 0.2s ease;
-}
-
-.sv-input-card:focus-within {
-  background: white;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.sv-input-card label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #334155;
-}
-
-.unit-badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  background: #e2e8f0;
-  color: #475569;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.input-with-icon {
-  display: flex;
-  align-items: center;
-  background: white;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 0 0.65rem;
-}
-
-.input-with-icon .field-icon {
-  font-size: 1.1rem;
-  margin-right: 0.5rem;
-}
-
-.input-with-icon input,
-.sv-input-card input,
-.styled-select {
-  flex: 1;
-  border: none;
-  outline: none;
-  padding: 0.65rem 0;
-  font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #0f172a;
-  background: transparent;
-}
-
-.sv-input-card input[type="text"],
-.sv-input-card input[type="number"],
-.sv-input-card input[type="password"] {
-  width: 100%;
-}
-
-.styled-select {
-  width: 100%;
-  background: white;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 0.65rem 0.85rem;
-  font-size: 0.9rem;
-  color: #0f172a;
-  font-weight: 600;
-}
-
-.input-help {
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-top: 2px;
-}
-
-.span-full {
-  grid-column: 1 / -1;
-}
-
-/* Switches & Toggles Grid */
-.toggles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1rem;
-}
-
-.toggle-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  transition: all 0.2s ease;
-}
-
-.toggle-card.active {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-}
-
-.toggle-card.danger-toggle.active-danger {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-
-.toggle-info {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.toggle-icon {
-  font-size: 1.4rem;
-}
-
-.toggle-title {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.toggle-desc {
-  margin: 2px 0 0;
-  font-size: 0.78rem;
-  color: #64748b;
-}
-
-.toggle-action {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-/* Custom iOS Switch */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 46px;
-  height: 24px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #cbd5e1;
-  transition: .3s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .3s;
-}
-
-input:checked + .slider {
-  background-color: #10b981;
-}
-
-.switch-danger input:checked + .slider {
-  background-color: #ef4444;
-}
-
-input:checked + .slider:before {
-  transform: translateX(22px);
-}
-
-.slider.round {
-  border-radius: 24px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-.state-badge {
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 6px;
-  min-width: 48px;
-  text-align: center;
-}
-
-.badge-on { background: #dcfce7; color: #15803d; }
-.badge-off { background: #f1f5f9; color: #64748b; }
-.badge-danger { background: #fee2e2; color: #b91c1c; }
-
-/* Gateways section */
-.gateways-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.25rem;
-}
-
-.gateway-box {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 1.1rem;
-}
-
-.gateway-box-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.85rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.gw-title {
-  font-weight: 700;
-  font-size: 0.88rem;
-  color: #1e293b;
-}
-
-.gw-tag {
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.tag-live { background: #dcfce7; color: #15803d; }
-.tag-sim { background: #feefc3; color: #b45309; }
-
-.input-with-button {
-  display: flex;
-  gap: 0.5rem;
-  background: white;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 0 0.5rem;
-  align-items: center;
-}
-
-.btn-toggle-eye {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  color: #475569;
-  white-space: nowrap;
-}
-
-.btn-toggle-eye:hover {
-  background: #e2e8f0;
-}
-
-/* Action Footer */
-.sv-action-bar {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 1.25rem 1.75rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-}
-
-.sv-save-btn {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: white;
-  border: none;
-  padding: 0.85rem 2.25rem;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-  transition: all 0.2s ease;
-}
-
-.sv-save-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
-}
-
-.alert-box {
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.alert-error {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-}
-
-.alert-success {
-  background: #f0fdf4;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
-}
-
-.status-tip {
-  font-size: 0.82rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-/* Topbar Left Controls & Mobile Brand */
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.hamburger-btn {
-  display: none;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  width: 38px;
-  height: 38px;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #1e293b;
-  font-size: 1.25rem;
-  transition: all 0.15s ease;
-}
-
-.hamburger-btn:hover {
-  background: #e2e8f0;
-}
-
-.topbar-brand-mobile {
-  display: none;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.topbar-brand-mobile .brand-icon {
-  background: #2563eb;
-  color: white;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 1rem;
-}
-
-.topbar-brand-mobile .brand-text {
-  font-weight: 800;
-  color: #0f172a;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-}
-
-.close-drawer-btn {
-  display: none;
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  font-size: 1.6rem;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0.2rem 0.5rem;
-}
-
-.close-drawer-btn:hover {
-  color: white;
-}
-
-.sidebar-brand {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.25rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.brand-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-@media (max-width: 768px) {
-  .hamburger-btn {
-    display: flex;
-  }
-
-  .topbar-brand-mobile {
-    display: flex;
-  }
-
-  .close-drawer-btn {
-    display: block;
-  }
-
-  .admin-layout {
-    flex-direction: column;
-    width: 100%;
-    min-height: 100vh;
-  }
-
-  /* Off-canvas Slide Drawer for Mobile */
   .sidebar {
-    width: 280px;
-    max-width: 85vw;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    height: 100vh;
-    height: 100dvh;
-    z-index: 1000;
     transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.3);
+    transition: transform 0.25s ease;
+    width: 280px;
   }
-
-  .sidebar.open-drawer {
-    transform: translateX(0);
-  }
-
+  .sidebar.open-drawer { transform: translateX(0); }
   .mobile-drawer-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(4px);
-    z-index: 999;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(9, 30, 66, 0.6); z-index: 99;
   }
-
-  .main-section {
-    margin-left: 0 !important;
-    width: 100% !important;
-  }
-
-  .topbar {
-    padding: 0 1rem;
-    height: 58px;
-    position: sticky;
-    top: 0;
-    z-index: 90;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  }
-
-  .topbar-actions {
-    gap: 0.75rem;
-  }
-
-  .profile-name {
-    display: none;
-  }
-
-  .content-body {
-    padding: 1rem;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .content-header {
-    margin-bottom: 1.25rem;
-  }
-
-  .content-header h2 {
-    font-size: 1.3rem;
-  }
-
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-  }
-
-  .nice-table {
-    min-width: 650px;
-  }
-
-  .slide-over {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+  .main-section { margin-left: 0; }
+  .hamburger-btn { display: flex; }
+  .close-drawer-btn { display: block; background: none; border: none; color: white; font-size: 1.5rem; }
 }
 </style>
