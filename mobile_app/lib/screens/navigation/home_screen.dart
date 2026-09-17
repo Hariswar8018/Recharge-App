@@ -2112,10 +2112,8 @@ class _HomeScreenState extends State<HomeScreen> {
               double affiliateIncome = _activeCycleId.isNotEmpty
                   ? (_teamMembers.length * 300.0)
                   : 0.0;
-              double totalIncome = _activeCycleId.isNotEmpty
-                  ? _mainWalletBalance
-                  : 0.00;
-              double todayIncome = 0.00;
+              double todayIncome = globalIncome + affiliateIncome;
+              double totalIncome = globalIncome + affiliateIncome;
 
               return Container(
                 decoration: BoxDecoration(
@@ -2211,7 +2209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Expanded(
                           child: _buildBusinessStatItem(
-                            "AFFILIATE",
+                            "AFFILIATE INCOME",
                             "₹ ${affiliateIncome.toStringAsFixed(2)}",
                             Icons.people,
                           ),
