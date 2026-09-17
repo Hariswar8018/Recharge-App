@@ -6,14 +6,14 @@ const mailTransporter = nodemailer.createTransport({
   secure: true,
   auth: {
     user: process.env.SMTP_USER || 'no-reply@srdigitalseva.com',
-    pass: process.env.SMTP_PASS || 'UseYourEmailPasswordHere!'
+    pass: process.env.SMTP_PASS || 'Hariswar8018**'
   }
 });
 
 async function sendNotificationEmail(to, subject, htmlContent) {
   try {
     await mailTransporter.sendMail({
-      from: `"EarnFarm Support" <${process.env.SMTP_USER || 'no-reply@srdigitalseva.com'}>`,
+      from: `"SR Digital Seva Support" <${process.env.SMTP_USER || 'no-reply@srdigitalseva.com'}>`,
       to,
       subject,
       html: htmlContent

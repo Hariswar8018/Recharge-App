@@ -309,5 +309,3 @@ router.post('/forgot-password', verifyAppToken, async (req, res) => {
 });
 
 module.exports = router;
-
-module.exports = router;
