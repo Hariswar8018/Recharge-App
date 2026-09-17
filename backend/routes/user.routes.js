@@ -53,11 +53,17 @@ router.post('/update', verifyAppToken, verifyUserToken, async (req, res) => {
 router.get('/team', verifyAppToken, verifyUserToken, async (req, res) => {
   try {
     const team = await query(
-      'SELECT id, fullName, email, mobileNumber, status, main_wallet_balance, createdAt FROM users WHERE sponsor_id = ? ORDER BY id DESC',
+      `SELECT u.id, u.fullName, u.email, u.mobileNumber, u.status, u.main_wallet_balance, u.createdAt,
+              (SELECT COUNT(*) FROM users WHERE sponsor_id = u.id) AS team_count,
+              (SELECT COUNT(*) FROM cycles WHERE user_id = u.id) AS cycle_count
+       FROM users u 
+       WHERE u.sponsor_id = ? 
+       ORDER BY u.id DESC`,
       [req.user.id]
     );
     res.json(team);
   } catch (err) {
+    console.error('Error fetching user team:', err);
     res.status(500).json({ error: 'Failed to load team network' });
   }
 });

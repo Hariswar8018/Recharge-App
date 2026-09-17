@@ -15,7 +15,7 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
 
     const joinAmount = parseFloat(settings['join_amount'] || '1200');
     const directIncome = parseFloat(settings['direct_income'] || '300');
-    const cycleSize = parseInt(settings['cycle_size'] || '126');
+    const cycleSize = parseInt(settings['cycle_size'] || '510');
 
     const users = await query('SELECT * FROM users WHERE id = ?', [req.user.id]);
     if (users.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -104,24 +104,39 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
         let payout = 0;
         let levelLabel = '';
 
-        if (newMembersCount === parseInt(settings['level_1_members'] || '2')) {
+        const l1 = parseInt(settings['level_1_members'] || '2');
+        const l2 = parseInt(settings['level_2_members'] || '4');
+        const l3 = parseInt(settings['level_3_members'] || '8');
+        const l4 = parseInt(settings['level_4_members'] || '16');
+        const l5 = parseInt(settings['level_5_members'] || '32');
+        const l6 = parseInt(settings['level_6_members'] || '64');
+        const l7 = parseInt(settings['level_7_members'] || '128');
+        const l8 = parseInt(settings['level_8_members'] || '256');
+
+        if (newMembersCount === l1) {
           payout = parseFloat(settings['level_1_income'] || '200');
           levelLabel = 'Level 1 Income';
-        } else if (newMembersCount === (parseInt(settings['level_1_members'] || '2') + parseInt(settings['level_2_members'] || '4'))) {
+        } else if (newMembersCount === (l1 + l2)) {
           payout = parseFloat(settings['level_2_income'] || '400');
           levelLabel = 'Level 2 Income';
-        } else if (newMembersCount === (parseInt(settings['level_1_members'] || '2') + parseInt(settings['level_2_members'] || '4') + parseInt(settings['level_3_members'] || '8'))) {
+        } else if (newMembersCount === (l1 + l2 + l3)) {
           payout = parseFloat(settings['level_3_income'] || '800');
           levelLabel = 'Level 3 Income';
-        } else if (newMembersCount === (parseInt(settings['level_1_members'] || '2') + parseInt(settings['level_2_members'] || '4') + parseInt(settings['level_3_members'] || '8') + parseInt(settings['level_4_members'] || '16'))) {
+        } else if (newMembersCount === (l1 + l2 + l3 + l4)) {
           payout = parseFloat(settings['level_4_income'] || '1600');
           levelLabel = 'Level 4 Income';
-        } else if (newMembersCount === (parseInt(settings['level_1_members'] || '2') + parseInt(settings['level_2_members'] || '4') + parseInt(settings['level_3_members'] || '8') + parseInt(settings['level_4_members'] || '16') + parseInt(settings['level_5_members'] || '32'))) {
+        } else if (newMembersCount === (l1 + l2 + l3 + l4 + l5)) {
           payout = parseFloat(settings['level_5_income'] || '3200');
           levelLabel = 'Level 5 Income';
-        } else if (newMembersCount === cycleSize) {
+        } else if (newMembersCount === (l1 + l2 + l3 + l4 + l5 + l6)) {
           payout = parseFloat(settings['level_6_income'] || '6400');
           levelLabel = 'Level 6 Income';
+        } else if (newMembersCount === (l1 + l2 + l3 + l4 + l5 + l6 + l7)) {
+          payout = parseFloat(settings['level_7_income'] || '12800');
+          levelLabel = 'Level 7 Income';
+        } else if (newMembersCount === cycleSize || newMembersCount === (l1 + l2 + l3 + l4 + l5 + l6 + l7 + l8)) {
+          payout = parseFloat(settings['level_8_income'] || '25600');
+          levelLabel = 'Level 8 Income';
         }
 
         if (payout > 0) {

@@ -104,8 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _fundWalletBalance = parseDouble(user['fund_wallet_balance']) ?? 0.00;
         _status = user['status'] ?? "ACTIVE";
         _cyclesHistory = cycles;
-        if (team.isNotEmpty) _teamMembers = team;
-        if (txns.isNotEmpty) _transactions = txns;
+        _teamMembers = team;
+        _transactions = txns;
 
         if (activeCycle != null) {
           _activeCycleId = activeCycle['cycle_id'] ?? "";
@@ -1139,7 +1139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      "TOP-UP REQUIRED! (126 Members Reached)",
+                      "TOP-UP REQUIRED! (510 Members Reached)",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -1167,7 +1167,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 0: HOME VIEW ---
   Widget _buildHomeTab() {
-    final bool isTopUpRequired = _membersCount >= 126;
+    final bool isTopUpRequired = _membersCount >= 510;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1941,15 +1941,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBusinessTab() {
     double globalIncome = 0;
     if (_activeCycleId.isNotEmpty) {
-      if (_membersCount >= 2) globalIncome += 200;
-      if (_membersCount >= 6) globalIncome += 400;
-      if (_membersCount >= 14) globalIncome += 800;
-      if (_membersCount >= 30) globalIncome += 1600;
-      if (_membersCount >= 62) globalIncome += 3200;
-      if (_membersCount >= 126) globalIncome += 6400;
+      final int realTeamSize = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
+      if (realTeamSize >= 2) globalIncome += 200;
+      if (realTeamSize >= 6) globalIncome += 400;
+      if (realTeamSize >= 14) globalIncome += 800;
+      if (realTeamSize >= 30) globalIncome += 1600;
+      if (realTeamSize >= 62) globalIncome += 3200;
+      if (realTeamSize >= 126) globalIncome += 6400;
+      if (realTeamSize >= 254) globalIncome += 12800;
+      if (realTeamSize >= 510) globalIncome += 25600;
     }
     double totalEarned = globalIncome;
-    double progressVal = (globalIncome / 12600.0).clamp(0.0, 1.0);
+    double progressVal = (globalIncome / 51000.0).clamp(0.0, 1.0);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -2031,7 +2034,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 2),
                           const Text(
-                            "Of ₹ 12,600",
+                            "Of ₹ 51,000",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 11,
@@ -2131,12 +2134,15 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context) {
               double globalIncome = 0;
               if (_activeCycleId.isNotEmpty) {
-                if (_membersCount >= 2) globalIncome += 200;
-                if (_membersCount >= 6) globalIncome += 400;
-                if (_membersCount >= 14) globalIncome += 800;
-                if (_membersCount >= 30) globalIncome += 1600;
-                if (_membersCount >= 62) globalIncome += 3200;
-                if (_membersCount >= 126) globalIncome += 6400;
+                final int realTeamSize = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
+                if (realTeamSize >= 2) globalIncome += 200;
+                if (realTeamSize >= 6) globalIncome += 400;
+                if (realTeamSize >= 14) globalIncome += 800;
+                if (realTeamSize >= 30) globalIncome += 1600;
+                if (realTeamSize >= 62) globalIncome += 3200;
+                if (realTeamSize >= 126) globalIncome += 6400;
+                if (realTeamSize >= 254) globalIncome += 12800;
+                if (realTeamSize >= 510) globalIncome += 25600;
               }
               double affiliateIncome = _activeCycleId.isNotEmpty
                   ? (_teamMembers.length * 300.0)
@@ -2419,22 +2425,22 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    final String sUpper = status.toUpperCase();
     Color bgColor;
     Color textColor;
     IconData iconData;
+    String displayLabel;
 
-    if (status == "Completed") {
+    if (sUpper == "COMPLETED" || sUpper == "COMPLETE" || sUpper == "ACTIVE" || sUpper == "SUBSCRIBED") {
+      displayLabel = "Completed";
       bgColor = const Color(0xFFE8F5E9); // Light green
       textColor = const Color(0xFF2E7D32); // Dark green
       iconData = Icons.check_circle;
-    } else if (status == "In Progress") {
+    } else {
+      displayLabel = "Pending";
       bgColor = const Color(0xFFFFF3E0); // Light orange
       textColor = const Color(0xFFE65100); // Dark orange
       iconData = Icons.access_time;
-    } else {
-      bgColor = const Color(0xFFF1F5F9); // Light grey/slate
-      textColor = const Color(0xFF64748B); // Slate grey
-      iconData = Icons.lock;
     }
 
     return Container(
@@ -2450,7 +2456,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(iconData, color: textColor, size: 12),
           const SizedBox(width: 4),
           Text(
-            status,
+            displayLabel,
             style: TextStyle(
               color: textColor,
               fontSize: 10,
@@ -2495,7 +2501,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          // Level
+          // Level (Member's current cycle)
           Expanded(
             flex: 2,
             child: isHeader
@@ -2521,7 +2527,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
           ),
-          // Team
+          // Team (Total users joined under this team member)
           Expanded(
             flex: 2,
             child: Text(team, style: textStyle, textAlign: TextAlign.center),
@@ -2532,7 +2538,10 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(income, style: textStyle, textAlign: TextAlign.center),
           ),
           // Status
-          Expanded(flex: 3, child: Center(child: _buildStatusBadge(status))),
+          Expanded(
+            flex: 3,
+            child: Center(child: _buildStatusBadge(status)),
+          ),
         ],
       ),
     );
@@ -2540,7 +2549,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildTeamTab() {
     final int realTeamCount = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
-    final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
+    final double progressRatio = (realTeamCount / 510.0).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
 
     return SingleChildScrollView(
@@ -2624,7 +2633,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 2),
                           const Text(
-                            "TARGET : 126",
+                            "TARGET : 510",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 11,
@@ -2720,102 +2729,86 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          // Unified Levels Table Card (Header & Body merged)
-          Builder(
-            builder: (context) {
-              // Dynamic status calculation based on current team size (defaulting to mock display values if team is empty to showcase all states)
-              final int displayCount = realTeamCount;
-              final String status1 = displayCount >= 2
-                  ? "Completed"
-                  : (displayCount > 0 ? "In Progress" : "Locked");
-              final String status2 = displayCount >= 6
-                  ? "Completed"
-                  : (displayCount >= 2 ? "In Progress" : "Locked");
-              final String status3 = displayCount >= 14
-                  ? "Completed"
-                  : (displayCount >= 6 ? "In Progress" : "Locked");
-              final String status4 = displayCount >= 30
-                  ? "Completed"
-                  : (displayCount >= 14 ? "In Progress" : "Locked");
-              final String status5 = displayCount >= 62
-                  ? "Completed"
-                  : (displayCount >= 30 ? "In Progress" : "Locked");
-              final String status6 = displayCount >= 126
-                  ? "Completed"
-                  : (displayCount >= 62 ? "In Progress" : "Locked");
+          // Real Team Members Table Card (Level, Team, Income, Status)
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(13),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Header Row (Joined at the top of the card)
+                _buildLevelRow(
+                  level: "Level",
+                  team: "Team",
+                  income: "Income",
+                  status: "Status",
+                  bgColor: AppTheme.primaryBlue,
+                  isHeader: true,
+                ),
+                if (_teamMembers.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        Icon(Icons.group_outlined, size: 40, color: Colors.grey.shade400),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "No direct team members joined yet",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textDarkBlue,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          "Share your referral link to build your team network!",
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.textGray,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ...List.generate(_teamMembers.length, (i) {
+                    final member = _teamMembers[i];
+                    final int cycleNum = member['cycle_count'] != null && member['cycle_count'] > 0
+                        ? member['cycle_count']
+                        : 1;
+                    final String memberIdStr = "${member['id'] ?? (i + 1)}";
+                    final double bal = parseDouble(member['main_wallet_balance']) ?? 300.00;
+                    
+                    final String rawStatus = (member['status'] ?? "").toString().toUpperCase();
+                    final bool isSubscribed = (member['cycle_count'] != null && member['cycle_count'] > 0) ||
+                        rawStatus == "ACTIVE" ||
+                        rawStatus == "COMPLETED" ||
+                        rawStatus == "COMPLETE" ||
+                        rawStatus == "SUBSCRIBED";
+                    final String statusStr = isSubscribed ? "Completed" : "Pending";
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(13),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Header Row (Joined at the top of the card)
-                    _buildLevelRow(
-                      level: "Level",
-                      team: "Team",
-                      income: "Income",
-                      status: "Status",
-                      bgColor: AppTheme.primaryBlue,
-                      isHeader: true,
-                    ),
-                    // Level 1 Row (No top-round corners since it meets header)
-                    _buildLevelRow(
-                      level: "1",
-                      team: "2",
-                      income: "₹ 200.00",
-                      status: status1,
-                      bgColor: Colors.white,
+                    return _buildLevelRow(
+                      level: "$cycleNum",
+                      team: memberIdStr,
+                      income: "₹ ${bal.toStringAsFixed(2)}",
+                      status: statusStr,
+                      bgColor: i % 2 == 0 ? Colors.white : const Color(0xFFF8FAFC),
                       isFirstRow: false,
-                    ),
-                    _buildLevelRow(
-                      level: "2",
-                      team: "4",
-                      income: "₹ 400.00",
-                      status: status2,
-                      bgColor: const Color(0xFFF8FAFC),
-                    ),
-                    _buildLevelRow(
-                      level: "3",
-                      team: "8",
-                      income: "₹ 800.00",
-                      status: status3,
-                      bgColor: Colors.white,
-                    ),
-                    _buildLevelRow(
-                      level: "4",
-                      team: "16",
-                      income: "₹ 1,600.00",
-                      status: status4,
-                      bgColor: const Color(0xFFF8FAFC),
-                    ),
-                    _buildLevelRow(
-                      level: "5",
-                      team: "32",
-                      income: "₹ 3,200.00",
-                      status: status5,
-                      bgColor: Colors.white,
-                    ),
-                    _buildLevelRow(
-                      level: "6",
-                      team: "64",
-                      income: "₹ 6,400.00",
-                      status: status6,
-                      bgColor: const Color(0xFFF8FAFC),
-                      isLastRow: true,
-                    ),
-                  ],
-                ),
-              );
-            },
+                      isLastRow: i == _teamMembers.length - 1,
+                    );
+                  }),
+              ],
+            ),
           ),
 
           const SizedBox(height: 20),
@@ -2896,14 +2889,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 3: PROFILE VIEW ---
   Widget _buildProfileTab() {
+    final int realTeamSize = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
     double globalIncome = 0;
     if (_activeCycleId.isNotEmpty) {
-      if (_membersCount >= 2) globalIncome += 200;
-      if (_membersCount >= 6) globalIncome += 400;
-      if (_membersCount >= 14) globalIncome += 800;
-      if (_membersCount >= 30) globalIncome += 1600;
-      if (_membersCount >= 62) globalIncome += 3200;
-      if (_membersCount >= 126) globalIncome += 6400;
+      if (realTeamSize >= 2) globalIncome += 200;
+      if (realTeamSize >= 6) globalIncome += 400;
+      if (realTeamSize >= 14) globalIncome += 800;
+      if (realTeamSize >= 30) globalIncome += 1600;
+      if (realTeamSize >= 62) globalIncome += 3200;
+      if (realTeamSize >= 126) globalIncome += 6400;
+      if (realTeamSize >= 254) globalIncome += 12800;
+      if (realTeamSize >= 510) globalIncome += 25600;
     }
 
     return SingleChildScrollView(
@@ -3041,7 +3037,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: _buildProfileSubMetric(
                           "Team Size",
-                          "$_membersCount",
+                          "$realTeamSize",
                           Icons.group_outlined,
                           onTap: () => _showTeamSizeModal(context),
                         ),
@@ -3480,7 +3476,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Text("Target: ₹12,600.00 (Current Progress: ${((globalInc / 12600.0) * 100).toStringAsFixed(1)}%)", style: const TextStyle(color: AppTheme.textGray, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text("Target: ₹51,000.00 (Current Progress: ${((globalInc / 51000.0) * 100).toStringAsFixed(1)}%)", style: const TextStyle(color: AppTheme.textGray, fontSize: 12, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
           ],
         ),

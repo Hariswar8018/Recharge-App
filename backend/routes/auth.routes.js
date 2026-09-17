@@ -68,7 +68,7 @@ router.post('/register', verifyAppToken, async (req, res) => {
     const passwordHash = bcrypt.hashSync(password, salt);
 
     await query(
-      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, device_model, app_version, sponsor_id) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, ?, ?, ?)',
+      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, device_model, app_version, sponsor_id) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "PENDING", ?, ?, ?)',
       [fullName, email.toLowerCase(), cleanMobile, passwordHash, password, device_model || 'Unknown', app_version || '1.0.0', sponsorIdVal]
     );
 
