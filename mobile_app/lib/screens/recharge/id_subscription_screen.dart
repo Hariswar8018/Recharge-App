@@ -15,11 +15,13 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
   double _fundWalletBalance = 1200.0;
   String _userName = "Raju Reddy";
   String _userMobile = "7989293968";
-  String _userEmail = "srdigitalseva99@gmail.com";
+  String _userEmail = "ravikanth@gmail.com";
   String _joiningDate = "28-08-2025";
   bool _isLoading = true;
   bool _isSubmitting = false;
   String _lookupUserName = "Raju Reddy";
+  bool _isUserRegistered = true;
+  String? _mobileErrorMsg;
 
   @override
   void initState() {
@@ -30,24 +32,70 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
 
   void _onMobileChanged() async {
     final text = _mobileController.text.trim();
-    if (text.length >= 1) {
+    if (text.isEmpty) {
+      setState(() {
+        _lookupUserName = "";
+        _isUserRegistered = false;
+        _mobileErrorMsg = null;
+      });
+      return;
+    }
+
+    if (!RegExp(r'^[0-9]+$').hasMatch(text)) {
+      setState(() {
+        _lookupUserName = "";
+        _isUserRegistered = false;
+        _mobileErrorMsg = "Please enter only numbers (0-9).";
+      });
+      return;
+    }
+
+    if (text.length < 10) {
+      setState(() {
+        _lookupUserName = "";
+        _isUserRegistered = false;
+        _mobileErrorMsg = "Please enter 10 digit mobile number.";
+      });
+      return;
+    }
+
+    if (text.length > 10) {
+      setState(() {
+        _lookupUserName = "";
+        _isUserRegistered = false;
+        _mobileErrorMsg = "Please enter only 10 digit mobile number.";
+      });
+      return;
+    }
+
+    if (text.length == 10) {
       final res = await ApiService.lookupUserById(text);
-      if (mounted) {
+      if (mounted && _mobileController.text.trim() == text) {
         if (res['success'] == true && res['user'] != null) {
+          final u = res['user'];
+          String jDate = "28-08-2025";
+          if (u['created_at'] != null) {
+            try {
+              final dt = DateTime.parse(u['created_at'].toString());
+              jDate = "${dt.day.toString().padLeft(2, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.year}";
+            } catch (_) {}
+          }
           setState(() {
-            _lookupUserName = res['user']['fullName'] ?? "User Found";
+            _lookupUserName = u['name'] ?? u['fullName'] ?? "Raju Reddy";
+            _userMobile = u['mobileNumber'] ?? u['mobile'] ?? text;
+            _userName = _lookupUserName;
+            _userEmail = u['email'] ?? "ravikanth@gmail.com";
+            _joiningDate = jDate;
+            _isUserRegistered = true;
+            _mobileErrorMsg = null;
           });
         } else {
           setState(() {
-            _lookupUserName = "User Not Found";
+            _lookupUserName = "";
+            _isUserRegistered = false;
+            _mobileErrorMsg = "This mobile number is not registered. Please enter a valid registered number.";
           });
         }
-      }
-    } else {
-      if (_lookupUserName.isNotEmpty) {
-        setState(() {
-          _lookupUserName = "";
-        });
       }
     }
   }
@@ -324,7 +372,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
                                 ),
                                 const SizedBox(width: 10),
                                 const Text(
-                                  "Enter Mobile Number",
+                                  "Enter Mobile Number (ID)",
                                   style: TextStyle(
                                     color: Color(0xFF1E293B),
                                     fontSize: 14,
@@ -335,65 +383,127 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
                             ),
                             const SizedBox(height: 10),
 
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                              ),
-                              child: TextField(
-                                controller: _mobileController,
-                                keyboardType: TextInputType.phone,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1E293B),
-                                ),
-                                decoration: const InputDecoration(
-                                  prefixIcon: Icon(Icons.phone_outlined, color: Color(0xFF64748B), size: 20),
-                                  border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                ),
-                              ),
-                            ),
-                            if (_lookupUserName.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF0FDF4),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFF86EFAC)),
-                                ),
-                                child: Row(
+                            Builder(
+                              builder: (context) {
+                                final bool isTouched = _mobileController.text.trim().isNotEmpty;
+                                final bool isValid = _isUserRegistered && _mobileErrorMsg == null && _mobileController.text.trim().length == 10;
+                                final bool isError = isTouched && !isValid;
+
+                                Color borderColor = const Color(0xFFCBD5E1);
+                                Widget? suffixIcon;
+
+                                if (isTouched) {
+                                  if (isValid) {
+                                    borderColor = const Color(0xFF16A34A);
+                                    suffixIcon = const Padding(
+                                      padding: EdgeInsets.only(right: 12),
+                                      child: Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 22),
+                                    );
+                                  } else if (isError) {
+                                    borderColor = const Color(0xFFDC2626);
+                                    suffixIcon = const Padding(
+                                      padding: EdgeInsets.only(right: 12),
+                                      child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                                    );
+                                  }
+                                }
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 18),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        "User Name: $_lookupUserName",
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: isError ? const Color(0xFFFEF2F2) : (isValid ? const Color(0xFFF0FDF4) : Colors.white),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: borderColor, width: isTouched ? 1.8 : 1.0),
+                                      ),
+                                      child: TextField(
+                                        controller: _mobileController,
+                                        keyboardType: TextInputType.phone,
                                         style: const TextStyle(
-                                          color: Color(0xFF15803D),
-                                          fontSize: 13,
+                                          fontSize: 15,
                                           fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1E293B),
+                                        ),
+                                        decoration: InputDecoration(
+                                          prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFF64748B), size: 20),
+                                          suffixIcon: suffixIcon,
+                                          border: InputBorder.none,
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                          hintText: "Enter 10 digit mobile number",
+                                          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                                         ),
                                       ),
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF16A34A),
-                                        borderRadius: BorderRadius.circular(6),
+                                    if (_lookupUserName.isNotEmpty && isValid) ...[
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF0FDF4),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(color: const Color(0xFF86EFAC)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 18),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                "User Name: $_lookupUserName",
+                                                style: const TextStyle(
+                                                  color: Color(0xFF15803D),
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF16A34A),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: const Text(
+                                                "OK",
+                                                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      child: const Text(
-                                        "OK",
-                                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                    ],
+                                    if (_mobileErrorMsg != null) ...[
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFEF2F2),
+                                          borderRadius: BorderRadius.circular(10),
+                                          border: Border.all(color: const Color(0xFFFCA5A5)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 18),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                _mobileErrorMsg!,
+                                                style: const TextStyle(
+                                                  color: Color(0xFFDC2626),
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ],
-                                ),
-                              ),
-                            ],
+                                );
+                              },
+                            ),
                             const SizedBox(height: 6),
                             const Text(
                               "Enter the mobile number (ID) you want to subscribe.",

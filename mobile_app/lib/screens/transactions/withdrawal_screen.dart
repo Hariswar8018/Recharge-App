@@ -166,6 +166,13 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       return;
     }
 
+    if (amtVal > 5000) {
+      setState(() {
+        _error = "Maximum withdrawal amount is ₹5000";
+      });
+      return;
+    }
+
     if (amtVal > _mainBalance) {
       setState(() {
         _error = "Insufficient balance in Main Wallet";
@@ -430,96 +437,166 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                       const SizedBox(height: 16),
 
                       // 2. Enter Amount Card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Text(
-                                  "Enter Amount",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1E293B),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  "Minimum: ₹500",
-                                  style: TextStyle(
-                                    color: Color(0xFF1565C0),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
+                      Builder(
+                        builder: (context) {
+                          final String text = _amountController.text.trim();
+                          final double? parsed = double.tryParse(text);
+                          final bool isTouched = text.isNotEmpty;
+                          final bool isValidAmount = parsed != null && parsed >= 500 && parsed <= 5000;
+                          final bool isLessThanMin = parsed != null && parsed < 500;
+                          final bool isMoreThanMax = parsed != null && parsed > 5000;
+
+                          Color borderColor = const Color(0xFFCBD5E1);
+                          Widget? suffixIcon;
+                          String? statusMsg;
+                          Color statusColor = const Color(0xFF16A34A);
+
+                          if (isTouched) {
+                            if (isValidAmount) {
+                              borderColor = const Color(0xFF16A34A);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 22),
+                              );
+                              statusMsg = "Valid withdrawal amount";
+                              statusColor = const Color(0xFF16A34A);
+                            } else if (isLessThanMin) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              statusMsg = "Minimum withdrawal amount is ₹500";
+                              statusColor = const Color(0xFFDC2626);
+                            } else if (isMoreThanMax) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              statusMsg = "Maximum withdrawal amount is ₹5000";
+                              statusColor = const Color(0xFFDC2626);
+                            }
+                          }
+
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: statusMsg != null && !isValidAmount ? const Color(0xFFFCA5A5) : const Color(0xFFE2E8F0)),
                             ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _amountController,
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                prefixIcon: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                  child: Text(
-                                    "₹",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1E293B),
-                                    ),
-                                  ),
-                                ),
-                                hintText: "Enter amount",
-                                hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                              ),
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-                              validator: (val) {
-                                if (val == null || val.isEmpty) return "Please enter amount";
-                                final parsed = double.tryParse(val);
-                                if (parsed == null || parsed < 500) return "Minimum withdrawal is ₹500";
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Enter amount to withdraw",
-                                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: const [
+                                    Text(
+                                      "Enter Amount",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1E293B),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      "Minimum: ₹500",
+                                      style: TextStyle(
+                                        color: Color(0xFF1565C0),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                InkWell(
-                                  onTap: _setMaxAmount,
-                                  child: const Text(
-                                    "Max",
-                                    style: TextStyle(
-                                      color: Color(0xFF1565C0),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                const SizedBox(height: 12),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: isTouched && !isValidAmount ? const Color(0xFFFEF2F2) : (isValidAmount ? const Color(0xFFF0FDF4) : Colors.white),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: borderColor, width: isTouched ? 1.8 : 1.0),
+                                  ),
+                                  child: TextFormField(
+                                    controller: _amountController,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                        child: Text(
+                                          "₹",
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E293B),
+                                          ),
+                                        ),
+                                      ),
+                                      suffixIcon: suffixIcon,
+                                      hintText: "Enter amount",
+                                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                                      border: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    ),
+                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                                  ),
+                                ),
+                                if (statusMsg != null) ...[
+                                  const SizedBox(height: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isValidAmount ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: isValidAmount ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          isValidAmount ? Icons.check_circle_rounded : Icons.error_rounded,
+                                          color: statusColor,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            statusMsg,
+                                            style: TextStyle(
+                                              color: statusColor,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
+                                ],
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      "Enter amount to withdraw",
+                                      style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                                    ),
+                                    InkWell(
+                                      onTap: _setMaxAmount,
+                                      child: const Text(
+                                        "Max",
+                                        style: TextStyle(
+                                          color: Color(0xFF1565C0),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
 

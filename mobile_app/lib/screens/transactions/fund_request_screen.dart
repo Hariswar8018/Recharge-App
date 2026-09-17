@@ -387,167 +387,312 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                       const SizedBox(height: 14),
 
                       // Amount Input Card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Deposit Amount (₹)",
-                              style: TextStyle(
-                                color: Color(0xFF1565C0),
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      Builder(
+                        builder: (context) {
+                          final String text = _amountController.text.trim();
+                          final double? amt = double.tryParse(text);
+                          final bool isTouched = text.isNotEmpty;
+                          final bool isValidAmt = amt != null && amt >= 1200 && amt <= 12000 && (amt % 1200 == 0);
+                          final bool isLessThanMin = amt != null && amt < 1200;
+                          final bool isMoreThanMax = amt != null && amt > 12000;
+                          final bool isNotMultiple = amt != null && amt >= 1200 && amt <= 12000 && (amt % 1200 != 0);
+
+                          Color borderColor = const Color(0xFFCBD5E1);
+                          Widget? suffixIcon;
+                          String? statusMsg;
+                          Color statusColor = const Color(0xFF16A34A);
+
+                          if (isTouched) {
+                            if (isValidAmt) {
+                              borderColor = const Color(0xFF16A34A);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 22),
+                              );
+                              statusMsg = "Valid amount (Multiple of ₹1200)";
+                              statusColor = const Color(0xFF16A34A);
+                            } else if (isLessThanMin) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              statusMsg = "Minimum amount is ₹1200";
+                              statusColor = const Color(0xFFDC2626);
+                            } else if (isMoreThanMax) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              statusMsg = "Maximum amount is ₹12000";
+                              statusColor = const Color(0xFFDC2626);
+                            } else if (isNotMultiple) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              statusMsg = "Amount must be in multiples of ₹1200 (₹1200 - ₹12000 only)";
+                              statusColor = const Color(0xFFDC2626);
+                            }
+                          }
+
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
                             ),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              controller: _amountController,
-                              keyboardType: TextInputType.number,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
-                              ),
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.currency_rupee, color: Color(0xFF1565C0)),
-                                hintText: "Enter Amount",
-                                filled: true,
-                                fillColor: const Color(0xFFF8FAFC),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
-                                ),
-                              ),
-                              validator: (v) => (v == null || v.trim().isEmpty) ? "Please enter deposit amount" : null,
-                            ),
-                            const SizedBox(height: 10),
-                            // Quick Amount Chips
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              alignment: WrapAlignment.center,
-                              children: [100, 500, 1000, 2000, 5000].map((amt) {
-                                return ChoiceChip(
-                                  label: Text("₹$amt", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                  selected: _amountController.text == amt.toString(),
-                                  selectedColor: const Color(0xFF1565C0),
-                                  labelStyle: TextStyle(
-                                    color: _amountController.text == amt.toString() ? Colors.white : const Color(0xFF1565C0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Deposit Amount (₹)",
+                                  style: TextStyle(
+                                    color: Color(0xFF1565C0),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  onSelected: (selected) {
-                                    if (selected) {
-                                      setState(() {
-                                        _amountController.text = amt.toString();
-                                      });
-                                    }
-                                  },
-                                );
-                              }).toList(),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: isTouched && !isValidAmt ? const Color(0xFFFEF2F2) : (isValidAmt ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC)),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: borderColor, width: isTouched ? 1.8 : 1.0),
+                                  ),
+                                  child: TextFormField(
+                                    controller: _amountController,
+                                    keyboardType: TextInputType.number,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0F172A),
+                                    ),
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(Icons.currency_rupee, color: Color(0xFF1565C0)),
+                                      suffixIcon: suffixIcon,
+                                      hintText: "Enter Amount",
+                                      border: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    ),
+                                  ),
+                                ),
+                                if (statusMsg != null) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isValidAmt ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: isValidAmt ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          isValidAmt ? Icons.check_circle_rounded : Icons.error_rounded,
+                                          color: statusColor,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            statusMsg,
+                                            style: TextStyle(
+                                              color: statusColor,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 10),
+                                // Quick Amount Chips (Multiples of 1200)
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 6,
+                                  alignment: WrapAlignment.center,
+                                  children: [1200, 2400, 3600, 4800, 6000, 12000].map((amtVal) {
+                                    return ChoiceChip(
+                                      label: Text("₹$amtVal", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                      selected: _amountController.text == amtVal.toString(),
+                                      selectedColor: const Color(0xFF1565C0),
+                                      labelStyle: TextStyle(
+                                        color: _amountController.text == amtVal.toString() ? Colors.white : const Color(0xFF1565C0),
+                                      ),
+                                      onSelected: (selected) {
+                                        if (selected) {
+                                          setState(() {
+                                            _amountController.text = amtVal.toString();
+                                          });
+                                        }
+                                      },
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 14),
 
                       // 3. Enter UTR Number Card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAF5FF),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE9D5FF)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                      Builder(
+                        builder: (context) {
+                          final String utrText = _utrController.text.trim();
+                          final bool isTouched = utrText.isNotEmpty;
+                          final bool isNumeric = RegExp(r'^[0-9]+$').hasMatch(utrText);
+                          final bool isLessThan12 = utrText.length < 12;
+                          final bool isMoreThan12 = utrText.length > 12;
+                          final bool isAlreadyUsed = _requests.any((r) => r['utr_number']?.toString().trim() == utrText);
+                          final bool isValidUtr = isTouched && isNumeric && utrText.length == 12 && !isAlreadyUsed;
+
+                          Color borderColor = const Color(0xFFE2E8F0);
+                          Widget? suffixIcon = IconButton(
+                            icon: const Icon(Icons.content_paste_rounded, color: Color(0xFF7E22CE), size: 20),
+                            onPressed: _pasteFromClipboard,
+                          );
+                          String? utrStatusMsg;
+                          Color utrStatusColor = const Color(0xFF16A34A);
+
+                          if (isTouched) {
+                            if (isValidUtr) {
+                              borderColor = const Color(0xFF16A34A);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 22),
+                              );
+                              utrStatusMsg = "Valid 12 digit UTR number";
+                              utrStatusColor = const Color(0xFF16A34A);
+                            } else if (!isNumeric) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              utrStatusMsg = "Please enter only numbers (0-9)";
+                              utrStatusColor = const Color(0xFFDC2626);
+                            } else if (isAlreadyUsed) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              utrStatusMsg = "This UTR number has already been used. Please enter a different UTR number.";
+                              utrStatusColor = const Color(0xFFDC2626);
+                            } else if (isLessThan12) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              utrStatusMsg = "Please enter 12 digit UTR number";
+                              utrStatusColor = const Color(0xFFDC2626);
+                            } else if (isMoreThan12) {
+                              borderColor = const Color(0xFFDC2626);
+                              suffixIcon = const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
+                              );
+                              utrStatusMsg = "Please enter only 12 digit UTR number";
+                              utrStatusColor = const Color(0xFFDC2626);
+                            }
+                          }
+
+                          return Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFAF5FF),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: utrStatusMsg != null && !isValidUtr ? const Color(0xFFFCA5A5) : const Color(0xFFE9D5FF)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF3E8FF),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Icon(Icons.receipt_long_outlined, color: Color(0xFF7E22CE), size: 20),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    const Text(
+                                      "Enter UTR Number",
+                                      style: TextStyle(
+                                        color: Color(0xFF7E22CE),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
                                 Container(
-                                  padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF3E8FF),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: isTouched && !isValidUtr ? const Color(0xFFFEF2F2) : (isValidUtr ? const Color(0xFFF0FDF4) : Colors.white),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: borderColor, width: isTouched ? 1.8 : 1.0),
                                   ),
-                                  child: const Icon(Icons.receipt_long_outlined, color: Color(0xFF7E22CE), size: 20),
-                                ),
-                                const SizedBox(width: 10),
-                                const Text(
-                                  "Enter UTR Number",
-                                  style: TextStyle(
-                                    color: Color(0xFF7E22CE),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                  child: TextFormField(
+                                    controller: _utrController,
+                                    keyboardType: TextInputType.number,
+                                    maxLength: 12,
+                                    decoration: InputDecoration(
+                                      hintText: "Enter 12 Digit UTR Number",
+                                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                                      border: InputBorder.none,
+                                      suffixIcon: suffixIcon,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                      counterText: "",
+                                    ),
+                                    style: const TextStyle(fontSize: 15, color: Color(0xFF1E293B), fontWeight: FontWeight.w700),
                                   ),
                                 ),
+                                if (utrStatusMsg != null) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isValidUtr ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: isValidUtr ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          isValidUtr ? Icons.check_circle_rounded : Icons.error_rounded,
+                                          color: utrStatusColor,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            utrStatusMsg,
+                                            style: TextStyle(
+                                              color: utrStatusColor,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _utrController,
-                              keyboardType: TextInputType.number,
-                              maxLength: 12,
-                              decoration: InputDecoration(
-                                hintText: "Enter 12 Digit UTR Number",
-                                hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                                fillColor: Colors.white,
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF7E22CE), width: 1.5),
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: const Icon(Icons.content_paste_rounded, color: Color(0xFF7E22CE), size: 20),
-                                  onPressed: _pasteFromClipboard,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                                counterText: "",
-                              ),
-                              style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B), fontWeight: FontWeight.w600),
-                              validator: (value) => (value == null || value.length != 12) ? "Please enter 12-digit UTR" : null,
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  "Please enter exact 12 digits UTR number.",
-                                  style: TextStyle(color: Color(0xFF64748B), fontSize: 9),
-                                ),
-                                Text(
-                                  "Exactly 12 digits",
-                                  style: TextStyle(
-                                    color: _isUtrExact ? const Color(0xFF22C55E) : const Color(0xFF7E22CE),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 14),
 
@@ -585,11 +730,10 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            _buildInstructionBullet(Icons.monetization_on_outlined, "Minimum Add Money: ₹1200"),
-                            _buildInstructionBullet(Icons.monetization_on_outlined, "Maximum Add Money: ₹12000"),
-                            _buildInstructionBullet(Icons.access_time_rounded, "Only 12 Digit UTR number is allowed."),
+                            _buildInstructionBullet(Icons.monetization_on_outlined, "Deposit amount must be ₹1200 to ₹12000 in multiples of ₹1200."),
+                            _buildInstructionBullet(Icons.access_time_rounded, "UTR number must be exactly 12 digits."),
+                            _buildInstructionBullet(Icons.highlight_off_rounded, "Already used UTR number will not be allowed."),
                             _buildInstructionBullet(Icons.thumb_up_alt_outlined, "Funds will be added to your wallet after Admin approval."),
-                            _buildInstructionBullet(Icons.access_time_rounded, "It may take some time for approval."),
                           ],
                         ),
                       ),
