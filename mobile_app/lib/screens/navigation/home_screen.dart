@@ -140,17 +140,33 @@ class _HomeScreenState extends State<HomeScreen> {
         "Download App from Google Play Store:\n$playStoreLink\n\n"
         "Refer App Earn ₹ 300.00 Each Referral! Start earning affiliate commissions and global cycle rewards today.";
 
-    // Copy link to clipboard
+    // 1. Copy link to clipboard
     await Clipboard.setData(ClipboardData(text: deepLink));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Referral link copied to clipboard! Opening share options..."),
+          content: Text("Referral link copied! Launching Play Store & Share options..."),
           duration: Duration(seconds: 2),
         ),
       );
     }
 
+    // 2. Launch Play Store App / Google Play Store Page
+    final Uri playStoreUri = Uri.parse(playStoreLink);
+    final Uri marketUri = Uri.parse("market://details?id=com.app.earnfarm&ref=$_userId");
+    try {
+      if (await canLaunchUrl(marketUri)) {
+        await launchUrl(marketUri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(playStoreUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      try {
+        await launchUrl(playStoreUri, mode: LaunchMode.externalApplication);
+      } catch (_) {}
+    }
+
+    // 3. Trigger System Share Options
     try {
       await ShareMe.system(
         title: 'Join SR Digital Seva Kendram Today!',
@@ -163,13 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Uri.parse(deepLink),
           mode: LaunchMode.externalApplication,
         );
-      } catch (_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error launching referral link: $e")),
-          );
-        }
-      }
+      } catch (_) {}
     }
   }
 
@@ -3265,46 +3275,43 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isLogout = false,
     VoidCallback? onTap,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: ListTile(
-        dense: true,
-        visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-        leading: Container(
-          padding: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: const Color(0xFF0052CC), size: 25),
+    return ListTile(
+      dense: true,
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+      leading: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEFF6FF),
+          borderRadius: BorderRadius.circular(10),
         ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                color: AppTheme.textDarkBlue,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 1),
-            Text(
-              subtitle,
-              style: const TextStyle(color: AppTheme.textGray, fontSize: 9),
-            ),
-          ],
-        ),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: Color(0xFF0052CC),
-          size: 22,
-        ),
-        onTap: onTap ?? (isLogout ? _handleLogout : () {}),
+        child: Icon(icon, color: const Color(0xFF0052CC), size: 25),
       ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: AppTheme.textDarkBlue,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            subtitle,
+            style: const TextStyle(color: AppTheme.textGray, fontSize: 9),
+          ),
+        ],
+      ),
+      trailing: const Icon(
+        Icons.chevron_right,
+        color: Color(0xFF0052CC),
+        size: 22,
+      ),
+      onTap: onTap ?? (isLogout ? _handleLogout : () {}),
     );
   }
 
