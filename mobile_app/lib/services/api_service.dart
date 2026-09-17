@@ -123,6 +123,24 @@ class ApiService {
     }
   }
 
+  // Check if Mobile Number is Registered
+  static Future<Map<String, dynamic>> checkMobile(String mobileNumber) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/check-mobile'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'mobileNumber': mobileNumber}),
+      );
+      final decoded = jsonDecode(response.body);
+      return {
+        'registered': decoded['registered'] == true,
+        'message': decoded['message'] ?? (decoded['registered'] == true ? 'Valid registered mobile number' : 'This mobile number is not registered. Please use your registered mobile number.')
+      };
+    } catch (e) {
+      return {'registered': false, 'error': 'Connection error'};
+    }
+  }
+
   static double _accumulatedCaptchaEarnings = 0.0;
   static List<Map<String, dynamic>> _localCaptchaTxns = [];
   static bool _isCaptchaDataLoaded = false;

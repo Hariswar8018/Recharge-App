@@ -91,6 +91,31 @@ router.post('/register', verifyAppToken, async (req, res) => {
   }
 });
 
+// Check if Mobile Number is Registered in system
+router.post('/check-mobile', verifyAppToken, async (req, res) => {
+  const { mobileNumber } = req.body;
+  if (!mobileNumber) {
+    return res.status(400).json({ registered: false, error: 'Mobile number is required' });
+  }
+
+  const cleanMobile = mobileNumber.toString().trim();
+  if (!/^\d{10}$/.test(cleanMobile)) {
+    return res.status(400).json({ registered: false, error: 'Mobile number must be exactly 10 digits' });
+  }
+
+  try {
+    const users = await query('SELECT id FROM users WHERE (mobileNumber = ? OR email = ?) AND (role = "user" OR role IS NULL)', [cleanMobile, cleanMobile]);
+    if (users.length > 0) {
+      return res.json({ registered: true, message: 'Valid registered mobile number' });
+    } else {
+      return res.json({ registered: false, message: 'This mobile number is not registered. Please use your registered mobile number.' });
+    }
+  } catch (err) {
+    console.error('Check mobile error:', err);
+    res.status(500).json({ registered: false, error: 'Server error checking mobile number' });
+  }
+});
+
 // Login User
 router.post('/login', verifyAppToken, async (req, res) => {
   const { email, password, device_model, app_version } = req.body;

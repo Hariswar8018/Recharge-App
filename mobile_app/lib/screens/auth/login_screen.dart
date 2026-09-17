@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
@@ -13,21 +14,159 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _mobileController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _isLoading = false;
   String _errorMessage = "";
 
+  // Mobile Validation States
+  bool _isCheckingMobile = false;
+  bool? _isMobileValid; // null = empty/unfilled, true = green valid, false = red invalid
+  bool _isMobileRegistered = false;
+  String? _mobileStatusMessage;
+  String _lastCheckedNumber = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _mobileController.addListener(_onMobileChanged);
+  }
+
   @override
   void dispose() {
-    _emailController.dispose();
+    _mobileController.removeListener(_onMobileChanged);
+    _mobileController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
+  void _onMobileChanged() {
+    final text = _mobileController.text.trim();
+    if (text.isEmpty) {
+      setState(() {
+        _isCheckingMobile = false;
+        _isMobileValid = null;
+        _isMobileRegistered = false;
+        _mobileStatusMessage = null;
+        _lastCheckedNumber = "";
+      });
+      return;
+    }
+
+    if (text.length < 10) {
+      setState(() {
+        _isCheckingMobile = false;
+        _isMobileValid = false;
+        _isMobileRegistered = false;
+        _mobileStatusMessage = "Enter 10 digit mobile number";
+        _lastCheckedNumber = "";
+      });
+      return;
+    }
+
+    if (text.length == 10) {
+      if (_lastCheckedNumber == text && !_isCheckingMobile) return;
+      _checkMobileRegistration(text);
+    }
+  }
+
+  Future<void> _checkMobileRegistration(String number) async {
+    setState(() {
+      _isCheckingMobile = true;
+      _lastCheckedNumber = number;
+    });
+
+    final res = await ApiService.checkMobile(number);
+
+    if (_mobileController.text.trim() != number) return;
+
+    setState(() {
+      _isCheckingMobile = false;
+      if (res['registered'] == true) {
+        _isMobileValid = true;
+        _isMobileRegistered = true;
+        _mobileStatusMessage = "Valid registered mobile number";
+      } else {
+        _isMobileValid = false;
+        _isMobileRegistered = false;
+        _mobileStatusMessage = res['message'] ??
+            "This mobile number is not registered. Please use your registered mobile number.";
+      }
+    });
+  }
+
+  OutlineInputBorder _getMobileBorder() {
+    Color color = const Color(0xFFE2E8F0);
+    if (_isMobileValid == true) {
+      color = const Color(0xFF10B981);
+    } else if (_isMobileValid == false) {
+      color = const Color(0xFFEF4444);
+    }
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: color,
+        width: _isMobileValid != null ? 1.5 : 1.0,
+      ),
+    );
+  }
+
+  Widget? _buildMobileSuffixIcon() {
+    if (_isCheckingMobile) {
+      return const UnconstrainedBox(
+        child: SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppTheme.primaryBlue,
+          ),
+        ),
+      );
+    }
+    if (_isMobileValid == true) {
+      return const Icon(
+        Icons.check_circle,
+        color: Color(0xFF10B981),
+        size: 22,
+      );
+    }
+    if (_isMobileValid == false) {
+      return const Icon(
+        Icons.cancel,
+        color: Color(0xFFEF4444),
+        size: 22,
+      );
+    }
+    return null;
+  }
+
   Future<void> _handleLogin() async {
+    final mobileText = _mobileController.text.trim();
+    if (mobileText.length < 10) {
+      setState(() {
+        _isMobileValid = false;
+        _mobileStatusMessage = "Enter 10 digit mobile number";
+      });
+      return;
+    }
+
+    if (!_isMobileRegistered) {
+      if (!_isCheckingMobile && mobileText.length == 10) {
+        await _checkMobileRegistration(mobileText);
+      }
+      if (!_isMobileRegistered) {
+        setState(() {
+          _isMobileValid = false;
+          _mobileStatusMessage = _mobileStatusMessage ??
+              "This mobile number is not registered. Please use your registered mobile number.";
+        });
+        return;
+      }
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -35,10 +174,9 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = "";
     });
 
-    final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    final result = await ApiService.login(email: email, password: password);
+    final result = await ApiService.login(email: mobileText, password: password);
 
     setState(() {
       _isLoading = false;
@@ -153,63 +291,82 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 5),
 
-                           // Registered Mobile field label
-                           const Text(
-                             "Registered Mobile",
-                             style: TextStyle(
-                               color: AppTheme.primaryBlue,
-                               fontWeight: FontWeight.w800,
-                               fontSize: 13,
-                             ),
-                           ),
-                           const SizedBox(height: 4),
-                           TextFormField(
-                             controller: _emailController,
-                             keyboardType: TextInputType.phone,
-                             style: const TextStyle(fontSize: 13),
-                             decoration: InputDecoration(
-                               hintText: "Enter Registered Mobile",
-                               hintStyle: const TextStyle(
-                                 color: Colors.grey,
-                                 fontSize: 13,
-                               ),
-                               prefixIcon: Container(
-                                 margin: const EdgeInsets.all(8),
-                                 padding: const EdgeInsets.all(8),
-                                 decoration: BoxDecoration(
-                                   color: const Color(0xFFEFF6FF),
-                                   borderRadius: BorderRadius.circular(8),
-                                 ),
-                                 child: const Icon(
-                                   Icons.phone,
-                                   color: AppTheme.primaryBlue,
-                                   size: 16,
-                                 ),
-                               ),
-                               filled: true,
-                               fillColor: Colors.white,
-                               contentPadding: const EdgeInsets.symmetric(
-                                 vertical: 12,
-                               ),
-                               border: OutlineInputBorder(
-                                 borderRadius: BorderRadius.circular(12),
-                                 borderSide: const BorderSide(
-                                   color: Color(0xFFE2E8F0),
-                                 ),
-                               ),
-                               enabledBorder: OutlineInputBorder(
-                                 borderRadius: BorderRadius.circular(12),
-                                 borderSide: const BorderSide(
-                                   color: Color(0xFFE2E8F0),
-                                 ),
-                               ),
-                             ),
-                             validator: (value) =>
-                                 (value == null || value.isEmpty)
-                                 ? "Please enter registered mobile"
-                                 : null,
-                           ),
-                           const SizedBox(height: 10),
+                          // Registered Mobile field label
+                          const Text(
+                            "Registered Mobile",
+                            style: TextStyle(
+                              color: AppTheme.primaryBlue,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          TextFormField(
+                            controller: _mobileController,
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(10),
+                            ],
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            decoration: InputDecoration(
+                              hintText: "Enter Registered Mobile",
+                              hintStyle: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
+                              prefixIcon: Container(
+                                margin: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.phone,
+                                  color: AppTheme.primaryBlue,
+                                  size: 16,
+                                ),
+                              ),
+                              suffixIcon: _buildMobileSuffixIcon(),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 12,
+                              ),
+                              border: _getMobileBorder(),
+                              enabledBorder: _getMobileBorder(),
+                              focusedBorder: _getMobileBorder(),
+                              errorStyle: const TextStyle(height: 0, fontSize: 0),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return "";
+                              }
+                              if (value.trim().length < 10) {
+                                return "";
+                              }
+                              if (!_isMobileRegistered) {
+                                return "";
+                              }
+                              return null;
+                            },
+                          ),
+                          if (_mobileStatusMessage != null && _mobileStatusMessage!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _mobileStatusMessage!,
+                              style: TextStyle(
+                                color: _isMobileValid == true
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFEF4444),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 10),
 
                           // Password field label
                           const Text(
@@ -276,27 +433,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
-                             validator: (value) {
-                               if (value == null || value.isEmpty) {
-                                 return "Please enter password";
-                               }
-                               if (value.length < 8) {
-                                 return "Password must be at least 8 characters";
-                               }
-                               if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                                 return "Password must contain at least one uppercase letter (A-Z)";
-                               }
-                               if (!RegExp(r'[a-z]').hasMatch(value)) {
-                                 return "Password must contain at least one lowercase letter (a-z)";
-                               }
-                               if (!RegExp(r'[0-9]').hasMatch(value)) {
-                                 return "Password must contain at least one number (0-9)";
-                               }
-                               if (!RegExp(r'[!@#\$&*~%]').hasMatch(value)) {
-                                 return "Password must contain at least one special character (@, #, \$, %, etc.)";
-                               }
-                               return null;
-                             },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please enter password";
+                              }
+                              if (value.length < 8) {
+                                return "Password must be at least 8 characters";
+                              }
+                              if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                return "Password must contain at least one uppercase letter (A-Z)";
+                              }
+                              if (!RegExp(r'[a-z]').hasMatch(value)) {
+                                return "Password must contain at least one lowercase letter (a-z)";
+                              }
+                              if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                return "Password must contain at least one number (0-9)";
+                              }
+                              if (!RegExp(r'[!@#\$&*~%]').hasMatch(value)) {
+                                return "Password must contain at least one special character (@, #, \$, %, etc.)";
+                              }
+                              return null;
+                            },
                           ),
 
                           // Forgot password
@@ -620,11 +777,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 6),
       padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF1F5F9),
         shape: BoxShape.circle,
       ),
       child: Icon(icon, color: color, size: 20),
     );
   }
 }
+
