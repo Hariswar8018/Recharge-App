@@ -23,29 +23,29 @@ router.post('/verify', verifyAppToken, verifyUserToken, async (req, res) => {
     const cleanAccount = account_no.trim();
     const cleanIfsc = ifsc.trim().toUpperCase();
     
-    // 1. Primary Simple Bank Verification API
-    const simpleUrl = `https://api.finpayultra.com/api/bank-varification?api_key=${encodeURIComponent(apiKey)}&orderid=${encodeURIComponent(orderId)}&account_number=${encodeURIComponent(cleanAccount)}&ifsc=${encodeURIComponent(cleanIfsc)}`;
-    // 2. Secondary Live Penny Drop API (Fallback)
+    // 1. Primary Live Penny Drop API
     const liveUrl = `https://api.finpayultra.com/api/bank-varification-live?api_key=${encodeURIComponent(apiKey)}&orderid=${encodeURIComponent(orderId)}&account_number=${encodeURIComponent(cleanAccount)}&ifsc=${encodeURIComponent(cleanIfsc)}`;
+    // 2. Secondary Simple Bank Verification API (Fallback)
+    const simpleUrl = `https://api.finpayultra.com/api/bank-varification?api_key=${encodeURIComponent(apiKey)}&orderid=${encodeURIComponent(orderId)}&account_number=${encodeURIComponent(cleanAccount)}&ifsc=${encodeURIComponent(cleanIfsc)}`;
 
-    console.log(`[Bank Verification] Calling Finpay Ultra Simple API for user ${req.user.id}, orderid: ${orderId}`);
+    console.log(`[Bank Penny Drop] Calling Finpay Ultra Penny Drop API for user ${req.user.id}, orderid: ${orderId}`);
 
-    let apiResponse = await fetch(simpleUrl, { method: 'GET' });
+    let apiResponse = await fetch(liveUrl, { method: 'GET' });
     let resData = await apiResponse.json();
 
-    console.log('[Bank Verification] Finpay Ultra Simple API Response:', resData);
+    console.log('[Bank Penny Drop] Finpay Ultra API Response:', resData);
 
     let isSuccess = (resData.status === 'SUCCESS' || resData.status_code === '200' || resData.status_code === 200);
 
-    // If Simple API returned 503 or failed, attempt Live Penny Drop API fallback
+    // If Penny Drop API returned 503 or failed, attempt Simple Bank Verification API fallback
     if (!isSuccess && (resData.status_code === '503' || resData.status_code === 503 || resData.status === 'FAILED')) {
-      console.log('[Bank Verification] Simple API 503/FAILED fallback: Trying Live Penny Drop API...');
+      console.log('[Bank Penny Drop] Penny Drop API 503/FAILED fallback: Trying Simple Bank Verification API...');
       try {
-        const liveResponse = await fetch(liveUrl, { method: 'GET' });
-        const liveData = await liveResponse.json();
-        console.log('[Bank Verification] Finpay Ultra Live API Fallback Response:', liveData);
-        if (liveData.status === 'SUCCESS' || liveData.status_code === '200' || liveData.status_code === 200) {
-          resData = liveData;
+        const simpleResponse = await fetch(simpleUrl, { method: 'GET' });
+        const simpleData = await simpleResponse.json();
+        console.log('[Bank Verification] Finpay Ultra Simple API Fallback Response:', simpleData);
+        if (simpleData.status === 'SUCCESS' || simpleData.status_code === '200' || simpleData.status_code === 200) {
+          resData = simpleData;
           isSuccess = true;
         }
       } catch (_) {}
