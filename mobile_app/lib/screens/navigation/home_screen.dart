@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final String deepLink =
         "https://srdigitalseva.com/join?ref=$_userId";
     final String playStoreLink =
-        "https://play.google.com/store/apps/details?id=com.srdigitalseva&ref=$_userId";
+        "https://play.google.com/store/apps/details?id=com.app.earnfarm&ref=$_userId";
     final String shareMessage =
         "Join SR Digital Seva Kendram Today!\n\n"
         "Register using my Sponsor ID: $_userId\n\n"
