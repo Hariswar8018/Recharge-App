@@ -584,12 +584,23 @@ class ApiService {
       );
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        return {'success': true, 'message': decoded['message']};
+        return {
+          'success': true,
+          'message': decoded['message'],
+          'nameAtBank': decoded['nameAtBank'],
+          'utr': decoded['utr'],
+        };
       } else {
-        return {'success': false, 'error': decoded['error'] ?? 'Verification failed'};
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'Bank Account Penny Drop verification failed'
+        };
       }
-    } catch (_) {
-      return {'success': true, 'message': '₹1 Penny Drop verification successful!'};
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error during bank verification: $e'
+      };
     }
   }
 }

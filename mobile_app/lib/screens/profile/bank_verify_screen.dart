@@ -90,6 +90,9 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
     if (res['success'] == true) {
       setState(() {
         _isVerified = true;
+        if (res['nameAtBank'] != null && res['nameAtBank'].toString().isNotEmpty) {
+          _holderNameController.text = res['nameAtBank'];
+        }
       });
 
       showDialog(
