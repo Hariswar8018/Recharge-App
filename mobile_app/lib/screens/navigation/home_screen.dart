@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _membersCount = 0;
         }
         _referralLink =
-            "https://play.google.com/store/apps/details?id=com.srdigitalseva&ref=$_userId";
+            "https://srdigitalseva.com/join?ref=$_userId";
         _isLoading = false;
       });
     }
@@ -129,29 +129,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleShareReferral() async {
+    final String deepLink =
+        "https://srdigitalseva.com/join?ref=$_userId";
     final String playStoreLink =
         "https://play.google.com/store/apps/details?id=com.srdigitalseva&ref=$_userId";
     final String shareMessage =
         "Join SR Digital Seva Kendram Today!\n\n"
         "Register using my Sponsor ID: $_userId\n\n"
-        "Download the App from Google Play Store:\n$playStoreLink\n\n"
+        "Referral Link:\n$deepLink\n\n"
+        "Download App from Google Play Store:\n$playStoreLink\n\n"
         "Refer App Earn ₹ 300.00 Each Referral! Start earning affiliate commissions and global cycle rewards today.";
+
+    // Copy link to clipboard
+    await Clipboard.setData(ClipboardData(text: deepLink));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Referral link copied to clipboard! Opening share options..."),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+
     try {
       await ShareMe.system(
         title: 'Join SR Digital Seva Kendram Today!',
-        url: playStoreLink,
+        url: deepLink,
         description: shareMessage,
       );
     } catch (e) {
       try {
         await launchUrl(
-          Uri.parse(playStoreLink),
+          Uri.parse(deepLink),
           mode: LaunchMode.externalApplication,
         );
       } catch (_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error sharing referral link: $e")),
+            SnackBar(content: Text("Error launching referral link: $e")),
           );
         }
       }

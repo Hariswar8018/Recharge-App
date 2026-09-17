@@ -11,6 +11,7 @@ import NotFound from '../views/NotFound.vue'
 const routes = [
   {
     path: '/',
+    alias: ['/join', '/join/'],
     name: 'LandingPage',
     component: LandingPage
   },

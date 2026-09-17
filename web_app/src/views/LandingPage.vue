@@ -48,12 +48,19 @@
           </div>
         </div>
 
+        <!-- Referral Banner if Sponsor Ref is active -->
+        <div v-if="sponsorRef" class="referral-banner">
+          <span class="ref-icon">🎁</span>
+          <span>Referred by Sponsor ID: <strong>{{ sponsorRef }}</strong></span>
+        </div>
+
         <!-- Get It On Google Play Button -->
         <a
-          href="https://play.google.com/store/apps/details?id=com.app.earnfarm"
+          :href="playStoreUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="playstore-btn"
+          @click="onPlayStoreClick"
         >
           <div class="btn-left-icon">
             <svg class="google-play-svg" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -99,7 +106,41 @@
 
 <script>
 export default {
-  name: 'LandingPage'
+  name: 'LandingPage',
+  data() {
+    return {
+      sponsorRef: ''
+    }
+  },
+  computed: {
+    playStoreUrl() {
+      const baseUrl = 'https://play.google.com/store/apps/details?id=com.srdigitalseva'
+      return this.sponsorRef ? `${baseUrl}&ref=${encodeURIComponent(this.sponsorRef)}` : baseUrl
+    }
+  },
+  mounted() {
+    const queryRef = this.$route.query.ref || this.$route.query.sponsor || this.$route.query.id
+    if (queryRef) {
+      this.sponsorRef = String(queryRef).trim()
+      localStorage.setItem('sponsor_ref', this.sponsorRef)
+      // Auto-redirect to Play Store on mobile devices when clicking deep link
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      if (isMobile) {
+        setTimeout(() => {
+          window.location.href = this.playStoreUrl
+        }, 1200)
+      }
+    } else if (localStorage.getItem('sponsor_ref')) {
+      this.sponsorRef = localStorage.getItem('sponsor_ref')
+    }
+  },
+  methods: {
+    onPlayStoreClick() {
+      if (this.sponsorRef) {
+        localStorage.setItem('sponsor_ref', this.sponsorRef)
+      }
+    }
+  }
 }
 </script>
 
@@ -138,6 +179,20 @@ export default {
   display: flex;
   justify-content: center;
   margin-bottom: 24px;
+}
+
+.referral-banner {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #1E40AF;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .logo-container {
