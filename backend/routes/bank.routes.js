@@ -5,11 +5,11 @@ const { verifyAppToken, verifyUserToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Real Live Bank Verification API (Finpay Ultra Penny Drop)
+// Real Live Bank Verification API (Finpay Ultra Simple API with Live Penny Drop Fallback)
 router.post('/verify', verifyAppToken, verifyUserToken, async (req, res) => {
   const { bank_name, account_holder, account_no, ifsc } = req.body;
   if (!account_no || !ifsc) {
-    return res.status(400).json({ error: 'Account number and IFSC code are required for Penny Drop verification.' });
+    return res.status(400).json({ error: 'Account number and IFSC code are required for Bank Verification.' });
   }
 
   try {
@@ -20,41 +20,64 @@ router.post('/verify', verifyAppToken, verifyUserToken, async (req, res) => {
 
     const apiKey = process.env.BANK_API || 'bf66f8-23662d-4b6e45-ec27cc-a98eaa';
     const orderId = `BANKVER_${Date.now()}_${req.user.id}`;
+    const cleanAccount = account_no.trim();
+    const cleanIfsc = ifsc.trim().toUpperCase();
     
-    // Call Finpay Ultra Live Bank Verification Penny Drop API
-    const verifyUrl = `https://api.finpayultra.com/api/bank-varification-live?api_key=${encodeURIComponent(apiKey)}&orderid=${encodeURIComponent(orderId)}&account_number=${encodeURIComponent(account_no.trim())}&ifsc=${encodeURIComponent(ifsc.trim().toUpperCase())}`;
+    // 1. Primary Simple Bank Verification API
+    const simpleUrl = `https://api.finpayultra.com/api/bank-varification?api_key=${encodeURIComponent(apiKey)}&orderid=${encodeURIComponent(orderId)}&account_number=${encodeURIComponent(cleanAccount)}&ifsc=${encodeURIComponent(cleanIfsc)}`;
+    // 2. Secondary Live Penny Drop API (Fallback)
+    const liveUrl = `https://api.finpayultra.com/api/bank-varification-live?api_key=${encodeURIComponent(apiKey)}&orderid=${encodeURIComponent(orderId)}&account_number=${encodeURIComponent(cleanAccount)}&ifsc=${encodeURIComponent(cleanIfsc)}`;
 
-    console.log(`[Bank Penny Drop] Calling Finpay Ultra API for user ${req.user.id}, orderid: ${orderId}`);
+    console.log(`[Bank Verification] Calling Finpay Ultra Simple API for user ${req.user.id}, orderid: ${orderId}`);
 
-    const apiResponse = await fetch(verifyUrl, { method: 'GET' });
-    const resData = await apiResponse.json();
+    let apiResponse = await fetch(simpleUrl, { method: 'GET' });
+    let resData = await apiResponse.json();
 
-    console.log('[Bank Penny Drop] Finpay Ultra API Response:', resData);
+    console.log('[Bank Verification] Finpay Ultra Simple API Response:', resData);
 
-    const isSuccess = (resData.status === 'SUCCESS' || resData.status_code === '200' || resData.status_code === 200);
+    let isSuccess = (resData.status === 'SUCCESS' || resData.status_code === '200' || resData.status_code === 200);
+
+    // If Simple API returned 503 or failed, attempt Live Penny Drop API fallback
+    if (!isSuccess && (resData.status_code === '503' || resData.status_code === 503 || resData.status === 'FAILED')) {
+      console.log('[Bank Verification] Simple API 503/FAILED fallback: Trying Live Penny Drop API...');
+      try {
+        const liveResponse = await fetch(liveUrl, { method: 'GET' });
+        const liveData = await liveResponse.json();
+        console.log('[Bank Verification] Finpay Ultra Live API Fallback Response:', liveData);
+        if (liveData.status === 'SUCCESS' || liveData.status_code === '200' || liveData.status_code === 200) {
+          resData = liveData;
+          isSuccess = true;
+        }
+      } catch (_) {}
+    }
 
     if (!isSuccess) {
-      const errMsg = resData.message || resData.data?.message || 'Bank Account Penny Drop verification failed. Please check Account Number & IFSC.';
+      const errMsg = resData.message || resData.data?.message || 'Bank Account verification failed. Please check Account Number & IFSC.';
       return res.status(400).json({ error: errMsg, details: resData });
     }
 
     const bankData = resData.data || {};
-    const nameAtBank = bankData.nameAtBank || bankData['Account Holder Name'] || account_holder || 'Verified Account';
+    let nameAtBank = bankData.nameAtBank || bankData['Account Holder Name'] || bankData.name || account_holder || 'Verified Account';
+    if (typeof bankData.provider_response === 'object' && bankData.provider_response) {
+      if (bankData.provider_response.nameAtBank) nameAtBank = bankData.provider_response.nameAtBank;
+      else if (bankData.provider_response.beneficiary_name) nameAtBank = bankData.provider_response.beneficiary_name;
+    }
+
     const finalBankName = bank_name || 'Bank Account';
-    const utr = bankData.utr || bankData.UTR || '';
+    const utr = bankData.utr || bankData.UTR || bankData.rrn || '';
 
     await query(
       'UPDATE users SET bank_name = ?, account_holder = ?, account_no = ?, ifsc = ?, bank_verified = 1 WHERE id = ?',
-      [finalBankName, nameAtBank, account_no.trim(), ifsc.trim().toUpperCase(), req.user.id]
+      [finalBankName, nameAtBank, cleanAccount, cleanIfsc, req.user.id]
     );
 
-    // Record Penny Drop verification transaction log if UTR is provided
+    // Record verification transaction log if UTR exists
     if (utr) {
       const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
       try {
         await query(
           'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", 0.00, ?, ?, "Success")',
-          [req.user.id, `Bank Penny Drop Verified (UTR: ${utr})`, dateStr]
+          [req.user.id, `Bank Account Verified (UTR: ${utr})`, dateStr]
         );
       } catch (_) {}
     }
@@ -63,7 +86,7 @@ router.post('/verify', verifyAppToken, verifyUserToken, async (req, res) => {
 
     return res.json({
       success: true,
-      message: `₹1 Penny Drop verification successful! Name at Bank: ${nameAtBank}`,
+      message: `Bank Account verification successful! Name at Bank: ${nameAtBank}`,
       bank_verified: true,
       nameAtBank,
       utr,
@@ -72,7 +95,7 @@ router.post('/verify', verifyAppToken, verifyUserToken, async (req, res) => {
 
   } catch (err) {
     console.error('Bank verify error:', err);
-    return res.status(500).json({ error: 'Bank Penny Drop API request failed: ' + (err.message || 'Server error') });
+    return res.status(500).json({ error: 'Bank Verification API request failed: ' + (err.message || 'Server error') });
   }
 });
 
