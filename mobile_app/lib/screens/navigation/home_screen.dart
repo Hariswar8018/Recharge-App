@@ -1939,20 +1939,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 1: BUSINESS VIEW ---
   Widget _buildBusinessTab() {
-    double globalIncome = 0;
-    if (_activeCycleId.isNotEmpty) {
-      final int realTeamSize = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
-      if (realTeamSize >= 2) globalIncome += 200;
-      if (realTeamSize >= 6) globalIncome += 400;
-      if (realTeamSize >= 14) globalIncome += 800;
-      if (realTeamSize >= 30) globalIncome += 1600;
-      if (realTeamSize >= 62) globalIncome += 3200;
-      if (realTeamSize >= 126) globalIncome += 6400;
-      if (realTeamSize >= 254) globalIncome += 12800;
-      if (realTeamSize >= 510) globalIncome += 25600;
+    double realGlobalIncome = 0.0;
+    double realAffiliateIncome = 0.0;
+    double todayIncome = 0.0;
+
+    final String nowStr = DateTime.now().toLocal().toString().substring(0, 10);
+
+    for (var tx in _transactions) {
+      final String status = (tx['status'] ?? '').toString().toLowerCase();
+      if (status == 'success' || status == 'approved' || status == 'completed') {
+        final String type = (tx['type'] ?? '').toString();
+        final double rawAmt = parseDouble(tx['amount']?.toString().replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+
+        final bool isGlobal = type.contains('Level') || type.contains('Global') || type.contains('Cycle');
+        final bool isAffiliate = type.contains('Direct') || type.contains('Affiliate') || type.contains('Referral');
+
+        if (isGlobal) {
+          realGlobalIncome += rawAmt;
+        } else if (isAffiliate) {
+          realAffiliateIncome += rawAmt;
+        }
+
+        if (isGlobal || isAffiliate) {
+          final String txDate = (tx['date'] ?? '').toString();
+          if (txDate.contains(nowStr)) {
+            todayIncome += rawAmt;
+          }
+        }
+      }
     }
-    double totalEarned = globalIncome;
-    double progressVal = (globalIncome / 51000.0).clamp(0.0, 1.0);
+
+    double totalEarned = realGlobalIncome + realAffiliateIncome;
+    double progressVal = (realGlobalIncome / 51000.0).clamp(0.0, 1.0);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -2132,24 +2150,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
           Builder(
             builder: (context) {
-              double globalIncome = 0;
-              if (_activeCycleId.isNotEmpty) {
-                final int realTeamSize = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
-                if (realTeamSize >= 2) globalIncome += 200;
-                if (realTeamSize >= 6) globalIncome += 400;
-                if (realTeamSize >= 14) globalIncome += 800;
-                if (realTeamSize >= 30) globalIncome += 1600;
-                if (realTeamSize >= 62) globalIncome += 3200;
-                if (realTeamSize >= 126) globalIncome += 6400;
-                if (realTeamSize >= 254) globalIncome += 12800;
-                if (realTeamSize >= 510) globalIncome += 25600;
-              }
-              double affiliateIncome = _activeCycleId.isNotEmpty
-                  ? (_teamMembers.length * 300.0)
-                  : 0.0;
-              double todayIncome = globalIncome + affiliateIncome;
-              double totalIncome = globalIncome + affiliateIncome;
-
               return Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -2194,7 +2194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: _buildBusinessStatItem(
                             "TOTAL INCOME",
-                            "₹ ${totalIncome.toStringAsFixed(2)}",
+                            "₹ ${totalEarned.toStringAsFixed(2)}",
                             Icons.account_balance_wallet,
                           ),
                         ),
@@ -2221,7 +2221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: _buildBusinessStatItem(
                             "GLOBAL INCOME",
-                            "₹ ${globalIncome.toStringAsFixed(2)}",
+                            "₹ ${realGlobalIncome.toStringAsFixed(2)}",
                             Icons.language,
                           ),
                         ),
@@ -2245,7 +2245,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: _buildBusinessStatItem(
                             "AFFILIATE INCOME",
-                            "₹ ${affiliateIncome.toStringAsFixed(2)}",
+                            "₹ ${realAffiliateIncome.toStringAsFixed(2)}",
                             Icons.people,
                           ),
                         ),
@@ -2890,16 +2890,17 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- TAB 3: PROFILE VIEW ---
   Widget _buildProfileTab() {
     final int realTeamSize = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
-    double globalIncome = 0;
-    if (_activeCycleId.isNotEmpty) {
-      if (realTeamSize >= 2) globalIncome += 200;
-      if (realTeamSize >= 6) globalIncome += 400;
-      if (realTeamSize >= 14) globalIncome += 800;
-      if (realTeamSize >= 30) globalIncome += 1600;
-      if (realTeamSize >= 62) globalIncome += 3200;
-      if (realTeamSize >= 126) globalIncome += 6400;
-      if (realTeamSize >= 254) globalIncome += 12800;
-      if (realTeamSize >= 510) globalIncome += 25600;
+    double globalIncome = 0.0;
+
+    for (var tx in _transactions) {
+      final String status = (tx['status'] ?? '').toString().toLowerCase();
+      if (status == 'success' || status == 'approved' || status == 'completed') {
+        final String type = (tx['type'] ?? '').toString();
+        final double rawAmt = parseDouble(tx['amount']?.toString().replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+        if (type.contains('Level') || type.contains('Global') || type.contains('Cycle')) {
+          globalIncome += rawAmt;
+        }
+      }
     }
 
     return SingleChildScrollView(
