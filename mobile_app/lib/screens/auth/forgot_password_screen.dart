@@ -15,31 +15,146 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  String _message = "";
+  bool _isCheckingEmail = false;
+  bool? _isEmailValid; // null = untouched, true = green, false = red
+  String? _emailStatusMessage;
+  String _lastCheckedEmail = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_onEmailChanged);
+  }
 
   @override
   void dispose() {
+    _emailController.removeListener(_onEmailChanged);
     _emailController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleSendOtp() async {
-    if (!_formKey.currentState!.validate()) return;
+  void _onEmailChanged() {
+    final text = _emailController.text.trim();
+    if (text.isEmpty) {
+      setState(() {
+        _isCheckingEmail = false;
+        _isEmailValid = null;
+        _emailStatusMessage = null;
+        _lastCheckedEmail = "";
+      });
+      return;
+    }
+
+    // Validate email format basic check
+    final bool isEmailFormat = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text);
+    if (!isEmailFormat) {
+      setState(() {
+        _isCheckingEmail = false;
+        _isEmailValid = false;
+        _emailStatusMessage = "Email ID not found. Please enter a registered email ID.";
+        _lastCheckedEmail = "";
+      });
+      return;
+    }
+
+    if (_lastCheckedEmail != text) {
+      _verifyEmailRegistration(text);
+    }
+  }
+
+  Future<void> _verifyEmailRegistration(String email) async {
     setState(() {
-      _isLoading = true;
-      _message = "";
+      _isCheckingEmail = true;
+      _lastCheckedEmail = email;
     });
 
+    final res = await ApiService.checkEmail(email);
+
+    if (_emailController.text.trim() != email) return;
+
+    setState(() {
+      _isCheckingEmail = false;
+      if (res['registered'] == true) {
+        _isEmailValid = true;
+        _emailStatusMessage = null; // Will show green message after Send Password
+      } else {
+        _isEmailValid = false;
+        _emailStatusMessage = res['message'] ?? "Email ID not found. Please enter a registered email ID.";
+      }
+    });
+  }
+
+  OutlineInputBorder _getEmailBorder() {
+    Color color = const Color(0xFFE2E8F0);
+    if (_isEmailValid == true) {
+      color = const Color(0xFF10B981);
+    } else if (_isEmailValid == false) {
+      color = const Color(0xFFEF4444);
+    }
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: color,
+        width: _isEmailValid != null ? 1.5 : 1.0,
+      ),
+    );
+  }
+
+  Widget? _buildEmailSuffixIcon() {
+    if (_isCheckingEmail) {
+      return const UnconstrainedBox(
+        child: SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppTheme.primaryBlue,
+          ),
+        ),
+      );
+    }
+    if (_isEmailValid == true) {
+      return const Icon(
+        Icons.check_circle,
+        color: Color(0xFF10B981),
+        size: 22,
+      );
+    }
+    if (_isEmailValid == false) {
+      return const Icon(
+        Icons.cancel,
+        color: Color(0xFFEF4444),
+        size: 22,
+      );
+    }
+    return null;
+  }
+
+  Future<void> _handleSendPassword() async {
     final email = _emailController.text.trim();
+    if (email.isEmpty || _isEmailValid == false) {
+      setState(() {
+        _isEmailValid = false;
+        _emailStatusMessage = "Email ID not found. Please enter a registered email ID.";
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
     final res = await ApiService.forgotPassword(email);
 
     if (!mounted) return;
     setState(() {
       _isLoading = false;
-      if (res['success']) {
-        _message = res['message'] ?? "Temporary password sent successfully!";
+      if (res['success'] || res['registered'] == true) {
+        _isEmailValid = true;
+        _emailStatusMessage = res['message'] ?? "Password has been sent to your registered email ID.";
       } else {
-        _message = "Error: ${res['error'] ?? 'Reset failed'}";
+        _isEmailValid = false;
+        _emailStatusMessage = res['error'] ?? "Email ID not found. Please enter a registered email ID.";
       }
     });
   }
@@ -167,7 +282,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: const TextStyle(fontSize: 13),
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
                               hintText: "Enter Registered Email Address",
                               hintStyle: const TextStyle(
@@ -187,49 +302,55 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   size: 16,
                                 ),
                               ),
+                              suffixIcon: _buildEmailSuffixIcon(),
                               filled: true,
                               fillColor: Colors.white,
                               contentPadding: const EdgeInsets.symmetric(
                                 vertical: 12,
+                                horizontal: 12,
                               ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE2E8F0),
+                              border: _getEmailBorder(),
+                              enabledBorder: _getEmailBorder(),
+                              focusedBorder: _getEmailBorder(),
+                              errorStyle: const TextStyle(height: 0, fontSize: 0),
+                            ),
+                          ),
+                          if (_emailStatusMessage != null && _emailStatusMessage!.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: _isEmailValid == true
+                                    ? const Color(0xFFECFDF5)
+                                    : const Color(0xFFFEF2F2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _isEmailValid == true
+                                      ? const Color(0xFFA7F3D0)
+                                      : const Color(0xFFFECACA),
                                 ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE2E8F0),
+                              child: Text(
+                                _emailStatusMessage!,
+                                style: TextStyle(
+                                  color: _isEmailValid == true
+                                      ? const Color(0xFF047857)
+                                      : const Color(0xFFDC2626),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
-                            validator: (value) =>
-                                (value == null || value.isEmpty)
-                                ? "Please enter email"
-                                : null,
-                          ),
+                          ],
                           const SizedBox(height: 20),
 
-                          if (_message.isNotEmpty) ...[
-                            Text(
-                              _message,
-                              style: const TextStyle(
-                                color: Colors.green,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                          ],
-
-                          // Send OTP button
+                          // Send Password button
                           SizedBox(
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleSendOtp,
+                              onPressed: _isLoading ? null : _handleSendPassword,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF0052CC),
                                 shape: RoundedRectangleBorder(
@@ -242,8 +363,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       color: Colors.white,
                                     )
                                   : Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         const Expanded(
                                           child: Center(

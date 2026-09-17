@@ -138,6 +138,13 @@ async function initDb() {
       console.warn("System settings column modification failed: ", e);
     }
 
+    // Add plain_password column if not exists
+    try {
+      await query("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255) DEFAULT NULL");
+    } catch (e) {
+      // Column already exists
+    }
+
     // Seed Admin users (haris@gmail.com & earnfarm99@gmail.com with password 123456)
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync('123456', salt);

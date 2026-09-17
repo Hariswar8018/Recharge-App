@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
@@ -25,40 +26,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   String _errorMessage = "";
   String _successMessage = "";
-  String _sponsorName = "";
+
+  // Mobile Validation States
+  bool _isCheckingMobile = false;
+  bool? _isMobileValid; // null = untouched, true = green, false = red
+  String? _mobileStatusMessage;
+  String _lastCheckedMobile = "";
+
+  // Sponsor Validation States
+  bool _isCheckingSponsor = false;
+  bool? _isSponsorValid; // null = untouched, true = green, false = red
+  String? _sponsorStatusMessage;
+  String _lastCheckedSponsor = "";
 
   @override
   void initState() {
     super.initState();
+    _mobileController.addListener(_onMobileChanged);
     _sponsorController.addListener(_onSponsorChanged);
-  }
-
-  void _onSponsorChanged() async {
-    final text = _sponsorController.text.trim();
-    if (text.length >= 1) {
-      final res = await ApiService.lookupUserById(text);
-      if (mounted) {
-        if (res['success'] == true && res['user'] != null) {
-          setState(() {
-            _sponsorName = "${res['user']['fullName']} (Verified)";
-          });
-        } else {
-          setState(() {
-            _sponsorName = "User Not Found / Invalid Sponsor ID";
-          });
-        }
-      }
-    } else {
-      if (_sponsorName.isNotEmpty) {
-        setState(() {
-          _sponsorName = "";
-        });
-      }
-    }
   }
 
   @override
   void dispose() {
+    _mobileController.removeListener(_onMobileChanged);
     _sponsorController.removeListener(_onSponsorChanged);
     _nameController.dispose();
     _emailController.dispose();
@@ -69,7 +59,163 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  void _onMobileChanged() {
+    final text = _mobileController.text.trim();
+    if (text.isEmpty) {
+      setState(() {
+        _isCheckingMobile = false;
+        _isMobileValid = null;
+        _mobileStatusMessage = null;
+        _lastCheckedMobile = "";
+      });
+      return;
+    }
+
+    if (text.length < 10) {
+      setState(() {
+        _isCheckingMobile = false;
+        _isMobileValid = false;
+        _mobileStatusMessage = "Enter 10 digit mobile number";
+        _lastCheckedMobile = "";
+      });
+      return;
+    }
+
+    if (text.length == 10) {
+      if (_lastCheckedMobile == text && !_isCheckingMobile) return;
+      _verifyMobileAvailable(text);
+    }
+  }
+
+  Future<void> _verifyMobileAvailable(String number) async {
+    setState(() {
+      _isCheckingMobile = true;
+      _lastCheckedMobile = number;
+    });
+
+    final res = await ApiService.checkMobileAvailable(number);
+
+    if (_mobileController.text.trim() != number) return;
+
+    setState(() {
+      _isCheckingMobile = false;
+      if (res['valid'] == true) {
+        _isMobileValid = true;
+        _mobileStatusMessage = "Valid (Can Register)";
+      } else {
+        _isMobileValid = false;
+        if (res['registered'] == true) {
+          _mobileStatusMessage = "Already Registered";
+        } else {
+          _mobileStatusMessage = res['message'] ?? "Invalid mobile number";
+        }
+      }
+    });
+  }
+
+  void _onSponsorChanged() {
+    final text = _sponsorController.text.trim();
+    if (text.isEmpty) {
+      setState(() {
+        _isCheckingSponsor = false;
+        _isSponsorValid = null;
+        _sponsorStatusMessage = null;
+        _lastCheckedSponsor = "";
+      });
+      return;
+    }
+
+    if (_lastCheckedSponsor == text && !_isCheckingSponsor) return;
+    _verifySponsorId(text);
+  }
+
+  Future<void> _verifySponsorId(String sponsorId) async {
+    setState(() {
+      _isCheckingSponsor = true;
+      _lastCheckedSponsor = sponsorId;
+    });
+
+    final res = await ApiService.checkSponsor(sponsorId);
+
+    if (_sponsorController.text.trim() != sponsorId) return;
+
+    setState(() {
+      _isCheckingSponsor = false;
+      if (res['valid'] == true) {
+        _isSponsorValid = true;
+        _sponsorStatusMessage = res['name'] ?? "Valid Sponsor ID";
+      } else {
+        _isSponsorValid = false;
+        _sponsorStatusMessage = res['error'] ?? "User Not Found";
+      }
+    });
+  }
+
+  OutlineInputBorder _getFieldBorder(bool? isValid) {
+    Color color = const Color(0xFFE2E8F0);
+    if (isValid == true) {
+      color = const Color(0xFF10B981);
+    } else if (isValid == false) {
+      color = const Color(0xFFEF4444);
+    }
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: color,
+        width: isValid != null ? 1.5 : 1.0,
+      ),
+    );
+  }
+
+  Widget? _buildSuffixIcon(bool isChecking, bool? isValid) {
+    if (isChecking) {
+      return const UnconstrainedBox(
+        child: SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppTheme.primaryBlue,
+          ),
+        ),
+      );
+    }
+    if (isValid == true) {
+      return const Icon(
+        Icons.check_circle,
+        color: Color(0xFF10B981),
+        size: 22,
+      );
+    }
+    if (isValid == false) {
+      return const Icon(
+        Icons.cancel,
+        color: Color(0xFFEF4444),
+        size: 22,
+      );
+    }
+    return null;
+  }
+
   Future<void> _handleRegister() async {
+    final mobileText = _mobileController.text.trim();
+    if (mobileText.length < 10 || _isMobileValid != true) {
+      setState(() {
+        _isMobileValid = false;
+        _mobileStatusMessage = _mobileStatusMessage ?? "Enter 10 digit mobile number";
+      });
+      return;
+    }
+
+    final sponsorText = _sponsorController.text.trim();
+    if (sponsorText.isNotEmpty && _isSponsorValid != true) {
+      setState(() {
+        _isSponsorValid = false;
+        _sponsorStatusMessage = _sponsorStatusMessage ?? "User Not Found";
+      });
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
     if (_passwordController.text != _confirmPasswordController.text) {
@@ -149,77 +295,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     
                     const SizedBox(height: 7),
 
-                     // Title
-                     Row(
-                       mainAxisAlignment: MainAxisAlignment.center,
-                       children: [
-                         const Icon(
-                           Icons.add_circle_outline,
-                           color: Color(0xFF0C3C8F),
-                           size: 20,
-                         ),
-                         const SizedBox(width: 6),
-                         const Text(
-                           "Create an Account",
-                           style: TextStyle(
-                             color: Color(0xFF0C3C8F),
-                             fontSize: 16,
-                             fontWeight: FontWeight.w900,
-                           ),
-                         ),
-                       ],
-                     ),
-                     const SizedBox(height: 2),
-                     const Text(
-                       "Join us today! Please fill in the details to get started.",
-                       style: TextStyle(
-                         color: AppTheme.textGray,
-                         fontSize: 11,
-                         fontWeight: FontWeight.w500,
-                       ),
-                       textAlign: TextAlign.center,
-                     ),
-                     const SizedBox(height: 14),
+                    // Title
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.add_circle_outline,
+                          color: Color(0xFF0C3C8F),
+                          size: 20,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          "Create an Account",
+                          style: TextStyle(
+                            color: Color(0xFF0C3C8F),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      "Join us today! Please fill in the details to get started.",
+                      style: TextStyle(
+                        color: AppTheme.textGray,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 14),
 
-                     // Card Form Container
-                     Container(
-                       padding: const EdgeInsets.all(20),
-                       decoration: BoxDecoration(
-                         color: Colors.white,
-                         borderRadius: BorderRadius.circular(24),
-                         boxShadow: [
-                           BoxShadow(
-                             color: Colors.black.withOpacity(0.04),
-                             blurRadius: 20,
-                             offset: const Offset(0, 10),
-                           )
-                         ],
-                         border: Border.all(color: const Color(0xFFE2E8F0)),
-                       ),
-                       child: Column(
-                         crossAxisAlignment: CrossAxisAlignment.start,
-                         children: [
-                           // User Icon inside the card (centered with + overlay)
-                           Center(
-                             child: Stack(
-                               children: [
-                                 Image.asset(
-                                   'assets/icons_logo/regitser_icon.png',
-                                   width: 110,
-                                   height: 110,
-                                   fit: BoxFit.contain,
-                                   errorBuilder: (context, error, stackTrace) {
-                                     return const CircleAvatar(
-                                       radius: 45,
-                                       backgroundColor: Colors.white,
-                                       child: Icon(Icons.person, size: 45, color: AppTheme.primaryBlue),
-                                     );
-                                   },
-                                 ),
-                               ],
-                             ),
-                           ),
-                           const SizedBox(height: 5),
+                    // Card Form Container
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          )
+                        ],
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // User Icon inside the card (centered with + overlay)
+                          Center(
+                            child: Image.asset(
+                              'assets/icons_logo/regitser_icon.png',
+                              width: 110,
+                              height: 110,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const CircleAvatar(
+                                  radius: 45,
+                                  backgroundColor: Colors.white,
+                                  child: Icon(Icons.person, size: 45, color: AppTheme.primaryBlue),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 5),
 
                           // Full Name
                           _buildLabel("Full Name"),
@@ -231,7 +373,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // Email
+                          // Email Address
                           _buildLabel("Email Address"),
                           _buildTextField(
                             controller: _emailController,
@@ -242,49 +384,117 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // Mobile Number
-                          _buildLabel("Mobile Number"),
-                          _buildTextField(
-                            controller: _mobileController,
-                            hint: "Enter Mobile Number",
-                            icon: Icons.phone,
-                            keyboardType: TextInputType.phone,
-                            validator: (v) => (v == null || v.isEmpty) ? "Please enter mobile number" : null,
+                          // Mobile Number (This will be your User ID / Login ID)
+                          RichText(
+                            text: const TextSpan(
+                              style: TextStyle(
+                                color: AppTheme.primaryBlue,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                              ),
+                              children: [
+                                TextSpan(text: "Mobile Number "),
+                                TextSpan(
+                                  text: "(This will be your User ID / Login ID)",
+                                  style: TextStyle(
+                                    color: Color(0xFFDC2626),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(height: 4),
+                          TextFormField(
+                            controller: _mobileController,
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(10),
+                            ],
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            decoration: InputDecoration(
+                              hintText: "Enter Mobile Number",
+                              hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                              prefixIcon: Container(
+                                margin: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.phone, color: AppTheme.primaryBlue, size: 16),
+                              ),
+                              suffixIcon: _buildSuffixIcon(_isCheckingMobile, _isMobileValid),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                              border: _getFieldBorder(_isMobileValid),
+                              enabledBorder: _getFieldBorder(_isMobileValid),
+                              focusedBorder: _getFieldBorder(_isMobileValid),
+                              errorStyle: const TextStyle(height: 0, fontSize: 0),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) return "";
+                              if (value.trim().length < 10) return "";
+                              if (_isMobileValid != true) return "";
+                              return null;
+                            },
+                          ),
+                          if (_mobileStatusMessage != null && _mobileStatusMessage!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _mobileStatusMessage!,
+                              style: TextStyle(
+                                color: _isMobileValid == true
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFEF4444),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
 
                           // Sponsor ID
                           _buildLabel("Sponsor ID"),
-                          _buildTextField(
+                          TextFormField(
                             controller: _sponsorController,
-                            hint: "Enter Sponsor ID",
-                            icon: Icons.group,
-                            validator: (v) => (v == null || v.trim().isEmpty) ? "Sponsor ID is mandatory" : null,
-                          ),
-                          if (_sponsorName.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.green.shade50,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.green.shade300),
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            decoration: InputDecoration(
+                              hintText: "Enter Sponsor ID",
+                              hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                              prefixIcon: Container(
+                                margin: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.group, color: AppTheme.primaryBlue, size: 16),
                               ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.check_circle, color: Colors.green, size: 16),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      "Sponsor Name: $_sponsorName",
-                                      style: const TextStyle(
-                                        color: Colors.green,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              suffixIcon: _buildSuffixIcon(_isCheckingSponsor, _isSponsorValid),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                              border: _getFieldBorder(_isSponsorValid),
+                              enabledBorder: _getFieldBorder(_isSponsorValid),
+                              focusedBorder: _getFieldBorder(_isSponsorValid),
+                              errorStyle: const TextStyle(height: 0, fontSize: 0),
+                            ),
+                            validator: (v) => (v == null || v.trim().isEmpty) ? "" : null,
+                          ),
+                          if (_sponsorStatusMessage != null && _sponsorStatusMessage!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _sponsorStatusMessage!,
+                              style: TextStyle(
+                                color: _isSponsorValid == true
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFEF4444),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],

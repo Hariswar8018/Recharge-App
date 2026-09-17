@@ -123,7 +123,7 @@ class ApiService {
     }
   }
 
-  // Check if Mobile Number is Registered
+  // Check if Mobile Number is Registered (Login Screen)
   static Future<Map<String, dynamic>> checkMobile(String mobileNumber) async {
     try {
       final response = await http.post(
@@ -138,6 +138,62 @@ class ApiService {
       };
     } catch (e) {
       return {'registered': false, 'error': 'Connection error'};
+    }
+  }
+
+  // Check if Mobile Number is Available for Registration
+  static Future<Map<String, dynamic>> checkMobileAvailable(String mobileNumber) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/check-mobile-available'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'mobileNumber': mobileNumber}),
+      );
+      final decoded = jsonDecode(response.body);
+      return {
+        'valid': decoded['valid'] == true,
+        'registered': decoded['registered'] == true,
+        'message': decoded['message'] ?? (decoded['valid'] == true ? 'Valid (Can Register)' : 'Invalid mobile number'),
+      };
+    } catch (e) {
+      return {'valid': false, 'message': 'Connection error'};
+    }
+  }
+
+  // Check Sponsor ID for Registration
+  static Future<Map<String, dynamic>> checkSponsor(String sponsorId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/check-sponsor'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'sponsor_id': sponsorId}),
+      );
+      final decoded = jsonDecode(response.body);
+      return {
+        'valid': decoded['valid'] == true,
+        'name': decoded['name'],
+        'error': decoded['error'] ?? 'User Not Found',
+      };
+    } catch (e) {
+      return {'valid': false, 'error': 'Connection error'};
+    }
+  }
+
+  // Check Email Registration Status
+  static Future<Map<String, dynamic>> checkEmail(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/check-email'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'email': email}),
+      );
+      final decoded = jsonDecode(response.body);
+      return {
+        'registered': decoded['registered'] == true,
+        'message': decoded['message'] ?? (decoded['registered'] == true ? 'Valid registered email address' : 'Email ID not found. Please enter a registered email ID.'),
+      };
+    } catch (e) {
+      return {'registered': false, 'message': 'Connection error'};
     }
   }
 

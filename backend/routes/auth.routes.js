@@ -40,10 +40,17 @@ router.post('/register', verifyAppToken, async (req, res) => {
         cleanSponsorId = cleanSponsorId.replace('EARNFARM', '');
       } else if (cleanSponsorId.startsWith('EARNKARO97US77')) {
         cleanSponsorId = cleanSponsorId.replace('EARNKARO97US77', '');
+      } else if (cleanSponsorId.startsWith('SRM')) {
+        cleanSponsorId = cleanSponsorId.replace('SRM', '');
+      } else if (cleanSponsorId.startsWith('SRSPO')) {
+        cleanSponsorId = cleanSponsorId.replace('SRSPO', '');
+      } else if (cleanSponsorId.startsWith('R')) {
+        cleanSponsorId = cleanSponsorId.replace('R', '');
       }
-      const sponsor = await query('SELECT id FROM users WHERE id = ?', [cleanSponsorId]);
+      const numericId = parseInt(cleanSponsorId, 10);
+      const sponsor = await query('SELECT id FROM users WHERE id = ? OR mobileNumber = ?', [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId]);
       if (sponsor.length === 0) {
-        return res.status(400).json({ error: 'Invalid Sponsor ID' });
+        return res.status(400).json({ error: 'User Not Found' });
       }
       sponsorIdVal = sponsor[0].id;
     } else {
@@ -61,16 +68,16 @@ router.post('/register', verifyAppToken, async (req, res) => {
     const passwordHash = bcrypt.hashSync(password, salt);
 
     await query(
-      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, fund_wallet_balance, main_wallet_balance, device_model, app_version, sponsor_id) VALUES (?, ?, ?, ?, 0.00, 0.00, ?, ?, ?)',
-      [fullName, email.toLowerCase(), mobileNumber, passwordHash, device_model || 'Unknown', app_version || '1.0.0', sponsorIdVal]
+      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, device_model, app_version, sponsor_id) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, ?, ?, ?)',
+      [fullName, email.toLowerCase(), cleanMobile, passwordHash, password, device_model || 'Unknown', app_version || '1.0.0', sponsorIdVal]
     );
 
     await invalidateCache('admin_stats');
 
-    sendNotificationEmail(email.toLowerCase(), "Welcome to EarnFarm!", `
-      <h3>Welcome to EarnFarm, ${fullName}!</h3>
+    sendNotificationEmail(email.toLowerCase(), "Welcome to SR Digital Seva!", `
+      <h3>Welcome, ${fullName}!</h3>
       <p>Your account was successfully registered.</p>
-      <p>Please activate your account by purchasing the Basic Plan to start earning sponsor and pool income.</p>
+      <p>Your Mobile Number / User ID is: <strong>${cleanMobile}</strong></p>
     `);
 
     if (sponsorIdVal) {
@@ -78,7 +85,7 @@ router.post('/register', verifyAppToken, async (req, res) => {
         if (sponsors.length > 0) {
           sendNotificationEmail(sponsors[0].email, "New Affiliate Joined Your Team!", `
             <h3>Hi ${sponsors[0].fullName},</h3>
-            <p>A new member <strong>${fullName}</strong> has joined your team using your referral code.</p>
+            <p>A new member <strong>${fullName}</strong> has joined your team.</p>
           `);
         }
       }).catch((e) => console.error('Sponsor query fail:', e));
@@ -91,7 +98,95 @@ router.post('/register', verifyAppToken, async (req, res) => {
   }
 });
 
-// Check if Mobile Number is Registered in system
+// Check Sponsor ID for registration
+router.post('/check-sponsor', verifyAppToken, async (req, res) => {
+  const { sponsor_id } = req.body;
+  if (!sponsor_id || !sponsor_id.toString().trim()) {
+    return res.status(400).json({ valid: false, error: 'Sponsor ID is required' });
+  }
+
+  let cleanSponsorId = sponsor_id.toString().trim().toUpperCase();
+  if (cleanSponsorId.startsWith('EARNFARMX7AQ96SD')) {
+    cleanSponsorId = cleanSponsorId.replace('EARNFARMX7AQ96SD', '');
+  } else if (cleanSponsorId.startsWith('EARNFARM')) {
+    cleanSponsorId = cleanSponsorId.replace('EARNFARM', '');
+  } else if (cleanSponsorId.startsWith('EARNKARO97US77')) {
+    cleanSponsorId = cleanSponsorId.replace('EARNKARO97US77', '');
+  } else if (cleanSponsorId.startsWith('SRM')) {
+    cleanSponsorId = cleanSponsorId.replace('SRM', '');
+  } else if (cleanSponsorId.startsWith('SRSPO')) {
+    cleanSponsorId = cleanSponsorId.replace('SRSPO', '');
+  } else if (cleanSponsorId.startsWith('R')) {
+    cleanSponsorId = cleanSponsorId.replace('R', '');
+  }
+  const numericId = parseInt(cleanSponsorId, 10);
+
+  try {
+    const users = await query(
+      'SELECT id, fullName FROM users WHERE id = ? OR mobileNumber = ?',
+      [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId]
+    );
+    if (users.length === 0) {
+      return res.json({ valid: false, error: 'User Not Found' });
+    }
+    return res.json({ valid: true, name: users[0].fullName, sponsorId: users[0].id });
+  } catch (err) {
+    console.error('Check sponsor error:', err);
+    res.status(500).json({ valid: false, error: 'Server error checking sponsor ID' });
+  }
+});
+
+// Check Mobile Number availability for registration
+router.post('/check-mobile-available', verifyAppToken, async (req, res) => {
+  const { mobileNumber } = req.body;
+  if (!mobileNumber) {
+    return res.status(400).json({ valid: false, message: 'Enter 10 digit mobile number' });
+  }
+
+  const cleanMobile = mobileNumber.toString().trim();
+  if (!/^\d{10}$/.test(cleanMobile)) {
+    return res.status(400).json({ valid: false, message: 'Enter 10 digit mobile number' });
+  }
+
+  // Check dummy / repeated numbers
+  if (/^(\d)\1{9}$/.test(cleanMobile) || cleanMobile === '1234567890' || cleanMobile === '0987654321') {
+    return res.json({ valid: false, message: 'Invalid mobile number' });
+  }
+
+  try {
+    const users = await query('SELECT id FROM users WHERE mobileNumber = ?', [cleanMobile]);
+    if (users.length > 0) {
+      return res.json({ valid: false, registered: true, message: 'Already Registered' });
+    } else {
+      return res.json({ valid: true, registered: false, message: 'Valid (Can Register)' });
+    }
+  } catch (err) {
+    console.error('Check mobile available error:', err);
+    res.status(500).json({ valid: false, message: 'Server error checking mobile number' });
+  }
+});
+
+// Check if Email is registered (for Forgot Password real-time validation)
+router.post('/check-email', verifyAppToken, async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.toString().trim()) {
+    return res.status(400).json({ registered: false, message: 'Email ID not found. Please enter a registered email ID.' });
+  }
+
+  try {
+    const users = await query('SELECT id FROM users WHERE email = ?', [email.toString().trim().toLowerCase()]);
+    if (users.length > 0) {
+      return res.json({ registered: true, message: 'Valid registered email address' });
+    } else {
+      return res.json({ registered: false, message: 'Email ID not found. Please enter a registered email ID.' });
+    }
+  } catch (err) {
+    console.error('Check email error:', err);
+    res.status(500).json({ registered: false, message: 'Server error checking email' });
+  }
+});
+
+// Check if Mobile Number is Registered in system (for Login screen)
 router.post('/check-mobile', verifyAppToken, async (req, res) => {
   const { mobileNumber } = req.body;
   if (!mobileNumber) {
@@ -148,9 +243,9 @@ router.post('/login', verifyAppToken, async (req, res) => {
       { expiresIn: '30d' }
     );
 
-    sendNotificationEmail(user.email, "New Login Detected - EarnFarm", `
+    sendNotificationEmail(user.email, "New Login Detected - SR Digital Seva", `
       <h3>Hello ${user.fullName},</h3>
-      <p>A new login was recorded for your EarnFarm account on ${new Date().toLocaleString()}.</p>
+      <p>A new login was recorded for your SR Digital Seva account on ${new Date().toLocaleString()}.</p>
     `);
 
     res.json({
@@ -170,39 +265,49 @@ router.post('/login', verifyAppToken, async (req, res) => {
   }
 });
 
-// Forgot Password
+// Forgot Password - Sends registered password directly to user email
 router.post('/forgot-password', verifyAppToken, async (req, res) => {
   const { email } = req.body;
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+  if (!email || !email.toString().trim()) {
+    return res.status(400).json({ registered: false, error: 'Email ID not found. Please enter a registered email ID.' });
   }
+
+  const cleanEmail = email.toString().trim().toLowerCase();
 
   try {
-    const users = await query('SELECT id, fullName FROM users WHERE email = ?', [email.trim().toLowerCase()]);
+    const users = await query('SELECT id, fullName, email, plain_password FROM users WHERE email = ? OR mobileNumber = ?', [cleanEmail, cleanEmail]);
     if (users.length === 0) {
-      return res.status(404).json({ error: 'No user registered with this email address' });
+      return res.status(404).json({ registered: false, error: 'Email ID not found. Please enter a registered email ID.' });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    const tempPassword = `Temp${otp}`;
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(tempPassword, salt);
+    const user = users[0];
+    let passwordToSend = user.plain_password;
 
-    await query('UPDATE users SET passwordHash = ? WHERE id = ?', [hash, users[0].id]);
+    if (!passwordToSend) {
+      // Generate standard readable temporary password if plain_password wasn't saved previously
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      passwordToSend = `Pass@${rand}`;
+      const salt = bcrypt.genSaltSync(10);
+      const hash = bcrypt.hashSync(passwordToSend, salt);
+      await query('UPDATE users SET passwordHash = ?, plain_password = ? WHERE id = ?', [hash, passwordToSend, user.id]);
+    }
 
-    sendNotificationEmail(email.trim().toLowerCase(), "Temporary Password Reset - EarnFarm", `
-      <h3>Hi ${users[0].fullName},</h3>
-      <p>We received a password reset request for your EarnFarm account.</p>
-      <p>Your password has been reset to the following temporary password:</p>
-      <p style="font-size: 16px; font-weight: bold; color: #1e3a8a; background: #f1f5f9; padding: 10px; display: inline-block;">${tempPassword}</p>
-      <p>Please log in using this temporary password and update it in your profile settings immediately.</p>
+    sendNotificationEmail(user.email, "Your Account Password - SR Digital Seva", `
+      <h3>Hello ${user.fullName},</h3>
+      <p>Your account password is: <strong style="font-size: 16px; color: #10B981;">${passwordToSend}</strong></p>
+      <p>Please use this password to login to your account.</p>
     `);
 
-    res.json({ message: 'Temporary password sent to your email address successfully!' });
+    res.json({
+      registered: true,
+      message: 'Password has been sent to your registered email ID.'
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to reset password. Please check backend log.' });
+    console.error('Forgot password error:', err);
+    res.status(500).json({ registered: false, error: 'Failed to send password. Please check backend log.' });
   }
 });
+
+module.exports = router;
 
 module.exports = router;
