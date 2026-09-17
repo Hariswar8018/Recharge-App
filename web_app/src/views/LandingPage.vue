@@ -114,7 +114,7 @@ export default {
   },
   computed: {
     playStoreUrl() {
-      const baseUrl = 'https://play.google.com/store/apps/details?id=com.srdigitalseva'
+      const baseUrl = 'https://play.google.com/store/apps/details?id=com.app.earnfarm'
       return this.sponsorRef ? `${baseUrl}&ref=${encodeURIComponent(this.sponsorRef)}` : baseUrl
     }
   },
@@ -302,18 +302,20 @@ export default {
 }
 
 .dash {
-  height: 3px;
-  background-color: #0A369D;
+  height: 3.5px;
   border-radius: 2px;
 }
 
+.left-dashes .dash {
+  background-color: #F59E0B;
+}
 .left-dashes .dash-1 { width: 14px; transform: rotate(-15deg); }
 .left-dashes .dash-2 { width: 20px; transform: rotate(0deg); }
 .left-dashes .dash-3 { width: 14px; transform: rotate(15deg); }
 
-.right-dashes .dash-1 { width: 14px; transform: rotate(15deg); }
-.right-dashes .dash-2 { width: 20px; transform: rotate(0deg); }
-.right-dashes .dash-3 { width: 14px; transform: rotate(-15deg); }
+.right-dashes .dash-1 { width: 14px; transform: rotate(15deg); background-color: #0052CC; }
+.right-dashes .dash-2 { width: 20px; transform: rotate(0deg); background-color: #E01A22; }
+.right-dashes .dash-3 { width: 14px; transform: rotate(-15deg); background-color: #0052CC; }
 
 /* Play Store Button */
 .playstore-btn {

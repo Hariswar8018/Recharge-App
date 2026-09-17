@@ -472,6 +472,8 @@ class _HomeScreenState extends State<HomeScreen> {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
             leadingWidth: 64,
             leading: Builder(
               builder: (context) => Padding(
@@ -3263,43 +3265,46 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isLogout = false,
     VoidCallback? onTap,
   }) {
-    return ListTile(
-      dense: true,
-      visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-      leading: Container(
-        padding: const EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF),
-          borderRadius: BorderRadius.circular(10),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        dense: true,
+        visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        leading: Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: const Color(0xFF0052CC), size: 25),
         ),
-        child: Icon(icon, color: const Color(0xFF0052CC), size: 25),
-      ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppTheme.textDarkBlue,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                color: AppTheme.textDarkBlue,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
-          ),
-          const SizedBox(height: 1),
-          Text(
-            subtitle,
-            style: const TextStyle(color: AppTheme.textGray, fontSize: 9),
-          ),
-        ],
+            const SizedBox(height: 1),
+            Text(
+              subtitle,
+              style: const TextStyle(color: AppTheme.textGray, fontSize: 9),
+            ),
+          ],
+        ),
+        trailing: const Icon(
+          Icons.chevron_right,
+          color: Color(0xFF0052CC),
+          size: 22,
+        ),
+        onTap: onTap ?? (isLogout ? _handleLogout : () {}),
       ),
-      trailing: const Icon(
-        Icons.chevron_right,
-        color: Color(0xFF0052CC),
-        size: 22,
-      ),
-      onTap: onTap ?? (isLogout ? _handleLogout : () {}),
     );
   }
 

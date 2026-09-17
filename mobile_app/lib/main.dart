@@ -32,6 +32,12 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
         fontFamily: 'Inter',
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          surfaceTintColor: Colors.transparent,
+        ),
       ),
       initialRoute: '/',
       routes: {
