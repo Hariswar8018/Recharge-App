@@ -266,7 +266,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                               ),
                               child: UpiQrCode(
                                 payeeVpa: _payeeVpa,
-                                payeeName: "EarnFarm",
+                                payeeName: "SR Digital Seva Kendram",
                                 amount: "1200",
                                 txnRef: "TXN${DateTime.now().millisecondsSinceEpoch}",
                                 size: 180,

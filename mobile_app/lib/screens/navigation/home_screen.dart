@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _membersCount = 0;
         }
         _referralLink =
-            "https://earnfarm.com/join?ref=EARNFARMX7AQ96SD$_userId";
+            "https://play.google.com/store/apps/details?id=com.srdigitalseva&ref=$_userId";
         _isLoading = false;
       });
     }
@@ -129,23 +129,32 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleShareReferral() async {
-    if (_referralLink.isEmpty) return;
+    final String playStoreLink =
+        "https://play.google.com/store/apps/details?id=com.srdigitalseva&ref=$_userId";
     final String shareMessage =
-        "Join EarnFarm Today!\n\n"
-        "Register on EarnFarm using my Sponsor ID: EARNFARMX7AQ96SD$_userId\n\n"
-        "Referral Link:\n$_referralLink\n\n"
-        "Download the App:\nhttps://play.google.com/store/apps/details?id=com.app.earnfarm\n\n"
-        "Start earning affiliate commissions, global cycle rewards, and much more! Join our network today.";
+        "Join SR Digital Seva Kendram Today!\n\n"
+        "Register using my Sponsor ID: $_userId\n\n"
+        "Download the App from Google Play Store:\n$playStoreLink\n\n"
+        "Refer App Earn ₹ 300.00 Each Referral! Start earning affiliate commissions and global cycle rewards today.";
     try {
       await ShareMe.system(
-        title: 'Join EarnFarm Today!',
-        url: _referralLink,
+        title: 'Join SR Digital Seva Kendram Today!',
+        url: playStoreLink,
         description: shareMessage,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error sharing referral link: $e")),
-      );
+      try {
+        await launchUrl(
+          Uri.parse(playStoreLink),
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error sharing referral link: $e")),
+          );
+        }
+      }
     }
   }
 
@@ -240,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
           "Exit App",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        content: const Text("Are you sure you want to exit EarnFarm?"),
+        content: const Text("Are you sure you want to exit SR Digital Seva Kendram?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -1374,6 +1383,11 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
+          const SizedBox(height: 16),
+
+          // Refer invitation Card (Visible on Home Dashboard)
+          _buildInviteCard(),
+
           /*
           // HIDDEN RECHARGE SECTION (Preserved as requested)
           Container(
@@ -2225,102 +2239,106 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 20),
 
           // Refer invitation Card
+          _buildInviteCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInviteCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(13),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(13),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+            padding: const EdgeInsets.all(1),
+            decoration: const BoxDecoration(
+              color: Color(0xFFEFF6FF),
+              shape: BoxShape.circle,
+            ),
+            child: Image.asset(
+              "assets/icons_logo/refer.png",
+              width: 45,
+              height: 45,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  "Refer App Earn ₹ 300.00",
+                  style: TextStyle(
+                    color: AppTheme.textDarkBlue,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 10,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  "Each Referral",
+                  style: TextStyle(
+                    color: AppTheme.textDarkBlue,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(1),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEFF6FF),
-                    shape: BoxShape.circle,
+          ),
+          InkWell(
+            onTap: _handleShareReferral,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0052CC),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "INVITE NOW",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  child: Image.asset(
-                    "assets/icons_logo/refer.png",
-                    width: 45,
-                    height: 45,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        "Refer App Earn ₹ 300.00",
-                        style: TextStyle(
-                          color: AppTheme.textDarkBlue,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 10,
-                        ),
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 14,
+                    height: 14,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.chevron_right,
+                        color: Color(0xFF0052CC),
+                        size: 11,
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        "Each Referral",
-                        style: TextStyle(
-                          color: AppTheme.textDarkBlue,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                InkWell(
-                  onTap: _handleShareReferral,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0052CC),
-                      borderRadius: BorderRadius.circular(9),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "INVITE NOW",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          width: 14,
-                          height: 14,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.chevron_right,
-                              color: Color(0xFF0052CC),
-                              size: 11,
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
