@@ -669,7 +669,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                                           ),
                                           if (_accountHolder.isNotEmpty)
                                             Text(
-                                              "Holder: $_accountHolder (${_ifsc})",
+                                              "Holder: $_accountHolder ($_ifsc)",
                                               style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
                                             ),
                                         ],

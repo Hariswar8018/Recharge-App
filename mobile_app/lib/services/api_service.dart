@@ -313,6 +313,21 @@ class ApiService {
     return [];
   }
 
+  // Check if UTR is already registered in backend system
+  static Future<bool> checkUtrExists(String utr) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/fund/check-utr/$utr'),
+        headers: await _getHeaders(),
+      );
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        return decoded['exists'] == true || decoded['registered'] == true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   // Trigger Razorpay sandbox payment simulation on successful payment
   static Future<Map<String, dynamic>> triggerRazorpaySandboxPayment(
       double amount, String serviceType, String walletType) async {

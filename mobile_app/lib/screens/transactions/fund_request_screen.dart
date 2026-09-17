@@ -19,7 +19,6 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   String _message = "";
   String _error = "";
   List<dynamic> _requests = [];
-  bool _isUtrExact = false;
   final String _payeeVpa = "vp110064@okaxis";
 
   @override
@@ -38,9 +37,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   }
 
   void _onUtrChanged() {
-    setState(() {
-      _isUtrExact = _utrController.text.trim().length == 12;
-    });
+    setState(() {});
   }
 
   Future<void> _loadRequestHistory() async {

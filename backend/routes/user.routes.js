@@ -94,7 +94,7 @@ router.get('/by-id/:id', verifyAppToken, async (req, res) => {
 
   try {
     const users = await query(
-      'SELECT id, fullName, mobileNumber, status, main_wallet_balance FROM users WHERE id = ? OR mobileNumber = ?',
+      'SELECT id, fullName, email, mobileNumber, status, main_wallet_balance, createdAt FROM users WHERE id = ? OR mobileNumber = ?',
       [isNaN(numericId) ? targetId : numericId, targetId]
     );
     if (users.length === 0) {

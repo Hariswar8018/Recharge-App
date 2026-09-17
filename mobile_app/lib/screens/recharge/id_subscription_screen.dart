@@ -73,15 +73,33 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
       if (mounted && _mobileController.text.trim() == text) {
         if (res['success'] == true && res['user'] != null) {
           final u = res['user'];
+          final String status = (u['status'] ?? '').toString().toUpperCase();
+          final bool isAlreadyActive = status == 'ACTIVE' || u['is_active'] == 1 || u['is_active'] == true;
+
           String jDate = "28-08-2025";
-          if (u['created_at'] != null) {
+          final rawDate = u['created_at'] ?? u['createdAt'];
+          if (rawDate != null) {
             try {
-              final dt = DateTime.parse(u['created_at'].toString());
+              final dt = DateTime.parse(rawDate.toString());
               jDate = "${dt.day.toString().padLeft(2, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.year}";
             } catch (_) {}
           }
+
+          if (isAlreadyActive) {
+            setState(() {
+              _lookupUserName = "";
+              _userMobile = u['mobileNumber'] ?? u['mobile'] ?? text;
+              _userName = u['fullName'] ?? u['name'] ?? "User";
+              _userEmail = u['email'] ?? "user@gmail.com";
+              _joiningDate = jDate;
+              _isUserRegistered = false;
+              _mobileErrorMsg = "This mobile number (ID) is already activated. You cannot subscribe again.";
+            });
+            return;
+          }
+
           setState(() {
-            _lookupUserName = u['name'] ?? u['fullName'] ?? "Raju Reddy";
+            _lookupUserName = u['fullName'] ?? u['name'] ?? "Raju Reddy";
             _userMobile = u['mobileNumber'] ?? u['mobile'] ?? text;
             _userName = _lookupUserName;
             _userEmail = u['email'] ?? "ravikanth@gmail.com";
@@ -136,10 +154,10 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
 
   Future<void> _handleSubscribe() async {
     final mobile = _mobileController.text.trim();
-    if (mobile.length != 10) {
+    if (mobile.length != 10 || !_isUserRegistered || _mobileErrorMsg != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Please enter a valid 10-digit mobile number."),
+        SnackBar(
+          content: Text(_mobileErrorMsg ?? "Please enter a valid, registered, and non-activated mobile number."),
           backgroundColor: Colors.red,
         ),
       );

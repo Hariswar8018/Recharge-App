@@ -58,4 +58,15 @@ router.get('/requests', verifyAppToken, verifyUserToken, async (req, res) => {
   }
 });
 
+// Check if UTR is already registered/used system-wide
+router.get('/check-utr/:utr', verifyAppToken, async (req, res) => {
+  const cleanUtr = (req.params.utr || '').toString().trim();
+  try {
+    const existing = await query('SELECT id FROM fund_requests WHERE utr = ?', [cleanUtr]);
+    res.json({ exists: existing.length > 0, registered: existing.length > 0 });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to check UTR' });
+  }
+});
+
 module.exports = router;

@@ -21,15 +21,32 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
     if (users.length === 0) return res.status(404).json({ error: 'User not found' });
     const user = users[0];
 
+    const { mobile } = req.body;
+    let targetUser = user;
+    if (mobile) {
+      const targetRows = await query('SELECT * FROM users WHERE mobileNumber = ? OR id = ?', [mobile.toString().trim(), mobile.toString().trim()]);
+      if (targetRows.length > 0) {
+        targetUser = targetRows[0];
+      }
+    }
+
+    if (targetUser.status === 'ACTIVE') {
+      return res.status(400).json({ error: 'This user ID is already activated. Subscription is not allowed.' });
+    }
+
     if (parseFloat(user.fund_wallet_balance) < joinAmount) {
       return res.status(400).json({ error: 'Insufficient Fund Wallet balance.' });
     }
 
     const result = await transaction(async (conn) => {
-      // 1. Deduct join amount & mark status ACTIVE
+      // 1. Deduct join amount from payer & mark target status ACTIVE
       await conn.execute(
-        'UPDATE users SET fund_wallet_balance = fund_wallet_balance - ?, status = "ACTIVE" WHERE id = ?',
+        'UPDATE users SET fund_wallet_balance = fund_wallet_balance - ? WHERE id = ?',
         [joinAmount, user.id]
+      );
+      await conn.execute(
+        'UPDATE users SET status = "ACTIVE" WHERE id = ?',
+        [targetUser.id]
       );
 
       const dateStr = new Date().toLocaleString('en-US', { hour12: true });
