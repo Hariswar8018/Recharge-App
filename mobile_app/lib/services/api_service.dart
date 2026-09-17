@@ -179,7 +179,7 @@ class ApiService {
     }
   }
 
-  // Check Email Registration Status
+  // Check Email Registration Status (Forgot Password)
   static Future<Map<String, dynamic>> checkEmail(String email) async {
     try {
       final response = await http.post(
@@ -194,6 +194,25 @@ class ApiService {
       };
     } catch (e) {
       return {'registered': false, 'message': 'Connection error'};
+    }
+  }
+
+  // Check Email Availability (Registration Screen)
+  static Future<Map<String, dynamic>> checkEmailAvailable(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/check-email-available'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'email': email}),
+      );
+      final decoded = jsonDecode(response.body);
+      return {
+        'valid': decoded['valid'] == true,
+        'registered': decoded['registered'] == true,
+        'message': decoded['message'] ?? (decoded['valid'] == true ? 'Valid Email (Available)' : 'Email Already Registered'),
+      };
+    } catch (e) {
+      return {'valid': false, 'message': 'Connection error'};
     }
   }
 

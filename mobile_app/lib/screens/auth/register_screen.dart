@@ -27,6 +27,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _errorMessage = "";
   String _successMessage = "";
 
+  // Email Validation States
+  bool _isCheckingEmail = false;
+  bool? _isEmailValid; // null = untouched, true = green, false = red
+  String? _emailStatusMessage;
+  String _lastCheckedEmail = "";
+
   // Mobile Validation States
   bool _isCheckingMobile = false;
   bool? _isMobileValid; // null = untouched, true = green, false = red
@@ -42,12 +48,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
+    _emailController.addListener(_onEmailChanged);
     _mobileController.addListener(_onMobileChanged);
     _sponsorController.addListener(_onSponsorChanged);
   }
 
   @override
   void dispose() {
+    _emailController.removeListener(_onEmailChanged);
     _mobileController.removeListener(_onMobileChanged);
     _sponsorController.removeListener(_onSponsorChanged);
     _nameController.dispose();
@@ -57,6 +65,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmPasswordController.dispose();
     _sponsorController.dispose();
     super.dispose();
+  }
+
+  void _onEmailChanged() {
+    final text = _emailController.text.trim();
+    if (text.isEmpty) {
+      setState(() {
+        _isCheckingEmail = false;
+        _isEmailValid = null;
+        _emailStatusMessage = null;
+        _lastCheckedEmail = "";
+      });
+      return;
+    }
+
+    final bool isEmailFormat = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text);
+    if (!isEmailFormat) {
+      setState(() {
+        _isCheckingEmail = false;
+        _isEmailValid = false;
+        _emailStatusMessage = "Enter valid email address";
+        _lastCheckedEmail = "";
+      });
+      return;
+    }
+
+    if (_lastCheckedEmail != text) {
+      _verifyEmailAvailable(text);
+    }
+  }
+
+  Future<void> _verifyEmailAvailable(String email) async {
+    setState(() {
+      _isCheckingEmail = true;
+      _lastCheckedEmail = email;
+    });
+
+    final res = await ApiService.checkEmailAvailable(email);
+
+    if (_emailController.text.trim() != email) return;
+
+    setState(() {
+      _isCheckingEmail = false;
+      if (res['valid'] == true) {
+        _isEmailValid = true;
+        _emailStatusMessage = "Valid Email (Available)";
+      } else {
+        _isEmailValid = false;
+        _emailStatusMessage = res['message'] ?? "Email Already Registered";
+      }
+    });
   }
 
   void _onMobileChanged() {
@@ -113,9 +171,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
   }
 
+  String _extractSponsorCode(String input) {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return "";
+
+    if (trimmed.contains("://") || trimmed.contains("ref=") || trimmed.contains("sponsor=") || trimmed.contains("id=") || trimmed.startsWith("www.")) {
+      try {
+        String urlStr = trimmed;
+        if (!urlStr.startsWith("http://") && !urlStr.startsWith("https://")) {
+          urlStr = "https://$urlStr";
+        }
+        final uri = Uri.parse(urlStr);
+
+        if (uri.queryParameters.containsKey('ref') && uri.queryParameters['ref']!.isNotEmpty) {
+          return uri.queryParameters['ref']!.trim();
+        }
+        if (uri.queryParameters.containsKey('sponsor') && uri.queryParameters['sponsor']!.isNotEmpty) {
+          return uri.queryParameters['sponsor']!.trim();
+        }
+        if (uri.queryParameters.containsKey('id') && uri.queryParameters['id']!.isNotEmpty) {
+          return uri.queryParameters['id']!.trim();
+        }
+        if (uri.queryParameters.containsKey('sponsor_id') && uri.queryParameters['sponsor_id']!.isNotEmpty) {
+          return uri.queryParameters['sponsor_id']!.trim();
+        }
+
+        if (uri.pathSegments.isNotEmpty) {
+          final last = uri.pathSegments.last.trim();
+          if (last.isNotEmpty && last != "join" && last != "register" && last != "ref") {
+            return last;
+          }
+        }
+      } catch (_) {}
+
+      final match = RegExp(r'(?:ref|sponsor|id|sponsor_id)=([A-Za-z0-9_]+)', caseSensitive: false).firstMatch(trimmed);
+      if (match != null && match.group(1) != null) {
+        return match.group(1)!;
+      }
+    }
+
+    return trimmed;
+  }
+
   void _onSponsorChanged() {
-    final text = _sponsorController.text.trim();
-    if (text.isEmpty) {
+    final rawText = _sponsorController.text.trim();
+    if (rawText.isEmpty) {
       setState(() {
         _isCheckingSponsor = false;
         _isSponsorValid = null;
@@ -125,8 +225,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (_lastCheckedSponsor == text && !_isCheckingSponsor) return;
-    _verifySponsorId(text);
+    final sponsorCode = _extractSponsorCode(rawText);
+
+    if (_lastCheckedSponsor == sponsorCode && !_isCheckingSponsor) return;
+    _verifySponsorId(sponsorCode);
   }
 
   Future<void> _verifySponsorId(String sponsorId) async {
@@ -137,7 +239,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final res = await ApiService.checkSponsor(sponsorId);
 
-    if (_sponsorController.text.trim() != sponsorId) return;
+    if (_extractSponsorCode(_sponsorController.text.trim()) != sponsorId) return;
 
     setState(() {
       _isCheckingSponsor = false;
@@ -198,6 +300,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    final emailText = _emailController.text.trim();
+    if (emailText.isEmpty || _isEmailValid != true) {
+      setState(() {
+        _isEmailValid = false;
+        _emailStatusMessage = _emailStatusMessage ?? "Enter valid email address";
+      });
+      return;
+    }
+
     final mobileText = _mobileController.text.trim();
     if (mobileText.length < 10 || _isMobileValid != true) {
       setState(() {
@@ -207,8 +318,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    final sponsorText = _sponsorController.text.trim();
-    if (sponsorText.isNotEmpty && _isSponsorValid != true) {
+    final rawSponsorText = _sponsorController.text.trim();
+    final sponsorCode = _extractSponsorCode(rawSponsorText);
+    if (rawSponsorText.isNotEmpty && _isSponsorValid != true) {
       setState(() {
         _isSponsorValid = false;
         _sponsorStatusMessage = _sponsorStatusMessage ?? "User Not Found";
@@ -233,10 +345,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final result = await ApiService.register(
       fullName: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      mobileNumber: _mobileController.text.trim(),
+      email: emailText,
+      mobileNumber: mobileText,
       password: _passwordController.text,
-      sponsorId: _sponsorController.text.trim(),
+      sponsorId: sponsorCode.isNotEmpty ? sponsorCode : rawSponsorText,
     );
 
     setState(() {
@@ -375,13 +487,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           // Email Address
                           _buildLabel("Email Address"),
-                          _buildTextField(
+                          TextFormField(
                             controller: _emailController,
-                            hint: "Enter Email Address",
-                            icon: Icons.email,
                             keyboardType: TextInputType.emailAddress,
-                            validator: (v) => (v == null || v.isEmpty) ? "Please enter email" : null,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            decoration: InputDecoration(
+                              hintText: "Enter Email Address",
+                              hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                              prefixIcon: Container(
+                                margin: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.email, color: AppTheme.primaryBlue, size: 16),
+                              ),
+                              suffixIcon: _buildSuffixIcon(_isCheckingEmail, _isEmailValid),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                              border: _getFieldBorder(_isEmailValid),
+                              enabledBorder: _getFieldBorder(_isEmailValid),
+                              focusedBorder: _getFieldBorder(_isEmailValid),
+                              errorStyle: const TextStyle(height: 0, fontSize: 0),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) return "";
+                              if (_isEmailValid != true) return "";
+                              return null;
+                            },
                           ),
+                          if (_emailStatusMessage != null && _emailStatusMessage!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              _emailStatusMessage!,
+                              style: TextStyle(
+                                color: _isEmailValid == true
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFEF4444),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
 
                           // Mobile Number (This will be your User ID / Login ID)
@@ -463,7 +612,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _sponsorController,
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
-                              hintText: "Enter Sponsor ID",
+                              hintText: "Enter Sponsor ID or Referral Link",
                               hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                               prefixIcon: Container(
                                 margin: const EdgeInsets.all(8),
@@ -877,3 +1026,4 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 }
+

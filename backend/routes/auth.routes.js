@@ -186,6 +186,32 @@ router.post('/check-email', verifyAppToken, async (req, res) => {
   }
 });
 
+// Check if Email is available for Registration
+router.post('/check-email-available', verifyAppToken, async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.toString().trim()) {
+    return res.status(400).json({ valid: false, message: 'Enter valid email address' });
+  }
+
+  const cleanEmail = email.toString().trim().toLowerCase();
+  const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  if (!emailRegex.test(cleanEmail)) {
+    return res.status(400).json({ valid: false, message: 'Enter valid email address' });
+  }
+
+  try {
+    const users = await query('SELECT id FROM users WHERE email = ?', [cleanEmail]);
+    if (users.length > 0) {
+      return res.json({ valid: false, registered: true, message: 'Email Already Registered' });
+    } else {
+      return res.json({ valid: true, registered: false, message: 'Valid Email (Available)' });
+    }
+  } catch (err) {
+    console.error('Check email available error:', err);
+    res.status(500).json({ valid: false, message: 'Server error checking email' });
+  }
+});
+
 // Check if Mobile Number is Registered in system (for Login screen)
 router.post('/check-mobile', verifyAppToken, async (req, res) => {
   const { mobileNumber } = req.body;
