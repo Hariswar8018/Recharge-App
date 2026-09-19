@@ -26,7 +26,7 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
   try {
     const existing = await query('SELECT id FROM fund_requests WHERE utr = ?', [cleanUtr]);
     if (existing.length > 0) {
-      return res.status(400).json({ error: 'Duplicate UTR number submitted' });
+      return res.status(400).json({ error: 'UTR Number Already Used' });
     }
 
     // Insert as PENDING for admin approval

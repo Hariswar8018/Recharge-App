@@ -24,16 +24,22 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   @override
   void initState() {
     super.initState();
+    _amountController.addListener(_onAmountChanged);
     _utrController.addListener(_onUtrChanged);
     _loadRequestHistory();
   }
 
   @override
   void dispose() {
+    _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
     _utrController.removeListener(_onUtrChanged);
     _utrController.dispose();
     super.dispose();
+  }
+
+  void _onAmountChanged() {
+    setState(() {});
   }
 
   void _onUtrChanged() {
@@ -74,6 +80,28 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     if (utrVal.length != 12) {
       setState(() {
         _error = "UTR number must be exactly 12 digits";
+        _message = "";
+      });
+      return;
+    }
+
+    // Check if UTR is already used in local history
+    final bool isAlreadyUsedLocally = _requests.any((r) => r['utr']?.toString().trim() == utrVal);
+    if (isAlreadyUsedLocally) {
+      setState(() {
+        _error = "UTR Number Already Used";
+        _message = "";
+      });
+      return;
+    }
+
+    // Check system-wide UTR existence
+    final bool existsSystemWide = await ApiService.checkUtrExists(utrVal);
+    if (!mounted) return;
+    if (existsSystemWide) {
+      setState(() {
+        _error = "UTR Number Already Used";
+        _message = "";
       });
       return;
     }
@@ -95,12 +123,14 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     if (result['success']) {
       setState(() {
         _message = "Your deposit request has been submitted for approval!";
+        _error = "";
         _utrController.clear();
       });
       _loadRequestHistory();
     } else {
       setState(() {
         _error = result['error'] ?? "Failed to submit request";
+        _message = "";
       });
     }
   }
@@ -406,7 +436,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 22),
                               );
-                              statusMsg = "Valid amount (Multiple of ₹1200)";
+                              statusMsg = "Valid deposit amount (Multiple of ₹1,200)";
                               statusColor = const Color(0xFF16A34A);
                             } else if (isLessThanMin) {
                               borderColor = const Color(0xFFDC2626);
@@ -414,7 +444,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              statusMsg = "Minimum amount is ₹1200";
+                              statusMsg = "Minimum amount is ₹1,200";
                               statusColor = const Color(0xFFDC2626);
                             } else if (isMoreThanMax) {
                               borderColor = const Color(0xFFDC2626);
@@ -422,7 +452,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              statusMsg = "Maximum amount is ₹12000";
+                              statusMsg = "Maximum amount is ₹12,000";
                               statusColor = const Color(0xFFDC2626);
                             } else if (isNotMultiple) {
                               borderColor = const Color(0xFFDC2626);
@@ -430,9 +460,12 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              statusMsg = "Amount must be in multiples of ₹1200 (₹1200 - ₹12000 only)";
+                              statusMsg = "Amount must be in multiples of ₹1,200 (e.g. ₹1,200, ₹2,400, ₹3,600...)";
                               statusColor = const Color(0xFFDC2626);
                             }
+                          } else {
+                            statusMsg = "Minimum: ₹1,200 | Maximum: ₹12,000 (Multiples of ₹1,200)";
+                            statusColor = const Color(0xFF1565C0);
                           }
 
                           return Container(
@@ -482,14 +515,14 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: isValidAmt ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+                                      color: isTouched ? (isValidAmt ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2)) : const Color(0xFFE3F2FD),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: isValidAmt ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5)),
+                                      border: Border.all(color: isTouched ? (isValidAmt ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5)) : const Color(0xFF90CAF9)),
                                     ),
                                     child: Row(
                                       children: [
                                         Icon(
-                                          isValidAmt ? Icons.check_circle_rounded : Icons.error_rounded,
+                                          isTouched ? (isValidAmt ? Icons.check_circle_rounded : Icons.error_rounded) : Icons.info_outline_rounded,
                                           color: statusColor,
                                           size: 16,
                                         ),
@@ -508,30 +541,6 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                     ),
                                   ),
                                 ],
-                                const SizedBox(height: 10),
-                                // Quick Amount Chips (Multiples of 1200)
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 6,
-                                  alignment: WrapAlignment.center,
-                                  children: [1200, 2400, 3600, 4800, 6000, 12000].map((amtVal) {
-                                    return ChoiceChip(
-                                      label: Text("₹$amtVal", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                                      selected: _amountController.text == amtVal.toString(),
-                                      selectedColor: const Color(0xFF1565C0),
-                                      labelStyle: TextStyle(
-                                        color: _amountController.text == amtVal.toString() ? Colors.white : const Color(0xFF1565C0),
-                                      ),
-                                      onSelected: (selected) {
-                                        if (selected) {
-                                          setState(() {
-                                            _amountController.text = amtVal.toString();
-                                          });
-                                        }
-                                      },
-                                    );
-                                  }).toList(),
-                                ),
                               ],
                             ),
                           );
@@ -547,7 +556,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                           final bool isNumeric = RegExp(r'^[0-9]+$').hasMatch(utrText);
                           final bool isLessThan12 = utrText.length < 12;
                           final bool isMoreThan12 = utrText.length > 12;
-                          final bool isAlreadyUsed = _requests.any((r) => r['utr_number']?.toString().trim() == utrText);
+                          final bool isAlreadyUsed = _requests.any((r) => r['utr']?.toString().trim() == utrText);
                           final bool isValidUtr = isTouched && isNumeric && utrText.length == 12 && !isAlreadyUsed;
 
                           Color borderColor = const Color(0xFFE2E8F0);
@@ -581,7 +590,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              utrStatusMsg = "This UTR number has already been used. Please enter a different UTR number.";
+                              utrStatusMsg = "UTR Number Already Used";
                               utrStatusColor = const Color(0xFFDC2626);
                             } else if (isLessThan12) {
                               borderColor = const Color(0xFFDC2626);
@@ -768,72 +777,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
 
-                      // Request History Section
-                      if (_requests.isNotEmpty) ...[
-                        const Row(
-                          children: [
-                            Text(
-                              "Your Request History",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E293B),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _requests.length,
-                          itemBuilder: (context, index) {
-                            final item = _requests[index];
-                            final status = item['status'] as String;
-                            Color statusColor = const Color(0xFFEF6C00);
-                            if (status == 'APPROVED') statusColor = const Color(0xFF2E7D32);
-                            if (status == 'REJECTED') statusColor = const Color(0xFFC62828);
-
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: Color(0xFFE2E8F0)),
-                              ),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  radius: 18,
-                                  backgroundColor: statusColor.withOpacity(0.1),
-                                  child: Icon(
-                                    Icons.account_balance_wallet,
-                                    color: statusColor,
-                                    size: 18,
-                                  ),
-                                ),
-                                title: Text(
-                                  "₹ ${(item['amount'] is num ? item['amount'] : double.tryParse(item['amount'].toString()) ?? 0.0).toStringAsFixed(2)}",
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-                                ),
-                                subtitle: Text("UTR: ${item['utr'] ?? ''}\n${item['createdAt'] != null ? DateTime.parse(item['createdAt']).toLocal().toString().substring(0, 16) : ''}", style: const TextStyle(fontSize: 10)),
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    status,
-                                    style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 9),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
                     ],
                   ),
                 ),
