@@ -208,7 +208,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     const SizedBox(height: 2),
                     const Text(
-                      "An OTP will be sent to your registered Email ID",
+                      "Your password will be sent to your registered Email ID",
                       style: TextStyle(
                         color: AppTheme.textGray,
                         fontSize: 11,
@@ -259,7 +259,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           const SizedBox(height: 5),
 
                           const Text(
-                            "Enter your registered Email ID and we will send you a OTP to reset your password.",
+                            "Enter your registered Email ID and we will send your password directly to your inbox.",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppTheme.textGray,
@@ -368,7 +368,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                         const Expanded(
                                           child: Center(
                                             child: Text(
-                                              "Send OTP",
+                                              "Send Password",
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 16,

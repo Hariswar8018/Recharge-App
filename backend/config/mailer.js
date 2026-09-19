@@ -12,15 +12,17 @@ const mailTransporter = nodemailer.createTransport({
 
 async function sendNotificationEmail(to, subject, htmlContent) {
   try {
-    await mailTransporter.sendMail({
+    const info = await mailTransporter.sendMail({
       from: `"SR Digital Seva Support" <${process.env.SMTP_USER || 'no-reply@srdigitalseva.com'}>`,
       to,
       subject,
       html: htmlContent
     });
-    console.log(`Notification email sent to ${to}: ${subject}`);
+    console.log(`Notification email sent to ${to}: ${subject} (Message ID: ${info.messageId})`);
+    return { success: true, messageId: info.messageId };
   } catch (err) {
     console.error('Failed to send notification email:', err);
+    return { success: false, error: err.message || err.toString() };
   }
 }
 

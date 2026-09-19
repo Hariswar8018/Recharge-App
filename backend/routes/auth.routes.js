@@ -329,19 +329,28 @@ router.post('/forgot-password', verifyAppToken, async (req, res) => {
       await query('UPDATE users SET passwordHash = ?, plain_password = ? WHERE id = ?', [hash, passwordToSend, user.id]);
     }
 
-    sendNotificationEmail(user.email, "Your Account Password - SR Digital Seva", `
+    const mailRes = await sendNotificationEmail(user.email, "Your Account Password - SR Digital Seva", `
       <h3>Hello ${user.fullName},</h3>
       <p>Your account password is: <strong style="font-size: 16px; color: #10B981;">${passwordToSend}</strong></p>
       <p>Please use this password to login to your account.</p>
     `);
 
+    if (mailRes && mailRes.success === false) {
+      return res.status(500).json({
+        registered: true,
+        success: false,
+        error: `Failed to send email via SMTP: ${mailRes.error}`
+      });
+    }
+
     res.json({
       registered: true,
+      success: true,
       message: 'Password has been sent to your registered email ID.'
     });
   } catch (err) {
     console.error('Forgot password error:', err);
-    res.status(500).json({ registered: false, error: 'Failed to send password. Please check backend log.' });
+    res.status(500).json({ registered: false, success: false, error: 'Failed to send password. Please check backend log.' });
   }
 });
 
