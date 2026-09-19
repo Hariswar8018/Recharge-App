@@ -42,21 +42,25 @@ const routes = [
   },
   {
     path: '/about-us',
+    alias: ['/about', '/about/', '/about-us/'],
     name: 'AboutUs',
     component: AboutUs
   },
   {
     path: '/privacy-policy',
+    alias: ['/privacy', '/privacy/', '/privacy-policy/', '/privacypolicy'],
     name: 'PrivacyPolicy',
     component: PrivacyPolicy
   },
   {
     path: '/terms-and-conditions',
+    alias: ['/terms', '/terms/', '/terms-and-conditions/', '/termsconditions', '/tc', '/t-and-c'],
     name: 'TermsConditions',
     component: TermsConditions
   },
   {
     path: '/refund-policy',
+    alias: ['/refund', '/refund/', '/refund-policy/'],
     name: 'RefundPolicy',
     component: RefundPolicy
   },
