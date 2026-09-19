@@ -140,9 +140,13 @@ async function initDb() {
 
     // Add plain_password column if not exists
     try {
-      await query("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255) DEFAULT NULL");
+      const cols = await query("SHOW COLUMNS FROM users LIKE 'plain_password'");
+      if (cols.length === 0) {
+        await query("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255) DEFAULT NULL");
+        console.log("Migrated: Added plain_password column to users table.");
+      }
     } catch (e) {
-      // Column already exists
+      console.warn("plain_password migration check failed: ", e);
     }
 
     // Seed Admin users (haris@gmail.com & earnfarm99@gmail.com with password 123456)
