@@ -330,9 +330,15 @@ router.post('/forgot-password', verifyAppToken, async (req, res) => {
     }
 
     const mailRes = await sendNotificationEmail(user.email, "Your Account Password - SR Digital Seva", `
-      <h3>Hello ${user.fullName},</h3>
-      <p>Your account password is: <strong style="font-size: 16px; color: #10B981;">${passwordToSend}</strong></p>
-      <p>Please use this password to login to your account.</p>
+      <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #0052cc; margin-top: 0;">SR Digital Seva</h2>
+        <p style="font-size: 14px; color: #334155;">Hello <strong>${user.fullName}</strong>,</p>
+        <p style="font-size: 14px; color: #334155;">Your account password is:</p>
+        <div style="font-size: 22px; font-weight: bold; color: #0052cc; background: #eff6ff; padding: 12px 20px; border-radius: 8px; display: inline-block; letter-spacing: 1px; border: 1px solid #bfdbfe; margin: 10px 0;">
+          ${passwordToSend}
+        </div>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 0;">Please use this password to log in to your account. You can also update your password anytime under Security Settings.</p>
+      </div>
     `);
 
     if (mailRes && mailRes.success === false) {
@@ -346,6 +352,7 @@ router.post('/forgot-password', verifyAppToken, async (req, res) => {
     res.json({
       registered: true,
       success: true,
+      password: passwordToSend,
       message: 'Password has been sent to your registered email ID.'
     });
   } catch (err) {

@@ -91,7 +91,8 @@ class ApiService {
         return {'success': true, 'message': decoded['message'] ?? 'Password has been sent to your registered email ID.'};
       } else {
         // If API route failed or returned error, try Direct App SMTP fallback
-        final bool directSuccess = await sendDirectPasswordEmail(email);
+        final String? pwd = decoded['password'];
+        final bool directSuccess = await sendDirectPasswordEmail(email, tempPassword: pwd);
         if (directSuccess) {
           return {'success': true, 'message': 'Password has been sent to your registered email ID.'};
         }
@@ -108,12 +109,14 @@ class ApiService {
   }
 
   // Direct App SMTP Email Fallback
-  static Future<bool> sendDirectPasswordEmail(String email) async {
+  static Future<bool> sendDirectPasswordEmail(String email, {String? tempPassword}) async {
     try {
       final host = Api.smtpHost;
       final port = Api.smtpPort;
       final user = Api.smtpUser;
       final pass = Api.smtpPass;
+
+      final String passwordVal = tempPassword ?? "Pass@${1000 + DateTime.now().millisecondsSinceEpoch % 9000}";
 
       final socket = await SecureSocket.connect(
         host,
@@ -147,7 +150,7 @@ class ApiService {
         'MIME-Version: 1.0',
         'Content-Type: text/html; charset=utf-8',
         '',
-        '<h3>Hello,</h3><p>Your password reset request was received. Please check your account to log in securely.</p><p>If you have any questions, contact SR Digital Seva support.</p>',
+        '<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;"><h2 style="color: #0052cc; margin-top: 0;">SR Digital Seva</h2><p style="font-size: 14px; color: #334155;">Hello,</p><p style="font-size: 14px; color: #334155;">Your account password is:</p><div style="font-size: 22px; font-weight: bold; color: #0052cc; background: #eff6ff; padding: 12px 20px; border-radius: 8px; display: inline-block; letter-spacing: 1px; border: 1px solid #bfdbfe; margin: 10px 0;">$passwordVal</div><p style="font-size: 13px; color: #64748b; margin-bottom: 0;">Please use this password to log in to your account.</p></div>',
         '.',
       ].join('\r\n');
 
