@@ -23,22 +23,52 @@
       <div class="policy-content">
         <section>
           <h2>1. Agreement to Terms</h2>
-          <p>By downloading, installing, or using the SR Digital Seva Kendram mobile application or web portal, you agree to be bound by these Terms &amp; Conditions. If you do not agree to all of these terms, please do not use our services.</p>
+          <p>By downloading, installing, or using the SR Digital Seva mobile application or web portal, you agree to be bound by these Terms &amp; Conditions. If you do not agree to all of these terms, please do not use our platform.</p>
         </section>
 
         <section>
-          <h2>2. User Account &amp; Registration</h2>
-          <p>Users must provide accurate, complete registration details including a valid 10-digit mobile number and registered email address. Each user is responsible for maintaining the confidentiality of their account credentials.</p>
+          <h2>2. Platform Scope</h2>
+          <p>SR Digital Seva operates exclusively as a CAPTCHA Work platform. All legacy service references (such as telecom recharges, DTH, bill payments, and unrelated commission models) are completely obsolete and disclaimed.</p>
         </section>
 
         <section>
-          <h2>3. Fund Wallet &amp; Transactions</h2>
-          <p>Deposits made to the Fund Wallet require verification of a 12-digit UTR payment transaction number. Deposits are subject to admin approval prior to credit. All transactions are logged securely and irreversibly.</p>
+          <h2>3. User Account</h2>
+          <p>Users must provide accurate registration details, including a valid 10-digit mobile number and email address. Users are responsible for keeping account credentials confidential. Each user ID allows only one mobile number, email, and bank account. Users must not share, sell, transfer, or allow unauthorized persons to use their account.</p>
         </section>
 
         <section>
-          <h2>4. Income Pools &amp; Withdrawals</h2>
-          <p>Earnings from Captcha solving, Direct Referrals, and Global Pool cycles are credited to the user's Main Wallet. Cashouts are permitted for verified Active accounts on designated withdrawal days as set by system administrators.</p>
+          <h2>4. Work Requirements</h2>
+          <p>Users must perform the available CAPTCHA work themselves and follow the required accuracy, quality, and performance standards. Work that is incomplete, rejected, invalid, or does not meet the applicable requirements will not qualify for earnings.</p>
+        </section>
+
+        <section>
+          <h2>5. Prohibited Activities</h2>
+          <p>Fraudulent activity, manipulation, automated abuse, bot usage, unauthorized access, fake information, duplicate or misleading accounts, or any misuse of the platform is strictly prohibited. Violation of platform rules may result in account restriction, suspension, or immediate termination.</p>
+        </section>
+
+        <section>
+          <h2>6. Payments &amp; Earnings</h2>
+          <p>Where payments or earnings are applicable, they are subject to verification, eligibility, completed and accepted work, applicable platform rules, and required processing procedures.</p>
+        </section>
+
+        <section>
+          <h2>7. Platform Changes</h2>
+          <p>Work availability, work requirements, features, procedures, and policies may be changed, suspended, or discontinued when reasonably required for operational, security, legal, regulatory, or business purposes.</p>
+        </section>
+
+        <section>
+          <h2>8. User Responsibility</h2>
+          <p>Users are responsible for reading and understanding the Terms &amp; Conditions, Privacy Policy, work requirements, and applicable guidelines before participating.</p>
+        </section>
+
+        <section>
+          <h2>9. No Employment Guarantee</h2>
+          <p>Participation in the SR Digital Seva CAPTCHA Work platform does not by itself create an employment relationship or guarantee employment.</p>
+        </section>
+
+        <section>
+          <h2>10. Acceptance</h2>
+          <p>By creating an account and using the platform, the user confirms that they have reviewed and agreed to the applicable Terms &amp; Conditions and Privacy Policy.</p>
         </section>
       </div>
     </main>

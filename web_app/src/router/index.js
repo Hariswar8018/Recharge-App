@@ -5,6 +5,7 @@ import AdminDashboard from '../views/AdminDashboard.vue'
 import ContactUs from '../views/ContactUs.vue'
 import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 import TermsConditions from '../views/TermsConditions.vue'
+import AboutUs from '../views/AboutUs.vue'
 import RefundPolicy from '../views/RefundPolicy.vue'
 import NotFound from '../views/NotFound.vue'
 
@@ -38,6 +39,11 @@ const routes = [
     path: '/contact',
     name: 'ContactUs',
     component: ContactUs
+  },
+  {
+    path: '/about-us',
+    name: 'AboutUs',
+    component: AboutUs
   },
   {
     path: '/privacy-policy',

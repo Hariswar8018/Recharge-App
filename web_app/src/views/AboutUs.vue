@@ -16,40 +16,29 @@
     <!-- Main Content -->
     <main class="content-body">
       <div class="policy-header">
-        <h1>Privacy Policy</h1>
-        <p>Last updated: September 2026</p>
+        <h1>About Us</h1>
+        <p>Empowering digital micro-task workers across India</p>
       </div>
 
       <div class="policy-content">
         <section>
-          <h2>1. Introduction</h2>
-          <p>Welcome to SR Digital Seva. We value your privacy and are committed to protecting your personal data. This Privacy Policy describes how we collect, use, and protect information when you use our mobile application and web services.</p>
+          <h2>Who We Are</h2>
+          <p>SR Digital Seva is a premier digital work platform dedicated exclusively to online CAPTCHA entry, verification tasks, and micro-work solutions.</p>
         </section>
 
         <section>
-          <h2>2. Data We Collect</h2>
-          <p>We collect information necessary to provide account access and CAPTCHA work management. This includes:</p>
+          <h2>Our Mission</h2>
+          <p>Our mission is to provide an accessible, transparent, and highly secure digital work environment. We connect registered users with authentic CAPTCHA work opportunities, enabling individuals to earn rewards based on accuracy, performance, and verified completed work standards.</p>
+        </section>
+
+        <section>
+          <h2>Why Choose SR Digital Seva?</h2>
           <ul>
-            <li>Personal identification details (Name, Email Address, 10-digit Mobile Number).</li>
-            <li>Bank account details required for verified payout processing.</li>
-            <li>CAPTCHA work completion records and wallet transaction logs.</li>
-            <li>Device metrics and session details for account authentication and fraud prevention.</li>
+            <li><strong>Dedicated CAPTCHA Platform:</strong> 100% focused on genuine micro-task &amp; CAPTCHA work with zero clutter.</li>
+            <li><strong>Transparent Earnings:</strong> Clear tracking of work output, wallet earnings, and level progress.</li>
+            <li><strong>Bank-Grade Security:</strong> Secure authentication, bank account locking, and safe payout processing.</li>
+            <li><strong>Dedicated Support:</strong> Real-time WhatsApp support assistance for registered members.</li>
           </ul>
-        </section>
-
-        <section>
-          <h2>3. How We Use Data</h2>
-          <p>We utilize the collected information strictly for user account management, CAPTCHA work verification, payout processing, securing system integrity, and communicating platform updates. We do not sell, rent, or share personal data with unauthorized third parties.</p>
-        </section>
-
-        <section>
-          <h2>4. Data Security</h2>
-          <p>We implement industry-standard SSL encryption protocols, secure database connections, and strict access controls to protect all user data against unauthorized access, alteration, or disclosure.</p>
-        </section>
-
-        <section>
-          <h2>5. User Account & Rights</h2>
-          <p>Users are responsible for maintaining account credential confidentiality. You have the right to review, update, or request corrections to your personal data via SR Digital Seva Support.</p>
         </section>
       </div>
     </main>
@@ -63,7 +52,7 @@
 
 <script>
 export default {
-  name: 'PrivacyPolicy'
+  name: 'AboutUs'
 }
 </script>
 

@@ -84,6 +84,7 @@
         <!-- Legal Terms Agreement -->
         <p class="terms-disclaimer">
           By downloading the app, you agree to our<br />
+          <router-link to="/about-us" class="legal-link">About Us</router-link>,
           <router-link to="/terms-and-conditions" class="legal-link">Terms &amp; Conditions</router-link>,
           <router-link to="/privacy-policy" class="legal-link">Privacy Policy</router-link> and
           <router-link to="/refund-policy" class="legal-link">Refund Policy</router-link>.
@@ -96,6 +97,9 @@
         <p class="powered-by">Powered by SR Digital Seva Kendram</p>
         <p class="copyright">&copy; 2026 SR Digital Seva Kendram. All rights reserved.</p>
         <div class="admin-access">
+          <router-link to="/about-us" class="admin-link">About Us</router-link> |
+          <router-link to="/privacy-policy" class="admin-link">Privacy Policy</router-link> |
+          <router-link to="/terms-and-conditions" class="admin-link">Terms &amp; Conditions</router-link> |
           <router-link to="/admin-login" class="admin-link">Admin Portal</router-link>
         </div>
       </footer>
