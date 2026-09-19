@@ -1988,7 +1988,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     double totalEarned = realGlobalIncome + realAffiliateIncome;
-    double progressVal = (realGlobalIncome / 12600.0).clamp(0.0, 1.0);
+    double progressVal = (totalEarned / 12600.0).clamp(0.0, 1.0);
+    final String percentDisplay = "${(progressVal * 100).toStringAsFixed(1)}%";
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -2090,15 +2091,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
-                                    children: const [
+                                    children: [
                                       Text(
-                                        "0%",
-                                        style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 9,
+                                        percentDisplay,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      Text(
+                                      const Text(
                                         "100%",
                                         style: TextStyle(
                                           color: Colors.white70,
@@ -3058,7 +3060,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           "Team Size",
                           "$realTeamSize",
                           Icons.group_outlined,
-                          onTap: () => _showTeamSizeModal(context),
+                          onTap: null,
                         ),
                       ),
                       Container(
