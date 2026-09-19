@@ -7,6 +7,7 @@ import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 import TermsConditions from '../views/TermsConditions.vue'
 import AboutUs from '../views/AboutUs.vue'
 import RefundPolicy from '../views/RefundPolicy.vue'
+import DeleteAccount from '../views/DeleteAccount.vue'
 import NotFound from '../views/NotFound.vue'
 
 const routes = [
@@ -63,6 +64,12 @@ const routes = [
     alias: ['/refund', '/refund/', '/refund-policy/'],
     name: 'RefundPolicy',
     component: RefundPolicy
+  },
+  {
+    path: '/delete',
+    alias: ['/delete-account', '/delete-account/', '/delete/', '/account-deletion'],
+    name: 'DeleteAccount',
+    component: DeleteAccount
   },
   {
     path: '/:pathMatch(.*)*',

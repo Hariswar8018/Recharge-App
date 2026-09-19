@@ -6,10 +6,6 @@
       <header class="header">
         <div class="logo-container">
           <img src="../assets/sr_logo.png" alt="SR Logo" class="sr-logo-img" />
-          <div class="logo-text">
-            <span class="title-blue">SR DIGITAL SEVA</span>
-            <span class="title-red">K E N D R A M</span>
-          </div>
         </div>
       </header>
 
@@ -86,8 +82,9 @@
           By downloading the app, you agree to our<br />
           <router-link to="/about-us" class="legal-link">About Us</router-link>,
           <router-link to="/terms-and-conditions" class="legal-link">Terms &amp; Conditions</router-link>,
-          <router-link to="/privacy-policy" class="legal-link">Privacy Policy</router-link> and
-          <router-link to="/refund-policy" class="legal-link">Refund Policy</router-link>.
+          <router-link to="/privacy-policy" class="legal-link">Privacy Policy</router-link>,
+          <router-link to="/refund-policy" class="legal-link">Refund Policy</router-link> and
+          <router-link to="/delete" class="legal-link">Delete Account</router-link>.
         </p>
 
       </main>
@@ -96,12 +93,6 @@
       <footer class="footer">
         <p class="powered-by">Powered by SR Digital Seva Kendram</p>
         <p class="copyright">&copy; 2026 SR Digital Seva Kendram. All rights reserved.</p>
-        <div class="admin-access">
-          <router-link to="/about-us" class="admin-link">About Us</router-link> |
-          <router-link to="/privacy-policy" class="admin-link">Privacy Policy</router-link> |
-          <router-link to="/terms-and-conditions" class="admin-link">Terms &amp; Conditions</router-link> |
-          <router-link to="/admin-login" class="admin-link">Admin Portal</router-link>
-        </div>
       </footer>
 
     </div>
@@ -206,7 +197,7 @@ export default {
 }
 
 .sr-logo-img {
-  height: 62px;
+  height: 85px;
   width: auto;
   object-fit: contain;
 }
@@ -448,20 +439,7 @@ export default {
   font-weight: 500;
 }
 
-.admin-access {
-  margin-top: 10px;
-}
 
-.admin-link {
-  font-size: 0.72rem;
-  color: #CBD5E1;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.admin-link:hover {
-  color: #0052CC;
-}
 
 /* Responsive Scaling for Mobile Screens */
 @media (max-width: 600px) {
@@ -481,7 +459,7 @@ export default {
     justify-content: space-between;
   }
   .sr-logo-img {
-    height: 52px;
+    height: 70px;
   }
   .title-blue {
     font-size: 1.25rem;

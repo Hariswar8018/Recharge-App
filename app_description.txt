@@ -1,0 +1,70 @@
+================================================================================
+                    SR DIGITAL SEVA - APP DESCRIPTIONS
+================================================================================
+
+--------------------------------------------------------------------------------
+1. SHORT DESCRIPTION (Google Play Store / App Store Short Summary - Max 80 Chars)
+--------------------------------------------------------------------------------
+Solve CAPTCHAs, complete micro-tasks, and earn real wallet rewards daily!
+
+
+--------------------------------------------------------------------------------
+2. LONG DESCRIPTION (Full Play Store Listing & App Store Details)
+--------------------------------------------------------------------------------
+Welcome to SR Digital Seva – the premier digital micro-task and CAPTCHA work platform!
+
+SR Digital Seva offers a simple, accessible, and transparent environment for users to complete online CAPTCHA entry tasks, participate in referral networks, and earn real wallet rewards right from their smartphones.
+
+Whether you're looking to earn extra cash in your free time or manage your affiliate team earnings, SR Digital Seva delivers a seamless, secure, and rewarding experience.
+
+--------------------------------------------------------------------------------
+KEY FEATURES & HIGHLIGHTS:
+--------------------------------------------------------------------------------
+
+🔥 CAPTCHA SOLVE & EARN
+- Instantly load dynamic CAPTCHAs and solve them directly inside the app.
+- Earn instant rewards credited straight to your wallet upon accurate submission.
+- Clean and intuitive captcha work canvas optimized for quick typing.
+
+💼 REAL-TIME WALLET & LEDGER TRACKING
+- Maintain full visibility over your Main Wallet and Fund Wallet balances.
+- Track every single credit, reward, and debit transaction with instant ledger updates.
+- Transparent balance breakdown and detailed transaction history logs.
+
+👥 MULTI-LEVEL REFERRAL & TEAM REWARDS
+- Invite friends, family, and colleagues using your unique Sponsor ID / Referral Link.
+- Build your direct team and monitor multi-level affiliate downline structures in real-time.
+- Earn bonus referral commissions as your team network expands.
+
+💳 SECURE FUND ADDITION & EASY CASHOUT
+- Add funds securely via UPI QR Code, Google Pay, PhonePe, Paytm, or Bank Transfer.
+- Instant UTR number verification and fast admin approval workflow.
+- Request withdrawals directly to your verified bank account or UPI ID with 24-hour processing.
+
+🔒 BANK-GRADE SECURITY & DATA PRIVACY
+- Protected by SSL encryption and secure server authentication protocols.
+- 100% data privacy guarantee — your credentials and financial details are strictly secured.
+- One active account per verified 10-digit mobile number to ensure platform integrity.
+
+⚡ 24/7 DEDICATED CUSTOMER SUPPORT
+- Need assistance? Reach out directly to our dedicated support desk.
+- Instant access to Help Center, FAQ guides, and direct support assistance.
+
+--------------------------------------------------------------------------------
+HOW IT WORKS:
+--------------------------------------------------------------------------------
+1. Download & Register: Create your account using your valid 10-digit mobile number.
+2. Solve & Earn: Access the CAPTCHA Work section and enter characters accurately.
+3. Build Your Team: Share your Sponsor ID to invite friends and earn network rewards.
+4. Cash Out: Transfer your verified earnings directly to your UPI or Bank Account.
+
+Download SR Digital Seva today and start turning your time into real rewards!
+
+--------------------------------------------------------------------------------
+COMPANY & PLATFORM DETAILS:
+--------------------------------------------------------------------------------
+Publisher: SR Digital Seva Kendram
+App Package: com.app.earnfarm
+Official Website: https://play.google.com/store/apps/details?id=com.app.earnfarm
+Support Desk: support@srdigitalseva.com
+Terms & Privacy: Available inside app & official web portal.
