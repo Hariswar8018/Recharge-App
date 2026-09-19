@@ -1,0 +1,99 @@
+================================================================================
+           ADMIN PANEL vs MOBILE APP FUNCTIONALITY AUDIT REPORT
+================================================================================
+
+I. ✅ FULLY WORKING & FULLY INTEGRATED FEATURES (Connected to App & MySQL Backend)
+--------------------------------------------------------------------------------
+
+1. Overview / Dashboard (`dashboard`)
+   - Live System Metrics: Total Users, Total Fund Wallet Balance, Total Main Wallet Balance, Total Transactions.
+   - Quick User List & Recent Transaction Ledger with search & filtering.
+   - System Infrastructure Health Status indicator (Database, App API, Gateways).
+
+2. User Profile & User Management (`users`)
+   - User List Table with search, pagination, and status filters (ACTIVE / BLOCKED).
+   - Direct Wallet Credit / Debit (Manual Add/Deduct Money to user's Main or Fund Wallet).
+   - Admin Override for User Passwords (/api/admin/users/:userId/update-password).
+   - Instant Block / Unblock access toggle for any user account.
+
+3. Team & Downlines Tree (`teams`)
+   - Downline Affiliates / Sponsor hierarchy tree view (/api/admin/teams).
+   - Grouping users by Direct Sponsor, Sponsor Name, Mobile, Email, and listing unassigned users.
+
+4. Fund Request Management (`requests`)
+   - Real-time queue for offline UPI / Bank deposit requests submitted by mobile app users with proof image/UTR.
+   - Pending badge count badge in sidebar.
+   - Approve / Reject request action: Automatically credits user's Fund Wallet upon approval and sends notification email.
+
+5. Transaction History & Ledger (`transactions`)
+   - Global Paginated Transaction History across all users (Deposits, Withdrawals, Cashouts, Captcha Earn, Subscription Fees).
+   - Approve / Reject manual transactions with automatic refund logic on rejection.
+
+6. Cash Out / Withdrawal Management (`sec_cashout`)
+   - Withdrawal requests management tab.
+   - Admin Approval / Rejection of user cashout requests with automated refunding to main wallet upon rejection.
+
+7. Add Money Configuration (`sec_add_money`)
+   - Payment Gateway Settings (Razorpay API Key ID, Key Secret, Live/Test mode toggle).
+   - Custom UPI Payment Details (Payee Name, VPA ID, QR Code Image URL).
+   - Min/Max Add Money rules and instructional text displayed in Mobile App.
+
+8. ID Subscription Settings (`sec_subscription`)
+   - Configuration of ID Subscription amount (e.g. ₹1200 / ₹99) and auto-activation settings.
+   - User ID status visibility controls in app.
+
+9. Registration & Signup Settings (`sec_registration`)
+   - Master toggle for Registration (Enable/Disable).
+   - Sponsor requirement rule toggle, signup bonus config.
+
+10. Login & Maintenance Settings (`sec_login`)
+    - Maintenance Mode Master Toggle (locks/unlocks live app access).
+    - Login OTP requirement toggle, custom notice banner text.
+
+11. Password Reset / OTP Settings (`sec_otp`)
+    - Forgot Password module toggle, SMS Gateway & Mailer settings.
+
+12. App Share & Referral Settings (`sec_app_share`)
+    - Referral Bonus amount configuration (e.g. ₹300 per referral).
+    - Play Store link, APK package ID, invite message template.
+
+13. Broadcast Notifications (`notifications`)
+    - Broadcast notification form (Title & Message).
+    - Stores broadcasts in `notifications` table and streams directly to user app home popups/drawers.
+
+14. System Admins Management (`admins`)
+    - System Admins list view, Create new Admin user (with bcrypt security), Delete Admin user (with master admin protection).
+
+15. Admin Account & Security (`settings`)
+    - Change Admin Password feature with current password verification and bcrypt encryption.
+    - Admin Logout & JWT Token clearance.
+
+
+--------------------------------------------------------------------------------
+II. ⚠️ NON-WORKING / GENERIC DUMMY FALLBACK SECTIONS 
+    (UI exists with generic placeholder controls, but lacks specialized backend handlers)
+--------------------------------------------------------------------------------
+
+1. Global User / Home (`sec_home`)
+   - Displays generic fallback settings table instead of a dedicated banner / slider image uploader & ticker message manager for the app home screen.
+
+2. Business Income (`sec_business_income`)
+   - Displays generic fallback settings table instead of a dedicated pool breakdown for business turnover and automated daily level income calculator.
+
+3. Global Cycle (`sec_global_cycle`)
+   - Displays generic fallback settings table instead of a dedicated real-time matrix pool status (Cycles 1 to 5) and manual trigger button for cycle payouts.
+
+4. Bank Verification Standalone Tab (`sec_bank_verification`)
+   - Uses generic fallback settings table on its standalone sidebar tab (Note: User bank verification details can still be viewed and verified individually within the User Profile modal & Finpay Ultra live API).
+
+5. Support (`sec_support`)
+   - Displays generic fallback settings table instead of a dedicated support ticket inbox or live helpdesk ticket manager.
+
+6. Captcha Work (`sec_captcha`)
+   - Uses generic fallback settings table instead of a dedicated per-captcha reward rate and daily solving limit configuration UI.
+
+================================================================================
+Report Generated: 19 Sep 2026
+Project: Recharge App / EarnFarm
+File: working.txt
+================================================================================
