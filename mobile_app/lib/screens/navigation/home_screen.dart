@@ -2451,23 +2451,28 @@ class _HomeScreenState extends State<HomeScreen> {
     IconData iconData;
     String displayLabel;
 
-    if (sUpper == "COMPLETED" || sUpper == "COMPLETE" || sUpper == "ACTIVE" || sUpper == "SUBSCRIBED") {
+    if (sUpper.contains("COMPLET")) {
       displayLabel = "Completed";
-      bgColor = const Color(0xFFE8F5E9); // Light green
-      textColor = const Color(0xFF2E7D32); // Dark green
-      iconData = Icons.check_circle;
+      bgColor = const Color(0xFFDCFCE7); // Light green badge
+      textColor = const Color(0xFF15803D); // Dark green text
+      iconData = Icons.check_circle_rounded;
+    } else if (sUpper.contains("PROGRESS") || sUpper.contains("PENDING")) {
+      displayLabel = "In Progress";
+      bgColor = const Color(0xFFFEF3C7); // Light orange badge
+      textColor = const Color(0xFFB45309); // Dark orange text
+      iconData = Icons.access_time_rounded;
     } else {
-      displayLabel = "Pending";
-      bgColor = const Color(0xFFFFF3E0); // Light orange
-      textColor = const Color(0xFFE65100); // Dark orange
-      iconData = Icons.access_time;
+      displayLabel = "Locked";
+      bgColor = const Color(0xFFF1F5F9); // Light gray badge
+      textColor = const Color(0xFF64748B); // Dark gray text
+      iconData = Icons.lock_rounded;
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -2499,37 +2504,36 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isLastRow = false,
   }) {
     final TextStyle textStyle = TextStyle(
-      fontSize: 12,
-      fontWeight: isHeader ? FontWeight.bold : FontWeight.w600,
-      color: isHeader ? Colors.white : AppTheme.textDarkBlue,
+      fontSize: 13,
+      fontWeight: isHeader ? FontWeight.bold : FontWeight.w700,
+      color: isHeader ? Colors.white : const Color(0xFF1E293B),
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: isHeader
-            ? const BorderRadius.vertical(top: Radius.circular(13))
+            ? const BorderRadius.vertical(top: Radius.circular(15))
             : BorderRadius.only(
-                topLeft: isFirstRow ? const Radius.circular(13) : Radius.zero,
-                topRight: isFirstRow ? const Radius.circular(13) : Radius.zero,
-                bottomLeft: isLastRow ? const Radius.circular(13) : Radius.zero,
-                bottomRight: isLastRow
-                    ? const Radius.circular(13)
-                    : Radius.zero,
+                bottomLeft: isLastRow ? const Radius.circular(15) : Radius.zero,
+                bottomRight: isLastRow ? const Radius.circular(15) : Radius.zero,
               ),
+        border: !isHeader && !isLastRow
+            ? const Border(bottom: BorderSide(color: Color(0xFFF1F5F9)))
+            : null,
       ),
       child: Row(
         children: [
-          // Level (Member's current cycle)
+          // Level (Circle badge for data rows)
           Expanded(
             flex: 2,
             child: isHeader
                 ? Text(level, style: textStyle, textAlign: TextAlign.center)
                 : Center(
                     child: Container(
-                      width: 24,
-                      height: 24,
+                      width: 26,
+                      height: 26,
                       decoration: const BoxDecoration(
                         color: Color(0xFFEFF6FF),
                         shape: BoxShape.circle,
@@ -2538,26 +2542,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text(
                           level,
                           style: const TextStyle(
-                            color: Color(0xFF0052CC),
+                            color: Color(0xFF2563EB),
                             fontWeight: FontWeight.bold,
-                            fontSize: 12,
+                            fontSize: 13,
                           ),
                         ),
                       ),
                     ),
                   ),
           ),
-          // Team (Total users joined under this team member)
+          // Team (Required level team count: 2, 4, 8, 16, 32, 64)
           Expanded(
             flex: 2,
             child: Text(team, style: textStyle, textAlign: TextAlign.center),
           ),
-          // Income
+          // Income (Level release income: 200, 400, 800, 1600, 3200, 6400)
           Expanded(
             flex: 3,
             child: Text(income, style: textStyle, textAlign: TextAlign.center),
           ),
-          // Status
+          // Status (Completed / In Progress / Locked)
           Expanded(
             flex: 3,
             child: Center(child: _buildStatusBadge(status)),
@@ -2571,6 +2575,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final int realTeamCount = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
     final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
+
+    final List<Map<String, dynamic>> levelData = [
+      {"level": "1", "team": "2", "income": "₹ 200.00", "cumTarget": 2},
+      {"level": "2", "team": "4", "income": "₹ 400.00", "cumTarget": 6},
+      {"level": "3", "team": "8", "income": "₹ 800.00", "cumTarget": 14},
+      {"level": "4", "team": "16", "income": "₹ 1,600.00", "cumTarget": 30},
+      {"level": "5", "team": "32", "income": "₹ 3,200.00", "cumTarget": 62},
+      {"level": "6", "team": "64", "income": "₹ 6,400.00", "cumTarget": 126},
+    ];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -2749,14 +2762,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 20),
 
-          // Real Team Members Table Card (Level, Team, Income, Status)
+          // Business Plan Level Table Card (Level, Team, Income, Status)
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(13),
+              borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withOpacity(0.06),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -2773,60 +2786,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   bgColor: AppTheme.primaryBlue,
                   isHeader: true,
                 ),
-                if (_teamMembers.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        Icon(Icons.group_outlined, size: 40, color: Colors.grey.shade400),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "No direct team members joined yet",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.textDarkBlue,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          "Share your referral link to build your team network!",
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.textGray,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  ...List.generate(_teamMembers.length, (i) {
-                    final member = _teamMembers[i];
-                    final int cycleNum = member['cycle_count'] != null && member['cycle_count'] > 0
-                        ? member['cycle_count']
-                        : 1;
-                    final String memberIdStr = "${member['id'] ?? (i + 1)}";
-                    final double bal = parseDouble(member['main_wallet_balance']) ?? 300.00;
-                    
-                    final String rawStatus = (member['status'] ?? "").toString().toUpperCase();
-                    final bool isSubscribed = (member['cycle_count'] != null && member['cycle_count'] > 0) ||
-                        rawStatus == "ACTIVE" ||
-                        rawStatus == "COMPLETED" ||
-                        rawStatus == "COMPLETE" ||
-                        rawStatus == "SUBSCRIBED";
-                    final String statusStr = isSubscribed ? "Completed" : "Pending";
+                ...List.generate(levelData.length, (i) {
+                  final item = levelData[i];
+                  final int cumTarget = item['cumTarget'] as int;
+                  final int prevCumTarget = i > 0 ? (levelData[i - 1]['cumTarget'] as int) : 0;
 
-                    return _buildLevelRow(
-                      level: "$cycleNum",
-                      team: memberIdStr,
-                      income: "₹ ${bal.toStringAsFixed(2)}",
-                      status: statusStr,
-                      bgColor: i % 2 == 0 ? Colors.white : const Color(0xFFF8FAFC),
-                      isFirstRow: false,
-                      isLastRow: i == _teamMembers.length - 1,
-                    );
-                  }),
+                  String statusStr;
+                  if (realTeamCount >= cumTarget) {
+                    statusStr = "Completed";
+                  } else if (i == 0 || realTeamCount >= prevCumTarget) {
+                    statusStr = "In Progress";
+                  } else {
+                    statusStr = "Locked";
+                  }
+
+                  return _buildLevelRow(
+                    level: item['level'],
+                    team: item['team'],
+                    income: item['income'],
+                    status: statusStr,
+                    bgColor: i % 2 == 0 ? Colors.white : const Color(0xFFF8FAFC),
+                    isFirstRow: false,
+                    isLastRow: i == levelData.length - 1,
+                  );
+                }),
               ],
             ),
           ),
