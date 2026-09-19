@@ -8,8 +8,25 @@ const { JWT_SECRET, verifyAppToken } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper to check if an auth feature is enabled by admin. Returns 404 if disabled.
+async function checkAuthFeatureEnabled(featureKey, res) {
+  try {
+    const rows = await query('SELECT val_value FROM system_settings WHERE key_name = ?', [featureKey]);
+    if (rows.length > 0 && (rows[0].val_value === 'false' || rows[0].val_value === '0')) {
+      const featureLabel = featureKey.replace('_enabled', '').replace('_', ' ').toUpperCase();
+      res.status(404).json({ error: `${featureLabel} service is currently disabled by administrator` });
+      return false;
+    }
+  } catch (err) {
+    console.error(`Error checking ${featureKey}:`, err);
+  }
+  return true;
+}
+
 // Register User
 router.post('/register', verifyAppToken, async (req, res) => {
+  if (!(await checkAuthFeatureEnabled('registration_enabled', res))) return;
+
   const { fullName, email, mobileNumber, password, device_model, app_version, sponsor_id } = req.body;
   if (!fullName || !email || !mobileNumber || !password) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -149,6 +166,8 @@ router.post('/check-sponsor', verifyAppToken, async (req, res) => {
 
 // Check Mobile Number availability for registration
 router.post('/check-mobile-available', verifyAppToken, async (req, res) => {
+  if (!(await checkAuthFeatureEnabled('registration_enabled', res))) return;
+
   const { mobileNumber } = req.body;
   if (!mobileNumber) {
     return res.status(400).json({ valid: false, message: 'Enter 10 digit mobile number' });
@@ -179,6 +198,8 @@ router.post('/check-mobile-available', verifyAppToken, async (req, res) => {
 
 // Check if Email is registered (for Forgot Password real-time validation)
 router.post('/check-email', verifyAppToken, async (req, res) => {
+  if (!(await checkAuthFeatureEnabled('forgot_password_enabled', res))) return;
+
   const { email } = req.body;
   if (!email || !email.toString().trim()) {
     return res.status(400).json({ registered: false, message: 'Email ID not found. Please enter a registered email ID.' });
@@ -199,6 +220,8 @@ router.post('/check-email', verifyAppToken, async (req, res) => {
 
 // Check if Email is available for Registration
 router.post('/check-email-available', verifyAppToken, async (req, res) => {
+  if (!(await checkAuthFeatureEnabled('registration_enabled', res))) return;
+
   const { email } = req.body;
   if (!email || !email.toString().trim()) {
     return res.status(400).json({ valid: false, message: 'Enter valid email address' });
@@ -225,6 +248,8 @@ router.post('/check-email-available', verifyAppToken, async (req, res) => {
 
 // Check if Mobile Number is Registered in system (for Login screen)
 router.post('/check-mobile', verifyAppToken, async (req, res) => {
+  if (!(await checkAuthFeatureEnabled('login_enabled', res))) return;
+
   const { mobileNumber } = req.body;
   if (!mobileNumber) {
     return res.status(400).json({ registered: false, error: 'Mobile number is required' });
@@ -250,6 +275,8 @@ router.post('/check-mobile', verifyAppToken, async (req, res) => {
 
 // Login User
 router.post('/login', verifyAppToken, async (req, res) => {
+  if (!(await checkAuthFeatureEnabled('login_enabled', res))) return;
+
   const { email, password, device_model, app_version } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -304,6 +331,8 @@ router.post('/login', verifyAppToken, async (req, res) => {
 
 // Forgot Password - Sends registered password directly to user email
 router.post('/forgot-password', verifyAppToken, async (req, res) => {
+  if (!(await checkAuthFeatureEnabled('forgot_password_enabled', res))) return;
+
   const { email } = req.body;
   if (!email || !email.toString().trim()) {
     return res.status(400).json({ registered: false, error: 'Email ID not found. Please enter a registered email ID.' });

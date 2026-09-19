@@ -364,4 +364,80 @@ router.post('/users/:userId/update-password', verifyAdminToken, async (req, res)
   }
 });
 
+// GET List System Admins
+router.get('/system-admins', verifyAdminToken, async (req, res) => {
+  try {
+    const admins = await query('SELECT id, fullName, email, mobileNumber, role, createdAt FROM users WHERE role = "admin" ORDER BY id DESC');
+    res.json(admins);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch admins list' });
+  }
+});
+
+// POST Create System Admin
+router.post('/create-admin', verifyAdminToken, async (req, res) => {
+  const { fullName, email, mobileNumber, password, role } = req.body;
+  if (!fullName || !email || !password) {
+    return res.status(400).json({ error: 'Name, email, and password are required' });
+  }
+  try {
+    const existing = await query('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(password.trim(), salt);
+    await query(
+      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
+      [fullName.trim(), email.toLowerCase().trim(), mobileNumber || '0000000000', passwordHash, password.trim(), role || 'admin']
+    );
+    res.status(201).json({ message: 'System admin created successfully' });
+  } catch (err) {
+    console.error('Create admin error:', err);
+    res.status(500).json({ error: 'Failed to create admin account' });
+  }
+});
+
+// DELETE System Admin
+router.delete('/system-admins/:id', verifyAdminToken, async (req, res) => {
+  try {
+    const adminId = req.params.id;
+    const admins = await query('SELECT COUNT(id) as count FROM users WHERE role = "admin"');
+    if (admins[0].count <= 1) {
+      return res.status(400).json({ error: 'Cannot delete the master admin account.' });
+    }
+    await query('DELETE FROM users WHERE id = ? AND role = "admin"', [adminId]);
+    res.json({ message: 'Admin account removed successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to remove admin' });
+  }
+});
+
+// POST Approve/Reject Transaction from Ledger
+router.post('/transactions/:id/approve', verifyAdminToken, async (req, res) => {
+  const txnId = req.params.id;
+  const { approve } = req.body;
+  try {
+    const txns = await query('SELECT * FROM transactions WHERE id = ?', [txnId]);
+    if (txns.length === 0) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+    const txn = txns[0];
+    const newStatus = approve === true ? 'Success' : 'FAILED';
+    await query('UPDATE transactions SET status = ? WHERE id = ?', [newStatus, txnId]);
+
+    if (approve === false && (txn.type === 'Cashout' || txn.type === 'Withdrawal')) {
+      const rawAmt = parseFloat((txn.amount || '0').toString().replace(/[^0-9.]/g, '')) || 0;
+      if (rawAmt > 0) {
+        await query('UPDATE users SET main_wallet_balance = main_wallet_balance + ? WHERE id = ?', [rawAmt, txn.user_id]);
+      }
+    }
+
+    res.json({ message: `Transaction #${txnId} status updated to ${newStatus}` });
+  } catch (err) {
+    console.error('Approve transaction error:', err);
+    res.status(500).json({ error: 'Failed to update transaction status' });
+  }
+});
+
 module.exports = router;

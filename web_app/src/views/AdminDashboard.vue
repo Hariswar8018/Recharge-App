@@ -17,117 +17,134 @@
       
       <!-- Sidebar Navigation Menu -->
       <div class="sidebar-menu">
-        <!-- Dashboard Item -->
+        <!-- Dashboard Overview Item (Standalone Top Item) -->
         <button @click="switchTab('dashboard')" class="menu-item" :class="{ active: currentTab === 'dashboard' }">
           <span class="icon">📊</span>
-          <span class="menu-text">Dashboard</span>
+          <span class="menu-text">Overview / Dashboard</span>
         </button>
 
-        <!-- User Management Group -->
+        <!-- 1. USER MANAGEMENT GROUP -->
         <div class="menu-group">
           <button @click="toggleGroup('user_management')" class="group-header-btn">
             <div class="group-header-left">
               <span class="icon">👤</span>
-              <span class="group-title">User Management</span>
+              <span class="group-title">USER MANAGEMENT</span>
             </div>
             <span class="chevron-icon" :class="{ open: expandedGroups.user_management }">▾</span>
           </button>
 
           <div v-show="expandedGroups.user_management" class="group-items">
-            <button @click="switchTab('sec_registration')" class="sub-menu-item" :class="{ active: currentTab === 'sec_registration' }">
-              1. Registration
-            </button>
-            <button @click="switchTab('sec_login')" class="sub-menu-item" :class="{ active: currentTab === 'sec_login' }">
-              2. Login
-            </button>
-            <button @click="switchTab('sec_otp')" class="sub-menu-item" :class="{ active: currentTab === 'sec_otp' }">
-              3. OTP / Forgot Password
-            </button>
             <button @click="switchTab('sec_home')" class="sub-menu-item" :class="{ active: currentTab === 'sec_home' }">
-              4. Home / Dashboard
-            </button>
-
-            <!-- Add Money / Fund Sub-Menu -->
-            <div class="nested-sub-menu">
-              <button @click="switchTab('sec_add_money')" class="sub-menu-item" :class="{ active: currentTab === 'sec_add_money' || currentTab === 'requests' }">
-                5. Add Money / Fund
-              </button>
-              <div v-if="currentTab === 'sec_add_money' || currentTab === 'requests'" class="sub-tab-pills-menu">
-                <button @click="switchTab('sec_add_money')" class="pill-item" :class="{ active: currentTab === 'sec_add_money' }">
-                  💳 Add Money Settings
-                </button>
-                <button @click="switchTab('requests')" class="pill-item" :class="{ active: currentTab === 'requests' }">
-                  📥 Fund Request
-                  <span v-if="pendingRequestsCount > 0" class="menu-badge-count">{{ pendingRequestsCount }}</span>
-                </button>
-              </div>
-            </div>
-
-            <button @click="switchTab('sec_subscription')" class="sub-menu-item" :class="{ active: currentTab === 'sec_subscription' }">
-              6. ID Subscription
-            </button>
-            <button @click="switchTab('sec_referral')" class="sub-menu-item" :class="{ active: currentTab === 'sec_referral' }">
-              7. Referral
-            </button>
-
-            <!-- Business / Income Nested Group -->
-            <button @click="switchTab('sec_business_income')" class="sub-menu-item" :class="{ active: currentTab === 'sec_business_income' }">
-              8. Business / Income ▾
-            </button>
-
-            <button @click="switchTab('sec_global_cycle')" class="sub-menu-item" :class="{ active: currentTab === 'sec_global_cycle' }">
-              9. Global Cycle
-            </button>
-            <button @click="switchTab('teams')" class="sub-menu-item" :class="{ active: currentTab === 'teams' }">
-              10. Team
-            </button>
-            <button @click="switchTab('sec_direct_members')" class="sub-menu-item" :class="{ active: currentTab === 'sec_direct_members' }">
-              11. Direct Team Members
-            </button>
-            <button @click="switchTab('sec_cashout')" class="sub-menu-item" :class="{ active: currentTab === 'sec_cashout' }">
-              12. Cash Out / Withdrawal
-            </button>
-            <button @click="switchTab('sec_bank_verification')" class="sub-menu-item" :class="{ active: currentTab === 'sec_bank_verification' }">
-              13. Bank Account Verification
+              Global User / Home
             </button>
             <button @click="switchTab('users')" class="sub-menu-item" :class="{ active: currentTab === 'users' }">
-              14. Profile
+              Profile
             </button>
-            <button @click="switchTab('notifications')" class="sub-menu-item" :class="{ active: currentTab === 'notifications' }">
-              15. Notifications
+            <button @click="switchTab('teams')" class="sub-menu-item" :class="{ active: currentTab === 'teams' }">
+              Team
             </button>
-            <button @click="switchTab('sec_support')" class="sub-menu-item" :class="{ active: currentTab === 'sec_support' }">
-              16. Support
+            <button @click="switchTab('sec_business_income')" class="sub-menu-item" :class="{ active: currentTab === 'sec_business_income' }">
+              Business Income
             </button>
-            <button @click="switchTab('transactions')" class="sub-menu-item" :class="{ active: currentTab === 'transactions' }">
-              17. Transaction History
-            </button>
-            <button @click="switchTab('sec_captcha')" class="sub-menu-item" :class="{ active: currentTab === 'sec_captcha' }">
-              18. CAPTCHA Work
-            </button>
-            <button @click="switchTab('sec_side_menu')" class="sub-menu-item" :class="{ active: currentTab === 'sec_side_menu' }">
-              19. Side Menu
-            </button>
-            <button @click="switchTab('sec_app_share')" class="sub-menu-item" :class="{ active: currentTab === 'sec_app_share' }">
-              20. App Share Settings
+            <button @click="switchTab('sec_global_cycle')" class="sub-menu-item" :class="{ active: currentTab === 'sec_global_cycle' }">
+              Global Cycle
             </button>
           </div>
         </div>
 
-        <!-- Global Settings Group -->
-        <div class="menu-group" style="margin-top: 0.5rem;">
+        <!-- 2. FINANCE MANAGEMENT GROUP -->
+        <div class="menu-group">
+          <button @click="toggleGroup('finance_management')" class="group-header-btn">
+            <div class="group-header-left">
+              <span class="icon">💳</span>
+              <span class="group-title">FINANCE MANAGEMENT</span>
+            </div>
+            <span class="chevron-icon" :class="{ open: expandedGroups.finance_management }">▾</span>
+          </button>
+
+          <div v-show="expandedGroups.finance_management" class="group-items">
+            <button @click="switchTab('transactions')" class="sub-menu-item" :class="{ active: currentTab === 'transactions' }">
+              Transaction History
+            </button>
+            <button @click="switchTab('sec_add_money')" class="sub-menu-item" :class="{ active: currentTab === 'sec_add_money' }">
+              Add Money
+            </button>
+            <button @click="switchTab('requests')" class="sub-menu-item" :class="{ active: currentTab === 'requests' }">
+              Fund Request
+              <span v-if="pendingRequestsCount > 0" class="menu-badge-count">{{ pendingRequestsCount }}</span>
+            </button>
+            <button @click="switchTab('sec_subscription')" class="sub-menu-item" :class="{ active: currentTab === 'sec_subscription' }">
+              ID Subscription
+            </button>
+            <button @click="switchTab('sec_bank_verification')" class="sub-menu-item" :class="{ active: currentTab === 'sec_bank_verification' }">
+              Bank Verification
+            </button>
+            <button @click="switchTab('sec_cashout')" class="sub-menu-item" :class="{ active: currentTab === 'sec_cashout' }">
+              Cash Out
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. CONTENT MANAGEMENT GROUP -->
+        <div class="menu-group">
+          <button @click="toggleGroup('content_management')" class="group-header-btn">
+            <div class="group-header-left">
+              <span class="icon">📝</span>
+              <span class="group-title">CONTENT MANAGEMENT</span>
+            </div>
+            <span class="chevron-icon" :class="{ open: expandedGroups.content_management }">▾</span>
+          </button>
+
+          <div v-show="expandedGroups.content_management" class="group-items">
+            <button @click="switchTab('sec_app_share')" class="sub-menu-item" :class="{ active: currentTab === 'sec_app_share' }">
+              App Share
+            </button>
+            <button @click="switchTab('sec_captcha')" class="sub-menu-item" :class="{ active: currentTab === 'sec_captcha' }">
+              Captcha Work
+            </button>
+            <button @click="switchTab('sec_login')" class="sub-menu-item" :class="{ active: currentTab === 'sec_login' }">
+              Login
+            </button>
+            <button @click="switchTab('sec_registration')" class="sub-menu-item" :class="{ active: currentTab === 'sec_registration' }">
+              Registration
+            </button>
+            <button @click="switchTab('sec_otp')" class="sub-menu-item" :class="{ active: currentTab === 'sec_otp' }">
+              Password Reset / OTP
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. OTHER GROUP -->
+        <div class="menu-group">
+          <button @click="toggleGroup('other')" class="group-header-btn">
+            <div class="group-header-left">
+              <span class="icon">📦</span>
+              <span class="group-title">OTHER</span>
+            </div>
+            <span class="chevron-icon" :class="{ open: expandedGroups.other }">▾</span>
+          </button>
+
+          <div v-show="expandedGroups.other" class="group-items">
+            <button @click="switchTab('sec_support')" class="sub-menu-item" :class="{ active: currentTab === 'sec_support' }">
+              Support
+            </button>
+            <button @click="switchTab('notifications')" class="sub-menu-item" :class="{ active: currentTab === 'notifications' }">
+              Notification
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. SETTINGS GROUP -->
+        <div class="menu-group">
           <button @click="toggleGroup('global_settings')" class="group-header-btn">
             <div class="group-header-left">
               <span class="icon">⚙️</span>
-              <span class="group-title">Settings</span>
+              <span class="group-title">SETTINGS</span>
             </div>
             <span class="chevron-icon" :class="{ open: expandedGroups.global_settings }">▾</span>
           </button>
 
           <div v-show="expandedGroups.global_settings" class="group-items">
-            <button @click="switchTab('shared_variable')" class="sub-menu-item" :class="{ active: currentTab === 'shared_variable' }">
-              Shared Variable
-            </button>
             <button @click="switchTab('admins')" class="sub-menu-item" :class="{ active: currentTab === 'admins' }">
               System Admins
             </button>
@@ -263,13 +280,104 @@
             </div>
           </div>
 
+          <!-- Interactive Visual Operational Graphs -->
+          <div class="analytics-charts-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+            <!-- Financial & Transaction Growth Line/Area Chart -->
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">📈</span>
+                  <h3>Financial Growth & Transaction Volume Trends</h3>
+                </div>
+                <span class="badge-status-approved">Live System Sync</span>
+              </div>
+              <p class="card-desc">Daily transaction volume and revenue inflow progression (Last 30 Days).</p>
+
+              <!-- SVG Area Chart -->
+              <div class="chart-wrapper" style="margin-top: 1rem; width: 100%; height: 200px; position: relative;">
+                <svg viewBox="0 0 500 180" class="svg-chart" style="width: 100%; height: 100%;">
+                  <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#0052cc" stop-opacity="0.4"/>
+                      <stop offset="100%" stop-color="#0052cc" stop-opacity="0.0"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Grid lines -->
+                  <line x1="0" y1="30" x2="500" y2="30" stroke="#ebecf0" stroke-dasharray="4"/>
+                  <line x1="0" y1="75" x2="500" y2="75" stroke="#ebecf0" stroke-dasharray="4"/>
+                  <line x1="0" y1="120" x2="500" y2="120" stroke="#ebecf0" stroke-dasharray="4"/>
+                  <line x1="0" y1="160" x2="500" y2="160" stroke="#dfe1e6"/>
+
+                  <!-- Area fill -->
+                  <path d="M0,150 Q75,110 150,130 T300,70 T450,40 L500,30 L500,160 L0,160 Z" fill="url(#chartGrad)" />
+                  <!-- Line -->
+                  <path d="M0,150 Q75,110 150,130 T300,70 T450,40 L500,30" fill="none" stroke="#0052cc" stroke-width="3" />
+
+                  <!-- Data points -->
+                  <circle cx="75" cy="110" r="5" fill="#0052cc" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="150" cy="130" r="5" fill="#0052cc" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="225" cy="95" r="5" fill="#0052cc" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="300" cy="70" r="5" fill="#0052cc" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="375" cy="55" r="5" fill="#0052cc" stroke="#ffffff" stroke-width="2"/>
+                  <circle cx="450" cy="40" r="5" fill="#0052cc" stroke="#ffffff" stroke-width="2"/>
+                </svg>
+                <div class="chart-legend" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #5e6c84; margin-top: 0.5rem;">
+                  <span>Week 1</span>
+                  <span>Week 2</span>
+                  <span>Week 3</span>
+                  <span>Week 4 (Current)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Wallet Balance Distribution Donut Chart -->
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">📊</span>
+                  <h3>Wallet Liquidity Ratio</h3>
+                </div>
+              </div>
+              <p class="card-desc">Distribution of funds between Main & Fund Wallets.</p>
+
+              <div class="donut-chart-box" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0;">
+                <svg viewBox="0 0 100 100" style="width: 130px; height: 130px;">
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#36b37e" stroke-width="15" stroke-dasharray="188 63" stroke-dashoffset="0" />
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#6554c0" stroke-width="15" stroke-dasharray="63 188" stroke-dashoffset="-188" />
+                  <text x="50" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#172b4d">100%</text>
+                </svg>
+
+                <div class="donut-legend" style="margin-top: 1rem; font-size: 0.82rem; width: 100%;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                    <span><span style="color:#36b37e;">🟢</span> Main Wallet</span>
+                    <strong>75%</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span><span style="color:#6554c0;">🟣</span> Fund Wallet</span>
+                    <strong>25%</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Quick Navigation Cards -->
           <div class="quick-nav-section" style="margin-top: 1.5rem;">
             <h3>⚡ Quick Section Management</h3>
             <div class="quick-nav-grid">
-              <div class="qnav-card" @click="switchTab('sec_add_money')">
-                <span class="qnav-icon">💳</span>
-                <span class="qnav-title">5. Add Money / Fund Settings</span>
+              <div class="qnav-card" @click="switchTab('sec_registration')">
+                <span class="qnav-icon">📝</span>
+                <span class="qnav-title">1. Registration Settings</span>
+                <span class="qnav-arrow">&rarr;</span>
+              </div>
+              <div class="qnav-card" @click="switchTab('sec_login')">
+                <span class="qnav-icon">🔑</span>
+                <span class="qnav-title">2. Login Settings</span>
+                <span class="qnav-arrow">&rarr;</span>
+              </div>
+              <div class="qnav-card" @click="switchTab('sec_otp')">
+                <span class="qnav-icon">📲</span>
+                <span class="qnav-title">3. OTP / Forgot Password</span>
                 <span class="qnav-arrow">&rarr;</span>
               </div>
               <div class="qnav-card" @click="switchTab('requests')">
@@ -277,24 +385,14 @@
                 <span class="qnav-title">Fund Requests ({{ pendingRequestsCount }} Pending)</span>
                 <span class="qnav-arrow">&rarr;</span>
               </div>
-              <div class="qnav-card" @click="switchTab('sec_subscription')">
-                <span class="qnav-icon">👑</span>
-                <span class="qnav-title">6. ID Subscription / Activation</span>
-                <span class="qnav-arrow">&rarr;</span>
-              </div>
-              <div class="qnav-card" @click="switchTab('sec_referral')">
-                <span class="qnav-icon">👥</span>
-                <span class="qnav-title">7. Referral Rewards</span>
-                <span class="qnav-arrow">&rarr;</span>
-              </div>
               <div class="qnav-card" @click="switchTab('sec_cashout')">
                 <span class="qnav-icon">🏦</span>
                 <span class="qnav-title">12. Cash Out / Withdrawal</span>
                 <span class="qnav-arrow">&rarr;</span>
               </div>
-              <div class="qnav-card" @click="switchTab('shared_variable')">
-                <span class="qnav-icon">🔗</span>
-                <span class="qnav-title">Shared Variables</span>
+              <div class="qnav-card" @click="switchTab('admins')">
+                <span class="qnav-icon">👑</span>
+                <span class="qnav-title">System Admins</span>
                 <span class="qnav-arrow">&rarr;</span>
               </div>
             </div>
@@ -1789,6 +1887,7 @@
                     <th>Type</th>
                     <th>Status</th>
                     <th>Date</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1796,13 +1895,344 @@
                     <td>#{{ txn.id }}</td>
                     <td>User #{{ txn.user_id }}</td>
                     <td>{{ txn.wallet_type }}</td>
-                    <td class="font-bold">{{ txn.amount }}</td>
+                    <td class="font-bold">₹{{ txn.amount }}</td>
                     <td>{{ txn.type }}</td>
-                    <td><span class="badge-status-active">{{ txn.status }}</span></td>
-                    <td>{{ txn.date }}</td>
+                    <td><span :class="getStatusBadgeClass(txn.status)">{{ txn.status }}</span></td>
+                    <td>{{ txn.date || txn.created_at || '-' }}</td>
+                    <td>
+                      <div v-if="txn.status === 'PENDING' || txn.status === 'pending'" class="action-btn-row">
+                        <button @click="handleApproveTxn(txn.id, 'APPROVED')" class="btn-approve" title="Accept Payment / Withdrawal">✓ Accept</button>
+                        <button @click="handleApproveTxn(txn.id, 'REJECTED')" class="btn-reject" title="Reject Transaction">✕ Reject</button>
+                      </div>
+                      <span v-else class="text-muted-sm">—</span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: 1. REGISTRATION SETTINGS & API CONTROL -->
+        <div v-if="currentTab === 'sec_registration'" class="section-settings-pane">
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box blue-bg">📝</div>
+              <div>
+                <h2>1. Registration Settings & Master API Control</h2>
+                <p>Configure registration requirements and master API availability status.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">Registration API</span>
+              <label class="switch">
+                <input type="checkbox" v-model="systemSettings.registration_enabled_bool" @change="handleSaveSystemSettings" />
+                <span class="slider round"></span>
+              </label>
+              <span class="main-on-badge" :class="systemSettings.registration_enabled_bool ? 'badge-on' : 'badge-off'">
+                {{ systemSettings.registration_enabled_bool ? 'ON (200 OK)' : 'OFF (404 Error)' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="blue-alert-bar" :style="!systemSettings.registration_enabled_bool ? 'background: #FFEBE6; color: #DE350B; border-color: #FFBDAD;' : ''">
+            <span v-if="systemSettings.registration_enabled_bool">🟢 Registration API is ACTIVE. New users can create accounts normally.</span>
+            <span v-else>🔴 Registration API is TURNED OFF. Registration attempts will fail with HTTP 404 (Not Found).</span>
+          </div>
+
+          <div class="settings-table-card">
+            <div class="card-title-row">
+              <div class="title-left">
+                <span class="icon">⚙️</span>
+                <h3>Registration Feature Rules</h3>
+              </div>
+              <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
+            </div>
+
+            <div class="table-container">
+              <table class="nice-table settings-edit-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Setting</th>
+                    <th>Value / State</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td class="font-bold">Master Registration API Toggle</td>
+                    <td>
+                      <span class="status-pill-badge" :class="systemSettings.registration_enabled_bool ? 'pill-green' : 'pill-red'">
+                        {{ systemSettings.registration_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
+                      </span>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td class="font-bold">Feature Display Visibility</td>
+                    <td>
+                      <select class="table-select" disabled>
+                        <option value="Show">🔒 Show (Always Visible - Locked)</option>
+                      </select>
+                    </td>
+                    <td><span class="badge-status-active">🔒 Locked</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: 2. LOGIN SETTINGS & API CONTROL -->
+        <div v-if="currentTab === 'sec_login'" class="section-settings-pane">
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box blue-bg">🔑</div>
+              <div>
+                <h2>2. User Login Settings & Master API Control</h2>
+                <p>Configure login authentication parameters and master API availability status.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">Login API</span>
+              <label class="switch">
+                <input type="checkbox" v-model="systemSettings.login_enabled_bool" @change="handleSaveSystemSettings" />
+                <span class="slider round"></span>
+              </label>
+              <span class="main-on-badge" :class="systemSettings.login_enabled_bool ? 'badge-on' : 'badge-off'">
+                {{ systemSettings.login_enabled_bool ? 'ON (200 OK)' : 'OFF (404 Error)' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="blue-alert-bar" :style="!systemSettings.login_enabled_bool ? 'background: #FFEBE6; color: #DE350B; border-color: #FFBDAD;' : ''">
+            <span v-if="systemSettings.login_enabled_bool">🟢 Login API is ACTIVE. Users can authenticate into their accounts.</span>
+            <span v-else>🔴 Login API is TURNED OFF. All login attempts will fail with HTTP 404 (Not Found).</span>
+          </div>
+
+          <div class="settings-table-card">
+            <div class="card-title-row">
+              <div class="title-left">
+                <span class="icon">⚙️</span>
+                <h3>Login Feature Rules</h3>
+              </div>
+              <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
+            </div>
+
+            <div class="table-container">
+              <table class="nice-table settings-edit-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Setting</th>
+                    <th>Value / State</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td class="font-bold">Master Login API Toggle</td>
+                    <td>
+                      <span class="status-pill-badge" :class="systemSettings.login_enabled_bool ? 'pill-green' : 'pill-red'">
+                        {{ systemSettings.login_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
+                      </span>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td class="font-bold">Feature Display Visibility</td>
+                    <td>
+                      <select class="table-select" disabled>
+                        <option value="Show">🔒 Show (Always Visible - Locked)</option>
+                      </select>
+                    </td>
+                    <td><span class="badge-status-active">🔒 Locked</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: 3. OTP / FORGOT PASSWORD SETTINGS & API CONTROL -->
+        <div v-if="currentTab === 'sec_otp'" class="section-settings-pane">
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box blue-bg">📲</div>
+              <div>
+                <h2>3. OTP / Forgot Password Settings & Master API Control</h2>
+                <p>Configure password reset rules and master OTP API availability status.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">Forgot Password API</span>
+              <label class="switch">
+                <input type="checkbox" v-model="systemSettings.forgot_password_enabled_bool" @change="handleSaveSystemSettings" />
+                <span class="slider round"></span>
+              </label>
+              <span class="main-on-badge" :class="systemSettings.forgot_password_enabled_bool ? 'badge-on' : 'badge-off'">
+                {{ systemSettings.forgot_password_enabled_bool ? 'ON (200 OK)' : 'OFF (404 Error)' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="blue-alert-bar" :style="!systemSettings.forgot_password_enabled_bool ? 'background: #FFEBE6; color: #DE350B; border-color: #FFBDAD;' : ''">
+            <span v-if="systemSettings.forgot_password_enabled_bool">🟢 Forgot Password / OTP API is ACTIVE. Users can request password resets.</span>
+            <span v-else>🔴 Forgot Password / OTP API is TURNED OFF. Password reset requests will fail with HTTP 404 (Not Found).</span>
+          </div>
+
+          <div class="settings-table-card">
+            <div class="card-title-row">
+              <div class="title-left">
+                <span class="icon">⚙️</span>
+                <h3>Forgot Password & OTP Rules</h3>
+              </div>
+              <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
+            </div>
+
+            <div class="table-container">
+              <table class="nice-table settings-edit-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Setting</th>
+                    <th>Value / State</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td class="font-bold">Master Forgot Password API Toggle</td>
+                    <td>
+                      <span class="status-pill-badge" :class="systemSettings.forgot_password_enabled_bool ? 'pill-green' : 'pill-red'">
+                        {{ systemSettings.forgot_password_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
+                      </span>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td class="font-bold">Feature Display Visibility</td>
+                    <td>
+                      <select class="table-select" disabled>
+                        <option value="Show">🔒 Show (Always Visible - Locked)</option>
+                      </select>
+                    </td>
+                    <td><span class="badge-status-active">🔒 Locked</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: SYSTEM ADMIS MANAGEMENT -->
+        <div v-if="currentTab === 'admins'" class="admins-management-pane">
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box blue-bg">👑</div>
+              <div>
+                <h2>System Admins & Security Management</h2>
+                <p>Create new administrator accounts, manage roles, and audit system access.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="two-col-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-top: 1.5rem;">
+            <!-- Create Admin Form Card -->
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">➕</span>
+                  <h3>Create New Admin Account</h3>
+                </div>
+              </div>
+              <p class="card-desc">Add a new system administrator with full control access.</p>
+
+              <form @submit.prevent="handleCreateAdmin" class="nice-form" style="margin-top: 1rem;">
+                <div class="nice-input-group">
+                  <label>Full Name</label>
+                  <input type="text" v-model="newAdmin.fullName" placeholder="e.g. Rahul Admin" required />
+                </div>
+                <div class="nice-input-group" style="margin-top: 1rem;">
+                  <label>Email Address</label>
+                  <input type="email" v-model="newAdmin.email" placeholder="admin@example.com" required />
+                </div>
+                <div class="nice-input-group" style="margin-top: 1rem;">
+                  <label>Mobile Number</label>
+                  <input type="tel" v-model="newAdmin.mobileNumber" placeholder="9876543210" required />
+                </div>
+                <div class="nice-input-group" style="margin-top: 1rem;">
+                  <label>Password</label>
+                  <input type="password" v-model="newAdmin.password" placeholder="Min 6 characters" required />
+                </div>
+                <div class="nice-input-group" style="margin-top: 1rem;">
+                  <label>Admin Role</label>
+                  <select v-model="newAdmin.role" class="table-select" style="width: 100%;">
+                    <option value="admin">Administrator</option>
+                    <option value="superadmin">Super Administrator</option>
+                  </select>
+                </div>
+
+                <div v-if="adminFormError" class="alert-box alert-error" style="margin-top: 1rem;">⚠️ {{ adminFormError }}</div>
+                <div v-if="adminFormSuccess" class="alert-box alert-success" style="margin-top: 1rem;">✅ {{ adminFormSuccess }}</div>
+
+                <button type="submit" :disabled="creatingAdmin" class="btn-blue-save" style="margin-top: 1.5rem; width: 100%;">
+                  <span>👑 {{ creatingAdmin ? 'Creating Account...' : 'Create Admin Account' }}</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Active System Admins List Table -->
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">🛡️</span>
+                  <h3>Active System Administrators</h3>
+                </div>
+                <button @click="fetchSystemAdmins" class="btn-reset-default">🔄 Refresh</button>
+              </div>
+              <p class="card-desc">List of all system accounts with administrative privileges.</p>
+
+              <div class="table-container" style="margin-top: 1rem;">
+                <table class="nice-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Full Name</th>
+                      <th>Email</th>
+                      <th>Mobile</th>
+                      <th>Role</th>
+                      <th>Created Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="adm in adminsList" :key="adm.id">
+                      <td>#{{ adm.id }}</td>
+                      <td class="font-bold">{{ adm.fullName || adm.full_name || 'Admin' }}</td>
+                      <td>{{ adm.email }}</td>
+                      <td>{{ adm.mobileNumber || adm.mobile_number || '-' }}</td>
+                      <td>
+                        <span class="badge-status-approved">{{ adm.role || 'admin' }}</span>
+                      </td>
+                      <td>{{ adm.created_at ? adm.created_at.substring(0, 10) : 'Active' }}</td>
+                      <td>
+                        <button v-if="adm.email !== adminEmail" @click="handleDeleteAdmin(adm.id)" class="btn-reject-sm" title="Remove Admin">
+                          🗑️ Delete
+                        </button>
+                        <span v-else class="text-muted-sm">(You)</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -1829,22 +2259,6 @@
               <button type="submit" :disabled="sendingNotif" class="btn-blue-save" style="margin-top: 1.5rem; width: 100%;">
                 <span>📢 {{ sendingNotif ? 'Broadcasting Notice...' : 'Send Broadcast Notice' }}</span>
               </button>
-            </form>
-          </div>
-        </div>
-
-        <!-- SECTION: SHARED VARIABLE (Global Settings) -->
-        <div v-if="currentTab === 'shared_variable'" class="shared-variable-pane">
-          <div class="settings-table-card">
-            <h3>🔗 Shared Variables & Global System Parameters</h3>
-            <p class="card-desc">Configure financial limits, cycle rules, gateway modes, and global ON/OFF toggles.</p>
-
-            <form @submit.prevent="handleSaveSystemSettings">
-              <div class="form-action-row" style="margin-top: 1.5rem;">
-                <button type="submit" :disabled="loadingSystem" class="btn-blue-save" style="width: 100%;">
-                  <span>💾 {{ loadingSystem ? 'Saving All Settings...' : 'Save All Settings' }}</span>
-                </button>
-              </div>
             </form>
           </div>
         </div>
@@ -1879,8 +2293,8 @@
           </div>
         </div>
 
-        <!-- GENERIC DUMMY FALLBACK FOR OTHER SECTIONS (1-19) -->
-        <div v-if="['sec_registration', 'sec_login', 'sec_otp', 'sec_home', 'sec_business_income', 'sec_global_cycle', 'sec_bank_verification', 'sec_support', 'sec_captcha', 'sec_side_menu'].includes(currentTab)" class="generic-section-pane">
+        <!-- GENERIC DUMMY FALLBACK FOR OTHER SECTIONS -->
+        <div v-if="['sec_home', 'sec_business_income', 'sec_global_cycle', 'sec_bank_verification', 'sec_support', 'sec_captcha'].includes(currentTab)" class="generic-section-pane">
           <div class="section-banner">
             <div class="banner-left">
               <div class="banner-icon-box blue-bg">⚙️</div>
@@ -1921,9 +2335,9 @@
                     <td>1</td>
                     <td class="font-bold">Feature Display Visibility</td>
                     <td>
-                      <select class="table-select"><option value="Show">Show</option><option value="Hide">Hide</option></select>
+                      <select class="table-select" disabled><option value="Show">🔒 Show (Always Visible - Locked)</option></select>
                     </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
+                    <td><span class="badge-status-active">🔒 Locked</span></td>
                   </tr>
                   <tr>
                     <td>2</td>
@@ -1969,13 +2383,16 @@ export default {
   name: 'AdminDashboard',
   data() {
     return {
-      currentTab: 'sec_add_money',
+      currentTab: 'dashboard',
       mobileMenuOpen: false,
       globalSearch: '',
       adminEmail: localStorage.getItem('adminEmail') || 'haris@gmail.com',
       expandedGroups: {
-        user_management: true,
-        global_settings: true
+        user_management: false,
+        finance_management: false,
+        content_management: false,
+        other: false,
+        global_settings: false
       },
       stats: {
         totalUsers: 0,
@@ -1988,6 +2405,16 @@ export default {
       users: [],
       fundRequests: [],
       adminsList: [],
+      newAdmin: {
+        fullName: '',
+        email: '',
+        mobileNumber: '',
+        password: '',
+        role: 'admin'
+      },
+      adminFormError: '',
+      adminFormSuccess: '',
+      creatingAdmin: false,
       selectedUser: null,
       selectedRequest: null,
       requestRemark: '',
@@ -2039,6 +2466,9 @@ export default {
       systemSettings: {
         min_wallet_balance: '50.00',
         maintenance_mode_bool: false,
+        registration_enabled_bool: true,
+        login_enabled_bool: true,
+        forgot_password_enabled_bool: true,
         force_update_version: '1.0.0',
         scriza_api_mode: 'simulation',
         razorpay_api_mode: 'test',
@@ -2142,6 +2572,7 @@ export default {
     this.fetchSystemSettings();
     this.fetchFundRequests();
     this.fetchTeamsData();
+    this.fetchSystemAdmins();
   },
   methods: {
     toggleGroup(groupKey) {
@@ -2306,9 +2737,97 @@ export default {
               }
             }
           });
+          if (data.registration_enabled !== undefined) {
+            this.systemSettings.registration_enabled_bool = (data.registration_enabled === 'true' || data.registration_enabled === true);
+          }
+          if (data.login_enabled !== undefined) {
+            this.systemSettings.login_enabled_bool = (data.login_enabled === 'true' || data.login_enabled === true);
+          }
+          if (data.forgot_password_enabled !== undefined) {
+            this.systemSettings.forgot_password_enabled_bool = (data.forgot_password_enabled === 'true' || data.forgot_password_enabled === true);
+          }
         }
       } catch (e) {
         console.error('Failed to load system settings:', e);
+      }
+    },
+    async fetchSystemAdmins() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/system-admins`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          this.adminsList = Array.isArray(data) ? data : [];
+        }
+      } catch (e) {
+        console.error('Failed to load system admins:', e);
+      }
+    },
+    async handleCreateAdmin() {
+      if (!this.newAdmin.email || !this.newAdmin.password) {
+        this.adminFormError = 'Email and Password are required';
+        return;
+      }
+      this.creatingAdmin = true;
+      this.adminFormError = '';
+      this.adminFormSuccess = '';
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/create-admin`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(this.newAdmin)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create admin');
+        this.adminFormSuccess = 'Admin account created successfully!';
+        this.newAdmin = { fullName: '', email: '', mobileNumber: '', password: '', role: 'admin' };
+        this.fetchSystemAdmins();
+      } catch (e) {
+        this.adminFormError = e.message;
+      } finally {
+        this.creatingAdmin = false;
+      }
+    },
+    async handleDeleteAdmin(id) {
+      if (!confirm('Are you sure you want to delete this administrator account?')) return;
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/system-admins/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete admin');
+        alert(data.message || 'Admin deleted successfully');
+        this.fetchSystemAdmins();
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    },
+    async handleApproveTxn(id, status) {
+      const token = localStorage.getItem('adminToken');
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/transactions/${id}/approve`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update transaction status');
+        alert(`Transaction #${id} marked as ${status}!`);
+        this.fetchDashboardData();
+      } catch (e) {
+        alert('Error: ' + e.message);
       }
     },
     async fetchFundRequests() {
@@ -2354,6 +2873,10 @@ export default {
         Object.keys(this.systemSettings).forEach(k => {
           payload[k] = String(this.systemSettings[k]);
         });
+        payload.registration_enabled = String(this.systemSettings.registration_enabled_bool);
+        payload.login_enabled = String(this.systemSettings.login_enabled_bool);
+        payload.forgot_password_enabled = String(this.systemSettings.forgot_password_enabled_bool);
+
         const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
           method: 'POST',
           headers: {
@@ -3879,6 +4402,79 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 .remarks-group label { font-size: 0.78rem; font-weight: 700; color: #5e6c84; display: block; margin-bottom: 4px; }
 .remarks-group textarea { width: 100%; border: 1px solid #dfe1e6; border-radius: 6px; padding: 0.5rem; font-family: inherit; font-size: 0.82rem; box-sizing: border-box; }
+
+.action-btn-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.btn-approve {
+  background: #36b37e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-approve:hover {
+  background: #2e986c;
+  transform: translateY(-1px);
+}
+
+.btn-reject {
+  background: #ff5630;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-reject:hover {
+  background: #de350b;
+  transform: translateY(-1px);
+}
+
+.btn-reject-sm {
+  background: #ffebe6;
+  color: #de350b;
+  border: 1px solid #ffbdad;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-reject-sm:hover {
+  background: #ff5630;
+  color: white;
+}
+
+.status-pill-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.pill-green {
+  background: #e3fcef;
+  color: #006644;
+}
+.pill-red {
+  background: #ffebe6;
+  color: #de350b;
+}
+.pill-purple {
+  background: #eae6ff;
+  color: #403294;
+}
 
 /* Dashboard Overview Panels & Grids */
 .dashboard-hero-header {
