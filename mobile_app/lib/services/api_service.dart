@@ -29,7 +29,9 @@ class ApiService {
   }
 
   // Common Headers helper
-  static Future<Map<String, String>> _getHeaders({bool requireAuth = false}) async {
+  static Future<Map<String, String>> _getHeaders({
+    bool requireAuth = false,
+  }) async {
     final Map<String, String> headers = {
       'Content-Type': 'application/json',
       'x-app-token': appToken,
@@ -61,7 +63,8 @@ class ApiService {
           'mobileNumber': mobileNumber,
           'password': password,
           'sponsor_id': sponsorId,
-          'device_model': '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+          'device_model':
+              '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
           'app_version': '1.0.0',
         }),
       );
@@ -70,53 +73,90 @@ class ApiService {
       if (response.statusCode == 201) {
         return {'success': true, 'message': decoded['message']};
       } else {
-        return {'success': false, 'error': decoded['error'] ?? 'Registration failed'};
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'Registration failed',
+        };
       }
     } catch (e) {
-      return {'success': false, 'error': 'Connection error: Could not connect to server'};
+      return {
+        'success': false,
+        'error': 'Connection error: Could not connect to server',
+      };
     }
   }
 
   // Forgot Password Reset (Primary API call + Direct App SMTP Fallback)
   static Future<Map<String, dynamic>> forgotPassword(String email) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/forgot-password'),
-        headers: await _getHeaders(),
-        body: jsonEncode({'email': email}),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/auth/forgot-password'),
+            headers: await _getHeaders(),
+            body: jsonEncode({'email': email}),
+          )
+          .timeout(const Duration(seconds: 10));
 
       final decoded = jsonDecode(response.body);
-      if (response.statusCode == 200 && (decoded['success'] == true || decoded['registered'] == true)) {
-        return {'success': true, 'message': decoded['message'] ?? 'Password has been sent to your registered email ID.'};
+      if (response.statusCode == 200 &&
+          (decoded['success'] == true || decoded['registered'] == true)) {
+        return {
+          'success': true,
+          'message':
+              decoded['message'] ??
+              'Password has been sent to your registered email ID.',
+        };
       } else {
         // If API route failed or returned error, try Direct App SMTP fallback
         final String? pwd = decoded['password'];
-        final bool directSuccess = await sendDirectPasswordEmail(email, tempPassword: pwd);
+        final bool directSuccess = await sendDirectPasswordEmail(
+          email,
+          tempPassword: pwd,
+        );
         if (directSuccess) {
-          return {'success': true, 'message': 'Password has been sent to your registered email ID.'};
+          return {
+            'success': true,
+            'message': 'Password has been sent to your registered email ID.',
+          };
         }
-        return {'success': false, 'error': decoded['error'] ?? 'Failed to send password. Please check registered email ID.'};
+        return {
+          'success': false,
+          'error':
+              decoded['error'] ??
+              'Failed to send password. Please check registered email ID.',
+        };
       }
     } catch (e) {
       // If API connection failed, try Direct App SMTP fallback
       final bool directSuccess = await sendDirectPasswordEmail(email);
       if (directSuccess) {
-        return {'success': true, 'message': 'Password has been sent to your registered email ID.'};
+        return {
+          'success': true,
+          'message': 'Password has been sent to your registered email ID.',
+        };
       }
-      return {'success': false, 'error': 'Connection error: Could not send password. Please try again later.'};
+      return {
+        'success': false,
+        'error':
+            'Connection error: Could not send password. Please try again later.',
+      };
     }
   }
 
   // Direct App SMTP Email Fallback
-  static Future<bool> sendDirectPasswordEmail(String email, {String? tempPassword}) async {
+  static Future<bool> sendDirectPasswordEmail(
+    String email, {
+    String? tempPassword,
+  }) async {
     try {
       final host = Api.smtpHost;
       final port = Api.smtpPort;
       final user = Api.smtpUser;
       final pass = Api.smtpPass;
 
-      final String passwordVal = tempPassword ?? "Pass@${1000 + DateTime.now().millisecondsSinceEpoch % 9000}";
+      final String passwordVal =
+          tempPassword ??
+          "Pass@${1000 + DateTime.now().millisecondsSinceEpoch % 9000}";
 
       final socket = await SecureSocket.connect(
         host,
@@ -178,7 +218,8 @@ class ApiService {
         body: jsonEncode({
           'email': email,
           'password': password,
-          'device_model': '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+          'device_model':
+              '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
           'app_version': '1.0.0',
         }),
       );
@@ -191,7 +232,10 @@ class ApiService {
         return {'success': false, 'error': decoded['error'] ?? 'Login failed'};
       }
     } catch (e) {
-      return {'success': false, 'error': 'Connection error: Could not connect to server'};
+      return {
+        'success': false,
+        'error': 'Connection error: Could not connect to server',
+      };
     }
   }
 
@@ -206,7 +250,11 @@ class ApiService {
       final decoded = jsonDecode(response.body);
       return {
         'registered': decoded['registered'] == true,
-        'message': decoded['message'] ?? (decoded['registered'] == true ? 'Valid registered mobile number' : 'This mobile number is not registered. Please use your registered mobile number.')
+        'message':
+            decoded['message'] ??
+            (decoded['registered'] == true
+                ? 'Valid registered mobile number'
+                : 'This mobile number is not registered. Please use your registered mobile number.'),
       };
     } catch (e) {
       return {'registered': false, 'error': 'Connection error'};
@@ -214,7 +262,9 @@ class ApiService {
   }
 
   // Check if Mobile Number is Available for Registration
-  static Future<Map<String, dynamic>> checkMobileAvailable(String mobileNumber) async {
+  static Future<Map<String, dynamic>> checkMobileAvailable(
+    String mobileNumber,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/auth/check-mobile-available'),
@@ -225,7 +275,11 @@ class ApiService {
       return {
         'valid': decoded['valid'] == true,
         'registered': decoded['registered'] == true,
-        'message': decoded['message'] ?? (decoded['valid'] == true ? 'Valid (Can Register)' : 'Invalid mobile number'),
+        'message':
+            decoded['message'] ??
+            (decoded['valid'] == true
+                ? 'Valid (Can Register)'
+                : 'Invalid mobile number'),
       };
     } catch (e) {
       return {'valid': false, 'message': 'Connection error'};
@@ -262,7 +316,11 @@ class ApiService {
       final decoded = jsonDecode(response.body);
       return {
         'registered': decoded['registered'] == true,
-        'message': decoded['message'] ?? (decoded['registered'] == true ? 'Valid registered email address' : 'Email ID not found. Please enter a registered email ID.'),
+        'message':
+            decoded['message'] ??
+            (decoded['registered'] == true
+                ? 'Valid registered email address'
+                : 'Email ID not found. Please enter a registered email ID.'),
       };
     } catch (e) {
       return {'registered': false, 'message': 'Connection error'};
@@ -281,7 +339,11 @@ class ApiService {
       return {
         'valid': decoded['valid'] == true,
         'registered': decoded['registered'] == true,
-        'message': decoded['message'] ?? (decoded['valid'] == true ? 'Valid Email (Available)' : 'Email Already Registered'),
+        'message':
+            decoded['message'] ??
+            (decoded['valid'] == true
+                ? 'Valid Email (Available)'
+                : 'Email Already Registered'),
       };
     } catch (e) {
       return {'valid': false, 'message': 'Connection error'};
@@ -296,11 +358,14 @@ class ApiService {
     if (_isCaptchaDataLoaded) return;
     try {
       final prefs = await SharedPreferences.getInstance();
-      _accumulatedCaptchaEarnings = prefs.getDouble('local_captcha_earnings') ?? 0.0;
+      _accumulatedCaptchaEarnings =
+          prefs.getDouble('local_captcha_earnings') ?? 0.0;
       final txnsJson = prefs.getString('local_captcha_txns');
       if (txnsJson != null) {
         final List<dynamic> decoded = jsonDecode(txnsJson);
-        _localCaptchaTxns = decoded.map((item) => Map<String, dynamic>.from(item)).toList();
+        _localCaptchaTxns = decoded
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
       }
       _isCaptchaDataLoaded = true;
     } catch (_) {}
@@ -309,8 +374,14 @@ class ApiService {
   static Future<void> _saveCaptchaPersistence() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble('local_captcha_earnings', _accumulatedCaptchaEarnings);
-      await prefs.setString('local_captcha_txns', jsonEncode(_localCaptchaTxns));
+      await prefs.setDouble(
+        'local_captcha_earnings',
+        _accumulatedCaptchaEarnings,
+      );
+      await prefs.setString(
+        'local_captcha_txns',
+        jsonEncode(_localCaptchaTxns),
+      );
     } catch (_) {}
   }
 
@@ -325,7 +396,10 @@ class ApiService {
       if (response.statusCode == 200) {
         return {'success': true, 'user': decoded};
       } else {
-        return {'success': false, 'error': decoded['error'] ?? 'User not found'};
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'User not found',
+        };
       }
     } catch (e) {
       return {'success': false, 'error': 'Could not look up user'};
@@ -346,14 +420,14 @@ class ApiService {
       }
     } catch (e) {}
 
-    return {
-      'success': false,
-      'error': 'Failed to load user profile'
-    };
+    return {'success': false, 'error': 'Failed to load user profile'};
   }
 
   // Submit deposit request for approval
-  static Future<Map<String, dynamic>> submitFundRequest(double amount, String utr) async {
+  static Future<Map<String, dynamic>> submitFundRequest(
+    double amount,
+    String utr,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/fund/request'),
@@ -364,7 +438,10 @@ class ApiService {
       if (response.statusCode == 201) {
         return {'success': true, 'message': decoded['message']};
       } else {
-        return {'success': false, 'error': decoded['error'] ?? 'Request failed'};
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'Request failed',
+        };
       }
     } catch (e) {
       return {'success': false, 'error': 'Connection error'};
@@ -416,7 +493,10 @@ class ApiService {
 
   // Trigger Razorpay sandbox payment simulation on successful payment
   static Future<Map<String, dynamic>> triggerRazorpaySandboxPayment(
-      double amount, String serviceType, String walletType) async {
+    double amount,
+    String serviceType,
+    String walletType,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/payment/razorpay-sandbox'),
@@ -444,9 +524,16 @@ class ApiService {
       );
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 201) {
-        return {'success': true, 'message': decoded['message'], 'cycleId': decoded['cycleId']};
+        return {
+          'success': true,
+          'message': decoded['message'],
+          'cycleId': decoded['cycleId'],
+        };
       } else {
-        return {'success': false, 'error': decoded['error'] ?? 'Activation failed'};
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'Activation failed',
+        };
       }
     } catch (_) {
       return {'success': false, 'error': 'Server connection error'};
@@ -479,7 +566,10 @@ class ApiService {
       if (response.statusCode == 200) {
         return {'success': true, 'message': decoded['message']};
       } else {
-        return {'success': false, 'error': decoded['error'] ?? 'Withdrawal failed'};
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'Withdrawal failed',
+        };
       }
     } catch (_) {
       return {'success': false, 'error': 'Server connection error'};
@@ -515,13 +605,19 @@ class ApiService {
   }
 
   // Submit Captcha Earnings
-  static Future<Map<String, dynamic>> submitCaptchaEarnings({double earnedAmount = 0.01}) async {
+  static Future<Map<String, dynamic>> submitCaptchaEarnings({
+    double earnedAmount = 0.01,
+  }) async {
     await _initCaptchaPersistence();
     _accumulatedCaptchaEarnings += earnedAmount;
     final newTx = {
       'type': 'Captcha Solve Reward',
       'amount': '+ ₹${earnedAmount.toStringAsFixed(2)}',
-      'date': DateTime.now().toLocal().toString().substring(0, 19).replaceAll('T', ' '),
+      'date': DateTime.now()
+          .toLocal()
+          .toString()
+          .substring(0, 19)
+          .replaceAll('T', ' '),
       'reference_id': 'TXN_CPT_${DateTime.now().millisecondsSinceEpoch}',
     };
     _localCaptchaTxns.insert(0, newTx);
@@ -535,22 +631,25 @@ class ApiService {
       );
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return {'success': true, 'message': decoded['message'] ?? 'Reward added'};
+        return {
+          'success': true,
+          'message': decoded['message'] ?? 'Reward added',
+        };
       }
     } catch (_) {}
     return {'success': true, 'message': 'Reward ₹0.01 added to balance'};
   }
 
   // Update User Profile
-  static Future<Map<String, dynamic>> updateProfile(String fullName, String mobileNumber) async {
+  static Future<Map<String, dynamic>> updateProfile(
+    String fullName,
+    String mobileNumber,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/user/update'),
         headers: await _getHeaders(requireAuth: true),
-        body: jsonEncode({
-          'fullName': fullName,
-          'mobileNumber': mobileNumber,
-        }),
+        body: jsonEncode({'fullName': fullName, 'mobileNumber': mobileNumber}),
       );
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200) {
@@ -582,10 +681,16 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {'success': true, 'message': decoded['message']};
       } else {
-        return {'success': false, 'error': decoded['error'] ?? 'Cashout request failed'};
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'Cashout request failed',
+        };
       }
     } catch (_) {
-      return {'success': true, 'message': 'Cashout request submitted for processing'};
+      return {
+        'success': true,
+        'message': 'Cashout request submitted for processing',
+      };
     }
   }
 
@@ -607,7 +712,10 @@ class ApiService {
       if (response.statusCode == 200) {
         return {'success': true, 'message': decoded['message']};
       } else {
-        return {'success': false, 'error': decoded['error'] ?? 'Incorrect old password'};
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'Incorrect old password',
+        };
       }
     } catch (_) {
       return {'success': true, 'message': 'Password updated successfully'};
@@ -632,7 +740,9 @@ class ApiService {
   }
 
   // Activate User ID / Subscription
-  static Future<Map<String, dynamic>> activateUser({required String mobile}) async {
+  static Future<Map<String, dynamic>> activateUser({
+    required String mobile,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/cycles/activate'),
@@ -641,9 +751,15 @@ class ApiService {
       );
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return {'success': true, 'message': decoded['message'] ?? 'ID Activated'};
+        return {
+          'success': true,
+          'message': decoded['message'] ?? 'ID Activated',
+        };
       } else {
-        return {'success': false, 'message': decoded['error'] ?? 'Activation failed'};
+        return {
+          'success': false,
+          'message': decoded['error'] ?? 'Activation failed',
+        };
       }
     } catch (_) {
       return {'success': false, 'message': 'Network error during activation'};
@@ -679,16 +795,15 @@ class ApiService {
       } else {
         return {
           'success': false,
-          'error': decoded['error'] ?? 'Bank Account Penny Drop verification failed'
+          'error':
+              decoded['error'] ?? 'Bank Account Penny Drop verification failed',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'error': 'Network error during bank verification: $e'
+        'error': 'Network error during bank verification: $e',
       };
     }
   }
 }
-
-
