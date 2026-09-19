@@ -12,6 +12,10 @@ router.post('/verify', verifyAppToken, verifyUserToken, async (req, res) => {
     return res.status(400).json({ error: 'Account number and IFSC code are required for Bank Verification.' });
   }
 
+  if ((bank_name && bank_name.toLowerCase().includes('icici')) || (ifsc && ifsc.toLowerCase().startsWith('icic'))) {
+    return res.status(400).json({ error: 'ICICI payout unavailable. Use another bank' });
+  }
+
   try {
     const existing = await query('SELECT bank_verified FROM users WHERE id = ?', [req.user.id]);
     if (existing.length > 0 && (existing[0].bank_verified === 1 || existing[0].bank_verified === true)) {

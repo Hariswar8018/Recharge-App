@@ -22,11 +22,19 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
   @override
   void initState() {
     super.initState();
+    _bankNameController.addListener(_onFieldChanged);
+    _ifscController.addListener(_onFieldChanged);
     _checkVerificationStatus();
+  }
+
+  void _onFieldChanged() {
+    setState(() {});
   }
 
   @override
   void dispose() {
+    _bankNameController.removeListener(_onFieldChanged);
+    _ifscController.removeListener(_onFieldChanged);
     _bankNameController.dispose();
     _holderNameController.dispose();
     _accountNoController.dispose();
@@ -61,12 +69,22 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
   }
 
   Future<void> _handlePennyDropVerify() async {
-    if (!_formKey.currentState!.validate()) return;
-
     final bankName = _bankNameController.text.trim();
     final holderName = _holderNameController.text.trim();
     final accountNo = _accountNoController.text.trim();
     final ifsc = _ifscController.text.trim();
+
+    if (bankName.toLowerCase().contains('icici') || ifsc.toLowerCase().startsWith('icic')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("ICICI payout unavailable. Use another bank"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) return;
 
     showProcessingDialog(context, "Initiating ₹1 Penny Drop Verification...");
     if (!mounted) return;
@@ -153,6 +171,7 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
     required IconData icon,
     bool enabled = true,
     String? Function(String?)? validator,
+    void Function(String)? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,6 +188,8 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
         TextFormField(
           controller: controller,
           enabled: enabled,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          onChanged: onChanged,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: enabled ? const Color(0xFF0F172A) : const Color(0xFF64748B),
@@ -197,6 +218,10 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String bankNameInput = _bankNameController.text.trim().toLowerCase();
+    final String ifscInput = _ifscController.text.trim().toLowerCase();
+    final bool isIciciError = bankNameInput.contains("icici") || ifscInput.startsWith("icic");
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -284,7 +309,16 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                       controller: _bankNameController,
                       icon: Icons.account_balance_rounded,
                       enabled: !_isVerified,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? "Please enter Bank Name" : null,
+                      onChanged: (val) => setState(() {}),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return "Please enter Bank Name";
+                        }
+                        if (v.trim().toLowerCase().contains("icici")) {
+                          return "ICICI payout unavailable. Use another bank";
+                        }
+                        return null;
+                      },
                     ),
                     _buildField(
                       label: "Account Holder Name",
@@ -305,8 +339,46 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                       controller: _ifscController,
                       icon: Icons.code_rounded,
                       enabled: !_isVerified,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? "Please enter IFSC Code" : null,
+                      onChanged: (val) => setState(() {}),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return "Please enter IFSC Code";
+                        }
+                        if (v.trim().toLowerCase().startsWith("icic")) {
+                          return "ICICI payout unavailable. Use another bank";
+                        }
+                        return null;
+                      },
                     ),
+
+                    if (isIciciError && !_isVerified) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFCA5A5)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.error_outline_rounded, color: Colors.red, size: 20),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                "ICICI payout unavailable. Use another bank",
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
 
                     const SizedBox(height: 10),
 
@@ -315,9 +387,9 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                         width: double.infinity,
                         height: 48,
                         child: ElevatedButton.icon(
-                          onPressed: _isLoading ? null : _handlePennyDropVerify,
+                          onPressed: (_isLoading || isIciciError) ? null : _handlePennyDropVerify,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0A369D),
+                            backgroundColor: isIciciError ? Colors.grey : const Color(0xFF0A369D),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           icon: const Icon(Icons.verified_user_rounded, color: Colors.white),
