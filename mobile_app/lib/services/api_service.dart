@@ -95,7 +95,7 @@ class ApiService {
             headers: await _getHeaders(),
             body: jsonEncode({'email': email}),
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 25));
 
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200 &&
@@ -103,18 +103,15 @@ class ApiService {
         final String? realPassword = decoded['password'];
         final String? fullName = decoded['fullName'];
         if (realPassword != null && realPassword.isNotEmpty) {
-          // Send Password Email directly from App via SMTP using exact DB password
-          final bool directSuccess = await sendDirectPasswordEmail(
+          // Send Password Email directly from App via SMTP asynchronously (fire-and-forget, non-blocking)
+          sendDirectPasswordEmail(
             email,
             tempPassword: realPassword,
             fullName: fullName,
-          );
-          if (directSuccess) {
-            return {
-              'success': true,
-              'message': 'Password has been sent to your registered email ID.',
-            };
-          }
+          ).catchError((err) {
+            print('Background app direct email error: $err');
+            return false;
+          });
         }
         return {
           'success': true,
@@ -131,6 +128,7 @@ class ApiService {
         };
       }
     } catch (e) {
+      print('forgotPassword API error: $e');
       return {
         'success': false,
         'error':
@@ -156,19 +154,28 @@ class ApiService {
       final socket = await SecureSocket.connect(
         host,
         port,
-        timeout: const Duration(seconds: 12),
+        timeout: const Duration(seconds: 10),
         onBadCertificate: (_) => true,
       );
 
-      final StreamSubscription sub = socket.listen((data) {});
+      final StreamSubscription sub = socket.listen(
+        (data) {},
+        onError: (e) => print('SMTP Socket Listen error: $e'),
+        onDone: () {},
+        cancelOnError: true,
+      );
 
       Future<void> sendCmd(String cmd) async {
-        socket.write('$cmd\r\n');
-        await socket.flush();
-        await Future.delayed(const Duration(milliseconds: 350));
+        try {
+          socket.write('$cmd\r\n');
+          await socket.flush();
+          await Future.delayed(const Duration(milliseconds: 300));
+        } catch (e) {
+          print('sendCmd error: $e');
+        }
       }
 
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 400));
       await sendCmd('EHLO srdigitalseva.com');
       await sendCmd('AUTH LOGIN');
       await sendCmd(base64Encode(utf8.encode(user)));
@@ -192,8 +199,10 @@ class ApiService {
       await sendCmd(emailData);
       await sendCmd('QUIT');
 
-      await sub.cancel();
-      await socket.close();
+      try {
+        await sub.cancel();
+        await socket.close();
+      } catch (_) {}
       return true;
     } catch (e) {
       print('Direct App SMTP error: $e');

@@ -329,7 +329,7 @@ router.post('/forgot-password', verifyAppToken, async (req, res) => {
       await query('UPDATE users SET passwordHash = ?, plain_password = ? WHERE id = ?', [hash, passwordToSend, user.id]);
     }
 
-    const mailRes = await sendNotificationEmail(user.email, "Your Account Password - SR Digital Seva", `
+    sendNotificationEmail(user.email, "Your Account Password - SR Digital Seva", `
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
         <h2 style="color: #0052cc; margin-top: 0;">SR Digital Seva</h2>
         <p style="font-size: 14px; color: #334155;">Hello <strong>${user.fullName}</strong>,</p>
@@ -339,15 +339,7 @@ router.post('/forgot-password', verifyAppToken, async (req, res) => {
         </div>
         <p style="font-size: 13px; color: #64748b; margin-bottom: 0;">Please use this password to log in to your account. You can also update your password anytime under Security Settings.</p>
       </div>
-    `);
-
-    if (mailRes && mailRes.success === false) {
-      return res.status(500).json({
-        registered: true,
-        success: false,
-        error: `Failed to send email via SMTP: ${mailRes.error}`
-      });
-    }
+    `).catch(err => console.error("Forgot password background email error:", err));
 
     res.json({
       registered: true,
@@ -358,7 +350,7 @@ router.post('/forgot-password', verifyAppToken, async (req, res) => {
     });
   } catch (err) {
     console.error('Forgot password error:', err);
-    res.status(500).json({ registered: false, success: false, error: 'Failed to send password. Please check backend log.' });
+    res.status(500).json({ registered: false, success: false, error: 'Failed to process request. Please check input.' });
   }
 });
 
