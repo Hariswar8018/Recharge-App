@@ -1,9 +1,33 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const { query } = require('../db');
 const { getCache, setCache, invalidateCache } = require('../cache');
 const { verifyAppToken, verifyUserToken } = require('../middleware/auth');
 
 const router = express.Router();
+
+function validatePasswordStrength(password) {
+  if (!password || password.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+  const weakPasswords = ['123456', '12345678', '123456789', '1234567890', 'password', 'qwerty', '11111111', 'abcdef'];
+  if (weakPasswords.includes(password.toLowerCase()) || /^(\d)\1+$/.test(password)) {
+    return 'Simple or predictable passwords (like 123456) are not allowed.';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'Password must contain at least one uppercase letter (A-Z).';
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'Password must contain at least one lowercase letter (a-z).';
+  }
+  if (!/[0-9]/.test(password)) {
+    return 'Password must contain at least one number (0-9).';
+  }
+  if (!/[!@#\$&*~%]/.test(password)) {
+    return 'Password must contain at least one special character (!@#$&*~%).';
+  }
+  return null;
+}
 
 // Get User Profile
 router.get('/profile', verifyAppToken, verifyUserToken, async (req, res) => {
@@ -15,7 +39,12 @@ router.get('/profile', verifyAppToken, verifyUserToken, async (req, res) => {
     }
 
     const users = await query(
-      'SELECT id, fullName, email, mobileNumber, fund_wallet_balance, main_wallet_balance, status, sponsor_id, bank_name, account_holder, account_no, ifsc, bank_verified FROM users WHERE id = ?',
+      `SELECT u.id, u.fullName, u.email, u.mobileNumber, u.fund_wallet_balance, u.main_wallet_balance, u.status, u.sponsor_id, u.createdAt,
+              u.bank_name, u.account_holder, u.account_no, u.ifsc, u.bank_verified,
+              s.mobileNumber AS sponsor_mobileNumber
+       FROM users u
+       LEFT JOIN users s ON u.sponsor_id = s.id
+       WHERE u.id = ?`,
       [req.user.id]
     );
 
@@ -46,6 +75,43 @@ router.post('/update', verifyAppToken, verifyUserToken, async (req, res) => {
     res.json({ success: true, message: 'Profile updated successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Database error occurred' });
+  }
+});
+
+// Change User Password
+router.post('/change-password', verifyAppToken, verifyUserToken, async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ error: 'Previous password and new password are required' });
+  }
+
+  try {
+    const users = await query('SELECT id, passwordHash FROM users WHERE id = ?', [req.user.id]);
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const user = users[0];
+    const isMatch = bcrypt.compareSync(oldPassword, user.passwordHash);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Previous password is incorrect' });
+    }
+
+    const valErr = validatePasswordStrength(newPassword);
+    if (valErr) {
+      return res.status(400).json({ error: valErr });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const newHash = bcrypt.hashSync(newPassword, salt);
+
+    await query('UPDATE users SET passwordHash = ?, plain_password = ? WHERE id = ?', [newHash, newPassword, req.user.id]);
+    await invalidateCache(`user_profile_${req.user.id}`);
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Error changing user password:', err);
+    res.status(500).json({ error: 'Failed to change password' });
   }
 });
 

@@ -75,7 +75,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
-    await showProcessingDialog(context, "Processing Telecom Recharge...");
+    showProcessingDialog(context, "Processing Telecom Recharge...");
     if (!mounted) return;
 
     setState(() {
@@ -83,18 +83,22 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
       _paymentStatus = "Payment verified. Executing Telecom Recharge...";
     });
 
-    final result = await ApiService.triggerRazorpaySandboxPayment(
-      -widget.amount,
-      "${widget.providerName} Recharge",
-      "MAIN"
-    );
+    try {
+      final result = await ApiService.triggerRazorpaySandboxPayment(
+        -widget.amount,
+        "${widget.providerName} Recharge",
+        "MAIN"
+      );
 
-    setState(() {
-      _isLoading = false;
-      _paymentStatus = result['success'] 
-          ? "SUCCESS: Recharge Complete!" 
-          : "PENDING: Awaiting Operator Callback";
-    });
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+
+      setState(() {
+        _isLoading = false;
+        _paymentStatus = result['success'] 
+            ? "SUCCESS: Recharge Complete!" 
+            : "PENDING: Awaiting Operator Callback";
+      });
 
     if (!mounted) return;
     showDialog(
@@ -125,6 +129,15 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
         ],
       ),
     );
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() {
+          _isLoading = false;
+          _paymentStatus = "FAILED: Error $e";
+        });
+      }
+    }
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {

@@ -2049,7 +2049,7 @@ export default {
         direct_income: '300',
         level_pool: '600',
         company_maintenance: '300',
-        cycle_size: '510',
+        cycle_size: '126',
         withdrawal_percentage: '15',
         minimum_withdrawal: '200',
         max_withdrawal: '25000',

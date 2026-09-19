@@ -186,7 +186,7 @@ async function initDb() {
         ['direct_income', '300'],
         ['level_pool', '600'],
         ['company_maintenance', '300'],
-        ['cycle_size', '510'],
+        ['cycle_size', '126'],
         ['withdrawal_percentage', '15'],
         ['minimum_withdrawal', '500'],
         ['withdrawal_days', 'Mon,Wed,Fri'],

@@ -679,7 +679,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 return "Please enter password";
                               }
                               if (value.length < 8) {
-                                return "Password must be at least 8 characters";
+                                return "Password must be at least 8 characters long";
+                              }
+                              final weak = ["123456", "12345678", "123456789", "1234567890", "password", "qwerty", "abcdef"];
+                              if (weak.contains(value.toLowerCase()) || RegExp(r'^(\d)\1+$').hasMatch(value)) {
+                                return "Simple passwords like 123456 are not allowed";
                               }
                               if (!RegExp(r'[A-Z]').hasMatch(value)) {
                                 return "Password must contain at least one uppercase letter (A-Z)";

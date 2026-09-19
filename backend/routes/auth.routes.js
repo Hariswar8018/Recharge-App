@@ -20,6 +20,17 @@ router.post('/register', verifyAppToken, async (req, res) => {
     return res.status(400).json({ error: 'Mobile number must be exactly 10 digits' });
   }
 
+  const weakPasswords = ['123456', '12345678', '123456789', '1234567890', 'password', 'qwerty', '11111111', 'abcdef'];
+  if (!password || password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+  }
+  if (weakPasswords.includes(password.toLowerCase()) || /^(\d)\1+$/.test(password)) {
+    return res.status(400).json({ error: 'Simple or predictable passwords (like 123456) are not allowed' });
+  }
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[!@#\$&*~%]/.test(password)) {
+    return res.status(400).json({ error: 'Password must contain uppercase, lowercase, number, and special character' });
+  }
+
   try {
     const existing = await query('SELECT id FROM users WHERE email = ?', [email.toLowerCase()]);
     if (existing.length > 0) {

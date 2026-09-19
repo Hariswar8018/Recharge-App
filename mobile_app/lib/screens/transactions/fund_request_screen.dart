@@ -126,7 +126,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       return;
     }
 
-    await showProcessingDialog(context, "Verifying Deposit / UTR Details...");
+    showProcessingDialog(context, "Verifying Deposit / UTR Details...");
     if (!mounted) return;
 
     setState(() {
@@ -135,12 +135,14 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       _error = "";
     });
 
-    final result = await ApiService.submitFundRequest(amtVal, utrVal);
-    if (!mounted) return;
+    try {
+      final result = await ApiService.submitFundRequest(amtVal, utrVal);
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
 
-    setState(() {
-      _isLoading = false;
-    });
+      setState(() {
+        _isLoading = false;
+      });
 
     if (result['success']) {
       await showDialog(
@@ -186,6 +188,15 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
         _error = result['error'] ?? "Failed to submit request";
         _message = "";
       });
+    }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() {
+          _isLoading = false;
+          _error = "Error: $e";
+        });
+      }
     }
   }
 

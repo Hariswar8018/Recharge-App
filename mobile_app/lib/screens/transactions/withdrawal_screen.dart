@@ -187,7 +187,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       return;
     }
 
-    await showProcessingDialog(context, "Processing Cashout Request...");
+    showProcessingDialog(context, "Processing Cashout Request...");
     if (!mounted) return;
 
     setState(() {
@@ -196,26 +196,39 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       _error = "";
     });
 
-    final result = await ApiService.submitCashout(
-      amount: amtVal,
-      paymentMethod: _selectedMethod,
-      details: _selectedMethod == "UPI" ? _userUpiId : "$_bankName - $_accountNo",
-    );
+    try {
+      final result = await ApiService.submitCashout(
+        amount: amtVal,
+        paymentMethod: _selectedMethod,
+        details: _selectedMethod == "UPI" ? _userUpiId : "$_bankName - $_accountNo",
+      );
 
-    setState(() {
-      _isLoading = false;
-    });
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
 
-    if (result['success']) {
       setState(() {
-        _message = "Your cashout request of ₹${amtVal.toStringAsFixed(2)} has been submitted successfully!";
-        _passwordController.clear();
+        _isLoading = false;
       });
-      _loadBalanceAndProfile();
-    } else {
-      setState(() {
-        _error = result['error'] ?? "Failed to submit cashout request";
-      });
+
+      if (result['success']) {
+        setState(() {
+          _message = "Your cashout request of ₹${amtVal.toStringAsFixed(2)} has been submitted successfully!";
+          _passwordController.clear();
+        });
+        _loadBalanceAndProfile();
+      } else {
+        setState(() {
+          _error = result['error'] ?? "Failed to submit cashout request";
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() {
+          _isLoading = false;
+          _error = "Error: $e";
+        });
+      }
     }
   }
 

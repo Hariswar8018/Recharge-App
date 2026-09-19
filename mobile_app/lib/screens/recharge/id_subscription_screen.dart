@@ -189,12 +189,14 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
 
     showProcessingDialog(context, "Activating Subscription...");
 
-    final res = await ApiService.activateUser(mobile: mobile);
-    if (!mounted) return;
+    try {
+      final res = await ApiService.activateUser(mobile: mobile);
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
 
-    setState(() {
-      _isSubmitting = false;
-    });
+      setState(() {
+        _isSubmitting = false;
+      });
 
     if (res['success'] == true) {
       setState(() {
@@ -234,6 +236,20 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() {
+          _isSubmitting = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

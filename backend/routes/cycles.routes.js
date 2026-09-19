@@ -15,7 +15,7 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
 
     const joinAmount = parseFloat(settings['join_amount'] || '1200');
     const directIncome = parseFloat(settings['direct_income'] || '300');
-    const cycleSize = parseInt(settings['cycle_size'] || '510');
+    const cycleSize = parseInt(settings['cycle_size'] || '126');
 
     const users = await query('SELECT * FROM users WHERE id = ?', [req.user.id]);
     if (users.length === 0) return res.status(404).json({ error: 'User not found' });

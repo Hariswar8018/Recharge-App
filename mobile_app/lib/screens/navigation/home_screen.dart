@@ -175,26 +175,40 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleActivateCycle() async {
-    await showProcessingDialog(context, "Activating ID / Subscription...");
+    showProcessingDialog(context, "Activating ID / Subscription...");
     if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
-    final res = await ApiService.activateCycle();
-    setState(() {
-      _isLoading = false;
-    });
-    if (res['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Cycle activated successfully! ID: ${res['cycleId']}"),
-        ),
-      );
-      _loadUserProfile();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res['error'] ?? "Failed to activate cycle")),
-      );
+    try {
+      final res = await ApiService.activateCycle();
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      setState(() {
+        _isLoading = false;
+      });
+      if (res['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Cycle activated successfully! ID: ${res['cycleId']}"),
+          ),
+        );
+        _loadUserProfile();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['error'] ?? "Failed to activate cycle")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e")),
+        );
+      }
     }
   }
 
@@ -1142,7 +1156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      "TOP-UP REQUIRED! (510 Members Reached)",
+                      "TOP-UP REQUIRED! (126 Members Reached)",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -1170,7 +1184,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 0: HOME VIEW ---
   Widget _buildHomeTab() {
-    final bool isTopUpRequired = _membersCount >= 510;
+    final bool isTopUpRequired = _membersCount >= 126;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1974,7 +1988,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     double totalEarned = realGlobalIncome + realAffiliateIncome;
-    double progressVal = (realGlobalIncome / 51000.0).clamp(0.0, 1.0);
+    double progressVal = (realGlobalIncome / 12600.0).clamp(0.0, 1.0);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -2056,7 +2070,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 2),
                           const Text(
-                            "Of ₹ 51,000",
+                            "Of ₹ 12,600",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 11,
@@ -2553,7 +2567,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildTeamTab() {
     final int realTeamCount = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
-    final double progressRatio = (realTeamCount / 510.0).clamp(0.0, 1.0);
+    final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
 
     return SingleChildScrollView(
@@ -2637,7 +2651,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 2),
                           const Text(
-                            "TARGET : 510",
+                            "TARGET : 126",
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 11,
@@ -3481,7 +3495,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Text("Target: ₹51,000.00 (Current Progress: ${((globalInc / 51000.0) * 100).toStringAsFixed(1)}%)", style: const TextStyle(color: AppTheme.textGray, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text("Target: ₹12,600.00 (Current Progress: ${((globalInc / 12600.0) * 100).toStringAsFixed(1)}%)", style: const TextStyle(color: AppTheme.textGray, fontSize: 12, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
           ],
         ),

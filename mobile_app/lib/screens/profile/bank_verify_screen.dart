@@ -68,24 +68,26 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
     final accountNo = _accountNoController.text.trim();
     final ifsc = _ifscController.text.trim();
 
-    await showProcessingDialog(context, "Initiating ₹1 Penny Drop Verification...");
+    showProcessingDialog(context, "Initiating ₹1 Penny Drop Verification...");
     if (!mounted) return;
 
     setState(() {
       _isLoading = true;
     });
 
-    final res = await ApiService.verifyBankAccount(
-      bankName: bankName,
-      accountHolder: holderName,
-      accountNo: accountNo,
-      ifsc: ifsc,
-    );
+    try {
+      final res = await ApiService.verifyBankAccount(
+        bankName: bankName,
+        accountHolder: holderName,
+        accountNo: accountNo,
+        ifsc: ifsc,
+      );
 
-    if (!mounted) return;
-    setState(() {
-      _isLoading = false;
-    });
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      setState(() {
+        _isLoading = false;
+      });
 
     if (res['success'] == true) {
       setState(() {
@@ -128,6 +130,20 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

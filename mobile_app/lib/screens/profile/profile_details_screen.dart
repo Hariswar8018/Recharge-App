@@ -43,8 +43,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     final response = await ApiService.getProfile();
     if (response['success']) {
       final user = response['user'];
-      final id = user['id']?.toString() ?? "1";
-      final sponsor = user['sponsor_id']?.toString() ?? "4";
+      final mobile = (user['mobileNumber'] ?? "").toString().trim();
+      final sponsorMobile = (user['sponsor_mobileNumber'] ?? user['sponsor_mobile'] ?? "").toString().trim();
       final rawCreatedAt = user['createdAt']?.toString() ?? "";
       
       String formattedDate = "25 Aug 2026";
@@ -57,10 +57,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
       setState(() {
         _nameController.text = user['fullName'] ?? "Member";
-        _emailController.text = user['email'] ?? "member@srdigitalseva.com";
-        _mobileController.text = user['mobileNumber'] ?? "9988494936";
-        _memberIdController.text = "SRM${id.padLeft(6, '0')}";
-        _sponsorIdController.text = "SRSPO${sponsor.padLeft(3, '0')}";
+        _emailController.text = user['email'] ?? "";
+        _mobileController.text = mobile;
+        _memberIdController.text = mobile.isNotEmpty ? mobile : "N/A";
+        _sponsorIdController.text = (sponsorMobile.isNotEmpty && sponsorMobile != "null") ? sponsorMobile : "None";
         _dateJoiningController.text = formattedDate;
         _dateActivationController.text = formattedDate;
         _memberStatus = (user['status'] ?? "ACTIVE").toUpperCase();
