@@ -352,6 +352,7 @@ router.post('/forgot-password', verifyAppToken, async (req, res) => {
     res.json({
       registered: true,
       success: true,
+      fullName: user.fullName,
       password: passwordToSend,
       message: 'Password has been sent to your registered email ID.'
     });

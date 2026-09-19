@@ -86,7 +86,7 @@ class ApiService {
     }
   }
 
-  // Forgot Password Reset (Primary API call + Direct App SMTP Fallback)
+  // Forgot Password Reset (Fetch/Reset Password from API + Send Email from App via SMTP)
   static Future<Map<String, dynamic>> forgotPassword(String email) async {
     try {
       final response = await http
@@ -100,6 +100,22 @@ class ApiService {
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200 &&
           (decoded['success'] == true || decoded['registered'] == true)) {
+        final String? realPassword = decoded['password'];
+        final String? fullName = decoded['fullName'];
+        if (realPassword != null && realPassword.isNotEmpty) {
+          // Send Password Email directly from App via SMTP using exact DB password
+          final bool directSuccess = await sendDirectPasswordEmail(
+            email,
+            tempPassword: realPassword,
+            fullName: fullName,
+          );
+          if (directSuccess) {
+            return {
+              'success': true,
+              'message': 'Password has been sent to your registered email ID.',
+            };
+          }
+        }
         return {
           'success': true,
           'message':
@@ -107,46 +123,27 @@ class ApiService {
               'Password has been sent to your registered email ID.',
         };
       } else {
-        // If API route failed or returned error, try Direct App SMTP fallback
-        final String? pwd = decoded['password'];
-        final bool directSuccess = await sendDirectPasswordEmail(
-          email,
-          tempPassword: pwd,
-        );
-        if (directSuccess) {
-          return {
-            'success': true,
-            'message': 'Password has been sent to your registered email ID.',
-          };
-        }
         return {
           'success': false,
           'error':
               decoded['error'] ??
-              'Failed to send password. Please check registered email ID.',
+              'Email ID not found. Please enter a registered email ID.',
         };
       }
     } catch (e) {
-      // If API connection failed, try Direct App SMTP fallback
-      final bool directSuccess = await sendDirectPasswordEmail(email);
-      if (directSuccess) {
-        return {
-          'success': true,
-          'message': 'Password has been sent to your registered email ID.',
-        };
-      }
       return {
         'success': false,
         'error':
-            'Connection error: Could not send password. Please try again later.',
+            'Connection error: Could not connect to server. Please try again later.',
       };
     }
   }
 
-  // Direct App SMTP Email Fallback
+  // Direct App SMTP Email Sending
   static Future<bool> sendDirectPasswordEmail(
     String email, {
-    String? tempPassword,
+    required String tempPassword,
+    String? fullName,
   }) async {
     try {
       final host = Api.smtpHost;
@@ -154,9 +151,7 @@ class ApiService {
       final user = Api.smtpUser;
       final pass = Api.smtpPass;
 
-      final String passwordVal =
-          tempPassword ??
-          "Pass@${1000 + DateTime.now().millisecondsSinceEpoch % 9000}";
+      final String nameDisplay = fullName ?? 'User';
 
       final socket = await SecureSocket.connect(
         host,
@@ -190,7 +185,7 @@ class ApiService {
         'MIME-Version: 1.0',
         'Content-Type: text/html; charset=utf-8',
         '',
-        '<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;"><h2 style="color: #0052cc; margin-top: 0;">SR Digital Seva</h2><p style="font-size: 14px; color: #334155;">Hello,</p><p style="font-size: 14px; color: #334155;">Your account password is:</p><div style="font-size: 22px; font-weight: bold; color: #0052cc; background: #eff6ff; padding: 12px 20px; border-radius: 8px; display: inline-block; letter-spacing: 1px; border: 1px solid #bfdbfe; margin: 10px 0;">$passwordVal</div><p style="font-size: 13px; color: #64748b; margin-bottom: 0;">Please use this password to log in to your account.</p></div>',
+        '<div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;"><h2 style="color: #0052cc; margin-top: 0;">SR Digital Seva</h2><p style="font-size: 14px; color: #334155;">Hello <strong>$nameDisplay</strong>,</p><p style="font-size: 14px; color: #334155;">Your account password is:</p><div style="font-size: 22px; font-weight: bold; color: #0052cc; background: #eff6ff; padding: 12px 20px; border-radius: 8px; display: inline-block; letter-spacing: 1px; border: 1px solid #bfdbfe; margin: 10px 0;">$tempPassword</div><p style="font-size: 13px; color: #64748b; margin-bottom: 0;">Please use this password to log in to your account. You can also update your password anytime in Security Settings.</p></div>',
         '.',
       ].join('\r\n');
 
