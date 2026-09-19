@@ -2320,7 +2320,7 @@ export default {
         });
         if (response.ok) {
           const data = await response.json();
-          this.fundRequests = data.requests || [];
+          this.fundRequests = Array.isArray(data) ? data : (data.requests || []);
         }
       } catch (e) {
         console.error('Failed to load fund requests:', e);

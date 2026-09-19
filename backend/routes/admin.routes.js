@@ -260,11 +260,11 @@ router.get('/teams', verifyAdminToken, async (req, res) => {
 router.get('/fund-requests', verifyAdminToken, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 200;
     const offset = (page - 1) * limit;
 
     const requests = await query(
-      `SELECT fr.*, u.fullName, u.email 
+      `SELECT fr.*, u.fullName, u.email, u.mobileNumber 
        FROM fund_requests fr 
        LEFT JOIN users u ON fr.user_id = u.id 
        ORDER BY fr.id DESC LIMIT ? OFFSET ?`,
