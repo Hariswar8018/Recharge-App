@@ -243,7 +243,10 @@ async function initDb() {
       ['otp_enabled', 'true'],
       ['add_money_enabled', 'true'],
       ['withdrawal_enabled', 'true'],
-      ['captcha_enabled', 'true']
+      ['captcha_enabled', 'true'],
+      ['app_share_text', 'Download our App to Earn Money from Scratch Cards'],
+      ['playstore_link', 'https://play.google.com/store/apps/details?id=com.app.earnfarm'],
+      ['playstore_package_id', 'com.app.earnfarm']
     ];
     for (const [k, v] of extraSettings) {
       await query('INSERT IGNORE INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);

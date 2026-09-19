@@ -72,11 +72,38 @@ router.get('/team', verifyAppToken, verifyUserToken, async (req, res) => {
 router.get('/transactions', verifyAppToken, verifyUserToken, async (req, res) => {
   try {
     const txns = await query(
-      'SELECT id, wallet_type, amount, type, date, status FROM transactions WHERE user_id = ? ORDER BY id DESC',
+      'SELECT id, wallet_type, amount, type, date, status, createdAt FROM transactions WHERE user_id = ? ORDER BY id DESC',
       [req.user.id]
     );
-    res.json(txns);
+
+    const fundReqs = await query(
+      'SELECT id, amount, utr, status, createdAt FROM fund_requests WHERE user_id = ? AND status IN ("PENDING", "REJECTED") ORDER BY id DESC',
+      [req.user.id]
+    );
+
+    const pendingAndRejectedTxns = fundReqs.map(r => {
+      const isPending = r.status === 'PENDING';
+      return {
+        id: `FR_${r.id}`,
+        wallet_type: 'FUND',
+        amount: `+₹${parseFloat(r.amount).toFixed(2)}`,
+        type: 'Fund Deposit',
+        description: `UTR: ${r.utr} • ${isPending ? 'Pending Verification' : 'Rejected by Admin'}`,
+        date: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),
+        status: isPending ? 'Pending' : 'Failed',
+        createdAt: r.createdAt || new Date()
+      };
+    });
+
+    const allTxns = [...pendingAndRejectedTxns, ...txns].sort((a, b) => {
+      const timeA = new Date(a.createdAt || a.date).getTime();
+      const timeB = new Date(b.createdAt || b.date).getTime();
+      return timeB - timeA;
+    });
+
+    res.json(allTxns);
   } catch (err) {
+    console.error('Failed to load user transactions:', err);
     res.status(500).json({ error: 'Failed to load transactions list' });
   }
 });

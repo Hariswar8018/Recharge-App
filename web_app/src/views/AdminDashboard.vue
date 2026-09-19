@@ -108,6 +108,9 @@
             <button @click="switchTab('sec_side_menu')" class="sub-menu-item" :class="{ active: currentTab === 'sec_side_menu' }">
               19. Side Menu
             </button>
+            <button @click="switchTab('sec_app_share')" class="sub-menu-item" :class="{ active: currentTab === 'sec_app_share' }">
+              20. App Share Settings
+            </button>
           </div>
         </div>
 
@@ -964,6 +967,32 @@
                         </div>
                       </td>
                     </tr>
+                    <tr>
+                      <td>7</td>
+                      <td class="font-bold">App Share Text</td>
+                      <td>
+                        <textarea v-model="systemSettings.app_share_text" rows="2" class="table-textarea" placeholder="Download our App to Earn Money from Scratch Cards"></textarea>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_app_share_text" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>8</td>
+                      <td class="font-bold">PlayStore App Link</td>
+                      <td>
+                        <input type="text" v-model="systemSettings.playstore_link" placeholder="https://play.google.com/store/apps/details?id=com.app.earnfarm" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_playstore_link" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -1017,6 +1046,107 @@
           <div class="section-footer-note">
             <span>ℹ️ Note: Any changes you make here will reflect instantly on the user referral section.</span>
             <span class="last-updated">Last Updated: 13 Sep 2026, 10:45 AM</span>
+          </div>
+        </div>
+
+        <!-- SECTION: 20. APP SHARE SETTINGS -->
+        <div v-if="currentTab === 'sec_app_share'" class="section-settings-pane">
+          <div class="section-banner">
+            <div class="banner-left">
+              <div class="banner-icon-box purple-bg">📲</div>
+              <div>
+                <h2>20. App Share Settings</h2>
+                <p>Configure the App Share message text and PlayStore redirect link for Invite Now.</p>
+              </div>
+            </div>
+            <div class="banner-toggle-box">
+              <span class="toggle-text">App Share</span>
+              <span class="main-on-badge badge-on">ON</span>
+            </div>
+          </div>
+
+          <div class="blue-alert-bar">
+            <span>ℹ️ Manage the exact text and PlayStore link copied when users tap 'Invite Now'. Format used in mobile app: &lt;Text&gt; \n\n &lt;PlayStore Link&gt; (Without affiliate/referral links).</span>
+          </div>
+
+          <div class="settings-preview-grid">
+            <div class="settings-table-card">
+              <div class="card-title-row">
+                <div class="title-left">
+                  <span class="icon">⚙️</span>
+                  <h3>App Share & PlayStore Settings</h3>
+                </div>
+              </div>
+              <p class="card-desc">Set the Share Message and PlayStore link used across the mobile application.</p>
+
+              <div class="table-container">
+                <table class="nice-table settings-edit-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px;">#</th>
+                      <th>Setting</th>
+                      <th>Value (As per your choice)</th>
+                      <th style="width: 100px;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td class="font-bold">App Share Text</td>
+                      <td>
+                        <textarea v-model="systemSettings.app_share_text" rows="3" class="table-textarea" placeholder="Download our App to Earn Money from Scratch Cards"></textarea>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_app_share_text" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td class="font-bold">PlayStore App Link / ID</td>
+                      <td>
+                        <input type="text" v-model="systemSettings.playstore_link" placeholder="https://play.google.com/store/apps/details?id=com.app.earnfarm" class="table-input" />
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small"><input type="checkbox" v-model="systemSettings.status_playstore_link" /><span class="slider round"></span></label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="form-action-row">
+                <button @click="handleSaveSystemSettings" :disabled="loadingSystem" class="btn-blue-save">
+                  <span>💾 {{ loadingSystem ? 'Saving...' : 'Save Changes' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="preview-card">
+              <div class="preview-card-header">
+                <span class="icon">👁️</span>
+                <div>
+                  <h4>Live Share Clipboard Format</h4>
+                  <p>Text copied to user clipboard when pressing Invite Now</p>
+                </div>
+              </div>
+
+              <div class="phone-frame">
+                <div class="phone-screen light-blue-bg">
+                  <div class="phone-app-body" style="padding: 15px;">
+                    <div style="background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-size: 13px; word-break: break-word; text-align: left;">
+                      <div style="font-weight: 600; color: #1e293b; white-space: pre-wrap; margin-bottom: 12px;">{{ systemSettings.app_share_text || 'Download our App to Earn Money from Scratch Cards' }}</div>
+                      <div style="color: #0052cc; font-weight: 500;">{{ systemSettings.playstore_link || 'https://play.google.com/store/apps/details?id=com.app.earnfarm' }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1946,6 +2076,9 @@ export default {
         referral_subtext: 'Each Referral',
         ref_invite_button_visibility: 'Show',
         referral_instructions: 'Share your referral link with friends and earn rewards.',
+        app_share_text: 'Download our App to Earn Money from Scratch Cards',
+        playstore_link: 'https://play.google.com/store/apps/details?id=com.app.earnfarm',
+        playstore_package_id: 'com.app.earnfarm',
         withdrawal_enabled_bool: true,
         cashout_section_visibility: 'Show',
         withdrawal_charges_type: 'Percentage',
@@ -1972,6 +2105,8 @@ export default {
         status_ref_subtext: true,
         status_ref_button: true,
         status_ref_instructions: true,
+        status_app_share_text: true,
+        status_playstore_link: true,
         status_cashout_section: true,
         status_min_withdraw: true,
         status_max_withdraw: true,
@@ -2027,7 +2162,8 @@ export default {
         sec_bank_verification: '13. Bank Account Verification',
         sec_support: '16. Support',
         sec_captcha: '18. CAPTCHA Work',
-        sec_side_menu: '19. Side Menu'
+        sec_side_menu: '19. Side Menu',
+        sec_app_share: '20. App Share Settings'
       };
       return titles[tabKey] || 'Section Configuration';
     },

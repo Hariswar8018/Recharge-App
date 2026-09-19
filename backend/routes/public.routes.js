@@ -26,6 +26,9 @@ router.get('/landing-info', async (req, res) => {
       popup_banner_image: data['popup_banner_image'] || '',
       popup_banner_enabled: data['popup_banner_enabled'] === 'true',
       popup_banner_display_mode: data['popup_banner_display_mode'] || 'once',
+      app_share_text: data['app_share_text'] || 'Download our App to Earn Money from Scratch Cards',
+      playstore_link: data['playstore_link'] || 'https://play.google.com/store/apps/details?id=com.app.earnfarm',
+      playstore_package_id: data['playstore_package_id'] || 'com.app.earnfarm',
       settings: data
     });
   } catch (err) {

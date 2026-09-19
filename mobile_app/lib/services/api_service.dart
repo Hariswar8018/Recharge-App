@@ -313,6 +313,20 @@ class ApiService {
     return [];
   }
 
+  // Fetch landing info & app share settings
+  static Future<Map<String, dynamic>> getLandingInfo() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/public/landing-info'),
+        headers: await _getHeaders(),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (_) {}
+    return {};
+  }
+
   // Check if UTR is already registered in backend system
   static Future<bool> checkUtrExists(String utr) async {
     try {

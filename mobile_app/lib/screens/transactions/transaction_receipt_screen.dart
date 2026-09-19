@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_gallery_saver/flutter_image_gallery_saver.dart';
 import '../../models/transaction_model.dart';
+import '../../utils/date_formatter.dart';
 
 class TransactionReceiptScreen extends StatefulWidget {
   final TransactionModel transaction;
@@ -126,7 +127,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
                       _buildReceiptRow("Details", widget.transaction.descLine1),
                       if (widget.transaction.descLine2.isNotEmpty)
                         _buildReceiptRow("Note", widget.transaction.descLine2),
-                      _buildReceiptRow("Date & Time", widget.transaction.date),
+                      _buildReceiptRow("Date & Time", DateFormatter.formatToIST(widget.transaction.date)),
                       _buildReceiptRow(
                         "Flow Direction",
                         isIncome ? "Credit (Incoming)" : "Debit (Outgoing)",

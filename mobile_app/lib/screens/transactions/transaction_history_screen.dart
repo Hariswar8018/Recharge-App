@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/transaction_model.dart';
 import '../../services/api_service.dart';
+import '../../utils/date_formatter.dart';
 import 'transaction_receipt_screen.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
@@ -44,48 +45,43 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 
   Future<void> _loadTransactions() async {
     final list = await ApiService.getTransactions();
-    if (list.isNotEmpty) {
-      setState(() {
-        _allTransactions = list.map((item) {
-          final type = item['type'] as String? ?? 'Transaction';
-          final amount = item['amount'] as String? ?? '0.00';
-          final date = item['date'] as String? ?? '';
-          final status = item['status'] as String? ?? 'Success';
-          final id = item['id']?.toString() ?? '';
+    if (!mounted) return;
+    setState(() {
+      _allTransactions = list.map((item) {
+        final type = item['type'] as String? ?? 'Transaction';
+        final amount = item['amount'] as String? ?? '0.00';
+        final rawDate = item['date'] ?? item['createdAt'] ?? '';
+        final istDate = DateFormatter.formatToIST(rawDate);
+        final status = item['status'] as String? ?? 'Success';
+        final id = item['id']?.toString() ?? '';
 
-          final typeLower = type.toLowerCase();
-          final bool isIncome = !typeLower.contains('debit') &&
-              !typeLower.contains('cashout') &&
-              !typeLower.contains('withdrawal') &&
-              !typeLower.contains('recharge') &&
-              !typeLower.contains('bill') &&
-              !typeLower.contains('activation') &&
-              !typeLower.contains('top-up');
+        final typeLower = type.toLowerCase();
+        final bool isIncome = !typeLower.contains('debit') &&
+            !typeLower.contains('cashout') &&
+            !typeLower.contains('withdrawal') &&
+            !typeLower.contains('recharge') &&
+            !typeLower.contains('bill') &&
+            !typeLower.contains('activation') &&
+            !typeLower.contains('top-up');
 
-          String cleanAmt = amount.replaceAll(RegExp(r'[+\-₹\s]'), '');
-          String refStr = id.startsWith('SR92728') ? id : "SR92728$id";
+        String cleanAmt = amount.replaceAll(RegExp(r'[+\-₹\s]'), '');
+        String refStr = id.startsWith('FR_') ? id : (id.startsWith('SR92728') ? id : "SR92728$id");
 
-          return TransactionModel(
-            id: id,
-            title: type,
-            type: type,
-            descLine1: item['wallet_type'] != null ? "Wallet: ${item['wallet_type']}" : "Processed via Wallet",
-            descLine2: item['description']?.toString() ?? "Transaction processed successfully",
-            amount: cleanAmt,
-            date: date.isNotEmpty ? date : "28 Aug 2026, 12:15 AM",
-            isIncome: isIncome,
-            status: status,
-            reference: refStr,
-          );
-        }).toList();
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _allTransactions = List.from(sampleTransactionsList);
-        _isLoading = false;
-      });
-    }
+        return TransactionModel(
+          id: id,
+          title: type,
+          type: type,
+          descLine1: item['description']?.toString() ?? (item['wallet_type'] != null ? "Wallet: ${item['wallet_type']}" : "Processed via Wallet"),
+          descLine2: item['description'] != null ? "Wallet: ${item['wallet_type'] ?? 'FUND'}" : "Transaction processed successfully",
+          amount: cleanAmt,
+          date: istDate.isNotEmpty ? istDate : DateFormatter.formatToIST(DateTime.now().toUtc().toString()),
+          isIncome: isIncome,
+          status: status,
+          reference: refStr,
+        );
+      }).toList();
+      _isLoading = false;
+    });
   }
 
   List<TransactionModel> get _filteredTransactions {
@@ -384,7 +380,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     }
 
     final String dateStr = tx.date.isNotEmpty ? tx.date : "28 Aug 2026, 12:15 AM";
-    final String dateAndTxnId = "$dateStr • TXN ID: $formattedRef";
+    final String dateAndTxnId = "$dateStr \nTXN ID: $formattedRef";
 
     return Container(
       decoration: BoxDecoration(

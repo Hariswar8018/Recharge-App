@@ -20,6 +20,8 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   String _error = "";
   List<dynamic> _requests = [];
   final String _payeeVpa = "vp110064@okaxis";
+  bool _isCheckingUtr = false;
+  final Map<String, bool> _utrCache = {};
 
   @override
   void initState() {
@@ -42,8 +44,26 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     setState(() {});
   }
 
-  void _onUtrChanged() {
-    setState(() {});
+  void _onUtrChanged() async {
+    final text = _utrController.text.trim();
+    if (text.length == 12 && RegExp(r'^[0-9]{12}$').hasMatch(text)) {
+      if (!_utrCache.containsKey(text)) {
+        setState(() {
+          _isCheckingUtr = true;
+        });
+        final exists = await ApiService.checkUtrExists(text);
+        if (mounted && _utrController.text.trim() == text) {
+          setState(() {
+            _utrCache[text] = exists;
+            _isCheckingUtr = false;
+          });
+        }
+      } else {
+        setState(() {});
+      }
+    } else {
+      setState(() {});
+    }
   }
 
   Future<void> _loadRequestHistory() async {
@@ -116,17 +136,51 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     });
 
     final result = await ApiService.submitFundRequest(amtVal, utrVal);
+    if (!mounted) return;
+
     setState(() {
       _isLoading = false;
     });
 
     if (result['success']) {
-      setState(() {
-        _message = "Your deposit request has been submitted for approval!";
-        _error = "";
-        _utrController.clear();
-      });
-      _loadRequestHistory();
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: const [
+              Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 28),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "Transaction Success !",
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            "We will verify your Transaction and get back to you in a Hour.",
+            style: TextStyle(fontSize: 14, color: Color(0xFF334155), height: 1.4),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D47A1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
     } else {
       setState(() {
         _error = result['error'] ?? "Failed to submit request";
@@ -556,8 +610,8 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                           final bool isNumeric = RegExp(r'^[0-9]+$').hasMatch(utrText);
                           final bool isLessThan12 = utrText.length < 12;
                           final bool isMoreThan12 = utrText.length > 12;
-                          final bool isAlreadyUsed = _requests.any((r) => r['utr']?.toString().trim() == utrText);
-                          final bool isValidUtr = isTouched && isNumeric && utrText.length == 12 && !isAlreadyUsed;
+                          final bool isAlreadyUsed = _requests.any((r) => r['utr']?.toString().trim() == utrText) || (_utrCache[utrText] == true);
+                          final bool isValidUtr = isTouched && isNumeric && utrText.length == 12 && !isAlreadyUsed && !_isCheckingUtr;
 
                           Color borderColor = const Color(0xFFE2E8F0);
                           Widget? suffixIcon = IconButton(
@@ -568,7 +622,11 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                           Color utrStatusColor = const Color(0xFF16A34A);
 
                           if (isTouched) {
-                            if (isValidUtr) {
+                            if (_isCheckingUtr) {
+                              utrStatusMsg = "Checking UTR availability...";
+                              utrStatusColor = const Color(0xFF1565C0);
+                              borderColor = const Color(0xFF1565C0);
+                            } else if (isValidUtr) {
                               borderColor = const Color(0xFF16A34A);
                               suffixIcon = const Padding(
                                 padding: EdgeInsets.only(right: 12),
@@ -590,7 +648,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              utrStatusMsg = "UTR Number Already Used";
+                              utrStatusMsg = "Duplicate UTR Number Admitted";
                               utrStatusColor = const Color(0xFFDC2626);
                             } else if (isLessThan12) {
                               borderColor = const Color(0xFFDC2626);
@@ -755,27 +813,48 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                       ],
 
                       // 5. Submit Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton.icon(
-                          onPressed: _isLoading ? null : _handleSubmit,
-                          icon: const Icon(Icons.near_me_rounded, color: Colors.white, size: 20),
-                          label: Text(
-                            _isLoading ? "SUBMITTING..." : "SUBMIT",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              letterSpacing: 1.1,
+                      Builder(
+                        builder: (context) {
+                          final String amtText = _amountController.text.trim();
+                          final double? amt = double.tryParse(amtText);
+                          final bool isValidAmt = amt != null && amt >= 1200 && amt <= 12000 && (amt % 1200 == 0);
+
+                          final String utrText = _utrController.text.trim();
+                          final bool isNumeric = RegExp(r'^[0-9]+$').hasMatch(utrText);
+                          final bool isAlreadyUsed = _requests.any((r) => r['utr']?.toString().trim() == utrText) || (_utrCache[utrText] == true);
+                          final bool isValidUtr = utrText.length == 12 && isNumeric && !isAlreadyUsed && !_isCheckingUtr;
+
+                          final bool canSubmit = !_isLoading && isValidAmt && isValidUtr;
+
+                          return SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton.icon(
+                              onPressed: canSubmit ? _handleSubmit : null,
+                              icon: Icon(
+                                Icons.near_me_rounded,
+                                color: canSubmit ? Colors.white : const Color(0xFF64748B),
+                                size: 20,
+                              ),
+                              label: Text(
+                                _isLoading ? "SUBMITTING..." : "SUBMIT",
+                                style: TextStyle(
+                                  color: canSubmit ? Colors.white : const Color(0xFF64748B),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: canSubmit ? const Color(0xFF0D47A1) : const Color(0xFFCBD5E1),
+                                disabledBackgroundColor: const Color(0xFFCBD5E1),
+                                disabledForegroundColor: const Color(0xFF64748B),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: canSubmit ? 2 : 0,
+                              ),
                             ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0D47A1),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            elevation: 2,
-                          ),
-                        ),
+                          );
+                        },
                       ),
 
                     ],

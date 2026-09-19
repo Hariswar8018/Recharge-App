@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../services/api_service.dart';
 import '../../widgets/processing_dialog.dart';
 
@@ -31,6 +32,14 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
   }
 
   void _onMobileChanged() async {
+    final rawText = _mobileController.text;
+    final cleanText = rawText.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanText.length > 10) {
+      _mobileController.text = cleanText.substring(0, 10);
+      _mobileController.selection = TextSelection.fromPosition(const TextPosition(offset: 10));
+      return;
+    }
+
     final text = _mobileController.text.trim();
     if (text.isEmpty) {
       setState(() {
@@ -438,6 +447,11 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
                                       child: TextField(
                                         controller: _mobileController,
                                         keyboardType: TextInputType.phone,
+                                        maxLength: 10,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                          LengthLimitingTextInputFormatter(10),
+                                        ],
                                         style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold,
@@ -450,6 +464,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
                                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                           hintText: "Enter 10 digit mobile number",
                                           hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                                          counterText: "",
                                         ),
                                       ),
                                     ),
@@ -700,35 +715,49 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
                             const SizedBox(height: 24),
 
                             // Bottom Subscribe Button
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: _isSubmitting ? null : _handleSubscribe,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0A369D),
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(Icons.card_membership_rounded, color: Colors.white, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      "SUBSCRIBE NOW",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.8,
+                            Builder(
+                              builder: (context) {
+                                final String mobileText = _mobileController.text.trim();
+                                final bool isMobileTenDigits = mobileText.length == 10 && RegExp(r'^[0-9]{10}$').hasMatch(mobileText);
+                                final bool canSubmit = !_isSubmitting && isMobileTenDigits && _isUserRegistered && _mobileErrorMsg == null;
+
+                                return SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: canSubmit ? _handleSubscribe : null,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: canSubmit ? const Color(0xFF0A369D) : const Color(0xFFCBD5E1),
+                                      disabledBackgroundColor: const Color(0xFFCBD5E1),
+                                      disabledForegroundColor: const Color(0xFF64748B),
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
+                                      elevation: 0,
                                     ),
-                                  ],
-                                ),
-                              ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.card_membership_rounded,
+                                          color: canSubmit ? Colors.white : const Color(0xFF64748B),
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "SUBSCRIBE NOW",
+                                          style: TextStyle(
+                                            color: canSubmit ? Colors.white : const Color(0xFF64748B),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.8,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                             const SizedBox(height: 16),
                           ],

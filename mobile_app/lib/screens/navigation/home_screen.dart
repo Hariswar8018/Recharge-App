@@ -5,6 +5,7 @@ import 'package:share_me/share_me.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../utils/date_formatter.dart';
 import '../../widgets/background_container.dart';
 import '../../widgets/processing_dialog.dart';
 import '../../widgets/captcha_earn_widget.dart';
@@ -114,8 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _activeCycleId = "";
           _membersCount = 0;
         }
-        _referralLink =
-            "https://srdigitalseva.com/join?ref=$_userId";
+        _referralLink = "https://play.google.com/store/apps/details?id=com.app.earnfarm";
         _isLoading = false;
       });
     }
@@ -129,31 +129,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleShareReferral() async {
-    final String deepLink =
-        "https://srdigitalseva.com/join?ref=$_userId";
-    final String playStoreLink =
-        "https://play.google.com/store/apps/details?id=com.app.earnfarm&ref=$_userId";
-    final String shareMessage =
-        "Join SR Digital Seva Kendram Today!\n\n"
-        "Register using my Sponsor ID: $_userId\n\n"
-        "Referral Link:\n$deepLink\n\n"
-        "Download App from Google Play Store:\n$playStoreLink\n\n"
-        "Refer App Earn ₹ 300.00 Each Referral! Start earning affiliate commissions and global cycle rewards today.";
+    String adminShareText = "";
+    String adminPlayStoreLink = "";
 
-    // 1. Copy link to clipboard
-    await Clipboard.setData(ClipboardData(text: deepLink));
+    try {
+      final info = await ApiService.getLandingInfo();
+      final settings = info['settings'] is Map ? info['settings'] : {};
+      adminShareText = (info['app_share_text'] ?? settings['app_share_text'] ?? settings['referral_text'] ?? "").toString().trim();
+      adminPlayStoreLink = (info['playstore_link'] ?? settings['playstore_link'] ?? "").toString().trim();
+    } catch (_) {}
+
+    final String fallbackText = "Download our App to Earn Money from Scratch Cards";
+    final String fallbackPlayStore = "https://play.google.com/store/apps/details?id=com.app.earnfarm";
+
+    final String shareText = adminShareText.isNotEmpty ? adminShareText : fallbackText;
+    final String playStoreUrl = adminPlayStoreLink.isNotEmpty ? adminPlayStoreLink : fallbackPlayStore;
+
+    final String textToCopy = "$shareText\n\n$playStoreUrl";
+
+    // 1. Copy text and PlayStore link to clipboard
+    await Clipboard.setData(ClipboardData(text: textToCopy));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Referral link copied! Launching Play Store & Share options..."),
+          content: Text("App link copied to clipboard! Opening Play Store..."),
           duration: Duration(seconds: 2),
         ),
       );
     }
 
-    // 2. Launch Play Store App / Google Play Store Page
-    final Uri playStoreUri = Uri.parse(playStoreLink);
-    final Uri marketUri = Uri.parse("market://details?id=com.app.earnfarm&ref=$_userId");
+    // 2. Redirect ONLY to Play Store
+    final Uri playStoreUri = Uri.parse(playStoreUrl);
+    final Uri marketUri = Uri.parse("market://details?id=com.app.earnfarm");
     try {
       if (await canLaunchUrl(marketUri)) {
         await launchUrl(marketUri, mode: LaunchMode.externalApplication);
@@ -163,22 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (_) {
       try {
         await launchUrl(playStoreUri, mode: LaunchMode.externalApplication);
-      } catch (_) {}
-    }
-
-    // 3. Trigger System Share Options
-    try {
-      await ShareMe.system(
-        title: 'Join SR Digital Seva Kendram Today!',
-        url: deepLink,
-        description: shareMessage,
-      );
-    } catch (e) {
-      try {
-        await launchUrl(
-          Uri.parse(deepLink),
-          mode: LaunchMode.externalApplication,
-        );
       } catch (_) {}
     }
   }
@@ -1413,7 +1404,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
 
           // Refer invitation Card (Visible on Home Dashboard)
-          _buildInviteCard(),
+         
 
           /*
           // HIDDEN RECHARGE SECTION (Preserved as requested)
@@ -1724,7 +1715,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         final tx = _transactions[index];
                         final type = tx['type'] as String? ?? 'Transaction';
                         final amount = tx['amount'] as String? ?? '₹0.00';
-                        final date = tx['date'] as String? ?? '';
+                        final rawDate = tx['date'] ?? tx['createdAt'] ?? '';
+                        final date = DateFormatter.formatToIST(rawDate);
 
                         final typeLower = type.toLowerCase();
                         final bool isIncome =
@@ -2402,7 +2394,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   label,
                   style: const TextStyle(
                     color: AppTheme.textGray,
-                    fontSize: 9,
+                    fontSize: 7.5,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
