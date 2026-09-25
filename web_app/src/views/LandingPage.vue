@@ -3,7 +3,7 @@
     <div class="app-card">
       
       <!-- Top Logo Header -->
-      <header class="header">
+      <header v-if="visibility.web_show_header_logo" class="header">
         <div class="logo-container">
           <img src="../assets/sr_logo.png" alt="SR Logo" class="sr-logo-img" />
         </div>
@@ -11,7 +11,7 @@
 
       <!-- Hero Artwork Center Section -->
       <main class="main-content">
-        <div class="hero-image-wrapper">
+        <div v-if="visibility.web_show_hero_graphic" class="hero-image-wrapper">
           <img
             src="../assets/home_page.png"
             alt="Download Our App - Google Play"
@@ -20,7 +20,7 @@
         </div>
 
         <!-- Captcha -> Cash Headline -->
-        <div class="headline-section">
+        <div v-if="visibility.web_show_headline" class="headline-section">
           <div class="dash-decor left-dashes">
             <span class="dash dash-1"></span>
             <span class="dash dash-2"></span>
@@ -45,13 +45,14 @@
         </div>
 
         <!-- Referral Banner if Sponsor Ref is active -->
-        <div v-if="sponsorRef" class="referral-banner">
+        <div v-if="sponsorRef && visibility.web_show_referral_banner" class="referral-banner">
           <span class="ref-icon">🎁</span>
           <span>Referred by Sponsor ID: <strong>{{ sponsorRef }}</strong></span>
         </div>
 
         <!-- Get It On Google Play Button -->
         <a
+          v-if="visibility.web_show_playstore_btn"
           :href="playStoreUrl"
           target="_blank"
           rel="noopener noreferrer"
@@ -78,7 +79,7 @@
         </a>
 
         <!-- Legal Terms Agreement -->
-        <p class="terms-disclaimer">
+        <p v-if="visibility.web_show_terms_disclaimer" class="terms-disclaimer">
           By downloading the app, you agree to our<br />
           <router-link to="/about-us" class="legal-link">About Us</router-link>,
           <router-link to="/terms-and-conditions" class="legal-link">Terms &amp; Conditions</router-link>,
@@ -90,7 +91,7 @@
       </main>
 
       <!-- Footer Copyright -->
-      <footer class="footer">
+      <footer v-if="visibility.web_show_footer" class="footer">
         <p class="powered-by">Powered by SR Digital Seva Kendram</p>
         <p class="copyright">&copy; 2026 SR Digital Seva Kendram. All rights reserved.</p>
       </footer>
@@ -100,11 +101,22 @@
 </template>
 
 <script>
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://recharge-app-production-5b63.up.railway.app';
+
 export default {
   name: 'LandingPage',
   data() {
     return {
-      sponsorRef: ''
+      sponsorRef: '',
+      visibility: {
+        web_show_header_logo: true,
+        web_show_hero_graphic: true,
+        web_show_headline: true,
+        web_show_referral_banner: true,
+        web_show_playstore_btn: true,
+        web_show_terms_disclaimer: true,
+        web_show_footer: true
+      }
     }
   },
   computed: {
@@ -113,7 +125,8 @@ export default {
       return this.sponsorRef ? `${baseUrl}&ref=${encodeURIComponent(this.sponsorRef)}` : baseUrl
     }
   },
-  mounted() {
+  async mounted() {
+    this.fetchVisibilitySettings();
     const queryRef = this.$route.query.ref || this.$route.query.sponsor || this.$route.query.id
     if (queryRef) {
       this.sponsorRef = String(queryRef).trim()
@@ -130,6 +143,23 @@ export default {
     }
   },
   methods: {
+    async fetchVisibilitySettings() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/visibility`);
+        if (res.ok) {
+          const data = await res.json();
+          this.visibility = {
+            web_show_header_logo: data.web_show_header_logo !== false,
+            web_show_hero_graphic: data.web_show_hero_graphic !== false,
+            web_show_headline: data.web_show_headline !== false,
+            web_show_referral_banner: data.web_show_referral_banner !== false,
+            web_show_playstore_btn: data.web_show_playstore_btn !== false,
+            web_show_terms_disclaimer: data.web_show_terms_disclaimer !== false,
+            web_show_footer: data.web_show_footer !== false
+          };
+        }
+      } catch (_) {}
+    },
     onPlayStoreClick() {
       if (this.sponsorRef) {
         localStorage.setItem('sponsor_ref', this.sponsorRef)

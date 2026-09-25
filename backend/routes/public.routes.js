@@ -48,6 +48,45 @@ router.get('/settings', async (req, res) => {
   }
 });
 
+// GET Public Element Visibility Settings (Show / Hide options for all Web & App elements)
+router.get('/visibility', async (req, res) => {
+  try {
+    const rows = await query('SELECT key_name, val_value FROM system_settings');
+    const settings = {};
+    rows.forEach(r => { settings[r.key_name] = r.val_value; });
+
+    // Standardized Show/Hide state dictionary
+    const visibility = {
+      // Web Landing Page Elements
+      web_show_header_logo: settings['web_show_header_logo'] !== 'Hide',
+      web_show_hero_graphic: settings['web_show_hero_graphic'] !== 'Hide',
+      web_show_headline: settings['web_show_headline'] !== 'Hide',
+      web_show_referral_banner: settings['web_show_referral_banner'] !== 'Hide',
+      web_show_playstore_btn: settings['web_show_playstore_btn'] !== 'Hide',
+      web_show_terms_disclaimer: settings['web_show_terms_disclaimer'] !== 'Hide',
+      web_show_footer: settings['web_show_footer'] !== 'Hide',
+
+      // App & Panel Elements
+      ref_section_visibility: settings['ref_section_visibility'] || 'Show',
+      ref_invite_button_visibility: settings['ref_invite_button_visibility'] || 'Show',
+      sub_user_details_visibility: settings['sub_user_details_visibility'] || 'Show',
+      sub_wallet_visibility: settings['sub_wallet_visibility'] || 'Show',
+      sub_button_visibility: settings['sub_button_visibility'] || 'Show',
+      cashout_section_visibility: settings['cashout_section_visibility'] || 'Show',
+      cashout_submit_button_visibility: settings['cashout_submit_button_visibility'] || 'Show',
+      add_money_section_visibility: settings['add_money_section_visibility'] || 'Show',
+      captcha_section_visibility: settings['captcha_section_visibility'] || 'Show',
+      notice_marquee_visibility: settings['notice_marquee_visibility'] || 'Show',
+
+      raw_settings: settings
+    };
+
+    res.json(visibility);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch visibility settings' });
+  }
+});
+
 // GET Public Notifications
 router.get('/notifications', async (req, res) => {
   try {
@@ -59,3 +98,4 @@ router.get('/notifications', async (req, res) => {
 });
 
 module.exports = router;
+
