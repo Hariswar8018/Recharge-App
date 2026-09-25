@@ -470,7 +470,7 @@ class ApiService {
   static Future<Map<String, dynamic>> getLandingInfo() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/public/landing-info'),
+        Uri.parse('$baseUrl/api/landing-info'),
         headers: await _getHeaders(),
       );
       if (response.statusCode == 200) {

@@ -39,6 +39,7 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
 
 // Mount Modular Router Endpoints
 app.use('/api', publicRoutes);
+app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/fund', fundRoutes);
