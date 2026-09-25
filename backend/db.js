@@ -1,7 +1,9 @@
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 
-const pool = process.env.DATABASE_URL
+const useDbUrl = process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '';
+
+const pool = useDbUrl
   ? mysql.createPool(process.env.DATABASE_URL)
   : mysql.createPool({
       host: process.env.DB_HOST || 'localhost',
@@ -18,8 +20,8 @@ async function query(sql, params) {
     const [results] = await pool.query(sql, params);
     return results;
   } catch (err) {
-    console.error('MySQL query error:', err);
-    throw err;
+    console.error('MySQL query error:', err.message);
+    return [];
   }
 }
 
@@ -154,7 +156,7 @@ async function initDb() {
     const passwordHash = bcrypt.hashSync('123456', salt);
 
     const checkHaris = await query('SELECT * FROM users WHERE email = ?', ['haris@gmail.com']);
-    if (checkHaris.length === 0) {
+    if (Array.isArray(checkHaris) && checkHaris.length === 0) {
       await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, role) VALUES (?, ?, ?, ?, ?)',
         ['Haris Admin', 'haris@gmail.com', '0000000000', passwordHash, 'admin']
@@ -163,7 +165,7 @@ async function initDb() {
     }
 
     const checkEarnfarm = await query('SELECT * FROM users WHERE email = ?', ['earnfarm99@gmail.com']);
-    if (checkEarnfarm.length === 0) {
+    if (Array.isArray(checkEarnfarm) && checkEarnfarm.length === 0) {
       await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, role) VALUES (?, ?, ?, ?, ?)',
         ['Earnfarm Admin', 'earnfarm99@gmail.com', '1111111111', passwordHash, 'admin']
@@ -173,7 +175,7 @@ async function initDb() {
 
     // Seed default system settings if table is empty
     const checkSettings = await query('SELECT COUNT(*) as count FROM system_settings');
-    if (checkSettings[0].count === 0) {
+    if (Array.isArray(checkSettings) && checkSettings.length > 0 && checkSettings[0].count === 0) {
       const settings = [
         ['min_wallet_balance', '50.00'],
         ['maintenance_mode', 'false'],

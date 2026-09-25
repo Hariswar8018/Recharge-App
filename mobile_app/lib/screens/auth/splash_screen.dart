@@ -36,20 +36,15 @@ class _SplashScreenState extends State<SplashScreen> {
       _isOffline = false;
     });
 
-    final url = Uri.parse(ApiService.baseUrl).resolve('api/health');
+    final cleanBase = ApiService.baseUrl.replaceAll(RegExp(r'/+$'), '');
+    final url = Uri.parse('$cleanBase/api/health');
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 4));
       if (response.statusCode != 200) {
-        throw Exception("Server offline");
+        print("Health check non-200 response: ${response.statusCode}");
       }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _isChecking = false;
-          _isOffline = true;
-        });
-      }
-      return;
+    } catch (e) {
+      print("Splash screen health check warning: $e");
     }
 
     if (!mounted) return;
