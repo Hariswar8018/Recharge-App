@@ -8,13 +8,28 @@ const { JWT_SECRET, verifyAppToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Helper to check if an auth feature is enabled by admin. Returns 404 if disabled.
+// Helper to check if an auth feature is enabled by admin and if maintenance mode is active.
 async function checkAuthFeatureEnabled(featureKey, res) {
   try {
+    // 1. Check Maintenance Mode
+    const maintenanceRows = await query('SELECT val_value FROM system_settings WHERE key_name = "maintenance_mode_bool" OR key_name = "maintenance_mode"');
+    for (const r of maintenanceRows) {
+      if (r.val_value === 'true' || r.val_value === '1') {
+        res.status(400).json({ error: 'System Maintenance: The app is currently under maintenance. Please try again later.', valid: false, registered: false });
+        return false;
+      }
+    }
+
+    // 2. Check Specific Auth Feature Flag
     const rows = await query('SELECT val_value FROM system_settings WHERE key_name = ?', [featureKey]);
     if (rows.length > 0 && (rows[0].val_value === 'false' || rows[0].val_value === '0')) {
-      const featureLabel = featureKey.replace('_enabled', '').replace('_', ' ').toUpperCase();
-      res.status(404).json({ error: `${featureLabel} service is currently disabled by administrator` });
+      const messages = {
+        'registration_enabled': 'Registration is temporarily stopped/disabled by administrator.',
+        'login_enabled': 'Login is temporarily stopped/disabled by administrator.',
+        'forgot_password_enabled': 'Password reset service is currently disabled by administrator.'
+      };
+      const errorMsg = messages[featureKey] || 'This service is currently disabled by administrator.';
+      res.status(400).json({ error: errorMsg, registered: false, valid: false, message: errorMsg });
       return false;
     }
   } catch (err) {
