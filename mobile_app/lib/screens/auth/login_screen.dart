@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String _errorMessage = "";
+  Map<String, dynamic> _visibilitySettings = {};
 
   // Mobile Validation States
   bool _isCheckingMobile = false;
@@ -32,6 +33,16 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     _mobileController.addListener(_onMobileChanged);
+    _loadVisibility();
+  }
+
+  Future<void> _loadVisibility() async {
+    final v = await ApiService.getVisibility();
+    if (mounted) {
+      setState(() {
+        _visibilitySettings = v;
+      });
+    }
   }
 
   @override
@@ -250,6 +261,41 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
+
+                    if (_visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false || (_visibilitySettings['sec_login_notice'] != null && _visibilitySettings['sec_login_notice'].toString().isNotEmpty)) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: (_visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false) ? Colors.red.shade50 : Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: (_visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false) ? Colors.red.shade200 : Colors.blue.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              (_visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false) ? Icons.lock : Icons.info,
+                              color: (_visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false) ? Colors.red : AppTheme.primaryBlue,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                (_visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false)
+                                    ? (_visibilitySettings['sec_login_notice']?.toString().isNotEmpty == true ? _visibilitySettings['sec_login_notice'] : "Login functionality is currently disabled or hidden by administrator.")
+                                    : _visibilitySettings['sec_login_notice'],
+                                style: TextStyle(
+                                  color: (_visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false) ? Colors.red.shade800 : AppTheme.primaryBlue,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
 
                     // Card Form Container
                     Container(

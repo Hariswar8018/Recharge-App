@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> _teamMembers = [];
   List<dynamic> _transactions = [];
   Timer? _healthCheckTimer;
+  Map<String, dynamic> _visibilitySettings = {};
 
   @override
   void initState() {
@@ -74,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final cycles = await ApiService.getCyclesHistory();
     final team = await ApiService.getTeam();
     final txns = await ApiService.getTransactions();
+    final visibility = await ApiService.getVisibility();
 
     dynamic activeCycle;
     try {
@@ -87,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (mounted) {
       setState(() {
+        _visibilitySettings = visibility;
         _fullName = user['fullName'] ?? "Rajesh Reddy";
         _userId = user['id'] ?? 0;
         _email = user['email'] ?? "";
@@ -1182,6 +1185,63 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildSectionNoticeBanner(String noticeKey, String visKey) {
+    final String notice = _visibilitySettings[noticeKey]?.toString() ?? '';
+    final String vis = _visibilitySettings[visKey]?.toString() ?? 'Show';
+    final bool isEnabled = _visibilitySettings[visKey.replaceAll('_visibility', '_enabled')] != false;
+
+    if (vis == 'Hide' || !isEnabled) {
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.red.shade200),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.lock, color: Colors.red, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                notice.isNotEmpty ? notice : "This feature is currently disabled or hidden by admin.",
+                style: TextStyle(color: Colors.red.shade800, fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (notice.isNotEmpty) {
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEFF6FF),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFBFDBFE)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info, color: AppTheme.primaryBlue, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                notice,
+                style: const TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
   // --- TAB 0: HOME VIEW ---
   Widget _buildHomeTab() {
     final bool isTopUpRequired = _membersCount >= 126;
@@ -1189,6 +1249,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          _buildSectionNoticeBanner('sec_home_notice', 'sec_home_visibility'),
           if (isTopUpRequired) ...[
             _buildBlinkingTopUpCard(),
             const SizedBox(height: 12),
@@ -1995,6 +2056,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          _buildSectionNoticeBanner('sec_business_income_notice', 'sec_business_income_visibility'),
           // Income Growth Card
           Container(
             width: double.infinity,

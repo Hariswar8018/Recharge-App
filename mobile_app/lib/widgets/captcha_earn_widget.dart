@@ -19,11 +19,22 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
   int _timeLeft = 30;
   Timer? _timer;
   bool _isSubmitting = false;
+  Map<String, dynamic> _visibilitySettings = {};
 
   @override
   void initState() {
     super.initState();
     _generateNewCaptcha();
+    _loadVisibility();
+  }
+
+  Future<void> _loadVisibility() async {
+    final v = await ApiService.getVisibility();
+    if (mounted) {
+      setState(() {
+        _visibilitySettings = v;
+      });
+    }
   }
 
   @override
@@ -159,6 +170,41 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
             ),
           ),
           const SizedBox(height: 14),
+
+          if (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false || (_visibilitySettings['sec_captcha_notice'] != null && _visibilitySettings['sec_captcha_notice'].toString().isNotEmpty)) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Colors.red.shade50 : Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Colors.red.shade200 : Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Icons.lock : Icons.info,
+                    color: (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Colors.red : const Color(0xFF0052CC),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false)
+                          ? (_visibilitySettings['sec_captcha_notice']?.toString().isNotEmpty == true ? _visibilitySettings['sec_captcha_notice'] : "CAPTCHA Work is currently disabled or hidden by administrator.")
+                          : _visibilitySettings['sec_captcha_notice'],
+                      style: TextStyle(
+                        color: (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Colors.red.shade800 : const Color(0xFF0052CC),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
           // Captcha Box & Refresh Button Row
           Row(

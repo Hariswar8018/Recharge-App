@@ -44,6 +44,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool? _isSponsorValid; // null = untouched, true = green, false = red
   String? _sponsorStatusMessage;
   String _lastCheckedSponsor = "";
+  Map<String, dynamic> _visibilitySettings = {};
 
   @override
   void initState() {
@@ -52,6 +53,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _mobileController.addListener(_onMobileChanged);
     _sponsorController.addListener(_onSponsorChanged);
     _checkClipboardForSponsorLink();
+    _loadVisibility();
+  }
+
+  Future<void> _loadVisibility() async {
+    final v = await ApiService.getVisibility();
+    if (mounted) {
+      setState(() {
+        _visibilitySettings = v;
+      });
+    }
   }
 
   void _checkClipboardForSponsorLink() async {
@@ -456,6 +467,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 14),
+
+                    if (_visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false || (_visibilitySettings['sec_registration_notice'] != null && _visibilitySettings['sec_registration_notice'].toString().isNotEmpty)) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: (_visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false) ? Colors.red.shade50 : Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: (_visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false) ? Colors.red.shade200 : Colors.blue.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              (_visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false) ? Icons.lock : Icons.info,
+                              color: (_visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false) ? Colors.red : AppTheme.primaryBlue,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                (_visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false)
+                                    ? (_visibilitySettings['sec_registration_notice']?.toString().isNotEmpty == true ? _visibilitySettings['sec_registration_notice'] : "Registration functionality is currently disabled or hidden by administrator.")
+                                    : _visibilitySettings['sec_registration_notice'],
+                                style: TextStyle(
+                                  color: (_visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false) ? Colors.red.shade800 : AppTheme.primaryBlue,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
 
                     // Card Form Container
                     Container(

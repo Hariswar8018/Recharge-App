@@ -2051,11 +2051,36 @@
                     <td>2</td>
                     <td class="font-bold">Feature Display Visibility</td>
                     <td>
-                      <select class="table-select" disabled>
-                        <option value="Show">🔒 Show (Always Visible - Locked)</option>
+                      <select class="table-select" v-model="systemSettings.sec_registration_visibility">
+                        <option value="Show">Show (Visible in App/Web)</option>
+                        <option value="Hide">Hide (Hidden from App/Web)</option>
                       </select>
                     </td>
-                    <td><span class="badge-status-active">🔒 Locked</span></td>
+                    <td>
+                      <span class="status-pill-badge" :class="systemSettings.sec_registration_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
+                        {{ systemSettings.sec_registration_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td class="font-bold">Feature Master Rule Mode</td>
+                    <td>
+                      <select class="table-select" v-model="systemSettings.sec_registration_rule_mode">
+                        <option value="Enabled (Standard)">Enabled (Standard)</option>
+                        <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
+                        <option value="Restricted">Restricted Mode</option>
+                      </select>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>4</td>
+                    <td class="font-bold">Important User Notice</td>
+                    <td>
+                      <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_registration_notice" placeholder="Enter notice content for users..."></textarea>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -2124,11 +2149,36 @@
                     <td>2</td>
                     <td class="font-bold">Feature Display Visibility</td>
                     <td>
-                      <select class="table-select" disabled>
-                        <option value="Show">🔒 Show (Always Visible - Locked)</option>
+                      <select class="table-select" v-model="systemSettings.sec_login_visibility">
+                        <option value="Show">Show (Visible in App/Web)</option>
+                        <option value="Hide">Hide (Hidden from App/Web)</option>
                       </select>
                     </td>
-                    <td><span class="badge-status-active">🔒 Locked</span></td>
+                    <td>
+                      <span class="status-pill-badge" :class="systemSettings.sec_login_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
+                        {{ systemSettings.sec_login_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td class="font-bold">Feature Master Rule Mode</td>
+                    <td>
+                      <select class="table-select" v-model="systemSettings.sec_login_rule_mode">
+                        <option value="Enabled (Standard)">Enabled (Standard)</option>
+                        <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
+                        <option value="Restricted">Restricted Mode</option>
+                      </select>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>4</td>
+                    <td class="font-bold">Important User Notice</td>
+                    <td>
+                      <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_login_notice" placeholder="Enter notice content for users..."></textarea>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -2197,11 +2247,36 @@
                     <td>2</td>
                     <td class="font-bold">Feature Display Visibility</td>
                     <td>
-                      <select class="table-select" disabled>
-                        <option value="Show">🔒 Show (Always Visible - Locked)</option>
+                      <select class="table-select" v-model="systemSettings.sec_otp_visibility">
+                        <option value="Show">Show (Visible in App/Web)</option>
+                        <option value="Hide">Hide (Hidden from App/Web)</option>
                       </select>
                     </td>
-                    <td><span class="badge-status-active">🔒 Locked</span></td>
+                    <td>
+                      <span class="status-pill-badge" :class="systemSettings.sec_otp_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
+                        {{ systemSettings.sec_otp_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td class="font-bold">Feature Master Rule Mode</td>
+                    <td>
+                      <select class="table-select" v-model="systemSettings.sec_otp_rule_mode">
+                        <option value="Enabled (Standard)">Enabled (Standard)</option>
+                        <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
+                        <option value="Restricted">Restricted Mode</option>
+                      </select>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>4</td>
+                    <td class="font-bold">Important User Notice</td>
+                    <td>
+                      <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_otp_notice" placeholder="Enter notice content for users..."></textarea>
+                    </td>
+                    <td><span class="badge-status-active">🟢 Active</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -2383,10 +2458,12 @@
             <div class="banner-toggle-box">
               <span class="toggle-text">Active Section</span>
               <label class="switch">
-                <input type="checkbox" checked />
+                <input type="checkbox" :checked="systemSettings[currentTab + '_enabled_bool'] !== false" @change="toggleSectionActive(currentTab)" />
                 <span class="slider round"></span>
               </label>
-              <span class="main-on-badge badge-on">ON</span>
+              <span class="main-on-badge" :class="systemSettings[currentTab + '_enabled_bool'] !== false ? 'badge-on' : 'badge-off'">
+                {{ systemSettings[currentTab + '_enabled_bool'] !== false ? 'ON' : 'OFF' }}
+              </span>
             </div>
           </div>
 
@@ -2412,15 +2489,26 @@
                     <td>1</td>
                     <td class="font-bold">Feature Display Visibility</td>
                     <td>
-                      <select class="table-select" disabled><option value="Show">🔒 Show (Always Visible - Locked)</option></select>
+                      <select class="table-select" v-model="systemSettings[currentTab + '_visibility']">
+                        <option value="Show">Show (Visible in App/Web)</option>
+                        <option value="Hide">Hide (Hidden from App/Web)</option>
+                      </select>
                     </td>
-                    <td><span class="badge-status-active">🔒 Locked</span></td>
+                    <td>
+                      <span class="status-pill-badge" :class="systemSettings[currentTab + '_visibility'] !== 'Hide' ? 'pill-green' : 'pill-red'">
+                        {{ systemSettings[currentTab + '_visibility'] !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
+                      </span>
+                    </td>
                   </tr>
                   <tr>
                     <td>2</td>
                     <td class="font-bold">Feature Master Rule Mode</td>
                     <td>
-                      <input type="text" value="Enabled (Standard)" class="table-input" />
+                      <select class="table-select" v-model="systemSettings[currentTab + '_rule_mode']">
+                        <option value="Enabled (Standard)">Enabled (Standard)</option>
+                        <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
+                        <option value="Restricted">Restricted Mode</option>
+                      </select>
                     </td>
                     <td><span class="badge-status-active">🟢 Active</span></td>
                   </tr>
@@ -2428,7 +2516,7 @@
                     <td>3</td>
                     <td class="font-bold">Important User Notice</td>
                     <td>
-                      <textarea rows="3" class="table-textarea" placeholder="Enter notice content for users..."></textarea>
+                      <textarea rows="3" class="table-textarea" v-model="systemSettings[currentTab + '_notice']" placeholder="Enter notice content for users..."></textarea>
                     </td>
                     <td><span class="badge-status-active">🟢 Active</span></td>
                   </tr>
@@ -2438,13 +2526,13 @@
 
             <div class="form-action-row">
               <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
-              <button class="btn-white-reset">↺ Reset</button>
+              <button @click="fetchSystemSettings" class="btn-white-reset">↺ Reset</button>
             </div>
           </div>
 
           <div class="section-footer-note">
             <span>ℹ️ Note: Any changes you make here will reflect instantly on the user panel.</span>
-            <span class="last-updated">Last Updated: 13 Sep 2026, 10:45 AM</span>
+            <span class="last-updated">Last Updated: {{ new Date().toLocaleDateString() }}</span>
           </div>
         </div>
 
@@ -2627,7 +2715,41 @@ export default {
         status_charges_type: true,
         status_bank_rule: true,
         status_cashout_instructions: true,
-        status_cashout_button: true
+        status_cashout_button: true,
+        // Section Visibility & Rules
+        sec_registration_visibility: 'Show',
+        sec_registration_rule_mode: 'Enabled (Standard)',
+        sec_registration_notice: '',
+        sec_login_visibility: 'Show',
+        sec_login_rule_mode: 'Enabled (Standard)',
+        sec_login_notice: '',
+        sec_otp_visibility: 'Show',
+        sec_otp_rule_mode: 'Enabled (Standard)',
+        sec_otp_notice: '',
+        sec_home_enabled_bool: true,
+        sec_home_visibility: 'Show',
+        sec_home_rule_mode: 'Enabled (Standard)',
+        sec_home_notice: '',
+        sec_business_income_enabled_bool: true,
+        sec_business_income_visibility: 'Show',
+        sec_business_income_rule_mode: 'Enabled (Standard)',
+        sec_business_income_notice: '',
+        sec_global_cycle_enabled_bool: true,
+        sec_global_cycle_visibility: 'Show',
+        sec_global_cycle_rule_mode: 'Enabled (Standard)',
+        sec_global_cycle_notice: '',
+        sec_bank_verification_enabled_bool: true,
+        sec_bank_verification_visibility: 'Show',
+        sec_bank_verification_rule_mode: 'Enabled (Standard)',
+        sec_bank_verification_notice: '',
+        sec_support_enabled_bool: true,
+        sec_support_visibility: 'Show',
+        sec_support_rule_mode: 'Enabled (Standard)',
+        sec_support_notice: '',
+        sec_captcha_enabled_bool: true,
+        sec_captcha_visibility: 'Show',
+        sec_captcha_rule_mode: 'Enabled (Standard)',
+        sec_captcha_notice: ''
       }
     };
   },
@@ -2680,6 +2802,11 @@ export default {
         sec_app_share: '20. App Share Settings'
       };
       return titles[tabKey] || 'Section Configuration';
+    },
+    toggleSectionActive(tabKey) {
+      const key = tabKey + '_enabled_bool';
+      this.systemSettings[key] = !this.systemSettings[key];
+      this.handleSaveSystemSettings();
     },
     getReqCount(status) {
       return this.fundRequests.filter(r => r.status === status).length;

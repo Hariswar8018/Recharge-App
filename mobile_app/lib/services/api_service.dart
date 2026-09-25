@@ -743,6 +743,34 @@ class ApiService {
     return [];
   }
 
+  // Get Element Visibility Settings
+  static Future<Map<String, dynamic>> getVisibility() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/visibility'),
+        headers: await _getHeaders(requireAuth: false),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    return {};
+  }
+
+  // Get System Settings
+  static Future<Map<String, dynamic>> getSettings() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/settings'),
+        headers: await _getHeaders(requireAuth: false),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (_) {}
+    return {};
+  }
+
   // Activate User ID / Subscription
   static Future<Map<String, dynamic>> activateUser({
     required String mobile,
