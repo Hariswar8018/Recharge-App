@@ -256,6 +256,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final sponsorCode = _extractSponsorCode(rawText);
 
+    if (RegExp(r'^\d+$').hasMatch(sponsorCode)) {
+      if (sponsorCode.length < 10) {
+        setState(() {
+          _isCheckingSponsor = false;
+          _isSponsorValid = false;
+          _sponsorStatusMessage = "Sponsor Phone / ID must be 10 digits";
+          _lastCheckedSponsor = "";
+        });
+        return;
+      }
+    }
+
     if (_lastCheckedSponsor == sponsorCode && !_isCheckingSponsor) return;
     _verifySponsorId(sponsorCode);
   }
@@ -676,7 +688,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _sponsorController,
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
-                              hintText: "Enter Sponsor ID or Referral Link",
+                              hintText: "Enter 10 Digit Phone Number or Sponsor ID",
                               hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                               prefixIcon: Container(
                                 margin: const EdgeInsets.all(8),

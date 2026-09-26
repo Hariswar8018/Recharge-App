@@ -2634,7 +2634,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTeamTab() {
-    final int realTeamCount = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
+    final int realTeamCount = _teamMembers.where((m) => (m['status'] ?? '').toString().toUpperCase() == 'ACTIVE').length;
     final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
 
@@ -2954,7 +2954,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 3: PROFILE VIEW ---
   Widget _buildProfileTab() {
-    final int realTeamSize = _teamMembers.length > _membersCount ? _teamMembers.length : _membersCount;
+    final int realTeamSize = _teamMembers.where((m) => (m['status'] ?? '').toString().toUpperCase() == 'ACTIVE').length;
     double globalIncome = 0.0;
 
     for (var tx in _transactions) {

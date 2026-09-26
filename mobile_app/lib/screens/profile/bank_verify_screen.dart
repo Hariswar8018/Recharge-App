@@ -86,7 +86,7 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    showProcessingDialog(context, "Initiating ₹1 Penny Drop Verification...");
+    showProcessingDialog(context, "Verifying Bank Account...");
     if (!mounted) return;
 
     setState(() {
@@ -113,6 +113,9 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
         if (res['nameAtBank'] != null && res['nameAtBank'].toString().isNotEmpty) {
           _holderNameController.text = res['nameAtBank'];
         }
+        if (res['bankName'] != null && res['bankName'].toString().isNotEmpty) {
+          _bankNameController.text = res['bankName'];
+        }
       });
 
       showDialog(
@@ -127,7 +130,7 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
             ],
           ),
           content: Text(
-            res['message'] ?? "₹1 Penny Drop verification successful! Your bank account details have been verified and locked securely.",
+            res['message'] ?? "Bank Account verification successful! Your bank account details have been verified and locked securely.",
           ),
           actions: [
             ElevatedButton(
@@ -274,8 +277,8 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                           const SizedBox(height: 2),
                           Text(
                             _isVerified
-                                ? "Details are locked for secure payouts via ₹1 Penny Drop."
-                                : "Submit details to verify via ₹1 Penny Drop.",
+                                ? "Details are locked for secure payouts."
+                                : "Submit details to verify your bank account.",
                             style: const TextStyle(color: Color(0xFF475569), fontSize: 12),
                           ),
                         ],
@@ -332,7 +335,19 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                       controller: _accountNoController,
                       icon: Icons.numbers_rounded,
                       enabled: !_isVerified,
-                      validator: (v) => (v == null || v.trim().isEmpty) ? "Please enter Account Number" : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return "Please enter Account Number";
+                        }
+                        final cleanAcc = v.trim();
+                        if (!RegExp(r'^\d+$').hasMatch(cleanAcc)) {
+                          return "Account Number must contain digits only";
+                        }
+                        if (cleanAcc.length < 9 || cleanAcc.length > 18) {
+                          return "Account Number must be 9 to 18 digits long";
+                        }
+                        return null;
+                      },
                     ),
                     _buildField(
                       label: "IFSC Code",
@@ -344,8 +359,16 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                         if (v == null || v.trim().isEmpty) {
                           return "Please enter IFSC Code";
                         }
-                        if (v.trim().toLowerCase().startsWith("icic")) {
+                        final cleanIfsc = v.trim().toUpperCase();
+                        if (cleanIfsc.startsWith("ICIC")) {
                           return "ICICI payout unavailable. Use another bank";
+                        }
+                        if (cleanIfsc.length != 11) {
+                          return "IFSC Code must be exactly 11 characters long";
+                        }
+                        final ifscRegex = RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$');
+                        if (!ifscRegex.hasMatch(cleanIfsc)) {
+                          return "Invalid IFSC format (e.g. SBIN0001234: 4 letters, 0, 6 branch digits/letters)";
                         }
                         return null;
                       },
@@ -394,7 +417,7 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                           ),
                           icon: const Icon(Icons.verified_user_rounded, color: Colors.white),
                           label: const Text(
-                            "Verify & Save (₹1 Penny Drop)",
+                            "Verify & Save Bank Account",
                             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                         ),
