@@ -142,6 +142,41 @@ router.post('/notifications', verifyAdminToken, async (req, res) => {
   }
 });
 
+router.post('/send-notification', verifyAdminToken, async (req, res) => {
+  const { title, message } = req.body;
+  if (!title || !message) {
+    return res.status(400).json({ error: 'Title and Message are required.' });
+  }
+
+  try {
+    await query('INSERT INTO notifications (title, message) VALUES (?, ?)', [title, message]);
+    res.status(201).json({ message: 'Notification broadcasted successfully.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create notification' });
+  }
+});
+
+// GET Admin List Notifications
+router.get('/notifications', verifyAdminToken, async (req, res) => {
+  try {
+    const list = await query('SELECT * FROM notifications ORDER BY id DESC LIMIT 100');
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+// DELETE Admin Notification
+router.delete('/notifications/:id', verifyAdminToken, async (req, res) => {
+  try {
+    await query('DELETE FROM notifications WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Notification deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete notification' });
+  }
+});
+
+
 // GET Paginated Admin Transactions
 router.get('/transactions', verifyAdminToken, async (req, res) => {
   try {

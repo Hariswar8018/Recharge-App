@@ -585,7 +585,7 @@
             </div>
 
             <!-- Right Column: Live Phone Screen Preview -->
-            <div class="preview-card">
+            <div class="preview-card desktop-only-preview">
               <div class="preview-card-header">
                 <span class="icon">👁️</span>
                 <div>
@@ -597,6 +597,12 @@
               <!-- Smartphone Mockup Frame -->
               <div class="phone-frame">
                 <div class="phone-screen">
+                  <!-- Phone Top Status Bar -->
+                  <div class="phone-status-bar">
+                    <span>9:41</span>
+                    <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                    <span>📶 🔋</span>
+                  </div>
                   <!-- App Header -->
                   <div class="phone-app-header blue-bg">
                     <span class="back-arrow">←</span>
@@ -650,6 +656,7 @@
                       </span>
                     </div>
                   </div>
+                  <div class="phone-home-indicator"></div>
                 </div>
               </div>
             </div>
@@ -832,7 +839,7 @@
             </div>
 
             <!-- Right Column: Live Phone Screen Preview -->
-            <div class="preview-card">
+            <div class="preview-card desktop-only-preview">
               <div class="preview-card-header">
                 <span class="icon">👁️</span>
                 <div>
@@ -844,6 +851,12 @@
               <!-- Smartphone Mockup Frame -->
               <div class="phone-frame">
                 <div class="phone-screen">
+                  <!-- Phone Top Status Bar -->
+                  <div class="phone-status-bar">
+                    <span>9:41</span>
+                    <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                    <span>📶 🔋</span>
+                  </div>
                   <div class="phone-app-header blue-bg">
                     <span class="back-arrow">←</span>
                     <div>
@@ -897,6 +910,7 @@
                       💳 SUBSCRIBE NOW
                     </button>
                   </div>
+                  <div class="phone-home-indicator"></div>
                 </div>
               </div>
             </div>
@@ -1082,7 +1096,7 @@
             </div>
 
             <!-- Right Column: Live Phone Screen Preview -->
-            <div class="preview-card">
+            <div class="preview-card desktop-only-preview">
               <div class="preview-card-header">
                 <span class="icon">👁️</span>
                 <div>
@@ -1094,6 +1108,12 @@
               <!-- Smartphone Mockup Frame -->
               <div class="phone-frame">
                 <div class="phone-screen light-blue-bg">
+                  <!-- Phone Top Status Bar -->
+                  <div class="phone-status-bar">
+                    <span>9:41</span>
+                    <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                    <span>📶 🔋</span>
+                  </div>
                   <div class="phone-app-body text-center">
                     <!-- Gift Illustration -->
                     <div class="gift-icon-container">
@@ -1114,6 +1134,7 @@
                       INVITE NOW &rarr;
                     </button>
                   </div>
+                  <div class="phone-home-indicator"></div>
                 </div>
               </div>
             </div>
@@ -1280,7 +1301,7 @@
               </div>
             </div>
 
-            <div class="preview-card">
+            <div class="preview-card desktop-only-preview">
               <div class="preview-card-header">
                 <span class="icon">👁️</span>
                 <div>
@@ -1291,12 +1312,19 @@
 
               <div class="phone-frame">
                 <div class="phone-screen light-blue-bg">
+                  <!-- Phone Top Status Bar -->
+                  <div class="phone-status-bar">
+                    <span>9:41</span>
+                    <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                    <span>📶 🔋</span>
+                  </div>
                   <div class="phone-app-body" style="padding: 15px;">
                     <div style="background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); font-size: 13px; word-break: break-word; text-align: left;">
                       <div style="font-weight: 600; color: #1e293b; white-space: pre-wrap; margin-bottom: 12px;">{{ systemSettings.app_share_text || 'Download our App to Earn Money from Scratch Cards' }}</div>
                       <div style="color: #0052cc; font-weight: 500;">{{ systemSettings.playstore_link || 'https://play.google.com/store/apps/details?id=com.app.earnfarm' }}</div>
                     </div>
                   </div>
+                  <div class="phone-home-indicator"></div>
                 </div>
               </div>
             </div>
@@ -1483,7 +1511,7 @@
             </div>
 
             <!-- Right Column: Live Phone Screen Preview -->
-            <div class="preview-card">
+            <div class="preview-card desktop-only-preview">
               <div class="preview-card-header">
                 <span class="icon">👁️</span>
                 <div>
@@ -1495,6 +1523,12 @@
               <!-- Smartphone Mockup Frame -->
               <div class="phone-frame">
                 <div class="phone-screen">
+                  <!-- Phone Top Status Bar -->
+                  <div class="phone-status-bar">
+                    <span>9:41</span>
+                    <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                    <span>📶 🔋</span>
+                  </div>
                   <div class="phone-app-header blue-bg">
                     <span class="back-arrow">←</span>
                     <div>
@@ -1538,6 +1572,7 @@
                       <span>ℹ️ {{ systemSettings.cashout_instructions || 'Withdrawal will be processed within 24 hours after admin approval.' }}</span>
                     </div>
                   </div>
+                  <div class="phone-home-indicator"></div>
                 </div>
               </div>
             </div>
@@ -2076,43 +2111,54 @@
                 </div>
                 <p class="preview-subtext">This is how Registration screen looks to users.</p>
 
-                <div class="phone-screen-mockup">
-                  <div class="phone-app-header">
-                    <div>
-                      <h5 class="header-title">Create Account</h5>
-                      <span class="header-sub">SR Digital Seva</span>
-                    </div>
-                    <span class="header-wallet-icon">📝</span>
-                  </div>
-
-                  <div class="phone-app-body">
-                    <div v-if="systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool" class="mock-notice-card alert-red">
-                      <strong>🔴 Registration Closed</strong>
-                      <p>{{ systemSettings.sec_registration_notice || 'Registration is temporarily closed by Administrator.' }}</p>
+                <!-- Smartphone Mockup Frame with Borders -->
+                <div class="phone-frame">
+                  <div class="phone-screen">
+                    <div class="phone-status-bar">
+                      <span>9:41</span>
+                      <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                      <span>📶 🔋</span>
                     </div>
 
-                    <div class="mock-form-group">
-                      <label>Full Name</label>
-                      <input type="text" placeholder="John Doe" disabled class="mock-input" />
-                    </div>
-                    <div class="mock-form-group">
-                      <label>Mobile Number</label>
-                      <input type="text" placeholder="9876543210" disabled class="mock-input" />
-                    </div>
-                    <div class="mock-form-group">
-                      <label>Email Address</label>
-                      <input type="text" placeholder="john@example.com" disabled class="mock-input" />
-                    </div>
-                    <div class="mock-form-group">
-                      <label>Sponsor ID</label>
-                      <input type="text" placeholder="SRM00123" disabled class="mock-input" />
+                    <div class="phone-app-header">
+                      <div>
+                        <h5 class="header-title">Create Account</h5>
+                        <span class="header-sub">SR Digital Seva</span>
+                      </div>
+                      <span class="header-wallet-icon">📝</span>
                     </div>
 
-                    <button :disabled="systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool"
-                            class="mock-btn-submit"
-                            :class="{ 'mock-btn-disabled': systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool }">
-                      REGISTER NOW
-                    </button>
+                    <div class="phone-app-body">
+                      <div v-if="systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool" class="mock-notice-card alert-red">
+                        <strong>🔴 Registration Closed</strong>
+                        <p>{{ systemSettings.sec_registration_notice || 'Registration is temporarily closed by Administrator.' }}</p>
+                      </div>
+
+                      <div class="mock-form-group">
+                        <label>Full Name</label>
+                        <input type="text" placeholder="John Doe" disabled class="mock-input" />
+                      </div>
+                      <div class="mock-form-group">
+                        <label>Mobile Number</label>
+                        <input type="text" placeholder="9876543210" disabled class="mock-input" />
+                      </div>
+                      <div class="mock-form-group">
+                        <label>Email Address</label>
+                        <input type="text" placeholder="john@example.com" disabled class="mock-input" />
+                      </div>
+                      <div class="mock-form-group">
+                        <label>Sponsor ID</label>
+                        <input type="text" placeholder="SRM00123" disabled class="mock-input" />
+                      </div>
+
+                      <button :disabled="systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool"
+                              class="mock-btn-submit"
+                              :class="{ 'mock-btn-disabled': systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool }">
+                        REGISTER NOW
+                      </button>
+                    </div>
+
+                    <div class="phone-home-indicator"></div>
                   </div>
                 </div>
               </div>
@@ -2228,35 +2274,46 @@
                 </div>
                 <p class="preview-subtext">This is how Login screen looks to users.</p>
 
-                <div class="phone-screen-mockup">
-                  <div class="phone-app-header">
-                    <div>
-                      <h5 class="header-title">Welcome Back</h5>
-                      <span class="header-sub">Sign in to your account</span>
-                    </div>
-                    <span class="header-wallet-icon">🔑</span>
-                  </div>
-
-                  <div class="phone-app-body">
-                    <div v-if="systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool" class="mock-notice-card alert-red">
-                      <strong>🔴 Login Closed</strong>
-                      <p>{{ systemSettings.sec_login_notice || 'Login functionality is closed by Administrator.' }}</p>
+                <!-- Smartphone Mockup Frame with Borders -->
+                <div class="phone-frame">
+                  <div class="phone-screen">
+                    <div class="phone-status-bar">
+                      <span>9:41</span>
+                      <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                      <span>📶 🔋</span>
                     </div>
 
-                    <div class="mock-form-group">
-                      <label>Mobile Number or Email</label>
-                      <input type="text" placeholder="Enter Mobile or Email" disabled class="mock-input" />
-                    </div>
-                    <div class="mock-form-group">
-                      <label>Password</label>
-                      <input type="password" placeholder="••••••••" disabled class="mock-input" />
+                    <div class="phone-app-header">
+                      <div>
+                        <h5 class="header-title">Welcome Back</h5>
+                        <span class="header-sub">Sign in to your account</span>
+                      </div>
+                      <span class="header-wallet-icon">🔑</span>
                     </div>
 
-                    <button :disabled="systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool"
-                            class="mock-btn-submit"
-                            :class="{ 'mock-btn-disabled': systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool }">
-                      LOGIN NOW
-                    </button>
+                    <div class="phone-app-body">
+                      <div v-if="systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool" class="mock-notice-card alert-red">
+                        <strong>🔴 Login Closed</strong>
+                        <p>{{ systemSettings.sec_login_notice || 'Login functionality is closed by Administrator.' }}</p>
+                      </div>
+
+                      <div class="mock-form-group">
+                        <label>Mobile Number or Email</label>
+                        <input type="text" placeholder="Enter Mobile or Email" disabled class="mock-input" />
+                      </div>
+                      <div class="mock-form-group">
+                        <label>Password</label>
+                        <input type="password" placeholder="••••••••" disabled class="mock-input" />
+                      </div>
+
+                      <button :disabled="systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool"
+                              class="mock-btn-submit"
+                              :class="{ 'mock-btn-disabled': systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool }">
+                        LOGIN NOW
+                      </button>
+                    </div>
+
+                    <div class="phone-home-indicator"></div>
                   </div>
                 </div>
               </div>
@@ -2372,31 +2429,42 @@
                 </div>
                 <p class="preview-subtext">This is how Forgot Password screen looks to users.</p>
 
-                <div class="phone-screen-mockup">
-                  <div class="phone-app-header">
-                    <div>
-                      <h5 class="header-title">Forgot Password</h5>
-                      <span class="header-sub">Reset your password</span>
-                    </div>
-                    <span class="header-wallet-icon">📲</span>
-                  </div>
-
-                  <div class="phone-app-body">
-                    <div v-if="systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool" class="mock-notice-card alert-red">
-                      <strong>🔴 Forgot Password Closed</strong>
-                      <p>{{ systemSettings.sec_otp_notice || 'Password reset service is closed by Administrator.' }}</p>
+                <!-- Smartphone Mockup Frame with Borders -->
+                <div class="phone-frame">
+                  <div class="phone-screen">
+                    <div class="phone-status-bar">
+                      <span>9:41</span>
+                      <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                      <span>📶 🔋</span>
                     </div>
 
-                    <div class="mock-form-group">
-                      <label>Registered Email Address</label>
-                      <input type="text" placeholder="email@domain.com" disabled class="mock-input" />
+                    <div class="phone-app-header">
+                      <div>
+                        <h5 class="header-title">Forgot Password</h5>
+                        <span class="header-sub">Reset your password</span>
+                      </div>
+                      <span class="header-wallet-icon">📲</span>
                     </div>
 
-                    <button :disabled="systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool"
-                            class="mock-btn-submit"
-                            :class="{ 'mock-btn-disabled': systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool }">
-                      SEND PASSWORD
-                    </button>
+                    <div class="phone-app-body">
+                      <div v-if="systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool" class="mock-notice-card alert-red">
+                        <strong>🔴 Forgot Password Closed</strong>
+                        <p>{{ systemSettings.sec_otp_notice || 'Password reset service is closed by Administrator.' }}</p>
+                      </div>
+
+                      <div class="mock-form-group">
+                        <label>Registered Email Address</label>
+                        <input type="text" placeholder="email@domain.com" disabled class="mock-input" />
+                      </div>
+
+                      <button :disabled="systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool"
+                              class="mock-btn-submit"
+                              :class="{ 'mock-btn-disabled': systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool }">
+                        SEND PASSWORD
+                      </button>
+                    </div>
+
+                    <div class="phone-home-indicator"></div>
                   </div>
                 </div>
               </div>
@@ -2512,27 +2580,123 @@
 
         <!-- SECTION: SEND NOTIFICATIONS (15. Notifications) -->
         <div v-if="currentTab === 'notifications' || currentTab === 'sec_notifications'" class="notifications-pane">
-          <div class="settings-table-card">
-            <h3>📢 Broadcast Mobile Push Notification</h3>
-            <p class="card-desc">Send push alerts and announcements to all registered mobile app users.</p>
-            
-            <form @submit.prevent="handleSendNotification" class="notif-form">
-              <div class="nice-input-group">
-                <label>Notification Title</label>
-                <input type="text" v-model="notifTitle" placeholder="e.g. 🎉 Special Cashback Offer Active!" required />
-              </div>
-              <div class="nice-input-group" style="margin-top: 1rem;">
-                <label>Message Content</label>
-                <textarea v-model="notifMessage" rows="4" placeholder="Enter notification description here..." required></textarea>
+          <div class="section-split-container">
+            <!-- Left Column: Form & History Table -->
+            <div class="settings-left-col">
+              <!-- Broadcast Form Card -->
+              <div class="settings-table-card">
+                <h3>📢 Broadcast Mobile Push Notification</h3>
+                <p class="card-desc">Send push alerts and announcements to all registered mobile app users.</p>
+                
+                <form @submit.prevent="handleSendNotification" class="notif-form">
+                  <div class="nice-input-group">
+                    <label>Notification Title</label>
+                    <input type="text" v-model="notifTitle" placeholder="e.g. 🎉 Special Cashback Offer Active!" required />
+                  </div>
+                  <div class="nice-input-group" style="margin-top: 1rem;">
+                    <label>Message Content</label>
+                    <textarea v-model="notifMessage" rows="4" placeholder="Enter notification description here..." required></textarea>
+                  </div>
+
+                  <div v-if="notifError" class="alert-box alert-error" style="margin-top: 1rem;">⚠️ {{ notifError }}</div>
+                  <div v-if="notifSuccess" class="alert-box alert-success" style="margin-top: 1rem;">✅ {{ notifSuccess }}</div>
+
+                  <button type="submit" :disabled="sendingNotif" class="btn-blue-save" style="margin-top: 1.5rem; width: 100%;">
+                    <span>📢 {{ sendingNotif ? 'Broadcasting Notice...' : 'Send Broadcast Notice' }}</span>
+                  </button>
+                </form>
               </div>
 
-              <div v-if="notifError" class="alert-box alert-error" style="margin-top: 1rem;">⚠️ {{ notifError }}</div>
-              <div v-if="notifSuccess" class="alert-box alert-success" style="margin-top: 1rem;">✅ {{ notifSuccess }}</div>
+              <!-- History Table Card -->
+              <div class="settings-table-card" style="margin-top: 1.5rem;">
+                <div class="card-title-row">
+                  <div class="title-left">
+                    <span class="icon">📜</span>
+                    <h3>Notification History (Recent First)</h3>
+                  </div>
+                  <button @click="fetchNotifications" class="btn-white-reset">↺ Refresh</button>
+                </div>
 
-              <button type="submit" :disabled="sendingNotif" class="btn-blue-save" style="margin-top: 1.5rem; width: 100%;">
-                <span>📢 {{ sendingNotif ? 'Broadcasting Notice...' : 'Send Broadcast Notice' }}</span>
-              </button>
-            </form>
+                <div class="table-container" style="margin-top: 1rem;">
+                  <table class="nice-table settings-edit-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Title</th>
+                        <th>Message</th>
+                        <th style="width: 140px;">Date Sent</th>
+                        <th style="width: 80px;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-if="notificationsList.length === 0">
+                        <td colspan="5" style="text-align: center; color: #64748b; padding: 20px;">No notifications broadcasted yet.</td>
+                      </tr>
+                      <tr v-for="item in notificationsList" :key="item.id">
+                        <td>#{{ item.id }}</td>
+                        <td class="font-bold" style="color: #0f172a;">{{ item.title }}</td>
+                        <td style="max-width: 250px; word-break: break-word;">{{ item.message }}</td>
+                        <td style="font-size: 11px; color: #64748b;">{{ formatDate(item.createdAt) }}</td>
+                        <td>
+                          <button @click="deleteNotification(item.id)" class="btn-delete-small" style="background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                            🗑️ Delete
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Smartphone Live Preview -->
+            <div class="preview-right-col desktop-only-preview">
+              <div class="panel-preview-card">
+                <div class="panel-preview-header">
+                  <h5>📱 Mobile App Live View</h5>
+                  <span class="badge-live-status">🟢 Live Sync</span>
+                </div>
+                <p class="preview-subtext">This is how Notifications screen looks to users.</p>
+
+                <!-- Smartphone Mockup Frame with Borders -->
+                <div class="phone-frame">
+                  <div class="phone-screen">
+                    <div class="phone-status-bar">
+                      <span>9:41</span>
+                      <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                      <span>📶 🔋</span>
+                    </div>
+
+                    <div class="phone-app-header blue-bg">
+                      <span class="back-arrow">←</span>
+                      <div>
+                        <h5 class="header-title">Notifications</h5>
+                        <span class="header-sub">SR Digital Seva</span>
+                      </div>
+                      <span class="header-wallet-icon">🔔</span>
+                    </div>
+
+                    <div class="phone-app-body" style="padding: 10px; background: #f8fafc; min-height: 380px;">
+                      <div v-if="notificationsList.length === 0" style="text-align: center; color: #94a3b8; margin-top: 40px; font-size: 12px;">
+                        🔔 No notifications available
+                      </div>
+                      <div v-for="notif in notificationsList.slice(0, 4)" :key="'prev-' + notif.id" style="background: white; border-radius: 10px; padding: 10px; margin-bottom: 8px; border: 1px solid #e2e8f0; display: flex; gap: 8px; align-items: flex-start;">
+                        <div style="background: #e3f2fd; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+                          🔔
+                        </div>
+                        <div style="flex: 1; min-width: 0; text-align: left;">
+                          <div style="font-weight: 700; font-size: 12px; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ notif.title }}</div>
+                          <div style="font-size: 11px; color: #475569; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ notif.message }}</div>
+                          <div style="font-size: 9px; color: #94a3b8; margin-top: 4px;">{{ formatDate(notif.createdAt) }}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="phone-home-indicator"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2865,6 +3029,7 @@ export default {
       notifSuccess: '',
       notifError: '',
       sendingNotif: false,
+      notificationsList: [],
       // System settings states
       loadingSystem: false,
       systemError: '',
@@ -3027,6 +3192,7 @@ export default {
     this.fetchFundRequests();
     this.fetchTeamsData();
     this.fetchSystemAdmins();
+    this.fetchNotifications();
   },
   methods: {
     toggleGroup(groupKey) {
@@ -3035,6 +3201,9 @@ export default {
     switchTab(tab) {
       this.currentTab = tab;
       this.mobileMenuOpen = false;
+      if (tab === 'notifications' || tab === 'sec_notifications') {
+        this.fetchNotifications();
+      }
     },
     getSectionTitle(tabKey) {
       const titles = {
@@ -3414,6 +3583,42 @@ export default {
         this.updatingUserPassword = false;
       }
     },
+    async fetchNotifications() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/notifications`);
+        if (response.ok) {
+          const data = await response.json();
+          this.notificationsList = Array.isArray(data) ? data : (data.notifications || []);
+        }
+      } catch (e) {
+        console.error('Failed to fetch notifications:', e);
+      }
+    },
+    async deleteNotification(id) {
+      if (!confirm('Are you sure you want to delete this notification?')) return;
+      const token = localStorage.getItem('adminToken');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/notifications/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          this.fetchNotifications();
+        }
+      } catch (e) {
+        alert('Failed to delete notification');
+      }
+    },
+    formatDate(dateStr) {
+      if (!dateStr) return 'Just now';
+      try {
+        const dt = new Date(dateStr);
+        if (isNaN(dt.getTime())) return dateStr;
+        return dt.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+      } catch (e) {
+        return dateStr;
+      }
+    },
     async handleSendNotification() {
       this.sendingNotif = true;
       this.notifSuccess = '';
@@ -3436,6 +3641,7 @@ export default {
         this.notifSuccess = 'Notification successfully broadcasted to mobile users!';
         this.notifTitle = '';
         this.notifMessage = '';
+        this.fetchNotifications();
       } catch (e) {
         this.notifError = e.message;
       } finally {
@@ -4250,14 +4456,17 @@ input:checked + .slider:before { transform: translateX(22px); }
 }
 
 .phone-frame {
-  width: 290px;
+  width: 300px;
   max-width: 100%;
+  margin: 0 auto;
   box-sizing: border-box;
   background: #0f172a;
-  border: 8px solid #1e293b;
-  border-radius: 28px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border: 10px solid #1e293b;
+  border-radius: 36px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .phone-screen {
@@ -4267,6 +4476,93 @@ input:checked + .slider:before { transform: translateX(22px); }
   flex-direction: column;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  border-radius: 26px;
+  overflow: hidden;
+}
+
+.phone-status-bar {
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 6px 14px 4px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  user-select: none;
+}
+
+.phone-notch {
+  width: 65px;
+  height: 12px;
+  background: #020617;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-notch-dot {
+  width: 4px;
+  height: 4px;
+  background: #1e293b;
+  border-radius: 50%;
+}
+
+.phone-home-indicator {
+  width: 100px;
+  height: 4px;
+  background: #cbd5e1;
+  border-radius: 4px;
+  margin: 8px auto 6px auto;
+  flex-shrink: 0;
+}
+
+.panel-preview-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.25rem 1rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.panel-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.25rem;
+}
+
+.panel-preview-header h5 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.badge-live-status {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.preview-subtext {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0 0 1rem 0;
+  width: 100%;
+  text-align: left;
 }
 
 .phone-screen.light-blue-bg { background: #eff6ff; }

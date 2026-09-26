@@ -762,11 +762,14 @@ class ApiService {
   static Future<List<dynamic>> getNotifications() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/landing-info'),
+        Uri.parse('$baseUrl/api/notifications'),
         headers: await _getHeaders(requireAuth: false),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        if (data is List) {
+          return data;
+        }
         if (data['notifications'] != null && data['notifications'] is List) {
           return data['notifications'];
         }

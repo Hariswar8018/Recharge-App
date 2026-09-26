@@ -19,24 +19,10 @@ class _InternalNotificationsScreenState extends State<InternalNotificationsScree
   }
 
   Future<void> _loadNotifications() async {
+    setState(() => _isLoading = true);
     final list = await ApiService.getNotifications();
     setState(() {
-      if (list.isNotEmpty) {
-        _notifications = list;
-      } else {
-        _notifications = [
-          {
-            "title": "Welcome to SR Digital Seva!",
-            "message": "Instant wallet loading and commissions are live. Start boosting your earnings today!",
-            "createdAt": "2026-08-28T11:30:00.000Z"
-          },
-          {
-            "title": "System Update Complete",
-            "message": "Single-leg bonus distribution for Cycle 1 has been credited to your Main Wallet.",
-            "createdAt": "2026-08-27T09:15:00.000Z"
-          }
-        ];
-      }
+      _notifications = list;
       _isLoading = false;
     });
   }
@@ -53,9 +39,27 @@ class _InternalNotificationsScreenState extends State<InternalNotificationsScree
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF0D47A1)))
-          : _notifications.isEmpty
-              ? const Center(child: Text("No notifications available"))
-              : ListView.separated(
+          : RefreshIndicator(
+              onRefresh: _loadNotifications,
+              color: const Color(0xFF0D47A1),
+              child: _notifications.isEmpty
+                  ? ListView(
+                      children: const [
+                        SizedBox(height: 120),
+                        Center(
+                          child: Column(
+                            children: [
+                              Icon(Icons.notifications_none_rounded, size: 64, color: Color(0xFF94A3B8)),
+                              SizedBox(height: 12),
+                              Text("No notifications available", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                              SizedBox(height: 4),
+                              Text("New announcements will appear here.", style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: _notifications.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 10),
@@ -109,6 +113,7 @@ class _InternalNotificationsScreenState extends State<InternalNotificationsScree
                     );
                   },
                 ),
+            ),
     );
   }
 
