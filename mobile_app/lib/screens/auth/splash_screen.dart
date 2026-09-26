@@ -47,6 +47,10 @@ class _SplashScreenState extends State<SplashScreen> {
       print("Splash screen health check warning: $e");
     }
 
+    try {
+      await ApiService.getVisibility(forceRefresh: true);
+    } catch (_) {}
+
     if (!mounted) return;
     setState(() {
       _isChecking = false;

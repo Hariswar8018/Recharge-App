@@ -2051,6 +2051,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     double totalEarned = realGlobalIncome + realAffiliateIncome;
     double progressVal = (totalEarned / 12600.0).clamp(0.0, 1.0);
+    final String percentDisplay = "${(progressVal * 100).toStringAsFixed(1)}%";
     final String visB = (_visibilitySettings['sec_business_income_visibility'] ?? 'Show').toString();
     final bool enabledB = _visibilitySettings['sec_business_income_enabled'] != false && _visibilitySettings['sec_business_income_enabled_bool'] != 'false';
     final String ruleModeB = (_visibilitySettings['sec_business_income_rule_mode'] ?? '').toString();

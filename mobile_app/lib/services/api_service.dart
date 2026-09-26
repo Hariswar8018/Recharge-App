@@ -743,18 +743,24 @@ class ApiService {
     return [];
   }
 
+  static Map<String, dynamic>? _cachedVisibility;
+
   // Get Element Visibility Settings
-  static Future<Map<String, dynamic>> getVisibility() async {
+  static Future<Map<String, dynamic>> getVisibility({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedVisibility != null && _cachedVisibility!.isNotEmpty) {
+      return _cachedVisibility!;
+    }
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/api/visibility'),
         headers: await _getHeaders(requireAuth: false),
-      );
+      ).timeout(const Duration(seconds: 4));
       if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
+        _cachedVisibility = jsonDecode(response.body) as Map<String, dynamic>;
+        return _cachedVisibility!;
       }
     } catch (_) {}
-    return {};
+    return _cachedVisibility ?? {};
   }
 
   // Get System Settings
