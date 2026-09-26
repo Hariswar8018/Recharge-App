@@ -1190,8 +1190,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final String notice = _visibilitySettings[noticeKey]?.toString() ?? '';
     final String vis = _visibilitySettings[visKey]?.toString() ?? 'Show';
     final bool isEnabled = _visibilitySettings[visKey.replaceAll('_visibility', '_enabled')] != false;
+    final String ruleMode = (_visibilitySettings[visKey.replaceAll('_visibility', '_rule_mode')] ?? '').toString();
+    final bool isDisabled = vis == 'Hide' || !isEnabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
 
-    if (vis == 'Hide' || !isEnabled) {
+    if (isDisabled) {
       return Container(
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 12),
