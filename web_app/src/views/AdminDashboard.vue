@@ -457,33 +457,10 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- Row 1: UPI QR Code -->
+
+                    <!-- Row 1: UPI ID -->
                     <tr>
                       <td>1</td>
-                      <td class="font-bold">UPI QR Code</td>
-                      <td>
-                        <div class="file-upload-row">
-                          <input type="text" v-model="systemSettings.upi_qr_url" placeholder="https://..." class="table-input" />
-                          <label class="btn-upload-file">
-                            📤 Upload QR Code
-                            <input type="file" @change="handleFileUpload($event, 'upi_qr_url')" accept="image/*" style="display: none;" />
-                          </label>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="status-cell">
-                          <label class="switch small">
-                            <input type="checkbox" v-model="systemSettings.status_upi_qr" />
-                            <span class="slider round"></span>
-                          </label>
-                          <span class="badge-status-active">🟢 Active</span>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <!-- Row 2: UPI ID -->
-                    <tr>
-                      <td>2</td>
                       <td class="font-bold">UPI ID</td>
                       <td>
                         <input type="text" v-model="systemSettings.upi_vpa_id" placeholder="vp110064@okaxis" class="table-input" />
@@ -499,9 +476,9 @@
                       </td>
                     </tr>
 
-                    <!-- Row 3: Minimum Add Money Amount -->
+                    <!-- Row 2: Minimum Add Money Amount -->
                     <tr>
-                      <td>3</td>
+                      <td>2</td>
                       <td class="font-bold">Minimum Add Money Amount (₹)</td>
                       <td>
                         <input type="number" v-model="systemSettings.min_add_money" placeholder="1200" class="table-input" />
@@ -517,9 +494,9 @@
                       </td>
                     </tr>
 
-                    <!-- Row 4: Maximum Add Money Amount -->
+                    <!-- Row 3: Maximum Add Money Amount -->
                     <tr>
-                      <td>4</td>
+                      <td>3</td>
                       <td class="font-bold">Maximum Add Money Amount (₹)</td>
                       <td>
                         <input type="number" v-model="systemSettings.max_add_money" placeholder="12000" class="table-input" />
@@ -535,9 +512,9 @@
                       </td>
                     </tr>
 
-                    <!-- Row 5: Preset Amount Buttons -->
+                    <!-- Row 4: Preset Amount Buttons -->
                     <tr>
-                      <td>5</td>
+                      <td>4</td>
                       <td class="font-bold">Preset Amount Buttons (₹)</td>
                       <td>
                         <input type="text" v-model="systemSettings.preset_amounts" placeholder="100,500,1000,2000,5000" class="table-input" />
@@ -554,9 +531,9 @@
                       </td>
                     </tr>
 
-                    <!-- Row 6: UTR Number -->
+                    <!-- Row 5: UTR Number -->
                     <tr>
-                      <td>6</td>
+                      <td>5</td>
                       <td class="font-bold">UTR Number</td>
                       <td>
                         <select v-model="systemSettings.utr_number_rule" class="table-select">
@@ -576,9 +553,9 @@
                       </td>
                     </tr>
 
-                    <!-- Row 7: Important Instructions -->
+                    <!-- Row 6: Important Instructions -->
                     <tr>
-                      <td>7</td>
+                      <td>6</td>
                       <td class="font-bold">Important Instructions</td>
                       <td>
                         <textarea v-model="systemSettings.add_money_instructions" rows="4" class="table-textarea" placeholder="Minimum Add Money: ₹1200..."></textarea>
@@ -593,6 +570,7 @@
                         </div>
                       </td>
                     </tr>
+
                   </tbody>
                 </table>
               </div>
@@ -636,7 +614,7 @@
                       <p class="scan-sub">Scan QR Code using any UPI App</p>
                       
                       <div class="qr-box">
-                        <img :src="systemSettings.upi_qr_url || 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=' + systemSettings.upi_vpa_id" alt="UPI QR Code" />
+                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=' + (systemSettings.upi_vpa_id || 'vp110064@okaxis')" alt="UPI QR Code" />
                       </div>
 
                       <div class="or-divider"><span>OR</span></div>
@@ -2017,73 +1995,127 @@
             <span v-else>🔴 Registration API is TURNED OFF. Registration attempts will fail with HTTP 404 (Not Found).</span>
           </div>
 
-          <div class="settings-table-card">
-            <div class="card-title-row">
-              <div class="title-left">
-                <span class="icon">⚙️</span>
-                <h3>Registration Feature Rules</h3>
+          <div class="section-split-container">
+            <div class="settings-left-col">
+              <div class="settings-table-card">
+                <div class="card-title-row">
+                  <div class="title-left">
+                    <span class="icon">⚙️</span>
+                    <h3>Registration Feature Rules</h3>
+                  </div>
+                  <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
+                </div>
+
+                <div class="table-container">
+                  <table class="nice-table settings-edit-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Setting</th>
+                        <th>Value / State</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td class="font-bold">Master Registration API Toggle</td>
+                        <td>
+                          <span class="status-pill-badge" :class="systemSettings.registration_enabled_bool ? 'pill-green' : 'pill-red'">
+                            {{ systemSettings.registration_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
+                          </span>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td class="font-bold">Feature Display Visibility</td>
+                        <td>
+                          <select class="table-select" v-model="systemSettings.sec_registration_visibility">
+                            <option value="Show">Show (Visible in App/Web)</option>
+                            <option value="Hide">Hide (Hidden from App/Web)</option>
+                          </select>
+                        </td>
+                        <td>
+                          <span class="status-pill-badge" :class="systemSettings.sec_registration_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
+                            {{ systemSettings.sec_registration_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>3</td>
+                        <td class="font-bold">Feature Master Rule Mode</td>
+                        <td>
+                          <select class="table-select" v-model="systemSettings.sec_registration_rule_mode">
+                            <option value="Enabled (Standard)">Enabled (Standard)</option>
+                            <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
+                            <option value="Restricted">Restricted Mode</option>
+                          </select>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>4</td>
+                        <td class="font-bold">Important User Notice</td>
+                        <td>
+                          <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_registration_notice" placeholder="Enter notice content for users..."></textarea>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
             </div>
 
-            <div class="table-container">
-              <table class="nice-table settings-edit-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Setting</th>
-                    <th>Value / State</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td class="font-bold">Master Registration API Toggle</td>
-                    <td>
-                      <span class="status-pill-badge" :class="systemSettings.registration_enabled_bool ? 'pill-green' : 'pill-red'">
-                        {{ systemSettings.registration_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
-                      </span>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td class="font-bold">Feature Display Visibility</td>
-                    <td>
-                      <select class="table-select" v-model="systemSettings.sec_registration_visibility">
-                        <option value="Show">Show (Visible in App/Web)</option>
-                        <option value="Hide">Hide (Hidden from App/Web)</option>
-                      </select>
-                    </td>
-                    <td>
-                      <span class="status-pill-badge" :class="systemSettings.sec_registration_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
-                        {{ systemSettings.sec_registration_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td class="font-bold">Feature Master Rule Mode</td>
-                    <td>
-                      <select class="table-select" v-model="systemSettings.sec_registration_rule_mode">
-                        <option value="Enabled (Standard)">Enabled (Standard)</option>
-                        <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
-                        <option value="Restricted">Restricted Mode</option>
-                      </select>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>4</td>
-                    <td class="font-bold">Important User Notice</td>
-                    <td>
-                      <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_registration_notice" placeholder="Enter notice content for users..."></textarea>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="preview-right-col desktop-only-preview">
+              <div class="panel-preview-card">
+                <div class="panel-preview-header">
+                  <h5>📱 Mobile App Live View</h5>
+                  <span class="badge-live-status">🟢 Live Sync</span>
+                </div>
+                <p class="preview-subtext">This is how Registration screen looks to users.</p>
+
+                <div class="phone-screen-mockup">
+                  <div class="phone-app-header">
+                    <div>
+                      <h5 class="header-title">Create Account</h5>
+                      <span class="header-sub">SR Digital Seva</span>
+                    </div>
+                    <span class="header-wallet-icon">📝</span>
+                  </div>
+
+                  <div class="phone-app-body">
+                    <div v-if="systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool" class="mock-notice-card alert-red">
+                      <strong>🔴 Registration Closed</strong>
+                      <p>{{ systemSettings.sec_registration_notice || 'Registration is temporarily closed by Administrator.' }}</p>
+                    </div>
+
+                    <div class="mock-form-group">
+                      <label>Full Name</label>
+                      <input type="text" placeholder="John Doe" disabled class="mock-input" />
+                    </div>
+                    <div class="mock-form-group">
+                      <label>Mobile Number</label>
+                      <input type="text" placeholder="9876543210" disabled class="mock-input" />
+                    </div>
+                    <div class="mock-form-group">
+                      <label>Email Address</label>
+                      <input type="text" placeholder="john@example.com" disabled class="mock-input" />
+                    </div>
+                    <div class="mock-form-group">
+                      <label>Sponsor ID</label>
+                      <input type="text" placeholder="SRM00123" disabled class="mock-input" />
+                    </div>
+
+                    <button :disabled="systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool"
+                            class="mock-btn-submit"
+                            :class="{ 'mock-btn-disabled': systemSettings.sec_registration_rule_mode === 'Disabled (Maintenance)' || !systemSettings.registration_enabled_bool }">
+                      REGISTER NOW
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2115,73 +2147,119 @@
             <span v-else>🔴 Login API is TURNED OFF. All login attempts will fail with HTTP 404 (Not Found).</span>
           </div>
 
-          <div class="settings-table-card">
-            <div class="card-title-row">
-              <div class="title-left">
-                <span class="icon">⚙️</span>
-                <h3>Login Feature Rules</h3>
+          <div class="section-split-container">
+            <div class="settings-left-col">
+              <div class="settings-table-card">
+                <div class="card-title-row">
+                  <div class="title-left">
+                    <span class="icon">⚙️</span>
+                    <h3>Login Feature Rules</h3>
+                  </div>
+                  <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
+                </div>
+
+                <div class="table-container">
+                  <table class="nice-table settings-edit-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Setting</th>
+                        <th>Value / State</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td class="font-bold">Master Login API Toggle</td>
+                        <td>
+                          <span class="status-pill-badge" :class="systemSettings.login_enabled_bool ? 'pill-green' : 'pill-red'">
+                            {{ systemSettings.login_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
+                          </span>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td class="font-bold">Feature Display Visibility</td>
+                        <td>
+                          <select class="table-select" v-model="systemSettings.sec_login_visibility">
+                            <option value="Show">Show (Visible in App/Web)</option>
+                            <option value="Hide">Hide (Hidden from App/Web)</option>
+                          </select>
+                        </td>
+                        <td>
+                          <span class="status-pill-badge" :class="systemSettings.sec_login_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
+                            {{ systemSettings.sec_login_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>3</td>
+                        <td class="font-bold">Feature Master Rule Mode</td>
+                        <td>
+                          <select class="table-select" v-model="systemSettings.sec_login_rule_mode">
+                            <option value="Enabled (Standard)">Enabled (Standard)</option>
+                            <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
+                            <option value="Restricted">Restricted Mode</option>
+                          </select>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>4</td>
+                        <td class="font-bold">Important User Notice</td>
+                        <td>
+                          <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_login_notice" placeholder="Enter notice content for users..."></textarea>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
             </div>
 
-            <div class="table-container">
-              <table class="nice-table settings-edit-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Setting</th>
-                    <th>Value / State</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td class="font-bold">Master Login API Toggle</td>
-                    <td>
-                      <span class="status-pill-badge" :class="systemSettings.login_enabled_bool ? 'pill-green' : 'pill-red'">
-                        {{ systemSettings.login_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
-                      </span>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td class="font-bold">Feature Display Visibility</td>
-                    <td>
-                      <select class="table-select" v-model="systemSettings.sec_login_visibility">
-                        <option value="Show">Show (Visible in App/Web)</option>
-                        <option value="Hide">Hide (Hidden from App/Web)</option>
-                      </select>
-                    </td>
-                    <td>
-                      <span class="status-pill-badge" :class="systemSettings.sec_login_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
-                        {{ systemSettings.sec_login_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td class="font-bold">Feature Master Rule Mode</td>
-                    <td>
-                      <select class="table-select" v-model="systemSettings.sec_login_rule_mode">
-                        <option value="Enabled (Standard)">Enabled (Standard)</option>
-                        <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
-                        <option value="Restricted">Restricted Mode</option>
-                      </select>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>4</td>
-                    <td class="font-bold">Important User Notice</td>
-                    <td>
-                      <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_login_notice" placeholder="Enter notice content for users..."></textarea>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="preview-right-col desktop-only-preview">
+              <div class="panel-preview-card">
+                <div class="panel-preview-header">
+                  <h5>📱 Mobile App Live View</h5>
+                  <span class="badge-live-status">🟢 Live Sync</span>
+                </div>
+                <p class="preview-subtext">This is how Login screen looks to users.</p>
+
+                <div class="phone-screen-mockup">
+                  <div class="phone-app-header">
+                    <div>
+                      <h5 class="header-title">Welcome Back</h5>
+                      <span class="header-sub">Sign in to your account</span>
+                    </div>
+                    <span class="header-wallet-icon">🔑</span>
+                  </div>
+
+                  <div class="phone-app-body">
+                    <div v-if="systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool" class="mock-notice-card alert-red">
+                      <strong>🔴 Login Closed</strong>
+                      <p>{{ systemSettings.sec_login_notice || 'Login functionality is closed by Administrator.' }}</p>
+                    </div>
+
+                    <div class="mock-form-group">
+                      <label>Mobile Number or Email</label>
+                      <input type="text" placeholder="Enter Mobile or Email" disabled class="mock-input" />
+                    </div>
+                    <div class="mock-form-group">
+                      <label>Password</label>
+                      <input type="password" placeholder="••••••••" disabled class="mock-input" />
+                    </div>
+
+                    <button :disabled="systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool"
+                            class="mock-btn-submit"
+                            :class="{ 'mock-btn-disabled': systemSettings.sec_login_rule_mode === 'Disabled (Maintenance)' || !systemSettings.login_enabled_bool }">
+                      LOGIN NOW
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2213,76 +2291,119 @@
             <span v-else>🔴 Forgot Password / OTP API is TURNED OFF. Password reset requests will fail with HTTP 404 (Not Found).</span>
           </div>
 
-          <div class="settings-table-card">
-            <div class="card-title-row">
-              <div class="title-left">
-                <span class="icon">⚙️</span>
-                <h3>Forgot Password & OTP Rules</h3>
+          <div class="section-split-container">
+            <div class="settings-left-col">
+              <div class="settings-table-card">
+                <div class="card-title-row">
+                  <div class="title-left">
+                    <span class="icon">⚙️</span>
+                    <h3>Forgot Password & OTP Rules</h3>
+                  </div>
+                  <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
+                </div>
+
+                <div class="table-container">
+                  <table class="nice-table settings-edit-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Setting</th>
+                        <th>Value / State</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td class="font-bold">Master Forgot Password API Toggle</td>
+                        <td>
+                          <span class="status-pill-badge" :class="systemSettings.forgot_password_enabled_bool ? 'pill-green' : 'pill-red'">
+                            {{ systemSettings.forgot_password_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
+                          </span>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td class="font-bold">Feature Display Visibility</td>
+                        <td>
+                          <select class="table-select" v-model="systemSettings.sec_otp_visibility">
+                            <option value="Show">Show (Visible in App/Web)</option>
+                            <option value="Hide">Hide (Hidden from App/Web)</option>
+                          </select>
+                        </td>
+                        <td>
+                          <span class="status-pill-badge" :class="systemSettings.sec_otp_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
+                            {{ systemSettings.sec_otp_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>3</td>
+                        <td class="font-bold">Feature Master Rule Mode</td>
+                        <td>
+                          <select class="table-select" v-model="systemSettings.sec_otp_rule_mode">
+                            <option value="Enabled (Standard)">Enabled (Standard)</option>
+                            <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
+                            <option value="Restricted">Restricted Mode</option>
+                          </select>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>4</td>
+                        <td class="font-bold">Important User Notice</td>
+                        <td>
+                          <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_otp_notice" placeholder="Enter notice content for users..."></textarea>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
             </div>
 
-            <div class="table-container">
-              <table class="nice-table settings-edit-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Setting</th>
-                    <th>Value / State</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td class="font-bold">Master Forgot Password API Toggle</td>
-                    <td>
-                      <span class="status-pill-badge" :class="systemSettings.forgot_password_enabled_bool ? 'pill-green' : 'pill-red'">
-                        {{ systemSettings.forgot_password_enabled_bool ? 'Enabled (API Returns 200)' : 'Disabled (API Returns 404)' }}
-                      </span>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td class="font-bold">Feature Display Visibility</td>
-                    <td>
-                      <select class="table-select" v-model="systemSettings.sec_otp_visibility">
-                        <option value="Show">Show (Visible in App/Web)</option>
-                        <option value="Hide">Hide (Hidden from App/Web)</option>
-                      </select>
-                    </td>
-                    <td>
-                      <span class="status-pill-badge" :class="systemSettings.sec_otp_visibility !== 'Hide' ? 'pill-green' : 'pill-red'">
-                        {{ systemSettings.sec_otp_visibility !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td class="font-bold">Feature Master Rule Mode</td>
-                    <td>
-                      <select class="table-select" v-model="systemSettings.sec_otp_rule_mode">
-                        <option value="Enabled (Standard)">Enabled (Standard)</option>
-                        <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
-                        <option value="Restricted">Restricted Mode</option>
-                      </select>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>4</td>
-                    <td class="font-bold">Important User Notice</td>
-                    <td>
-                      <textarea rows="3" class="table-textarea" v-model="systemSettings.sec_otp_notice" placeholder="Enter notice content for users..."></textarea>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="preview-right-col desktop-only-preview">
+              <div class="panel-preview-card">
+                <div class="panel-preview-header">
+                  <h5>📱 Mobile App Live View</h5>
+                  <span class="badge-live-status">🟢 Live Sync</span>
+                </div>
+                <p class="preview-subtext">This is how Forgot Password screen looks to users.</p>
+
+                <div class="phone-screen-mockup">
+                  <div class="phone-app-header">
+                    <div>
+                      <h5 class="header-title">Forgot Password</h5>
+                      <span class="header-sub">Reset your password</span>
+                    </div>
+                    <span class="header-wallet-icon">📲</span>
+                  </div>
+
+                  <div class="phone-app-body">
+                    <div v-if="systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool" class="mock-notice-card alert-red">
+                      <strong>🔴 Forgot Password Closed</strong>
+                      <p>{{ systemSettings.sec_otp_notice || 'Password reset service is closed by Administrator.' }}</p>
+                    </div>
+
+                    <div class="mock-form-group">
+                      <label>Registered Email Address</label>
+                      <input type="text" placeholder="email@domain.com" disabled class="mock-input" />
+                    </div>
+
+                    <button :disabled="systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool"
+                            class="mock-btn-submit"
+                            :class="{ 'mock-btn-disabled': systemSettings.sec_otp_rule_mode === 'Disabled (Maintenance)' || !systemSettings.forgot_password_enabled_bool }">
+                      SEND PASSWORD
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
 
         <!-- SECTION: SYSTEM ADMIS MANAGEMENT -->
         <div v-if="currentTab === 'admins'" class="admins-management-pane">
@@ -2445,7 +2566,7 @@
           </div>
         </div>
 
-        <!-- GENERIC DUMMY FALLBACK FOR OTHER SECTIONS -->
+        <!-- GENERIC FALLBACK & SPECIFIC SECTION PANES (Home, Business, Global Cycle, Bank, Support, Captcha) -->
         <div v-if="['sec_home', 'sec_business_income', 'sec_global_cycle', 'sec_bank_verification', 'sec_support', 'sec_captcha'].includes(currentTab)" class="generic-section-pane">
           <div class="section-banner">
             <div class="banner-left">
@@ -2471,70 +2592,198 @@
             <span>ℹ️ Edit section rules below. All modifications will reflect on the live user panel immediately after saving.</span>
           </div>
 
-          <div class="settings-table-card">
-            <h3>⚙️ {{ getSectionTitle(currentTab) }} Settings</h3>
-            <p class="card-desc">Configure rules, limits and display parameters for this feature.</p>
-            <div class="table-container">
-              <table class="nice-table settings-edit-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Setting</th>
-                    <th>Value (As per your choice)</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td class="font-bold">Feature Display Visibility</td>
-                    <td>
-                      <select class="table-select" v-model="systemSettings[currentTab + '_visibility']">
-                        <option value="Show">Show (Visible in App/Web)</option>
-                        <option value="Hide">Hide (Hidden from App/Web)</option>
-                      </select>
-                    </td>
-                    <td>
-                      <span class="status-pill-badge" :class="systemSettings[currentTab + '_visibility'] !== 'Hide' ? 'pill-green' : 'pill-red'">
-                        {{ systemSettings[currentTab + '_visibility'] !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td class="font-bold">Feature Master Rule Mode</td>
-                    <td>
-                      <select class="table-select" v-model="systemSettings[currentTab + '_rule_mode']">
-                        <option value="Enabled (Standard)">Enabled (Standard)</option>
-                        <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
-                        <option value="Restricted">Restricted Mode</option>
-                      </select>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td class="font-bold">Important User Notice</td>
-                    <td>
-                      <textarea rows="3" class="table-textarea" v-model="systemSettings[currentTab + '_notice']" placeholder="Enter notice content for users..."></textarea>
-                    </td>
-                    <td><span class="badge-status-active">🟢 Active</span></td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="section-split-container">
+            <!-- Left Column: Settings Edit Card -->
+            <div class="settings-left-col">
+              <div class="settings-table-card">
+                <h3>⚙️ {{ getSectionTitle(currentTab) }} Settings</h3>
+                <p class="card-desc">Configure rules, limits and display parameters for this feature.</p>
+                <div class="table-container">
+                  <table class="nice-table settings-edit-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Setting</th>
+                        <th>Value (As per your choice)</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td class="font-bold">Feature Display Visibility</td>
+                        <td>
+                          <select class="table-select" v-model="systemSettings[currentTab + '_visibility']">
+                            <option value="Show">Show (Visible in App/Web)</option>
+                            <option value="Hide">Hide (Hidden from App/Web)</option>
+                          </select>
+                        </td>
+                        <td>
+                          <span class="status-pill-badge" :class="systemSettings[currentTab + '_visibility'] !== 'Hide' ? 'pill-green' : 'pill-red'">
+                            {{ systemSettings[currentTab + '_visibility'] !== 'Hide' ? '🟢 Visible' : '🔴 Hidden' }}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td class="font-bold">Feature Master Rule Mode</td>
+                        <td>
+                          <select class="table-select" v-model="systemSettings[currentTab + '_rule_mode']">
+                            <option value="Enabled (Standard)">Enabled (Standard)</option>
+                            <option value="Disabled (Maintenance)">Disabled (Maintenance)</option>
+                            <option value="Restricted">Restricted Mode</option>
+                          </select>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                      <tr>
+                        <td>3</td>
+                        <td class="font-bold">Important User Notice</td>
+                        <td>
+                          <textarea rows="3" class="table-textarea" v-model="systemSettings[currentTab + '_notice']" placeholder="Enter notice content for users..."></textarea>
+                        </td>
+                        <td><span class="badge-status-active">🟢 Active</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="form-action-row" style="margin-top: 1rem;">
+                  <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
+                  <button @click="fetchSystemSettings" class="btn-white-reset">↺ Reset</button>
+                </div>
+              </div>
             </div>
 
-            <div class="form-action-row">
-              <button @click="handleSaveSystemSettings" class="btn-blue-save">💾 Save Changes</button>
-              <button @click="fetchSystemSettings" class="btn-white-reset">↺ Reset</button>
+            <!-- Right Column: Mobile App UI Live Preview (Desktop Only) -->
+            <div class="preview-right-col desktop-only-preview">
+              <div class="panel-preview-card">
+                <div class="panel-preview-header">
+                  <h5>📱 Mobile App Live View</h5>
+                  <span class="badge-live-status">🟢 Live Sync</span>
+                </div>
+                <p class="preview-subtext">This is how {{ getSectionTitle(currentTab) }} looks to users.</p>
+
+                <div class="phone-screen-mockup">
+                  <div class="phone-app-header">
+                    <div>
+                      <h5 class="header-title">{{ getSectionTitle(currentTab) }}</h5>
+                      <span class="header-sub">SR Digital Seva</span>
+                    </div>
+                    <span class="header-wallet-icon">📱</span>
+                  </div>
+
+                  <div class="phone-app-body" style="position: relative; min-height: 280px;">
+
+                    <!-- Home Dashboard Preview (sec_home) -->
+                    <template v-if="currentTab === 'sec_home'">
+                      <div v-if="systemSettings.sec_home_visibility === 'Hide' || systemSettings.sec_home_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
+                        <div class="mock-blur-card">
+                          <span class="lock-icon">🔒</span>
+                          <h4>Home Dashboard Closed</h4>
+                          <p>{{ systemSettings.sec_home_notice || 'Administrator has temporarily closed the Home section.' }}</p>
+                        </div>
+                      </div>
+                      <div class="mock-wallet-card">
+                        <span class="w-lbl">Available Balance</span>
+                        <h3 class="w-val">₹ 12,450.00</h3>
+                        <div class="w-actions">
+                          <span class="w-btn">➕ Add Money</span>
+                          <span class="w-btn">💸 Cashout</span>
+                        </div>
+                      </div>
+                      <div class="mock-grid-menu">
+                        <div class="mock-menu-item">📱 Recharge</div>
+                        <div class="mock-menu-item">📺 DTH</div>
+                        <div class="mock-menu-item">⚡ Electricity</div>
+                        <div class="mock-menu-item">📜 Captcha</div>
+                      </div>
+                    </template>
+
+                    <!-- Business Income Preview (sec_business_income) -->
+                    <template v-else-if="currentTab === 'sec_business_income'">
+                      <div v-if="systemSettings.sec_business_income_visibility === 'Hide' || systemSettings.sec_business_income_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
+                        <div class="mock-blur-card">
+                          <span class="lock-icon">🔒</span>
+                          <h4>Income Section Closed</h4>
+                          <p>{{ systemSettings.sec_business_income_notice || 'Administrator has temporarily closed the Business Income screen.' }}</p>
+                        </div>
+                      </div>
+                      <div class="mock-stats-banner">
+                        <span>Total Earnings</span>
+                        <h2>₹ 45,200.00</h2>
+                      </div>
+                      <div class="mock-income-list">
+                        <div class="mock-inc-row">
+                          <span>🤝 Direct Income</span>
+                          <strong>₹ 9,300</strong>
+                        </div>
+                        <div class="mock-inc-row">
+                          <span>🌊 Level Pool Bonus</span>
+                          <strong>₹ 18,600</strong>
+                        </div>
+                        <div class="mock-inc-row">
+                          <span>🔄 Global Cycle Income</span>
+                          <strong>₹ 17,300</strong>
+                        </div>
+                      </div>
+                    </template>
+
+                    <!-- Global Cycle Preview (sec_global_cycle) -->
+                    <template v-else-if="currentTab === 'sec_global_cycle'">
+                      <div v-if="systemSettings.sec_global_cycle_visibility === 'Hide' || systemSettings.sec_global_cycle_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
+                        <div class="mock-blur-card">
+                          <span class="lock-icon">🔒</span>
+                          <h4>Global Cycle Closed</h4>
+                          <p>{{ systemSettings.sec_global_cycle_notice || 'Administrator has temporarily closed the Global Cycle feature.' }}</p>
+                        </div>
+                      </div>
+                      <div class="mock-cycle-card">
+                        <span class="c-tag">Cycle #1 Active</span>
+                        <h4>Pool Size: 126 Members</h4>
+                        <div class="mock-progress-bar">
+                          <div class="mock-progress-fill" style="width: 84%;"></div>
+                        </div>
+                        <span class="c-sub">84% Filled (106 / 126)</span>
+                      </div>
+                      <div class="mock-cycle-stats">
+                        <div class="stat-chip">🏆 Cycle Reward: ₹1,200</div>
+                        <div class="stat-chip">⚡ Speed: Fast</div>
+                      </div>
+                    </template>
+
+                    <!-- Default Preview for Bank Verification, Support, Captcha -->
+                    <template v-else>
+                      <div v-if="systemSettings[currentTab + '_visibility'] === 'Hide' || systemSettings[currentTab + '_rule_mode'] === 'Disabled (Maintenance)'" class="mock-blur-overlay">
+                        <div class="mock-blur-card">
+                          <span class="lock-icon">🔒</span>
+                          <h4>Feature Disabled</h4>
+                          <p>{{ systemSettings[currentTab + '_notice'] || 'Administrator has temporarily closed this section.' }}</p>
+                        </div>
+                      </div>
+                      <div class="mock-notice-card alert-red" v-if="systemSettings[currentTab + '_notice']">
+                        <strong>📢 Notice:</strong>
+                        <p>{{ systemSettings[currentTab + '_notice'] }}</p>
+                      </div>
+                      <div style="padding: 16px; background: #F8FAFC; border-radius: 10px; text-align: center; border: 1px solid #E2E8F0;">
+                        <span style="font-size: 28px; display: block; margin-bottom: 6px;">⚙️</span>
+                        <h4 style="font-size: 13px; font-weight: 700; color: #1E293B; margin: 0;">{{ getSectionTitle(currentTab) }} Active</h4>
+                        <span style="font-size: 11px; color: #64748B;">Live synchronization enabled</span>
+                      </div>
+                    </template>
+
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="section-footer-note">
+          <div class="section-footer-note" style="margin-top: 1.5rem;">
             <span>ℹ️ Note: Any changes you make here will reflect instantly on the user panel.</span>
             <span class="last-updated">Last Updated: {{ new Date().toLocaleDateString() }}</span>
           </div>
         </div>
+
 
       </main>
     </div>
@@ -5017,11 +5266,198 @@ input:checked + .slider:before { transform: translateX(22px); }
   font-weight: 800;
 }
 
+/* 2-Column Split Layout for Section Settings */
+.section-split-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.settings-left-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-right-col {
+  width: 380px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 20px;
+}
+
+/* Mockup UI Component Styling */
+.mock-notice-card {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 12px;
+}
+.mock-notice-card.alert-red {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #DC2626;
+}
+.mock-notice-card strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.mock-form-group {
+  margin-bottom: 12px;
+  text-align: left;
+}
+.mock-form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  display: block;
+  margin-bottom: 4px;
+}
+.mock-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #CBD5E1;
+  background: #F8FAFC;
+  font-size: 12px;
+  color: #0F172A;
+  box-sizing: border-box;
+}
+
+.mock-btn-submit {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  background: #0D47A1;
+  color: white;
+  font-weight: 800;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.mock-btn-disabled {
+  background: #CBD5E1 !important;
+  color: #64748B !important;
+  cursor: not-allowed !important;
+}
+
+.mock-blur-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 16px;
+}
+.mock-blur-card {
+  background: white;
+  padding: 18px 14px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+.mock-blur-card .lock-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 6px;
+}
+.mock-blur-card h4 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #DC2626;
+  margin: 0 0 6px 0;
+}
+.mock-blur-card p {
+  font-size: 11px;
+  color: #475569;
+  margin: 0;
+}
+
+.mock-wallet-card {
+  background: linear-gradient(135deg, #0A369D, #1565C0);
+  padding: 14px;
+  border-radius: 12px;
+  color: white;
+  margin-bottom: 12px;
+}
+.mock-wallet-card .w-lbl { font-size: 11px; opacity: 0.85; }
+.mock-wallet-card .w-val { font-size: 20px; margin: 4px 0 10px 0; font-weight: 800; }
+.mock-wallet-card .w-actions { display: flex; gap: 8px; }
+.mock-wallet-card .w-btn {
+  background: rgba(255,255,255,0.2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.mock-grid-menu {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.mock-menu-item {
+  background: #F1F5F9;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1E293B;
+  text-align: center;
+}
+
+.mock-stats-banner {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  color: #1E40AF;
+}
+.mock-stats-banner h2 { font-size: 20px; font-weight: 800; margin: 4px 0 0 0; color: #1D4ED8; }
+
+.mock-income-list { display: flex; flex-direction: column; gap: 8px; }
+.mock-inc-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #F8FAFC;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid #E2E8F0;
+}
+
+.mock-cycle-card {
+  background: #FAF5FF;
+  border: 1px solid #E9D5FF;
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.mock-cycle-card .c-tag { background: #7E22CE; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+.mock-cycle-card h4 { font-size: 13px; margin: 8px 0; color: #581C87; }
+.mock-progress-bar { height: 8px; background: #E9D5FF; border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+.mock-progress-fill { height: 100%; background: #9333EA; border-radius: 4px; }
+.mock-cycle-card .c-sub { font-size: 10px; color: #6B21A8; font-weight: 600; }
+
+.mock-cycle-stats { display: flex; gap: 6px; flex-wrap: wrap; }
+.stat-chip { background: #F3E8FF; color: #7E22CE; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+
 /* Responsive Adjustments */
 @media (max-width: 992px) {
   .settings-preview-grid { grid-template-columns: 1fr; }
+  .section-split-container { flex-direction: column; }
+  .preview-right-col, .desktop-only-preview { display: none !important; }
   .phone-frame { margin: 0 auto; max-width: 100%; }
 }
+
 
 @media (max-width: 768px) {
   .sidebar {
