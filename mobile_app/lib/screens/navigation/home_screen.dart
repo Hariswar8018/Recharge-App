@@ -2051,7 +2051,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     double totalEarned = realGlobalIncome + realAffiliateIncome;
     double progressVal = (totalEarned / 12600.0).clamp(0.0, 1.0);
-    final bool isBusinessDisabled = _visibilitySettings['sec_business_income_visibility'] == 'Hide' || _visibilitySettings['sec_business_income_enabled'] == false;
+    final String visB = (_visibilitySettings['sec_business_income_visibility'] ?? 'Show').toString();
+    final bool enabledB = _visibilitySettings['sec_business_income_enabled'] != false && _visibilitySettings['sec_business_income_enabled_bool'] != 'false';
+    final String ruleModeB = (_visibilitySettings['sec_business_income_rule_mode'] ?? '').toString();
+    final bool isBusinessDisabled = visB == 'Hide' || !enabledB || ruleModeB.contains('Disabled') || ruleModeB.contains('Maintenance');
 
     Widget businessContent = SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -2347,6 +2350,67 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+
+    if (isBusinessDisabled) {
+      return Stack(
+        children: [
+          businessContent,
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 15,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_rounded, size: 50, color: Colors.red),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Business Income Section Closed",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0F172A),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _visibilitySettings['sec_business_income_notice']?.toString().isNotEmpty == true
+                              ? _visibilitySettings['sec_business_income_notice']
+                              : "The Administrator has currently closed access to the Business Income section.",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return businessContent;
   }
 
   Widget _buildInviteCard() {
@@ -2489,68 +2553,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-    );
-
-    if (isBusinessDisabled) {
-      return Stack(
-        children: [
-          businessContent,
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-              child: Container(
-                color: Colors.black.withOpacity(0.4),
-                padding: const EdgeInsets.all(24),
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 15,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.lock_rounded, size: 50, color: Colors.red),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Business Income Section Closed",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F172A),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _visibilitySettings['sec_business_income_notice']?.toString().isNotEmpty == true
-                              ? _visibilitySettings['sec_business_income_notice']
-                              : "The Administrator has currently closed access to the Business Income section.",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Color(0xFF64748B),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
-      );
-    }
-
-    return businessContent;
+      ),
+    );
   }
 
   // --- TAB 2: TEAM VIEW ---
@@ -2696,8 +2701,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTeamTab() {
     final int realTeamCount = _teamMembers.where((m) => (m['status'] ?? '').toString().toUpperCase() == 'ACTIVE').length;
     final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
-    final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
-    final bool isGlobalCycleDisabled = _visibilitySettings['sec_global_cycle_visibility'] == 'Hide' || _visibilitySettings['sec_global_cycle_enabled'] == false;
+    final String visG = (_visibilitySettings['sec_global_cycle_visibility'] ?? 'Show').toString();
+    final bool enabledG = _visibilitySettings['sec_global_cycle_enabled'] != false && _visibilitySettings['sec_global_cycle_enabled_bool'] != 'false';
+    final String ruleModeG = (_visibilitySettings['sec_global_cycle_rule_mode'] ?? '').toString();
+    final bool isGlobalCycleDisabled = visG == 'Hide' || !enabledG || ruleModeG.contains('Disabled') || ruleModeG.contains('Maintenance');
 
     final List<Map<String, dynamic>> levelData = [
       {"level": "1", "team": "2", "income": "₹ 200.00", "cumTarget": 2},
@@ -2936,7 +2943,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-
+        ],
+      ),
     );
 
     if (isGlobalCycleDisabled) {

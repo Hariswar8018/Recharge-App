@@ -394,7 +394,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           // Send Password button
                           Builder(
                             builder: (context) {
-                              final bool isOtpDisabled = _visibilitySettings['sec_otp_visibility'] == 'Hide' || _visibilitySettings['sec_otp_enabled'] == false;
+                              final String vis = (_visibilitySettings['sec_otp_visibility'] ?? 'Show').toString();
+                              final bool enabled = _visibilitySettings['sec_otp_enabled'] != false && _visibilitySettings['sec_otp_enabled'] != 'false';
+                              final String ruleMode = (_visibilitySettings['sec_otp_rule_mode'] ?? '').toString();
+                              final bool isOtpDisabled = vis == 'Hide' || !enabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
                               return Column(
                                 children: [
                                   SizedBox(

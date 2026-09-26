@@ -416,7 +416,10 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                     if (!_isVerified)
                       Builder(
                         builder: (context) {
-                          final bool isBankDisabled = _visibilitySettings['sec_bank_verification_visibility'] == 'Hide' || _visibilitySettings['sec_bank_verification_enabled'] == false;
+                          final String vis = (_visibilitySettings['sec_bank_verification_visibility'] ?? 'Show').toString();
+                          final bool enabled = _visibilitySettings['sec_bank_verification_enabled'] != false && _visibilitySettings['sec_bank_verification_enabled_bool'] != 'false';
+                          final String ruleMode = (_visibilitySettings['sec_bank_verification_rule_mode'] ?? '').toString();
+                          final bool isBankDisabled = vis == 'Hide' || !enabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
                           final bool isBtnDisabled = _isLoading || isIciciError || isBankDisabled;
                           return Column(
                             children: [

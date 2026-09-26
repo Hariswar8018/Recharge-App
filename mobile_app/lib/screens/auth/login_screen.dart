@@ -541,7 +541,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           // Login button
                           Builder(
                             builder: (context) {
-                              final bool isLoginDisabled = _visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false;
+                              final String vis = (_visibilitySettings['sec_login_visibility'] ?? 'Show').toString();
+                              final bool enabled = _visibilitySettings['sec_login_enabled'] != false && _visibilitySettings['sec_login_enabled'] != 'false';
+                              final String ruleMode = (_visibilitySettings['sec_login_rule_mode'] ?? '').toString();
+                              final bool isLoginDisabled = vis == 'Hide' || !enabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
                               return Column(
                                 children: [
                                   SizedBox(

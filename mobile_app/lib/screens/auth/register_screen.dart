@@ -791,7 +791,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           // Register Button
                           Builder(
                             builder: (context) {
-                              final bool isRegDisabled = _visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false;
+                              final String vis = (_visibilitySettings['sec_registration_visibility'] ?? 'Show').toString();
+                              final bool enabled = _visibilitySettings['sec_registration_enabled'] != false && _visibilitySettings['sec_registration_enabled'] != 'false';
+                              final String ruleMode = (_visibilitySettings['sec_registration_rule_mode'] ?? '').toString();
+                              final bool isRegDisabled = vis == 'Hide' || !enabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
                               return Column(
                                 children: [
                                   SizedBox(
