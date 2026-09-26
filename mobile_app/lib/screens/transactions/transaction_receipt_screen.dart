@@ -85,31 +85,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [Color(0xFFE11D48), Color(0xFF0052CC)],
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Text("SR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("SR DIGITAL SEVA", style: TextStyle(color: Color(0xFF0052CC), fontWeight: FontWeight.w900, fontSize: 15)),
-                                  Text("KENDRAM", style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.2)),
-                                ],
-                              ),
-                            ],
-                          ),
+                          Image.asset('assets/sr_logo.png', height: 42, fit: BoxFit.contain),
                           const Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
@@ -243,30 +219,9 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
                               ],
                             ),
                           ),
-                          Column(
-                            children: [
-                              Container(
-                                width: 64,
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: const Color(0xFF0052CC), width: 1.5),
-                                ),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Text("SR DIGITAL", style: TextStyle(fontSize: 6, fontWeight: FontWeight.bold, color: Color(0xFF0052CC))),
-                                      const Text("Regd: 34294", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                                      const Text("★ ★ ★", style: TextStyle(fontSize: 6, color: Color(0xFF0052CC))),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text("Rajesh", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0052CC))),
-                              const Text("Authorised Signatory", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF0052CC))),
-                            ],
+                          const Padding(
+                            padding: EdgeInsets.only(top: 24.0),
+                            child: Text("Authorised Signatory", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0052CC))),
                           ),
                         ],
                       ),

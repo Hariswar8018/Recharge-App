@@ -2889,15 +2889,7 @@
               <!-- Top Header Row -->
               <div class="inv-header">
                 <div class="inv-brand">
-                  <div class="inv-logo-wrap">
-                    <div class="inv-logo-circle">
-                      <span class="inv-logo-text">SR</span>
-                    </div>
-                    <div class="inv-brand-title">
-                      <h2>SR DIGITAL SEVA</h2>
-                      <h3>KENDRAM</h3>
-                    </div>
-                  </div>
+                  <img src="../assets/sr_logo.png" alt="SR DIGITAL SEVA KENDRAM" style="height: 56px; max-width: 250px; object-fit: contain;" />
                 </div>
 
                 <div class="inv-contact-info">
@@ -2999,16 +2991,7 @@
                   </div>
                 </div>
 
-                <div class="inv-seal-col">
-                  <!-- Round Official Blue Stamp -->
-                  <div class="official-seal-circle">
-                    <div class="seal-inner-ring">
-                      <span class="seal-header">SR DIGITAL SEVA KENDRAM</span>
-                      <span class="seal-reg">Regd. No: 34294</span>
-                      <span class="seal-stars">★ ★ ★</span>
-                    </div>
-                  </div>
-                  <div class="sig-script">Rajesh</div>
+                <div class="inv-seal-col" style="padding-top: 40px;">
                   <div class="sig-title">Authorised Signatory</div>
                 </div>
               </div>
