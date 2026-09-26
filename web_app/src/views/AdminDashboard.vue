@@ -2945,6 +2945,7 @@
               </div>
             </div>
           </div>
+        </div>
 
         <!-- OFFICIAL SR DIGITAL SEVA KENDRAM SERVICE INVOICE MODAL -->
         <div v-if="activeInvoice" class="invoice-modal-backdrop" @click.self="activeInvoice = null">
