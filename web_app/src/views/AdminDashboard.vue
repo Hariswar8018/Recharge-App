@@ -125,9 +125,6 @@
           </button>
 
           <div v-show="expandedGroups.other" class="group-items">
-            <button @click="switchTab('sec_support')" class="sub-menu-item" :class="{ active: currentTab === 'sec_support' }">
-              Support
-            </button>
             <button @click="switchTab('notifications')" class="sub-menu-item" :class="{ active: currentTab === 'notifications' }">
               Notification
             </button>
@@ -1212,83 +1209,6 @@
                           <span class="badge-status-active">🟢 Active</span>
                         </div>
                       </td>
-                    </tr>
-                    <tr>
-                      <td>3</td>
-                      <td class="font-bold">🌐 Web Header SR Logo</td>
-                      <td>
-                        <select v-model="systemSettings.web_show_header_logo" class="table-select">
-                          <option value="Show">Show (Visible on Web)</option>
-                          <option value="Hide">Hide (Hidden from Web)</option>
-                        </select>
-                      </td>
-                      <td><span :class="systemSettings.web_show_header_logo === 'Hide' ? 'badge-status-rejected' : 'badge-status-active'">{{ systemSettings.web_show_header_logo === 'Hide' ? '🔴 Hidden' : '🟢 Visible' }}</span></td>
-                    </tr>
-                    <tr>
-                      <td>4</td>
-                      <td class="font-bold">🖼️ Web Hero Graphic Artwork</td>
-                      <td>
-                        <select v-model="systemSettings.web_show_hero_graphic" class="table-select">
-                          <option value="Show">Show (Visible on Web)</option>
-                          <option value="Hide">Hide (Hidden from Web)</option>
-                        </select>
-                      </td>
-                      <td><span :class="systemSettings.web_show_hero_graphic === 'Hide' ? 'badge-status-rejected' : 'badge-status-active'">{{ systemSettings.web_show_hero_graphic === 'Hide' ? '🔴 Hidden' : '🟢 Visible' }}</span></td>
-                    </tr>
-                    <tr>
-                      <td>5</td>
-                      <td class="font-bold">📝 Web Captcha → Cash Headline</td>
-                      <td>
-                        <select v-model="systemSettings.web_show_headline" class="table-select">
-                          <option value="Show">Show (Visible on Web)</option>
-                          <option value="Hide">Hide (Hidden from Web)</option>
-                        </select>
-                      </td>
-                      <td><span :class="systemSettings.web_show_headline === 'Hide' ? 'badge-status-rejected' : 'badge-status-active'">{{ systemSettings.web_show_headline === 'Hide' ? '🔴 Hidden' : '🟢 Visible' }}</span></td>
-                    </tr>
-                    <tr>
-                      <td>6</td>
-                      <td class="font-bold">🎁 Web Sponsor Referral Banner</td>
-                      <td>
-                        <select v-model="systemSettings.web_show_referral_banner" class="table-select">
-                          <option value="Show">Show (Visible on Web)</option>
-                          <option value="Hide">Hide (Hidden from Web)</option>
-                        </select>
-                      </td>
-                      <td><span :class="systemSettings.web_show_referral_banner === 'Hide' ? 'badge-status-rejected' : 'badge-status-active'">{{ systemSettings.web_show_referral_banner === 'Hide' ? '🔴 Hidden' : '🟢 Visible' }}</span></td>
-                    </tr>
-                    <tr>
-                      <td>7</td>
-                      <td class="font-bold">📲 Web Google Play Download Button</td>
-                      <td>
-                        <select v-model="systemSettings.web_show_playstore_btn" class="table-select">
-                          <option value="Show">Show (Visible on Web)</option>
-                          <option value="Hide">Hide (Hidden from Web)</option>
-                        </select>
-                      </td>
-                      <td><span :class="systemSettings.web_show_playstore_btn === 'Hide' ? 'badge-status-rejected' : 'badge-status-active'">{{ systemSettings.web_show_playstore_btn === 'Hide' ? '🔴 Hidden' : '🟢 Visible' }}</span></td>
-                    </tr>
-                    <tr>
-                      <td>8</td>
-                      <td class="font-bold">⚖️ Web Legal Terms Disclaimer</td>
-                      <td>
-                        <select v-model="systemSettings.web_show_terms_disclaimer" class="table-select">
-                          <option value="Show">Show (Visible on Web)</option>
-                          <option value="Hide">Hide (Hidden from Web)</option>
-                        </select>
-                      </td>
-                      <td><span :class="systemSettings.web_show_terms_disclaimer === 'Hide' ? 'badge-status-rejected' : 'badge-status-active'">{{ systemSettings.web_show_terms_disclaimer === 'Hide' ? '🔴 Hidden' : '🟢 Visible' }}</span></td>
-                    </tr>
-                    <tr>
-                      <td>9</td>
-                      <td class="font-bold">©️ Web Footer Copyright Bar</td>
-                      <td>
-                        <select v-model="systemSettings.web_show_footer" class="table-select">
-                          <option value="Show">Show (Visible on Web)</option>
-                          <option value="Hide">Hide (Hidden from Web)</option>
-                        </select>
-                      </td>
-                      <td><span :class="systemSettings.web_show_footer === 'Hide' ? 'badge-status-rejected' : 'badge-status-active'">{{ systemSettings.web_show_footer === 'Hide' ? '🔴 Hidden' : '🟢 Visible' }}</span></td>
                     </tr>
                   </tbody>
                 </table>
