@@ -2702,6 +2702,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTeamTab() {
     final int realTeamCount = _teamMembers.where((m) => (m['status'] ?? '').toString().toUpperCase() == 'ACTIVE').length;
     final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
+    final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
     final String visG = (_visibilitySettings['sec_global_cycle_visibility'] ?? 'Show').toString();
     final bool enabledG = _visibilitySettings['sec_global_cycle_enabled'] != false && _visibilitySettings['sec_global_cycle_enabled_bool'] != 'false';
     final String ruleModeG = (_visibilitySettings['sec_global_cycle_rule_mode'] ?? '').toString();
