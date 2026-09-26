@@ -47,13 +47,21 @@ function runSqlite(sql, params = []) {
 
     if (isSelect) {
       db.all(cleanSql, params, (err, rows) => {
-        if (err) resolve([]);
-        else resolve(rows || []);
+        if (err) {
+          console.error('SQLite SELECT Error:', err.message, 'SQL:', cleanSql);
+          resolve([]);
+        } else {
+          resolve(rows || []);
+        }
       });
     } else {
       db.run(cleanSql, params, function (err) {
-        if (err) resolve({ insertId: 0, affectedRows: 0 });
-        else resolve({ insertId: this.lastID || 0, affectedRows: this.changes || 0 });
+        if (err) {
+          console.error('SQLite RUN Error:', err.message, 'SQL:', cleanSql, 'Params:', params);
+          resolve({ insertId: 0, affectedRows: 0 });
+        } else {
+          resolve({ insertId: this ? this.lastID || 0 : 0, affectedRows: this ? this.changes || 0 : 0 });
+        }
       });
     }
   });

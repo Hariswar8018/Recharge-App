@@ -87,13 +87,17 @@ router.post('/settings', verifyAdminToken, async (req, res) => {
   try {
     const updates = req.body;
     for (const [key, val] of Object.entries(updates)) {
-      await query(
-        'INSERT INTO system_settings (key_name, val_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE val_value = ?',
-        [key, String(val), String(val)]
-      );
+      const strVal = String(val);
+      const existing = await query('SELECT key_name FROM system_settings WHERE key_name = ?', [key]);
+      if (existing && existing.length > 0) {
+        await query('UPDATE system_settings SET val_value = ? WHERE key_name = ?', [strVal, key]);
+      } else {
+        await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [key, strVal]);
+      }
     }
     res.json({ message: 'System settings updated successfully.' });
   } catch (err) {
+    console.error('Failed to update system settings:', err);
     res.status(500).json({ error: 'Failed to update system settings' });
   }
 });
