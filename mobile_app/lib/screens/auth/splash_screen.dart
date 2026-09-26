@@ -95,13 +95,10 @@ class _SplashScreenState extends State<SplashScreen> {
       await ApiService.getVisibility(forceRefresh: true);
     } catch (_) {}
 
-    // 4. Wait for full video playback (or minimum 3.5s delay) before navigation
-    final videoDuration = _controller.value.isInitialized && _controller.value.duration > Duration.zero
-        ? _controller.value.duration
-        : const Duration(seconds: 4);
-
+    // 4. Wait for 3 seconds splash screen duration before navigation
+    const targetSplashDuration = Duration(seconds: 3);
     final elapsedTime = DateTime.now().difference(startTime);
-    final remainingDelay = videoDuration - elapsedTime;
+    final remainingDelay = targetSplashDuration - elapsedTime;
     if (remainingDelay > Duration.zero) {
       await Future.delayed(remainingDelay);
     }
