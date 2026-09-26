@@ -7,8 +7,40 @@ import '../constants/app_theme.dart';
 import '../api.dart';
 
 class ApiService {
-  static const String baseUrl = AppTheme.apiBaseUrl;
+  static String? _cachedBaseUrl;
+  static String get baseUrl => _cachedBaseUrl ?? AppTheme.apiBaseUrl;
   static const String appToken = AppTheme.appToken;
+
+  static Future<String> getWorkingBaseUrl({bool forceCheck = false}) async {
+    if (!forceCheck && _cachedBaseUrl != null) {
+      return _cachedBaseUrl!;
+    }
+
+    final candidateUrls = [
+      AppTheme.apiBaseUrl,
+      'http://127.0.0.1:5000',
+      'http://10.0.2.2:5000',
+      'http://localhost:5000',
+    ];
+
+    for (final url in candidateUrls) {
+      final clean = url.replaceAll(RegExp(r'/+$'), '');
+      try {
+        final res = await http.get(
+          Uri.parse('$clean/api/health'),
+          headers: {'x-app-token': appToken},
+        ).timeout(const Duration(milliseconds: 1500));
+        if (res.statusCode == 200) {
+          _cachedBaseUrl = clean;
+          print('ApiService: Resolved working base URL to $_cachedBaseUrl');
+          return _cachedBaseUrl!;
+        }
+      } catch (_) {}
+    }
+
+    _cachedBaseUrl = AppTheme.apiBaseUrl.replaceAll(RegExp(r'/+$'), '');
+    return _cachedBaseUrl!;
+  }
 
   // Save token to Shared Preferences
   static Future<void> saveToken(String token) async {

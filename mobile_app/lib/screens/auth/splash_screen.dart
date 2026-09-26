@@ -36,6 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
       _isOffline = false;
     });
 
+    await ApiService.getWorkingBaseUrl(forceCheck: true);
     final cleanBase = ApiService.baseUrl.replaceAll(RegExp(r'/+$'), '');
     final url = Uri.parse('$cleanBase/api/health');
     try {
