@@ -17,10 +17,10 @@ class ApiService {
     }
 
     final candidateUrls = [
+      'https://api.srdigitalseva.com',
       AppTheme.apiBaseUrl,
       'http://127.0.0.1:5000',
       'http://10.0.2.2:5000',
-      'http://localhost:5000',
     ];
 
     for (final url in candidateUrls) {

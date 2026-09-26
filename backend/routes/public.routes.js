@@ -5,7 +5,25 @@ const router = express.Router();
 
 // Health Check Endpoint
 router.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API Server is healthy and running' });
+  res.json({
+    status: 'OK',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    message: 'API Server is healthy and operational'
+  });
+});
+
+// Info Endpoint
+router.get('/info', (req, res) => {
+  res.json({
+    status: 'OK',
+    server: 'SR Digital Seva Kendram API',
+    version: '1.0.0',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'production',
+    database: 'connected'
+  });
 });
 
 // GET Public Landing Info & Settings

@@ -37,6 +37,28 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
   }]);
 });
 
+// Root Health & Info Endpoints
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    message: 'API Server is healthy and operational'
+  });
+});
+
+app.get('/info', (req, res) => {
+  res.json({
+    status: 'OK',
+    server: 'SR Digital Seva Kendram API',
+    version: '1.0.0',
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'production',
+    database: 'connected'
+  });
+});
+
 // Mount Modular Router Endpoints
 app.use('/api', publicRoutes);
 app.use('/api/public', publicRoutes);
