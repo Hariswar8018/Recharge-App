@@ -2832,114 +2832,124 @@
                 </div>
                 <p class="preview-subtext">This is how {{ getSectionTitle(currentTab) }} looks to users.</p>
 
-                <div class="phone-screen-mockup">
-                  <div class="phone-app-header">
-                    <div>
-                      <h5 class="header-title">{{ getSectionTitle(currentTab) }}</h5>
-                      <span class="header-sub">SR Digital Seva</span>
+                <div class="phone-frame">
+                  <div class="phone-screen">
+                    <div class="phone-status-bar">
+                      <span>9:41</span>
+                      <div class="phone-notch"><span class="phone-notch-dot"></span></div>
+                      <span>📶 🔋</span>
                     </div>
-                    <span class="header-wallet-icon">📱</span>
-                  </div>
 
-                  <div class="phone-app-body" style="position: relative; min-height: 280px;">
+                    <div class="phone-app-header blue-bg">
+                      <span class="back-arrow">←</span>
+                      <div>
+                        <h5 class="header-title">{{ getSectionTitle(currentTab) }}</h5>
+                        <span class="header-sub">SR Digital Seva</span>
+                      </div>
+                      <span class="header-wallet-icon">📱</span>
+                    </div>
 
-                    <!-- Home Dashboard Preview (sec_home) -->
-                    <template v-if="currentTab === 'sec_home'">
-                      <div v-if="systemSettings.sec_home_visibility === 'Hide' || systemSettings.sec_home_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
-                        <div class="mock-blur-card">
-                          <span class="lock-icon">🔒</span>
-                          <h4>Home Dashboard Closed</h4>
-                          <p>{{ systemSettings.sec_home_notice || 'Administrator has temporarily closed the Home section.' }}</p>
-                        </div>
-                      </div>
-                      <div class="mock-wallet-card">
-                        <span class="w-lbl">Available Balance</span>
-                        <h3 class="w-val">₹ 12,450.00</h3>
-                        <div class="w-actions">
-                          <span class="w-btn">➕ Add Money</span>
-                          <span class="w-btn">💸 Cashout</span>
-                        </div>
-                      </div>
-                      <div class="mock-grid-menu">
-                        <div class="mock-menu-item">📱 Recharge</div>
-                        <div class="mock-menu-item">📺 DTH</div>
-                        <div class="mock-menu-item">⚡ Electricity</div>
-                        <div class="mock-menu-item">📜 Captcha</div>
-                      </div>
-                    </template>
+                    <div class="phone-app-body" style="padding: 10px; background: #f8fafc; min-height: 380px; position: relative;">
 
-                    <!-- Business Income Preview (sec_business_income) -->
-                    <template v-else-if="currentTab === 'sec_business_income'">
-                      <div v-if="systemSettings.sec_business_income_visibility === 'Hide' || systemSettings.sec_business_income_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
-                        <div class="mock-blur-card">
-                          <span class="lock-icon">🔒</span>
-                          <h4>Income Section Closed</h4>
-                          <p>{{ systemSettings.sec_business_income_notice || 'Administrator has temporarily closed the Business Income screen.' }}</p>
+                      <!-- Home Dashboard Preview (sec_home) -->
+                      <template v-if="currentTab === 'sec_home'">
+                        <div v-if="systemSettings.sec_home_visibility === 'Hide' || systemSettings.sec_home_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
+                          <div class="mock-blur-card">
+                            <span class="lock-icon">🔒</span>
+                            <h4>Home Dashboard Closed</h4>
+                            <p>{{ systemSettings.sec_home_notice || 'Administrator has temporarily closed the Home section.' }}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div class="mock-stats-banner">
-                        <span>Total Earnings</span>
-                        <h2>₹ 45,200.00</h2>
-                      </div>
-                      <div class="mock-income-list">
-                        <div class="mock-inc-row">
-                          <span>🤝 Direct Income</span>
-                          <strong>₹ 9,300</strong>
+                        <div class="mock-wallet-card">
+                          <span class="w-lbl">Available Balance</span>
+                          <h3 class="w-val">₹ 12,450.00</h3>
+                          <div class="w-actions">
+                            <span class="w-btn">➕ Add Money</span>
+                            <span class="w-btn">💸 Cashout</span>
+                          </div>
                         </div>
-                        <div class="mock-inc-row">
-                          <span>🌊 Level Pool Bonus</span>
-                          <strong>₹ 18,600</strong>
+                        <div class="mock-grid-menu">
+                          <div class="mock-menu-item">📱 Recharge</div>
+                          <div class="mock-menu-item">📺 DTH</div>
+                          <div class="mock-menu-item">⚡ Electricity</div>
+                          <div class="mock-menu-item">📜 Captcha</div>
                         </div>
-                        <div class="mock-inc-row">
-                          <span>🔄 Global Cycle Income</span>
-                          <strong>₹ 17,300</strong>
-                        </div>
-                      </div>
-                    </template>
+                      </template>
 
-                    <!-- Global Cycle Preview (sec_global_cycle) -->
-                    <template v-else-if="currentTab === 'sec_global_cycle'">
-                      <div v-if="systemSettings.sec_global_cycle_visibility === 'Hide' || systemSettings.sec_global_cycle_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
-                        <div class="mock-blur-card">
-                          <span class="lock-icon">🔒</span>
-                          <h4>Global Cycle Closed</h4>
-                          <p>{{ systemSettings.sec_global_cycle_notice || 'Administrator has temporarily closed the Global Cycle feature.' }}</p>
+                      <!-- Business Income Preview (sec_business_income) -->
+                      <template v-else-if="currentTab === 'sec_business_income'">
+                        <div v-if="systemSettings.sec_business_income_visibility === 'Hide' || systemSettings.sec_business_income_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
+                          <div class="mock-blur-card">
+                            <span class="lock-icon">🔒</span>
+                            <h4>Income Section Closed</h4>
+                            <p>{{ systemSettings.sec_business_income_notice || 'Administrator has temporarily closed the Business Income screen.' }}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div class="mock-cycle-card">
-                        <span class="c-tag">Cycle #1 Active</span>
-                        <h4>Pool Size: 126 Members</h4>
-                        <div class="mock-progress-bar">
-                          <div class="mock-progress-fill" style="width: 84%;"></div>
+                        <div class="mock-stats-banner">
+                          <span>Total Earnings</span>
+                          <h2>₹ 45,200.00</h2>
                         </div>
-                        <span class="c-sub">84% Filled (106 / 126)</span>
-                      </div>
-                      <div class="mock-cycle-stats">
-                        <div class="stat-chip">🏆 Cycle Reward: ₹1,200</div>
-                        <div class="stat-chip">⚡ Speed: Fast</div>
-                      </div>
-                    </template>
+                        <div class="mock-income-list">
+                          <div class="mock-inc-row">
+                            <span>🤝 Direct Income</span>
+                            <strong>₹ 9,300</strong>
+                          </div>
+                          <div class="mock-inc-row">
+                            <span>🌊 Level Pool Bonus</span>
+                            <strong>₹ 18,600</strong>
+                          </div>
+                          <div class="mock-inc-row">
+                            <span>🔄 Global Cycle Income</span>
+                            <strong>₹ 17,300</strong>
+                          </div>
+                        </div>
+                      </template>
 
-                    <!-- Default Preview for Bank Verification, Support, Captcha -->
-                    <template v-else>
-                      <div v-if="systemSettings[currentTab + '_visibility'] === 'Hide' || systemSettings[currentTab + '_rule_mode'] === 'Disabled (Maintenance)'" class="mock-blur-overlay">
-                        <div class="mock-blur-card">
-                          <span class="lock-icon">🔒</span>
-                          <h4>Feature Disabled</h4>
-                          <p>{{ systemSettings[currentTab + '_notice'] || 'Administrator has temporarily closed this section.' }}</p>
+                      <!-- Global Cycle Preview (sec_global_cycle) -->
+                      <template v-else-if="currentTab === 'sec_global_cycle'">
+                        <div v-if="systemSettings.sec_global_cycle_visibility === 'Hide' || systemSettings.sec_global_cycle_rule_mode === 'Disabled (Maintenance)'" class="mock-blur-overlay">
+                          <div class="mock-blur-card">
+                            <span class="lock-icon">🔒</span>
+                            <h4>Global Cycle Closed</h4>
+                            <p>{{ systemSettings.sec_global_cycle_notice || 'Administrator has temporarily closed the Global Cycle feature.' }}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div class="mock-notice-card alert-red" v-if="systemSettings[currentTab + '_notice']">
-                        <strong>📢 Notice:</strong>
-                        <p>{{ systemSettings[currentTab + '_notice'] }}</p>
-                      </div>
-                      <div style="padding: 16px; background: #F8FAFC; border-radius: 10px; text-align: center; border: 1px solid #E2E8F0;">
-                        <span style="font-size: 28px; display: block; margin-bottom: 6px;">⚙️</span>
-                        <h4 style="font-size: 13px; font-weight: 700; color: #1E293B; margin: 0;">{{ getSectionTitle(currentTab) }} Active</h4>
-                        <span style="font-size: 11px; color: #64748B;">Live synchronization enabled</span>
-                      </div>
-                    </template>
+                        <div class="mock-cycle-card">
+                          <span class="c-tag">Cycle #1 Active</span>
+                          <h4>Pool Size: 126 Members</h4>
+                          <div class="mock-progress-bar">
+                            <div class="mock-progress-fill" style="width: 84%;"></div>
+                          </div>
+                          <span class="c-sub">84% Filled (106 / 126)</span>
+                        </div>
+                        <div class="mock-cycle-stats">
+                          <div class="stat-chip">🏆 Cycle Reward: ₹1,200</div>
+                          <div class="stat-chip">⚡ Speed: Fast</div>
+                        </div>
+                      </template>
 
+                      <!-- Default Preview for Bank Verification, Support, Captcha -->
+                      <template v-else>
+                        <div v-if="systemSettings[currentTab + '_visibility'] === 'Hide' || systemSettings[currentTab + '_rule_mode'] === 'Disabled (Maintenance)'" class="mock-blur-overlay">
+                          <div class="mock-blur-card">
+                            <span class="lock-icon">🔒</span>
+                            <h4>Feature Disabled</h4>
+                            <p>{{ systemSettings[currentTab + '_notice'] || 'Administrator has temporarily closed this section.' }}</p>
+                          </div>
+                        </div>
+                        <div class="mock-notice-card alert-red" v-if="systemSettings[currentTab + '_notice']">
+                          <strong>📢 Notice:</strong>
+                          <p>{{ systemSettings[currentTab + '_notice'] }}</p>
+                        </div>
+                        <div style="padding: 16px; background: #F8FAFC; border-radius: 10px; text-align: center; border: 1px solid #E2E8F0;">
+                          <span style="font-size: 28px; display: block; margin-bottom: 6px;">⚙️</span>
+                          <h4 style="font-size: 13px; font-weight: 700; color: #1E293B; margin: 0;">{{ getSectionTitle(currentTab) }} Active</h4>
+                          <span style="font-size: 11px; color: #64748B;">Live synchronization enabled</span>
+                        </div>
+                      </template>
+
+                    </div>
+                    <div class="phone-home-indicator"></div>
                   </div>
                 </div>
               </div>
