@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:upi_uri/qr_widget.dart';
@@ -19,15 +20,17 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   String _message = "";
   String _error = "";
   List<dynamic> _requests = [];
-  final String _payeeVpa = "vp110064@okaxis";
+  final String _defaultPayeeVpa = "vp110064@okaxis";
   bool _isCheckingUtr = false;
   final Map<String, bool> _utrCache = {};
+  Map<String, dynamic> _settings = {};
 
   @override
   void initState() {
     super.initState();
     _amountController.addListener(_onAmountChanged);
     _utrController.addListener(_onUtrChanged);
+    _loadSettings();
     _loadRequestHistory();
   }
 
@@ -39,6 +42,74 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     _utrController.dispose();
     super.dispose();
   }
+
+  Future<void> _loadSettings() async {
+    try {
+      final vis = await ApiService.getVisibility();
+      final raw = (vis['raw_settings'] as Map<String, dynamic>?) ?? {};
+      if (mounted) {
+        setState(() {
+          _settings = {...vis, ...raw};
+          if (statusMinAddMoney && minAddMoney > 0) {
+            _amountController.text = minAddMoney.toStringAsFixed(0);
+          }
+        });
+      }
+    } catch (_) {}
+  }
+
+  bool _boolSetting(String key, {bool defaultValue = true}) {
+    if (!_settings.containsKey(key)) return defaultValue;
+    final val = _settings[key];
+    if (val == true || val == 'true' || val == 1 || val == '1' || val == 'Show' || val == 'Enable') return true;
+    if (val == false || val == 'false' || val == 0 || val == '0' || val == 'Hide' || val == 'Disable') return false;
+    return defaultValue;
+  }
+
+  String _stringSetting(String key, {String defaultValue = ''}) {
+    final val = _settings[key];
+    if (val == null) return defaultValue;
+    return val.toString();
+  }
+
+  bool get isAddMoneyDisabled =>
+      _stringSetting('add_money_section_visibility') == 'Hide' ||
+      _stringSetting('add_money_enabled') == 'false' ||
+      _stringSetting('add_money_enabled_bool') == 'false';
+
+  bool get showQrCode => _boolSetting('status_upi_qr', defaultValue: true);
+  String get customQrUrl => _stringSetting('upi_qr_url');
+
+  bool get showUpiId => _boolSetting('status_upi_id', defaultValue: true);
+  String get payeeVpa {
+    final val = _stringSetting('upi_vpa_id', defaultValue: _defaultPayeeVpa).trim();
+    return val.isNotEmpty ? val : _defaultPayeeVpa;
+  }
+  String get payeeName {
+    final val = _stringSetting('upi_payee_name', defaultValue: "EarnFarm").trim();
+    return val.isNotEmpty ? val : "EarnFarm";
+  }
+
+  bool get statusMinAddMoney => _boolSetting('status_min_add_money', defaultValue: true);
+  double get minAddMoney => statusMinAddMoney
+      ? (double.tryParse(_stringSetting('min_add_money', defaultValue: '1200')) ?? 1200.0)
+      : 0.0;
+
+  bool get statusMaxAddMoney => _boolSetting('status_max_add_money', defaultValue: true);
+  double get maxAddMoney => statusMaxAddMoney
+      ? (double.tryParse(_stringSetting('max_add_money', defaultValue: '12000')) ?? 12000.0)
+      : 999999999.0;
+
+  bool get showPresetButtons => _boolSetting('status_preset_amounts', defaultValue: true);
+  List<String> get presetAmountsList {
+    final raw = _stringSetting('preset_amounts', defaultValue: '100,500,1000,2000,5000');
+    return raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+  }
+
+  bool get isUtrRequired => _boolSetting('status_utr_rule', defaultValue: true) && _stringSetting('utr_number_rule') != 'Disable (Optional)';
+
+  bool get showInstructions => _boolSetting('status_add_instructions', defaultValue: true);
+  String get instructionsText => _stringSetting('add_money_instructions');
 
   void _onAmountChanged() {
     setState(() {});
@@ -68,9 +139,11 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
   Future<void> _loadRequestHistory() async {
     final list = await ApiService.getFundRequests();
-    setState(() {
-      _requests = list;
-    });
+    if (mounted) {
+      setState(() {
+        _requests = list;
+      });
+    }
   }
 
   Future<void> _pasteFromClipboard() async {
@@ -87,46 +160,58 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
-
-    final amtVal = double.tryParse(_amountController.text.trim()) ?? 1200.0;
-    if (amtVal < 1200.0 || amtVal > 12000.0 || (amtVal % 1200.0 != 0)) {
+    if (isAddMoneyDisabled) {
       setState(() {
-        _error = "Deposit amount must be between ₹1,200 and ₹12,000 in multiples of ₹1,200";
+        _error = "Add Money feature is currently disabled by Administrator.";
+      });
+      return;
+    }
+
+    final amtVal = double.tryParse(_amountController.text.trim()) ?? 0.0;
+    if (statusMinAddMoney && amtVal < minAddMoney) {
+      setState(() {
+        _error = "Minimum deposit amount is ₹${minAddMoney.toStringAsFixed(0)}";
+      });
+      return;
+    }
+    if (statusMaxAddMoney && amtVal > maxAddMoney) {
+      setState(() {
+        _error = "Maximum deposit amount is ₹${maxAddMoney.toStringAsFixed(0)}";
       });
       return;
     }
 
     final utrVal = _utrController.text.trim();
-    if (utrVal.length != 12) {
-      setState(() {
-        _error = "UTR number must be exactly 12 digits";
-        _message = "";
-      });
-      return;
+    if (isUtrRequired) {
+      if (utrVal.length != 12) {
+        setState(() {
+          _error = "UTR number must be exactly 12 digits";
+          _message = "";
+        });
+        return;
+      }
+
+      final bool isAlreadyUsedLocally = _requests.any((r) => r['utr']?.toString().trim() == utrVal);
+      if (isAlreadyUsedLocally) {
+        setState(() {
+          _error = "UTR Number Already Used";
+          _message = "";
+        });
+        return;
+      }
+
+      final bool existsSystemWide = await ApiService.checkUtrExists(utrVal);
+      if (!mounted) return;
+      if (existsSystemWide) {
+        setState(() {
+          _error = "UTR Number Already Used";
+          _message = "";
+        });
+        return;
+      }
     }
 
-    // Check if UTR is already used in local history
-    final bool isAlreadyUsedLocally = _requests.any((r) => r['utr']?.toString().trim() == utrVal);
-    if (isAlreadyUsedLocally) {
-      setState(() {
-        _error = "UTR Number Already Used";
-        _message = "";
-      });
-      return;
-    }
-
-    // Check system-wide UTR existence
-    final bool existsSystemWide = await ApiService.checkUtrExists(utrVal);
-    if (!mounted) return;
-    if (existsSystemWide) {
-      setState(() {
-        _error = "UTR Number Already Used";
-        _message = "";
-      });
-      return;
-    }
-
-    showProcessingDialog(context, "Verifying Deposit / UTR Details...");
+    showProcessingDialog(context, "Verifying Deposit Details...");
     if (!mounted) return;
 
     setState(() {
@@ -136,7 +221,10 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     });
 
     try {
-      final result = await ApiService.submitFundRequest(amtVal, utrVal);
+      final result = await ApiService.submitFundRequest(
+        amtVal,
+        utrVal.isNotEmpty ? utrVal : "NOUTR${DateTime.now().millisecondsSinceEpoch}",
+      );
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop();
 
@@ -144,51 +232,51 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
         _isLoading = false;
       });
 
-    if (result['success']) {
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: const [
-              Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 28),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  "Transaction Success !",
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+      if (result['success']) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: Row(
+              children: const [
+                Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 28),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "Transaction Success !",
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                  ),
                 ),
+              ],
+            ),
+            content: const Text(
+              "We will verify your Transaction and get back to you within an hour.",
+              style: TextStyle(fontSize: 14, color: Color(0xFF334155), height: 1.4),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0D47A1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
-          content: const Text(
-            "We will verify your Transaction and get back to you in a Hour.",
-            style: TextStyle(fontSize: 14, color: Color(0xFF334155), height: 1.4),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D47A1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      );
-      if (mounted) {
-        Navigator.pop(context, true);
+        );
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
+      } else {
+        setState(() {
+          _error = result['error'] ?? "Failed to submit request";
+          _message = "";
+        });
       }
-    } else {
-      setState(() {
-        _error = result['error'] ?? "Failed to submit request";
-        _message = "";
-      });
-    }
     } catch (e) {
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -200,6 +288,171 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     }
   }
 
+  Widget _buildQrDisplay() {
+    final url = customQrUrl.trim();
+    if (url.isNotEmpty) {
+      try {
+        if (url.startsWith('data:image')) {
+          final base64Str = url.split(',').last;
+          return Image.memory(
+            base64Decode(base64Str),
+            width: 180,
+            height: 180,
+            fit: BoxFit.contain,
+          );
+        } else if (url.startsWith('http')) {
+          return Image.network(
+            url,
+            width: 180,
+            height: 180,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => _buildFallbackQr(),
+          );
+        }
+      } catch (_) {}
+    }
+    return _buildFallbackQr();
+  }
+
+  Widget _buildFallbackQr() {
+    final amt = _amountController.text.trim();
+    return UpiQrCode(
+      payeeVpa: payeeVpa,
+      payeeName: payeeName,
+      amount: amt.isNotEmpty ? amt : minAddMoney.toStringAsFixed(0),
+      txnRef: "TXN${DateTime.now().millisecondsSinceEpoch}",
+      size: 180,
+    );
+  }
+
+  Widget _buildPresetButtons() {
+    if (!showPresetButtons || presetAmountsList.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Select Quick Amount:",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF64748B),
+            ),
+          ),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: presetAmountsList.map((amtStr) {
+                final isSelected = _amountController.text.trim() == amtStr;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: InkWell(
+                    onTap: () {
+                      setState(() {
+                        _amountController.text = amtStr;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? const Color(0xFF1565C0) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isSelected ? const Color(0xFF0A369D) : const Color(0xFFCBD5E1),
+                        ),
+                      ),
+                      child: Text(
+                        "₹$amtStr",
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : const Color(0xFF1E293B),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInstructionsCard() {
+    if (!showInstructions) return const SizedBox.shrink();
+    final text = instructionsText.trim().isNotEmpty
+        ? instructionsText
+        : "Minimum Add Money: ₹${minAddMoney.toStringAsFixed(0)}\nMaximum Add Money: ₹${maxAddMoney.toStringAsFixed(0)}\nOnly 12 Digit UTR number is allowed.\nFunds will be added after Admin approval.";
+    final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFEF08A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFDE68A),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.info_outline_rounded, color: Color(0xFFB45309), size: 16),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                "Important Instructions",
+                style: TextStyle(
+                  color: Color(0xFFB45309),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...lines.map((line) => _buildInstructionBullet(Icons.check_circle_outline_rounded, line.trim())),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInstructionBullet(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: const Color(0xFFD97706), size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Color(0xFF78350F),
+                fontSize: 12,
+                height: 1.3,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,7 +460,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Blue Header with 3D Wallet Illustration
+            // Top Blue Header
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
               decoration: const BoxDecoration(
@@ -223,7 +476,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                     icon: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
@@ -254,14 +507,13 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                       ],
                     ),
                   ),
-                  // 3D Wallet Badge Illustration
                   Stack(
                     alignment: Alignment.topRight,
                     children: [
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
@@ -288,6 +540,33 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
               ),
             ),
 
+            if (isAddMoneyDisabled)
+              Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFCA5A5)),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.block_rounded, color: Color(0xFFDC2626), size: 28),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "Add Money service is currently disabled by Administrator.",
+                        style: TextStyle(
+                          color: Color(0xFFDC2626),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             // Scrollable Main Content
             Expanded(
               child: SingleChildScrollView(
@@ -296,198 +575,190 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      // 1. Scan & Pay Card Container
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            // Scan & Pay Pill Badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE3F2FD),
-                                borderRadius: BorderRadius.circular(20),
+                      // 1. UPI QR Code Card (Setting #1)
+                      if (showQrCode) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.02),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                              child: const Text(
-                                "Scan & Pay",
-                                style: TextStyle(
-                                  color: Color(0xFF1565C0),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE3F2FD),
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              "Scan QR Code using any UPI App",
-                              style: TextStyle(
-                                color: Color(0xFF475569),
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // QR Code Centered Container
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.blue.withOpacity(0.05),
-                                    blurRadius: 15,
-                                    spreadRadius: 2,
-                                  )
-                                ],
-                              ),
-                              child: UpiQrCode(
-                                payeeVpa: _payeeVpa,
-                                payeeName: "SR Digital Seva Kendram",
-                                amount: "1200",
-                                txnRef: "TXN${DateTime.now().millisecondsSinceEpoch}",
-                                size: 180,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Divider Row
-                            const Row(
-                              children: [
-                                Expanded(child: Divider(color: Color(0xFFCBD5E1))),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 12),
-                                  child: Text("OR", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold, fontSize: 12)),
-                                ),
-                                Expanded(child: Divider(color: Color(0xFFCBD5E1))),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-
-                            // UPI Logo Text
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.account_balance, color: Color(0xFF1565C0), size: 18),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  "UPI",
+                                child: const Text(
+                                  "Scan & Pay",
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
                                     color: Color(0xFF1565C0),
-                                    letterSpacing: 1.0,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF22C55E),
-                                    borderRadius: BorderRadius.circular(3),
-                                  ),
-                                  child: const Text(
-                                    "✓",
-                                    style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // 2. UPI ID Box
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.person_outline_rounded, color: Color(0xFF1565C0), size: 22),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              const SizedBox(height: 10),
+                              const Text(
+                                "Scan QR Code using any UPI App",
+                                style: TextStyle(
+                                  color: Color(0xFF475569),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.blue.withValues(alpha: 0.05),
+                                      blurRadius: 15,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                                child: _buildQrDisplay(),
+                              ),
+                              const SizedBox(height: 16),
+                              const Row(
                                 children: [
+                                  Expanded(child: Divider(color: Color(0xFFCBD5E1))),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 12),
+                                    child: Text("OR", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold, fontSize: 12)),
+                                  ),
+                                  Expanded(child: Divider(color: Color(0xFFCBD5E1))),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.account_balance, color: Color(0xFF1565C0), size: 18),
+                                  const SizedBox(width: 6),
                                   const Text(
-                                    "UPI ID",
+                                    "UPI",
                                     style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
                                       color: Color(0xFF1565C0),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.0,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _payeeVpa,
-                                    style: const TextStyle(
-                                      color: Color(0xFF0F172A),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF22C55E),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                    child: const Text(
+                                      "✓",
+                                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            IconButton(
-                              icon: Container(
-                                padding: const EdgeInsets.all(8),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // 2. UPI ID Box (Setting #2)
+                      if (showUpiId) ...[
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(Icons.copy_rounded, color: Color(0xFF1565C0), size: 18),
+                                child: const Icon(Icons.person_outline_rounded, color: Color(0xFF1565C0), size: 22),
                               ),
-                              onPressed: () {
-                                Clipboard.setData(ClipboardData(text: _payeeVpa));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("UPI ID copied to clipboard!")),
-                                );
-                              },
-                            ),
-                          ],
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "UPI ID",
+                                      style: TextStyle(
+                                        color: Color(0xFF1565C0),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      payeeVpa,
+                                      style: const TextStyle(
+                                        color: Color(0xFF0F172A),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: const Color(0xFFCBD5E1)),
+                                  ),
+                                  child: const Icon(Icons.copy_rounded, color: Color(0xFF1565C0), size: 18),
+                                ),
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: payeeVpa));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("UPI ID copied to clipboard!")),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 14),
+                        const SizedBox(height: 14),
+                      ],
 
-                      // Amount Input Card
+                      // 3. Amount Input Card (Settings #3, #4, #5)
                       Builder(
                         builder: (context) {
                           final String text = _amountController.text.trim();
                           final double? amt = double.tryParse(text);
                           final bool isTouched = text.isNotEmpty;
-                          final bool isValidAmt = amt != null && amt >= 1200 && amt <= 12000 && (amt % 1200 == 0);
-                          final bool isLessThanMin = amt != null && amt < 1200;
-                          final bool isMoreThanMax = amt != null && amt > 12000;
-                          final bool isNotMultiple = amt != null && amt >= 1200 && amt <= 12000 && (amt % 1200 != 0);
+                          final bool isValidMin = !statusMinAddMoney || (amt != null && amt >= minAddMoney);
+                          final bool isValidMax = !statusMaxAddMoney || (amt != null && amt <= maxAddMoney);
+                          final bool isValidAmt = amt != null && isValidMin && isValidMax;
+                          final bool isLessThanMin = statusMinAddMoney && amt != null && amt < minAddMoney;
+                          final bool isMoreThanMax = statusMaxAddMoney && amt != null && amt > maxAddMoney;
 
                           Color borderColor = const Color(0xFFCBD5E1);
                           Widget? suffixIcon;
@@ -501,7 +772,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 22),
                               );
-                              statusMsg = "Valid deposit amount (Multiple of ₹1,200)";
+                              statusMsg = "Valid deposit amount";
                               statusColor = const Color(0xFF16A34A);
                             } else if (isLessThanMin) {
                               borderColor = const Color(0xFFDC2626);
@@ -509,7 +780,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              statusMsg = "Minimum amount is ₹1,200";
+                              statusMsg = "Minimum amount is ₹${minAddMoney.toStringAsFixed(0)}";
                               statusColor = const Color(0xFFDC2626);
                             } else if (isMoreThanMax) {
                               borderColor = const Color(0xFFDC2626);
@@ -517,19 +788,17 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              statusMsg = "Maximum amount is ₹12,000";
-                              statusColor = const Color(0xFFDC2626);
-                            } else if (isNotMultiple) {
-                              borderColor = const Color(0xFFDC2626);
-                              suffixIcon = const Padding(
-                                padding: EdgeInsets.only(right: 12),
-                                child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
-                              );
-                              statusMsg = "Amount must be in multiples of ₹1,200 (e.g. ₹1,200, ₹2,400, ₹3,600...)";
+                              statusMsg = "Maximum amount is ₹${maxAddMoney.toStringAsFixed(0)}";
                               statusColor = const Color(0xFFDC2626);
                             }
                           } else {
-                            statusMsg = "Minimum: ₹1,200 | Maximum: ₹12,000 (Multiples of ₹1,200)";
+                            if (statusMinAddMoney && statusMaxAddMoney) {
+                              statusMsg = "Min: ₹${minAddMoney.toStringAsFixed(0)} | Max: ₹${maxAddMoney.toStringAsFixed(0)}";
+                            } else if (statusMinAddMoney) {
+                              statusMsg = "Minimum: ₹${minAddMoney.toStringAsFixed(0)}";
+                            } else if (statusMaxAddMoney) {
+                              statusMsg = "Maximum: ₹${maxAddMoney.toStringAsFixed(0)}";
+                            }
                             statusColor = const Color(0xFF1565C0);
                           }
 
@@ -575,6 +844,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                     ),
                                   ),
                                 ),
+                                _buildPresetButtons(),
                                 if (statusMsg != null) ...[
                                   const SizedBox(height: 8),
                                   Container(
@@ -613,7 +883,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // 3. Enter UTR Number Card
+                      // 4. Enter UTR Number Card (Setting #6)
                       Builder(
                         builder: (context) {
                           final String utrText = _utrController.text.trim();
@@ -678,6 +948,9 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                               utrStatusMsg = "Please enter only 12 digit UTR number";
                               utrStatusColor = const Color(0xFFDC2626);
                             }
+                          } else if (!isUtrRequired) {
+                            utrStatusMsg = "UTR Number is optional";
+                            utrStatusColor = const Color(0xFF64748B);
                           }
 
                           return Container(
@@ -685,7 +958,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFFAF5FF),
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: utrStatusMsg != null && !isValidUtr ? const Color(0xFFFCA5A5) : const Color(0xFFE9D5FF)),
+                              border: Border.all(color: utrStatusMsg != null && isTouched && !isValidUtr ? const Color(0xFFFCA5A5) : const Color(0xFFE9D5FF)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -701,9 +974,9 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                       child: const Icon(Icons.receipt_long_outlined, color: Color(0xFF7E22CE), size: 20),
                                     ),
                                     const SizedBox(width: 10),
-                                    const Text(
-                                      "Enter UTR Number",
-                                      style: TextStyle(
+                                    Text(
+                                      isUtrRequired ? "Enter UTR Number *" : "Enter UTR Number (Optional)",
+                                      style: const TextStyle(
                                         color: Color(0xFF7E22CE),
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
@@ -723,7 +996,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                     keyboardType: TextInputType.number,
                                     maxLength: 12,
                                     decoration: InputDecoration(
-                                      hintText: "Enter 12 Digit UTR Number",
+                                      hintText: isUtrRequired ? "Enter 12 Digit UTR Number" : "Enter UTR Number (Optional)",
                                       hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                                       border: InputBorder.none,
                                       suffixIcon: suffixIcon,
@@ -738,14 +1011,14 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: isValidUtr ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+                                      color: isValidUtr ? const Color(0xFFF0FDF4) : (isTouched ? const Color(0xFFFEF2F2) : const Color(0xFFF1F5F9)),
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: isValidUtr ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5)),
+                                      border: Border.all(color: isValidUtr ? const Color(0xFF86EFAC) : (isTouched ? const Color(0xFFFCA5A5) : const Color(0xFFCBD5E1))),
                                     ),
                                     child: Row(
                                       children: [
                                         Icon(
-                                          isValidUtr ? Icons.check_circle_rounded : Icons.error_rounded,
+                                          isValidUtr ? Icons.check_circle_rounded : (isTouched ? Icons.error_rounded : Icons.info_outline_rounded),
                                           color: utrStatusColor,
                                           size: 16,
                                         ),
@@ -771,47 +1044,8 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // 4. Important Instructions Card
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFFBEB),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFFEF08A)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFFDE68A),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.info_outline_rounded, color: Color(0xFFB45309), size: 16),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  "Important Instructions",
-                                  style: TextStyle(
-                                    color: Color(0xFFB45309),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            _buildInstructionBullet(Icons.monetization_on_outlined, "Deposit amount must be ₹1200 to ₹12000 in multiples of ₹1200."),
-                            _buildInstructionBullet(Icons.access_time_rounded, "UTR number must be exactly 12 digits."),
-                            _buildInstructionBullet(Icons.highlight_off_rounded, "Already used UTR number will not be allowed."),
-                            _buildInstructionBullet(Icons.thumb_up_alt_outlined, "Funds will be added to your wallet after Admin approval."),
-                          ],
-                        ),
-                      ),
+                      // 5. Important Instructions Card (Setting #7)
+                      _buildInstructionsCard(),
                       const SizedBox(height: 16),
 
                       if (_message.isNotEmpty) ...[
@@ -823,19 +1057,21 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                         const SizedBox(height: 12),
                       ],
 
-                      // 5. Submit Button
+                      // 6. Submit Button
                       Builder(
                         builder: (context) {
                           final String amtText = _amountController.text.trim();
                           final double? amt = double.tryParse(amtText);
-                          final bool isValidAmt = amt != null && amt >= 1200 && amt <= 12000 && (amt % 1200 == 0);
+                          final bool isValidMin = !statusMinAddMoney || (amt != null && amt >= minAddMoney);
+                          final bool isValidMax = !statusMaxAddMoney || (amt != null && amt <= maxAddMoney);
+                          final bool isValidAmt = amt != null && isValidMin && isValidMax;
 
                           final String utrText = _utrController.text.trim();
                           final bool isNumeric = RegExp(r'^[0-9]+$').hasMatch(utrText);
                           final bool isAlreadyUsed = _requests.any((r) => r['utr']?.toString().trim() == utrText) || (_utrCache[utrText] == true);
-                          final bool isValidUtr = utrText.length == 12 && isNumeric && !isAlreadyUsed && !_isCheckingUtr;
+                          final bool isValidUtr = !isUtrRequired || (utrText.length == 12 && isNumeric && !isAlreadyUsed && !_isCheckingUtr);
 
-                          final bool canSubmit = !_isLoading && isValidAmt && isValidUtr;
+                          final bool canSubmit = !_isLoading && !isAddMoneyDisabled && isValidAmt && isValidUtr;
 
                           return SizedBox(
                             width: double.infinity,
@@ -867,7 +1103,6 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                           );
                         },
                       ),
-
                     ],
                   ),
                 ),
@@ -875,30 +1110,6 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildInstructionBullet(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: const Color(0xFFD97706), size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Color(0xFF78350F),
-                fontSize: 12,
-                height: 1.3,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
