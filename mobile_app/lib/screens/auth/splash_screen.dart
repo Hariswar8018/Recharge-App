@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:video_player/video_player.dart';
 import '../../services/api_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -11,35 +12,54 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  late VideoPlayerController _controller;
+  bool _isVideoInitialized = false;
   bool _isOffline = false;
-  bool _isChecking = true;
   String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _navigateToNextScreen();
+    _initVideoAndNavigate();
   }
 
   @override
   void dispose() {
+    _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _navigateToNextScreen() async {
-    final startTime = DateTime.now();
-
+  Future<void> _initVideoAndNavigate() async {
     if (mounted) {
       setState(() {
-        _isChecking = true;
         _isOffline = false;
         _errorMessage = '';
       });
     }
 
+    // 1. Initialize 8-second Splash Video with zero volume (no audio)
+    _controller = VideoPlayerController.asset('assets/video_spalsh.mp4');
+    try {
+      await _controller.initialize();
+      _controller.setVolume(0.0); // Silent video playback
+      _controller.setLooping(false);
+      _controller.play();
+
+      if (mounted) {
+        setState(() {
+          _isVideoInitialized = true;
+        });
+      }
+    } catch (e) {
+      // Fallback if video fails to initialize
+      _isVideoInitialized = false;
+    }
+
+    final startTime = DateTime.now();
     bool healthy = false;
     String errText = '';
 
+    // 2. Perform API health check in background while video plays
     try {
       await ApiService.getWorkingBaseUrl(forceCheck: true);
       final cleanBase = ApiService.baseUrl.replaceAll(RegExp(r'/+$'), '');
@@ -59,37 +79,36 @@ class _SplashScreenState extends State<SplashScreen> {
       errText = "Connection Error: Unable to connect to server. Please check your internet connection or try again.";
     }
 
+    // 3. Handle offline / health failure state (NO navigation, show red error container)
     if (!healthy) {
       if (!mounted) return;
       setState(() {
-        _isChecking = false;
         _isOffline = true;
         _errorMessage = errText.isNotEmpty
             ? errText
             : "Unable to connect to API server. Please check your internet connection.";
       });
-      return; // AVOID NAVIGATION WHEN OFFLINE OR UNHEALTHY
+      return;
     }
 
     try {
       await ApiService.getVisibility(forceRefresh: true);
     } catch (_) {}
 
-    if (!mounted) return;
+    // 4. Wait for full video playback (or minimum 3.5s delay) before navigation
+    final videoDuration = _controller.value.isInitialized && _controller.value.duration > Duration.zero
+        ? _controller.value.duration
+        : const Duration(seconds: 4);
 
     final elapsedTime = DateTime.now().difference(startTime);
-    final remainingDelay = const Duration(seconds: 3) - elapsedTime;
+    final remainingDelay = videoDuration - elapsedTime;
     if (remainingDelay > Duration.zero) {
       await Future.delayed(remainingDelay);
     }
 
     if (!mounted) return;
 
-    setState(() {
-      _isChecking = false;
-      _isOffline = false;
-    });
-
+    // 5. Navigate to Home or Login
     final token = await ApiService.getToken();
     if (!mounted) return;
     if (token != null && token.isNotEmpty) {
@@ -101,55 +120,28 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double w = MediaQuery.of(context).size.width;
-    double h = MediaQuery.of(context).size.height;
-
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          Container(
-            width: w,
-            height: h,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/logos/spalsh.gif"),
+          // Fullscreen Video Player (cover fit, no letterboxing)
+          if (_isVideoInitialized && _controller.value.isInitialized)
+            SizedBox.expand(
+              child: FittedBox(
                 fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          if (_isChecking)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 60,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 3.0,
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      'Connecting to server...',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 4,
-                            color: Colors.black54,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                child: SizedBox(
+                  width: _controller.value.size.width,
+                  height: _controller.value.size.height,
+                  child: VideoPlayer(_controller),
                 ),
               ),
+            )
+          else
+            const SizedBox.expand(
+              child: ColoredBox(color: Colors.black),
             ),
+
+          // ONLY SHOW RED CONTAINER IF NO INTERNET OR API CANNOT CONNECT
           if (_isOffline)
             Positioned(
               left: 20,
@@ -210,7 +202,13 @@ class _SplashScreenState extends State<SplashScreen> {
                       width: double.infinity,
                       height: 44,
                       child: ElevatedButton.icon(
-                        onPressed: _navigateToNextScreen,
+                        onPressed: () {
+                          if (_isVideoInitialized) {
+                            _controller.seekTo(Duration.zero);
+                            _controller.play();
+                          }
+                          _initVideoAndNavigate();
+                        },
                         icon: const Icon(
                           Icons.refresh_rounded,
                           color: Color(0xFFDC2626),
