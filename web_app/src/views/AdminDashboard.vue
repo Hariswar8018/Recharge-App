@@ -1985,16 +1985,20 @@
                     <td>#{{ txn.id }}</td>
                     <td>User #{{ txn.user_id }}</td>
                     <td>{{ txn.wallet_type }}</td>
-                    <td class="font-bold">₹{{ txn.amount }}</td>
+                    <td class="font-bold">₹{{ String(txn.amount || 0).replace(/^₹/, '') }}</td>
                     <td>{{ txn.type }}</td>
                     <td><span :class="getStatusBadgeClass(txn.status)">{{ txn.status }}</span></td>
                     <td>{{ txn.date || txn.created_at || '-' }}</td>
                     <td>
-                      <div v-if="txn.status === 'PENDING' || txn.status === 'pending'" class="action-btn-row">
-                        <button @click="handleApproveTxn(txn.id, 'APPROVED')" class="btn-approve" title="Accept Payment / Withdrawal">✓ Accept</button>
-                        <button @click="handleApproveTxn(txn.id, 'REJECTED')" class="btn-reject" title="Reject Transaction">✕ Reject</button>
+                      <div class="action-btn-row">
+                        <button @click="openInvoiceModal(txn)" class="btn-invoice-icon" style="background: #eff6ff; color: #0052cc; border: 1px solid #bfdbfe; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;">
+                          📄 Invoice
+                        </button>
+                        <template v-if="txn.status === 'PENDING' || txn.status === 'pending'">
+                          <button @click="handleApproveTxn(txn.id, 'APPROVED')" class="btn-approve" title="Accept Payment / Withdrawal">✓ Accept</button>
+                          <button @click="handleApproveTxn(txn.id, 'REJECTED')" class="btn-reject" title="Reject Transaction">✕ Reject</button>
+                        </template>
                       </div>
-                      <span v-else class="text-muted-sm">—</span>
                     </td>
                   </tr>
                 </tbody>
@@ -2942,12 +2946,144 @@
             </div>
           </div>
 
-          <div class="section-footer-note" style="margin-top: 1.5rem;">
-            <span>ℹ️ Note: Any changes you make here will reflect instantly on the user panel.</span>
-            <span class="last-updated">Last Updated: {{ new Date().toLocaleDateString() }}</span>
+        <!-- OFFICIAL SR DIGITAL SEVA KENDRAM SERVICE INVOICE MODAL -->
+        <div v-if="activeInvoice" class="invoice-modal-backdrop" @click.self="activeInvoice = null">
+          <div class="invoice-modal-container">
+            <div class="invoice-modal-actions no-print">
+              <button @click="printInvoice" class="btn-invoice-print">🖨️ Print / Save as PDF</button>
+              <button @click="activeInvoice = null" class="btn-invoice-close">✕ Close</button>
+            </div>
+
+            <div class="invoice-document" id="printable-service-invoice">
+              <!-- Top Header Row -->
+              <div class="inv-header">
+                <div class="inv-brand">
+                  <div class="inv-logo-wrap">
+                    <div class="inv-logo-circle">
+                      <span class="inv-logo-text">SR</span>
+                    </div>
+                    <div class="inv-brand-title">
+                      <h2>SR DIGITAL SEVA</h2>
+                      <h3>KENDRAM</h3>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="inv-contact-info">
+                  <div><span class="inv-icon">📞</span> 9988494936</div>
+                  <div><span class="inv-icon">✉️</span> info@srdigitalseva.com</div>
+                  <div><span class="inv-icon">📍</span> H.No: 33-5-118, Warangal, Telangana - 506005</div>
+                </div>
+              </div>
+
+              <!-- Service Invoice Title Banner -->
+              <div class="inv-title-banner">
+                SERVICE INVOICE
+              </div>
+
+              <!-- Two Detail Columns: Customer Details & Invoice Details -->
+              <div class="inv-details-grid">
+                <div class="inv-card-box">
+                  <h4 class="box-title">CUSTOMER DETAILS</h4>
+                  <div class="inv-row"><span>Customer Name</span> <strong>: {{ activeInvoice.customerName }}</strong></div>
+                  <div class="inv-row"><span>Mobile Number</span> <strong>: {{ activeInvoice.mobileNumber }}</strong></div>
+                  <div class="inv-row"><span>Email ID</span> <strong>: {{ activeInvoice.email }}</strong></div>
+                  <div class="inv-row"><span>Address</span> <strong>: {{ activeInvoice.address }}</strong></div>
+                </div>
+
+                <div class="inv-card-box">
+                  <h4 class="box-title">INVOICE DETAILS</h4>
+                  <div class="inv-row"><span>Invoice No.</span> <strong>: {{ activeInvoice.invoiceNo }}</strong></div>
+                  <div class="inv-row"><span>Invoice Date</span> <strong>: {{ activeInvoice.invoiceDate }}</strong></div>
+                  <div class="inv-row"><span>Payment Mode</span> <strong>: {{ activeInvoice.paymentMode }}</strong></div>
+                  <div class="inv-row"><span>UTR Number</span> <strong>: {{ activeInvoice.utrNumber }}</strong></div>
+                  <div class="inv-row"><span>Payment Date</span> <strong>: {{ activeInvoice.paymentDate }}</strong></div>
+                  <div class="inv-row"><span>Status</span> <strong class="badge-paid">: <span class="paid-tag">PAID</span></strong></div>
+                </div>
+              </div>
+
+              <!-- Items Table -->
+              <table class="inv-items-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">S.No.</th>
+                    <th>DESCRIPTION OF SERVICE</th>
+                    <th style="width: 60px;">QTY.</th>
+                    <th style="width: 120px;">UNIT PRICE (₹)</th>
+                    <th style="width: 120px;">AMOUNT (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="text-align: center; font-weight: 700;">1</td>
+                    <td>
+                      <strong>{{ activeInvoice.serviceTitle }}</strong>
+                      <p class="service-subdesc">{{ activeInvoice.serviceDesc }}</p>
+                    </td>
+                    <td style="text-align: center; font-weight: 700;">1</td>
+                    <td style="text-align: right; font-weight: 700;">{{ activeInvoice.formattedAmount }}</td>
+                    <td style="text-align: right; font-weight: 700;">{{ activeInvoice.formattedAmount }}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Bottom Subtotals and Notes Section -->
+              <div class="inv-bottom-grid">
+                <div class="inv-bottom-left">
+                  <div class="inv-note-box">
+                    <span class="note-lbl">Amount in Words :</span>
+                    <strong class="note-val">{{ activeInvoice.amountInWords }}</strong>
+                  </div>
+
+                  <div class="inv-note-box" style="margin-top: 10px;">
+                    <span class="note-lbl">Service Purpose / Reference</span>
+                    <p class="note-desc">This amount is for the online application service provided to the customer as per their request.</p>
+                  </div>
+                </div>
+
+                <div class="inv-bottom-right">
+                  <div class="inv-subtotal-table">
+                    <div class="sub-row"><span>Sub Total</span> <span>₹ {{ activeInvoice.formattedAmount }}</span></div>
+                    <div class="sub-row"><span>Discount</span> <span>₹ 0.00</span></div>
+                    <div class="sub-row total-line"><span>Total Amount</span> <span>₹ {{ activeInvoice.formattedAmount }}</span></div>
+                    <div class="grand-total-banner">
+                      <span>Grand Total</span> <span>₹ {{ activeInvoice.formattedAmount }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer Terms, Signature & Seal -->
+              <div class="inv-footer-section">
+                <div class="inv-terms-col">
+                  <h5 class="terms-title">Terms & Conditions :</h5>
+                  <ol class="terms-list">
+                    <li>This is a computer generated invoice.</li>
+                    <li>Services once processed will not be cancelled or refunded.</li>
+                    <li>Please verify the details before making the payment.</li>
+                    <li>All disputes are subject to Warangal Jurisdiction.</li>
+                  </ol>
+                  <div class="thank-you-script">
+                    Thank You! <span>For Your Business</span>
+                  </div>
+                </div>
+
+                <div class="inv-seal-col">
+                  <!-- Round Official Blue Stamp -->
+                  <div class="official-seal-circle">
+                    <div class="seal-inner-ring">
+                      <span class="seal-header">SR DIGITAL SEVA KENDRAM</span>
+                      <span class="seal-reg">Regd. No: 34294</span>
+                      <span class="seal-stars">★ ★ ★</span>
+                    </div>
+                  </div>
+                  <div class="sig-script">Rajesh</div>
+                  <div class="sig-title">Authorised Signatory</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
 
       </main>
     </div>
@@ -3030,6 +3166,7 @@ export default {
       notifError: '',
       sendingNotif: false,
       notificationsList: [],
+      activeInvoice: null,
       // System settings states
       loadingSystem: false,
       systemError: '',
@@ -3647,6 +3784,54 @@ export default {
       } finally {
         this.sendingNotif = false;
       }
+    },
+    openInvoiceModal(txn) {
+      const rawAmt = String(txn.amount || txn.join_amount || 1200).replace(/^₹/, '').trim();
+      const amt = parseFloat(rawAmt || 0);
+      const formattedAmt = amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      
+      const invoiceNo = 'SR/2026-27/' + String(txn.id || Math.floor(Math.random() * 9000 + 1000)).padStart(4, '0');
+      const invoiceDate = (txn.date || txn.created_at || new Date().toISOString()).substring(0, 10);
+      const paymentDate = (txn.date || txn.created_at || new Date().toISOString()).replace('T', ' ').substring(0, 19);
+
+      this.activeInvoice = {
+        customerName: txn.fullName || txn.user_name || (txn.user_id ? 'User #' + txn.user_id : 'Ramesh Kumar'),
+        mobileNumber: txn.mobileNumber || txn.mobile || '9876543210',
+        email: txn.email || 'ramesh@gmail.com',
+        address: 'H.No: 12-3-45, Hanamkonda, Warangal, Telangana - 506001',
+        invoiceNo: invoiceNo,
+        invoiceDate: invoiceDate,
+        paymentMode: txn.payment_method || txn.wallet_type || 'UPI',
+        utrNumber: txn.utr_number || txn.reference || '412345678901',
+        paymentDate: paymentDate,
+        status: (txn.status || 'PAID').toUpperCase(),
+        serviceTitle: 'Online Application & Processing Service',
+        serviceDesc: '(Application form filling, document verification, online submission and follow-up support)',
+        formattedAmount: formattedAmt,
+        amountInWords: this.numberToWords(amt)
+      };
+    },
+    printInvoice() {
+      window.print();
+    },
+    numberToWords(num) {
+      const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+      const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+      const inWords = (n) => {
+        if ((n = n.toString()).length > 9) return 'overflow';
+        let n_array = ('000000000' + n).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+        if (!n_array) return '';
+        let str = '';
+        str += (n_array[1] != 0) ? (a[Number(n_array[1])] || b[n_array[1][0]] + ' ' + a[n_array[1][1]]) + 'Crore ' : '';
+        str += (n_array[2] != 0) ? (a[Number(n_array[2])] || b[n_array[2][0]] + ' ' + a[n_array[2][1]]) + 'Lakh ' : '';
+        str += (n_array[3] != 0) ? (a[Number(n_array[3])] || b[n_array[3][0]] + ' ' + a[n_array[3][1]]) + 'Thousand ' : '';
+        str += (n_array[4] != 0) ? (a[Number(n_array[4])] || b[n_array[4][0]] + ' ' + a[n_array[4][1]]) + 'Hundred ' : '';
+        str += (n_array[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n_array[5])] || b[n_array[5][0]] + ' ' + a[n_array[5][1]]) : '';
+        return str;
+      };
+      const val = Math.floor(parseFloat(num || 0));
+      if (val === 0) return 'Rupees Zero Only';
+      return 'Rupees ' + inWords(val).trim() + ' Only';
     },
     async handleChangePassword() {
       if (this.newPassword !== this.confirmPassword) {
@@ -5833,5 +6018,397 @@ input:checked + .slider:before { transform: translateX(22px); }
   .wallets-row { flex-direction: column; gap: 0.75rem; }
   .phone-frame { max-width: 260px; border-width: 4px; border-radius: 20px; }
   .phone-app-body { padding: 0.65rem; }
+}
+
+/* Service Invoice Modal & Print Styling */
+.invoice-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.invoice-modal-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 820px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+  padding: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.invoice-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.btn-invoice-print {
+  background: #0052cc;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-invoice-close {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.invoice-document {
+  background: white;
+  border: 2px solid #0052cc;
+  border-radius: 12px;
+  padding: 24px;
+  color: #0f172a;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.inv-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inv-logo-circle {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e11d48, #0052cc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 900;
+  font-size: 22px;
+  box-shadow: 0 4px 10px rgba(0,82,204,0.3);
+}
+
+.inv-brand-title h2 {
+  font-size: 24px;
+  font-weight: 900;
+  color: #0052cc;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.inv-brand-title h3 {
+  font-size: 18px;
+  font-weight: 900;
+  color: #dc2626;
+  margin: 0;
+  letter-spacing: 1.5px;
+}
+
+.inv-contact-info {
+  font-size: 12px;
+  color: #334155;
+  text-align: right;
+  line-height: 1.6;
+}
+
+.inv-title-banner {
+  background: #0052cc;
+  color: white;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+  padding: 8px;
+  border-radius: 20px;
+  letter-spacing: 2px;
+  margin: 16px 0 20px 0;
+  box-shadow: 0 4px 12px rgba(0, 82, 204, 0.2);
+}
+
+.inv-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.inv-card-box {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.box-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0052cc;
+  margin: 0 0 10px 0;
+  border-bottom: 2px solid #bfdbfe;
+  padding-bottom: 4px;
+}
+
+.inv-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.inv-row span {
+  color: #475569;
+  width: 110px;
+}
+
+.inv-row strong {
+  flex: 1;
+  color: #0f172a;
+}
+
+.paid-tag {
+  background: #16a34a;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.inv-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  border: 1px solid #0052cc;
+}
+
+.inv-items-table th {
+  background: #0052cc;
+  color: white;
+  padding: 10px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.inv-items-table td {
+  padding: 12px 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 12px;
+  vertical-align: top;
+}
+
+.service-subdesc {
+  font-size: 11px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+.inv-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.inv-note-box {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.note-lbl {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0052cc;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.note-val {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.note-desc {
+  font-size: 11px;
+  color: #475569;
+  margin: 2px 0 0 0;
+}
+
+.inv-subtotal-table {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.sub-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 14px;
+  font-size: 13px;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.sub-row.total-line {
+  font-weight: 800;
+  color: #0f172a;
+  border-bottom: none;
+}
+
+.grand-total-banner {
+  background: #0052cc;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.inv-footer-section {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 16px;
+  align-items: flex-end;
+  margin-top: 10px;
+}
+
+.terms-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #0052cc;
+  margin: 0 0 4px 0;
+}
+
+.terms-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.thank-you-script {
+  font-size: 20px;
+  font-family: 'Brush Script MT', cursive, sans-serif;
+  color: #dc2626;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+.thank-you-script span {
+  font-size: 12px;
+  font-family: sans-serif;
+  color: #0f172a;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.inv-seal-col {
+  text-align: center;
+}
+
+.official-seal-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 2px solid #0052cc;
+  margin: 0 auto 6px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+}
+
+.seal-inner-ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px dashed #0052cc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.seal-header {
+  font-size: 7px;
+  font-weight: 900;
+  color: #0052cc;
+  line-height: 1;
+}
+
+.seal-reg {
+  font-size: 8px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 2px 0;
+}
+
+.seal-stars {
+  font-size: 8px;
+  color: #0052cc;
+}
+
+.sig-script {
+  font-family: 'Brush Script MT', cursive, sans-serif;
+  font-size: 22px;
+  color: #0052cc;
+  font-weight: bold;
+}
+
+.sig-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0052cc;
+  border-top: 1px solid #0052cc;
+  padding-top: 2px;
+  display: inline-block;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .no-print {
+    display: none !important;
+  }
+  #printable-service-invoice, #printable-service-invoice * {
+    visibility: visible;
+  }
+  #printable-service-invoice {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    border: none;
+  }
 }
 </style>

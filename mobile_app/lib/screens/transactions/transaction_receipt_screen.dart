@@ -43,7 +43,6 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isIncome = widget.transaction.isIncome;
     final String status = widget.transaction.status;
     final String cleanAmount = widget.transaction.amount.replaceAll(RegExp(r'[+\-₹\s]'), '');
 
@@ -57,20 +56,21 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               RepaintBoundary(
                 key: _boundaryKey,
                 child: Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF0052CC), width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: Colors.black.withOpacity(0.08),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       )
@@ -78,66 +78,203 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: status.toLowerCase() == "pending"
-                            ? const Color(0xFFFFF3E0)
-                            : (status.toLowerCase() == "failed"
-                                ? const Color(0xFFFFEBEE)
-                                : (isIncome ? const Color(0xFFE8F5E9) : const Color(0xFFE3F2FD))),
-                        child: Icon(
-                          status.toLowerCase() == "pending"
-                              ? Icons.access_time_filled
-                              : (status.toLowerCase() == "failed"
-                                  ? Icons.error_outline
-                                  : (isIncome ? Icons.south_rounded : Icons.north_rounded)),
-                          color: status.toLowerCase() == "pending"
-                              ? const Color(0xFFEF6C00)
-                              : (status.toLowerCase() == "failed"
-                                  ? const Color(0xFFC62828)
-                                  : (isIncome ? const Color(0xFF2E7D32) : const Color(0xFF1565C0))),
-                          size: 32,
+                      // Header Row with Brand & Contact
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    colors: [Color(0xFFE11D48), Color(0xFF0052CC)],
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Text("SR", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("SR DIGITAL SEVA", style: TextStyle(color: Color(0xFF0052CC), fontWeight: FontWeight.w900, fontSize: 15)),
+                                  Text("KENDRAM", style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.2)),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text("📞 9988494936", style: TextStyle(fontSize: 10, color: Color(0xFF334155))),
+                              Text("✉️ info@srdigitalseva.com", style: TextStyle(fontSize: 9, color: Color(0xFF334155))),
+                              Text("📍 Warangal, TS - 506005", style: TextStyle(fontSize: 9, color: Color(0xFF334155))),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Service Invoice Title Banner
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0052CC),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Text(
+                          "SERVICE INVOICE",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 1.5),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        widget.transaction.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
+                      const SizedBox(height: 14),
+
+                      // Details Cards Grid
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFCBD5E1)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("INVOICE & TRANSACTION DETAILS", style: TextStyle(color: Color(0xFF0052CC), fontWeight: FontWeight.bold, fontSize: 12)),
+                            const SizedBox(height: 6),
+                            _buildReceiptRow("Invoice No.", "SR/2026-27/${widget.transaction.reference}"),
+                            _buildReceiptRow("Service/Type", widget.transaction.type),
+                            _buildReceiptRow("Payment Mode", widget.transaction.descLine1.isNotEmpty ? widget.transaction.descLine1 : "UPI"),
+                            _buildReceiptRow("UTR / Ref No.", widget.transaction.reference),
+                            _buildReceiptRow("Payment Date", DateFormatter.formatToIST(widget.transaction.date)),
+                            _buildReceiptRow("Status", status.toUpperCase()),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        "${isIncome ? '+' : '-'} ₹$cleanAmount",
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w900,
-                          color: isIncome ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                      const SizedBox(height: 14),
+
+                      // Items Table Container
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFF0052CC)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              color: const Color(0xFF0052CC),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              child: const Row(
+                                children: [
+                                  Text("S.No.", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                                  SizedBox(width: 12),
+                                  Expanded(child: Text("DESCRIPTION OF SERVICE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11))),
+                                  Text("AMOUNT (₹)", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text("1", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                  const SizedBox(width: 20),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(widget.transaction.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0F172A))),
+                                        const SizedBox(height: 2),
+                                        const Text("(Application form filling, document verification, online submission)", style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                                      ],
+                                    ),
+                                  ),
+                                  Text("₹$cleanAmount", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A))),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      const Divider(color: Color(0xFFE2E8F0), height: 1),
+                      const SizedBox(height: 14),
+
+                      // Subtotal & Grand Total Box
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0052CC),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("Grand Total", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                            Text("₹$cleanAmount", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 16),
 
-                      _buildReceiptRow("Transaction ID", widget.transaction.reference),
-                      _buildReceiptRow("Service/Type", widget.transaction.type),
-                      _buildReceiptRow("Details", widget.transaction.descLine1),
-                      if (widget.transaction.descLine2.isNotEmpty)
-                        _buildReceiptRow("Note", widget.transaction.descLine2),
-                      _buildReceiptRow("Date & Time", DateFormatter.formatToIST(widget.transaction.date)),
-                      _buildReceiptRow(
-                        "Flow Direction",
-                        isIncome ? "Credit (Incoming)" : "Debit (Outgoing)",
+                      // Footer Terms & Seal Signature
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Terms & Conditions :", style: TextStyle(color: Color(0xFF0052CC), fontWeight: FontWeight.bold, fontSize: 10)),
+                                SizedBox(height: 2),
+                                Text("1. Computer generated invoice.", style: TextStyle(fontSize: 9, color: Color(0xFF64748B))),
+                                Text("2. Services non-refundable once processed.", style: TextStyle(fontSize: 9, color: Color(0xFF64748B))),
+                                Text("3. All disputes subject to Warangal Jurisdiction.", style: TextStyle(fontSize: 9, color: Color(0xFF64748B))),
+                                SizedBox(height: 8),
+                                Text("Thank You! For Your Business", style: TextStyle(fontSize: 14, color: Color(0xFFDC2626), fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFF0052CC), width: 1.5),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text("SR DIGITAL", style: TextStyle(fontSize: 6, fontWeight: FontWeight.bold, color: Color(0xFF0052CC))),
+                                      const Text("Regd: 34294", style: TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                                      const Text("★ ★ ★", style: TextStyle(fontSize: 6, color: Color(0xFF0052CC))),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text("Rajesh", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0052CC))),
+                              const Text("Authorised Signatory", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF0052CC))),
+                            ],
+                          ),
+                        ],
                       ),
-                      _buildReceiptRow("Status", status),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               SizedBox(
                 width: double.infinity,
@@ -161,18 +298,18 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
 
   Widget _buildReceiptRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+          Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 11)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.w600, fontSize: 13),
+              style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.w600, fontSize: 11),
             ),
           ),
         ],

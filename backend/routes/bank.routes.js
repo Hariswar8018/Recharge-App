@@ -96,42 +96,49 @@ router.post('/verify', verifyAppToken, verifyUserToken, async (req, res) => {
     }
 
     const bankData = resData.data || {};
-    let nameAtBank = bankData.nameAtBank || bankData['Account Holder Name'] || bankData.name || account_holder || 'Verified Account';
-    let fetchedBankName = bankData.bankName || bankData.bank_name || bank_name || 'Bank Account';
+    
+    // Helper to check if a returned value is null, empty, or NOT_AVAILABLE
+    const isInvalidVal = (val) => {
+      if (val === null || val === undefined) return true;
+      const str = String(val).trim().toUpperCase();
+      return str === '' || str === 'NULL' || str === 'UNDEFINED' || str === 'NOT_AVAILABLE' || str === 'NOT AVAILABLE' || str === 'N/A' || str === 'UNKNOWN';
+    };
+
+    let nameAtBank = !isInvalidVal(account_holder) ? account_holder : 'Verified Account';
+    let fetchedBankName = !isInvalidVal(bank_name) ? bank_name : 'Bank Account';
+
+    const candName = bankData.nameAtBank || bankData['Account Holder Name'] || bankData.name;
+    if (!isInvalidVal(candName)) nameAtBank = candName;
+
+    const candBank = bankData.bankName || bankData.bank_name;
+    if (!isInvalidVal(candBank)) fetchedBankName = candBank;
 
     if (typeof bankData.provider_response === 'object' && bankData.provider_response) {
-      if (bankData.provider_response.nameAtBank) nameAtBank = bankData.provider_response.nameAtBank;
-      else if (bankData.provider_response.beneficiary_name) nameAtBank = bankData.provider_response.beneficiary_name;
+      const pName = bankData.provider_response.nameAtBank || bankData.provider_response.beneficiary_name;
+      if (!isInvalidVal(pName)) nameAtBank = pName;
       
-      if (bankData.provider_response.bankName) fetchedBankName = bankData.provider_response.bankName;
-      else if (bankData.provider_response.bank_name) fetchedBankName = bankData.provider_response.bank_name;
+      const pBank = bankData.provider_response.bankName || bankData.provider_response.bank_name;
+      if (!isInvalidVal(pBank)) fetchedBankName = pBank;
     } else if (typeof bankData.provider_response === 'string' && bankData.provider_response.includes('{')) {
       try {
         const parsed = JSON.parse(bankData.provider_response);
-        if (parsed.nameAtBank) nameAtBank = parsed.nameAtBank;
-        else if (parsed.beneficiary_name) nameAtBank = parsed.beneficiary_name;
-        if (parsed.bankName) fetchedBankName = parsed.bankName;
+        const pName = parsed.nameAtBank || parsed.beneficiary_name;
+        if (!isInvalidVal(pName)) nameAtBank = pName;
+        const pBank = parsed.bankName || parsed.bank_name;
+        if (!isInvalidVal(pBank)) fetchedBankName = pBank;
       } catch (_) {}
     }
 
-    const finalBankName = fetchedBankName || bank_name || 'Bank Account';
+    const finalHolderName = !isInvalidVal(nameAtBank) ? nameAtBank : (account_holder || 'Verified Account');
+    const finalBankName = !isInvalidVal(fetchedBankName) ? fetchedBankName : (bank_name || 'Bank Account');
     const utr = bankData.utr || bankData.UTR || bankData.rrn || '';
 
     await query(
       'UPDATE users SET bank_name = ?, account_holder = ?, account_no = ?, ifsc = ?, bank_verified = 1 WHERE id = ?',
-      [finalBankName, nameAtBank, cleanAccount, cleanIfsc, req.user.id]
+      [finalBankName, finalHolderName, cleanAccount, cleanIfsc, req.user.id]
     );
 
-    // Record verification transaction log if UTR exists
-    if (utr) {
-      const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
-      try {
-        await query(
-          'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", 0.00, ?, ?, "Success")',
-          [req.user.id, `Bank Account Verified via ${verificationMethod} (UTR: ${utr})`, dateStr]
-        );
-      } catch (_) {}
-    }
+    // Note: Do NOT insert a transaction record for bank verification into transaction history
 
     await invalidateCache(`user_profile_${req.user.id}`);
 
