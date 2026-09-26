@@ -789,50 +789,86 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
 
                           // Register Button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleRegister,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0052CC),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Expanded(
-                                          child: Center(
+                          Builder(
+                            builder: (context) {
+                              final bool isRegDisabled = _visibilitySettings['sec_registration_visibility'] == 'Hide' || _visibilitySettings['sec_registration_enabled'] == false;
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                      onPressed: (_isLoading || isRegDisabled) ? null : _handleRegister,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isRegDisabled ? Colors.grey : const Color(0xFF0052CC),
+                                        disabledBackgroundColor: Colors.grey.shade400,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: _isLoading
+                                          ? const CircularProgressIndicator(color: Colors.white)
+                                          : Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Center(
+                                                    child: Text(
+                                                      isRegDisabled ? "Registration Disabled" : "Register",
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.all(6),
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.white,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.chevron_right,
+                                                    color: AppTheme.primaryBlue,
+                                                    size: 16,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+                                  if (isRegDisabled) ...[
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFEF2F2),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.block_rounded, color: Colors.red, size: 20),
+                                          const SizedBox(width: 8),
+                                          Expanded(
                                             child: Text(
-                                              "Register",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                              _visibilitySettings['sec_registration_notice']?.toString().isNotEmpty == true
+                                                  ? _visibilitySettings['sec_registration_notice']
+                                                  : "Registration is currently disabled by Administrator.",
+                                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13),
                                             ),
                                           ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.all(6),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.chevron_right,
-                                            color: AppTheme.primaryBlue,
-                                            size: 16,
-                                          ),
-                                        )
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                            ),
+                                  ],
+                                ],
+                              );
+                            }
                           ),
                         ],
                       ),

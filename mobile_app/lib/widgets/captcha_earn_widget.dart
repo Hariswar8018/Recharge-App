@@ -171,40 +171,76 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
           ),
           const SizedBox(height: 14),
 
-          if (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false || (_visibilitySettings['sec_captcha_notice'] != null && _visibilitySettings['sec_captcha_notice'].toString().isNotEmpty)) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Colors.red.shade50 : Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Colors.red.shade200 : Colors.blue.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Icons.lock : Icons.info,
-                    color: (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Colors.red : const Color(0xFF0052CC),
-                    size: 20,
+          Builder(
+            builder: (context) {
+              final bool isCaptchaDisabled = _visibilitySettings['sec_captcha_visibility'] == 'Hide' ||
+                  _visibilitySettings['captcha_section_visibility'] == 'Hide' ||
+                  _visibilitySettings['sec_captcha_enabled'] == false;
+              
+              if (isCaptchaDisabled) {
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFCA5A5)),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false)
-                          ? (_visibilitySettings['sec_captcha_notice']?.toString().isNotEmpty == true ? _visibilitySettings['sec_captcha_notice'] : "CAPTCHA Work is currently disabled or hidden by administrator.")
-                          : _visibilitySettings['sec_captcha_notice'],
-                      style: TextStyle(
-                        color: (_visibilitySettings['sec_captcha_visibility'] == 'Hide' || _visibilitySettings['sec_captcha_enabled'] == false) ? Colors.red.shade800 : const Color(0xFF0052CC),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.block_rounded, color: Colors.red, size: 24),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _visibilitySettings['sec_captcha_notice']?.toString().isNotEmpty == true
+                              ? _visibilitySettings['sec_captcha_notice']
+                              : "CAPTCHA Work is currently disabled by Administrator. Please check back later.",
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  if (_visibilitySettings['sec_captcha_notice'] != null && _visibilitySettings['sec_captcha_notice'].toString().isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info, color: Color(0xFF0052CC), size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _visibilitySettings['sec_captcha_notice'],
+                              style: const TextStyle(
+                                color: Color(0xFF0052CC),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ),
-            ),
-          ],
+              );
+            },
+          ),
 
           // Captcha Box & Refresh Button Row
           Row(

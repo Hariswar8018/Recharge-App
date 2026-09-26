@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_me/share_me.dart';
@@ -2050,9 +2051,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     double totalEarned = realGlobalIncome + realAffiliateIncome;
     double progressVal = (totalEarned / 12600.0).clamp(0.0, 1.0);
-    final String percentDisplay = "${(progressVal * 100).toStringAsFixed(1)}%";
+    final bool isBusinessDisabled = _visibilitySettings['sec_business_income_visibility'] == 'Hide' || _visibilitySettings['sec_business_income_enabled'] == false;
 
-    return SingleChildScrollView(
+    Widget businessContent = SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
@@ -2488,9 +2489,68 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-        ],
-      ),
     );
+
+    if (isBusinessDisabled) {
+      return Stack(
+        children: [
+          businessContent,
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 15,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_rounded, size: 50, color: Colors.red),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Business Income Section Closed",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0F172A),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _visibilitySettings['sec_business_income_notice']?.toString().isNotEmpty == true
+                              ? _visibilitySettings['sec_business_income_notice']
+                              : "The Administrator has currently closed access to the Business Income section.",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return businessContent;
   }
 
   // --- TAB 2: TEAM VIEW ---
@@ -2637,6 +2697,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final int realTeamCount = _teamMembers.where((m) => (m['status'] ?? '').toString().toUpperCase() == 'ACTIVE').length;
     final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
+    final bool isGlobalCycleDisabled = _visibilitySettings['sec_global_cycle_visibility'] == 'Hide' || _visibilitySettings['sec_global_cycle_enabled'] == false;
 
     final List<Map<String, dynamic>> levelData = [
       {"level": "1", "team": "2", "income": "₹ 200.00", "cumTarget": 2},
@@ -2647,7 +2708,7 @@ class _HomeScreenState extends State<HomeScreen> {
       {"level": "6", "team": "64", "income": "₹ 6,400.00", "cumTarget": 126},
     ];
 
-    return SingleChildScrollView(
+    Widget teamContent = SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2876,10 +2937,68 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          const SizedBox(height: 20),
-        ],
-      ),
     );
+
+    if (isGlobalCycleDisabled) {
+      return Stack(
+        children: [
+          teamContent,
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 15,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_rounded, size: 50, color: Colors.red),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Global Cycle Network Closed",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0F172A),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _visibilitySettings['sec_global_cycle_notice']?.toString().isNotEmpty == true
+                              ? _visibilitySettings['sec_global_cycle_notice']
+                              : "The Administrator has currently closed access to the Global Cycle & Team Network.",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF64748B),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return teamContent;
   }
 
   // ignore: unused_element

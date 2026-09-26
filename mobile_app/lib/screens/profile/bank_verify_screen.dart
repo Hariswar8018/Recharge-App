@@ -18,6 +18,7 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
 
   bool _isVerified = false;
   bool _isLoading = false;
+  Map<String, dynamic> _visibilitySettings = {};
 
   @override
   void initState() {
@@ -45,7 +46,14 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
   Future<void> _checkVerificationStatus() async {
     setState(() => _isLoading = true);
     final res = await ApiService.getProfile();
+    final v = await ApiService.getVisibility();
     setState(() => _isLoading = false);
+
+    if (mounted) {
+      setState(() {
+        _visibilitySettings = v;
+      });
+    }
 
     if (res['success'] == true && res['user'] != null) {
       final user = res['user'];
@@ -406,21 +414,58 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
                     const SizedBox(height: 10),
 
                     if (!_isVerified)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          onPressed: (_isLoading || isIciciError) ? null : _handlePennyDropVerify,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isIciciError ? Colors.grey : const Color(0xFF0A369D),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          icon: const Icon(Icons.verified_user_rounded, color: Colors.white),
-                          label: const Text(
-                            "Verify & Save Bank Account",
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                        ),
+                      Builder(
+                        builder: (context) {
+                          final bool isBankDisabled = _visibilitySettings['sec_bank_verification_visibility'] == 'Hide' || _visibilitySettings['sec_bank_verification_enabled'] == false;
+                          final bool isBtnDisabled = _isLoading || isIciciError || isBankDisabled;
+                          return Column(
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton.icon(
+                                  onPressed: isBtnDisabled ? null : _handlePennyDropVerify,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: (isIciciError || isBankDisabled) ? Colors.grey : const Color(0xFF0A369D),
+                                    disabledBackgroundColor: Colors.grey.shade400,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  icon: const Icon(Icons.verified_user_rounded, color: Colors.white),
+                                  label: Text(
+                                    isBankDisabled ? "Verification Disabled" : "Verify & Save Bank Account",
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
+                                ),
+                              ),
+                              if (isBankDisabled) ...[
+                                const SizedBox(height: 12),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFEF2F2),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0xFFFCA5A5)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.block_rounded, color: Colors.red, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          _visibilitySettings['sec_bank_verification_notice']?.toString().isNotEmpty == true
+                                              ? _visibilitySettings['sec_bank_verification_notice']
+                                              : "Bank Account Verification service is currently disabled by Administrator.",
+                                          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          );
+                        }
                       )
                     else
                       Container(

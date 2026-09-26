@@ -539,53 +539,89 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
 
                           // Login button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0052CC),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                  : Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Expanded(
-                                          child: Center(
+                          Builder(
+                            builder: (context) {
+                              final bool isLoginDisabled = _visibilitySettings['sec_login_visibility'] == 'Hide' || _visibilitySettings['sec_login_enabled'] == false;
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                      onPressed: (_isLoading || isLoginDisabled) ? null : _handleLogin,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isLoginDisabled ? Colors.grey : const Color(0xFF0052CC),
+                                        disabledBackgroundColor: Colors.grey.shade400,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: _isLoading
+                                          ? const CircularProgressIndicator(
+                                              color: Colors.white,
+                                            )
+                                          : Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Center(
+                                                    child: Text(
+                                                      isLoginDisabled ? "Login Disabled" : "Login",
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.all(6),
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.white,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.chevron_right,
+                                                    color: AppTheme.primaryBlue,
+                                                    size: 16,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+                                  if (isLoginDisabled) ...[
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFEF2F2),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.block_rounded, color: Colors.red, size: 20),
+                                          const SizedBox(width: 8),
+                                          Expanded(
                                             child: Text(
-                                              "Login",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                              _visibilitySettings['sec_login_notice']?.toString().isNotEmpty == true
+                                                  ? _visibilitySettings['sec_login_notice']
+                                                  : "Login functionality is currently disabled by Administrator.",
+                                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13),
                                             ),
                                           ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.all(6),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.chevron_right,
-                                            color: AppTheme.primaryBlue,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                            ),
+                                  ],
+                                ],
+                              );
+                            }
                           ),
                         ],
                       ),

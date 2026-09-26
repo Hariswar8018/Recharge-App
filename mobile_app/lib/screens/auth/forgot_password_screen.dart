@@ -392,52 +392,88 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           const SizedBox(height: 20),
 
                           // Send Password button
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleSendPassword,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0052CC),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                  : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Expanded(
-                                          child: Center(
+                          Builder(
+                            builder: (context) {
+                              final bool isOtpDisabled = _visibilitySettings['sec_otp_visibility'] == 'Hide' || _visibilitySettings['sec_otp_enabled'] == false;
+                              return Column(
+                                children: [
+                                  SizedBox(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                      onPressed: (_isLoading || isOtpDisabled) ? null : _handleSendPassword,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: isOtpDisabled ? Colors.grey : const Color(0xFF0052CC),
+                                        disabledBackgroundColor: Colors.grey.shade400,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      child: _isLoading
+                                          ? const CircularProgressIndicator(
+                                              color: Colors.white,
+                                            )
+                                          : Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: Center(
+                                                    child: Text(
+                                                      isOtpDisabled ? "Password Reset Disabled" : "Send Password",
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.all(6),
+                                                  decoration: const BoxDecoration(
+                                                    color: Colors.white,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.chevron_right,
+                                                    color: AppTheme.primaryBlue,
+                                                    size: 16,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+                                  if (isOtpDisabled) ...[
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFEF2F2),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.block_rounded, color: Colors.red, size: 20),
+                                          const SizedBox(width: 8),
+                                          Expanded(
                                             child: Text(
-                                              "Send Password",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                              _visibilitySettings['sec_otp_notice']?.toString().isNotEmpty == true
+                                                  ? _visibilitySettings['sec_otp_notice']
+                                                  : "Password Reset feature is currently disabled by Administrator.",
+                                              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13),
                                             ),
                                           ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.all(6),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.white,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.chevron_right,
-                                            color: AppTheme.primaryBlue,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                            ),
+                                  ],
+                                ],
+                              );
+                            }
                           ),
                         ],
                       ),
