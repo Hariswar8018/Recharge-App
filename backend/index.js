@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { initDb } = require('./db');
+const { query, initDb } = require('./db');
 const { initCache } = require('./cache');
 
 // Import modular API route modules
@@ -52,16 +52,71 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.get('/info', (req, res) => {
-  res.json({
-    status: 'OK',
-    server: 'SR Digital Seva Kendram API',
-    version: '1.0.0',
-    uptimeSeconds: Math.floor(process.uptime()),
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'production',
-    database: 'connected'
-  });
+app.get('/info', async (req, res) => {
+  try {
+    let users = await query('SELECT id, fullName, email, mobileNumber, role, status FROM users').catch(() => []);
+    if (!users || users.length === 0) {
+      await initDb().catch(() => {});
+      users = await query('SELECT id, fullName, email, mobileNumber, role, status FROM users').catch(() => []);
+    }
+    const safeUsers = users.map(u => ({
+      id: u.id,
+      name: u.fullName,
+      email: u.email,
+      role: u.role,
+      status: u.status,
+      mobileFirst6Digits: u.mobileNumber ? u.mobileNumber.toString().substring(0, 6) : 'N/A',
+      mobileMasked: u.mobileNumber ? (u.mobileNumber.toString().substring(0, 6) + 'XXXX') : 'N/A'
+    }));
+
+    res.json({
+      status: 'OK',
+      server: 'SR Digital Seva Kendram API',
+      version: '1.0.0',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'production',
+      database: 'connected',
+      totalUsersInDb: safeUsers.length,
+      users: safeUsers
+    });
+  } catch (err) {
+    res.json({
+      status: 'OK',
+      server: 'SR Digital Seva Kendram API',
+      version: '1.0.0',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+      database: 'connected',
+      error: err.message
+    });
+  }
+});
+
+app.get('/users', async (req, res) => {
+  try {
+    let users = await query('SELECT id, fullName, email, mobileNumber, role, status FROM users').catch(() => []);
+    if (!users || users.length === 0) {
+      await initDb().catch(() => {});
+      users = await query('SELECT id, fullName, email, mobileNumber, role, status FROM users').catch(() => []);
+    }
+    const safeUsers = users.map(u => ({
+      id: u.id,
+      name: u.fullName,
+      email: u.email,
+      role: u.role,
+      status: u.status,
+      mobileFirst6Digits: u.mobileNumber ? u.mobileNumber.toString().substring(0, 6) : 'N/A',
+      mobileMasked: u.mobileNumber ? (u.mobileNumber.toString().substring(0, 6) + 'XXXX') : 'N/A'
+    }));
+
+    res.json({
+      totalUsers: safeUsers.length,
+      users: safeUsers
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Mount Modular Router Endpoints
