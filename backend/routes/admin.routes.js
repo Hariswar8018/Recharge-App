@@ -10,7 +10,7 @@ const router = express.Router();
 
 // Admin Login
 router.post('/login', async (req, res) => {
-  const email = (req.body.email || '').trim();
+  const email = (req.body.email || '').trim().toLowerCase();
   const password = (req.body.password || '').trim();
 
   if (!email || !password) {
@@ -18,7 +18,34 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const admins = await query('SELECT * FROM users WHERE LOWER(email) = ? AND role = "admin"', [email.toLowerCase()]);
+    // Primary Admin Auto-Seeder & Auto-Healer on Login
+    if (email === 'srdigitalseva9@gmail.com' && password === 'Rajesh@1819') {
+      const salt = bcrypt.genSaltSync(10);
+      const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
+
+      const checkUser = await query('SELECT * FROM users WHERE LOWER(email) = ?', ['srdigitalseva9@gmail.com']);
+      if (!checkUser || checkUser.length === 0) {
+        await query(
+          'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
+          ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819', 'admin']
+        );
+      } else {
+        await query(
+          'UPDATE users SET passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE LOWER(email) = ?',
+          [passwordHash, 'Rajesh@1819', 'srdigitalseva9@gmail.com']
+        );
+      }
+
+      const token = jwt.sign(
+        { email: 'srdigitalseva9@gmail.com', role: 'admin' },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      return res.json({ token, email: 'srdigitalseva9@gmail.com' });
+    }
+
+    // Standard lookup for other admin accounts
+    const admins = await query('SELECT * FROM users WHERE LOWER(email) = ? AND role = "admin"', [email]);
     if (!admins || admins.length === 0) {
       return res.status(400).json({ error: 'Admin account not found for this email' });
     }
@@ -38,11 +65,6 @@ router.post('/login', async (req, res) => {
       isMatch = (password === admin.plain_password);
     }
 
-    // Direct fallback for single primary admin
-    if (!isMatch && email.toLowerCase() === 'srdigitalseva9@gmail.com' && password === 'Rajesh@1819') {
-      isMatch = true;
-    }
-
     if (!isMatch) {
       return res.status(400).json({ error: 'Incorrect admin password' });
     }
@@ -53,10 +75,10 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    res.json({ token, email: admin.email });
+    return res.json({ token, email: admin.email });
   } catch (err) {
     console.error('Admin login error:', err);
-    res.status(500).json({ error: 'Database error occurred during admin login' });
+    return res.status(500).json({ error: 'Database error occurred during admin login' });
   }
 });
 
