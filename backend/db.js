@@ -238,19 +238,19 @@ async function initDb() {
       console.log('SR Digital Seva Admin user seeded.');
     } else {
       await query(
-        'UPDATE users SET passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE email = ?',
+        'UPDATE users SET mobileNumber = "9988494936", passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE email = ?',
         [passwordHash, 'Rajesh@1819', 'srdigitalseva9@gmail.com']
       );
     }
 
     // Seed Top-Level Master User for Mobile Registration Sponsor ID (Sponsor ID: 1, Mobile: 9988494936)
-    const checkMaster = await query('SELECT * FROM users WHERE email = "master@srdigitalseva.com" OR id = 1');
+    const checkMaster = await query('SELECT * FROM users WHERE mobileNumber = "9988494936" OR email = "master@srdigitalseva.com"');
     if (Array.isArray(checkMaster) && checkMaster.length === 0) {
       await query(
-        'INSERT INTO users (id, fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (1, ?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
         ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
       );
-      console.log('Master Top-Level User seeded (Sponsor ID: 1, Mobile: 9988494936).');
+      console.log('Master Top-Level User seeded (Mobile: 9988494936).');
     }
 
     // Seed default system settings

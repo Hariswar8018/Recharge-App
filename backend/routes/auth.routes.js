@@ -91,8 +91,20 @@ router.post('/register', verifyAppToken, async (req, res) => {
         cleanSponsorId = cleanSponsorId.replace('R', '');
       }
       const numericId = parseInt(cleanSponsorId, 10);
-      const sponsor = await query('SELECT id FROM users WHERE id = ? OR mobileNumber = ?', [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId]);
-      if (sponsor.length === 0) {
+      let sponsor = await query(
+        'SELECT id FROM users WHERE id = ? OR mobileNumber = ? OR email = ?',
+        [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId, cleanSponsorId.toLowerCase()]
+      );
+
+      // Fallback for Master Sponsor ID (9988494936, 1, or admin)
+      if ((!sponsor || sponsor.length === 0) && (cleanSponsorId === '9988494936' || cleanSponsorId === '1' || cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM')) {
+        let adminUsers = await query('SELECT id FROM users WHERE role = "admin" OR email = "srdigitalseva9@gmail.com" ORDER BY id ASC LIMIT 1');
+        if (adminUsers && adminUsers.length > 0) {
+          sponsor = adminUsers;
+        }
+      }
+
+      if (!sponsor || sponsor.length === 0) {
         return res.status(400).json({ error: 'User Not Found' });
       }
       sponsorIdVal = sponsor[0].id;
@@ -165,11 +177,20 @@ router.post('/check-sponsor', verifyAppToken, async (req, res) => {
   const numericId = parseInt(cleanSponsorId, 10);
 
   try {
-    const users = await query(
-      'SELECT id, fullName FROM users WHERE id = ? OR mobileNumber = ?',
-      [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId]
+    let users = await query(
+      'SELECT id, fullName FROM users WHERE id = ? OR mobileNumber = ? OR email = ?',
+      [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId, cleanSponsorId.toLowerCase()]
     );
-    if (users.length === 0) {
+
+    // Fallback for Master Sponsor ID (9988494936, 1, or admin)
+    if ((!users || users.length === 0) && (cleanSponsorId === '9988494936' || cleanSponsorId === '1' || cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM')) {
+      let adminUsers = await query('SELECT id, fullName FROM users WHERE role = "admin" OR email = "srdigitalseva9@gmail.com" ORDER BY id ASC LIMIT 1');
+      if (adminUsers && adminUsers.length > 0) {
+        users = adminUsers;
+      }
+    }
+
+    if (!users || users.length === 0) {
       return res.json({ valid: false, error: 'User Not Found' });
     }
     return res.json({ valid: true, name: users[0].fullName, sponsorId: users[0].id });
