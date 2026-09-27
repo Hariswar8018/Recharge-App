@@ -1,10 +1,22 @@
 const mysql = require('mysql2/promise');
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
 let useSqlite = false;
 let sqliteDb = null;
+let sqliteModule = null;
+
+function getSqliteModule() {
+  if (sqliteModule === null) {
+    try {
+      sqliteModule = require('sqlite3').verbose();
+    } catch (e) {
+      console.warn('SQLite3 native module notice (GLIBC/binary):', e.message);
+      sqliteModule = false;
+    }
+  }
+  return sqliteModule || null;
+}
 
 const useDbUrl = process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '';
 
@@ -22,16 +34,21 @@ const pool = useDbUrl
     });
 
 function getSqliteDb() {
+  const mod = getSqliteModule();
+  if (!mod) return null;
   if (!sqliteDb) {
     const dbPath = path.join(__dirname, 'local_database.sqlite');
-    sqliteDb = new sqlite3.Database(dbPath);
+    sqliteDb = new mod.Database(dbPath);
   }
   return sqliteDb;
 }
 
 function runSqlite(sql, params = []) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const db = getSqliteDb();
+    if (!db) {
+      return resolve([]);
+    }
     let cleanSql = sql.trim();
 
     // Adapt MySQL specific syntax for SQLite compatibility
