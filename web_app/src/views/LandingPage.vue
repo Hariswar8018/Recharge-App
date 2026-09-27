@@ -102,7 +102,7 @@
 
 <script>
 const getApiBaseUrl = () => {
-  return import.meta.env.VITE_API_BASE_URL || 'https://api.srdigitalseva.com';
+  return 'https://api.srdigitalseva.com';
 };
 const API_BASE_URL = getApiBaseUrl();
 
