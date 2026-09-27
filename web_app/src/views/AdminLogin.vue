@@ -52,9 +52,6 @@
 
 <script>
 const getApiBaseUrl = () => {
-  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))) {
-    return `${window.location.protocol}//${window.location.hostname}:5000`;
-  }
   return import.meta.env.VITE_API_BASE_URL || 'https://api.srdigitalseva.com';
 };
 const API_BASE_URL = getApiBaseUrl();
@@ -63,7 +60,7 @@ export default {
   name: 'AdminLogin',
   data() {
     return {
-      email: 'srdigitalseva9@gmail.com',
+      email: '',
       password: '',
       error: '',
       loading: false

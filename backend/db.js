@@ -243,6 +243,16 @@ async function initDb() {
       );
     }
 
+    // Seed Top-Level Master User for Mobile Registration Sponsor ID (Sponsor ID: 1, Mobile: 9988494936)
+    const checkMaster = await query('SELECT * FROM users WHERE email = "master@srdigitalseva.com" OR id = 1');
+    if (Array.isArray(checkMaster) && checkMaster.length === 0) {
+      await query(
+        'INSERT INTO users (id, fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (1, ?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
+        ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+      );
+      console.log('Master Top-Level User seeded (Sponsor ID: 1, Mobile: 9988494936).');
+    }
+
     // Seed default system settings
     const checkSettings = await query('SELECT count(*) as count FROM system_settings');
     const settingsCount = (Array.isArray(checkSettings) && checkSettings.length > 0 && checkSettings[0].count !== undefined) ? checkSettings[0].count : 0;
