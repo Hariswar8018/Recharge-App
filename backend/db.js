@@ -134,80 +134,80 @@ async function initDb() {
     // Users Table
     await query(`
       CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fullName TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        mobileNumber TEXT NOT NULL,
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        fullName VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        mobileNumber VARCHAR(20) NOT NULL,
         passwordHash TEXT NOT NULL,
         plain_password TEXT DEFAULT NULL,
-        fund_wallet_balance REAL DEFAULT 0.00,
-        main_wallet_balance REAL DEFAULT 0.00,
-        status TEXT DEFAULT 'PENDING',
-        role TEXT DEFAULT 'user',
-        device_model TEXT DEFAULT 'Unknown',
-        app_version TEXT DEFAULT '1.0.0',
-        sponsor_id INTEGER DEFAULT NULL,
-        bank_name TEXT DEFAULT NULL,
-        account_holder TEXT DEFAULT NULL,
-        account_no TEXT DEFAULT NULL,
-        ifsc TEXT DEFAULT NULL,
-        bank_verified INTEGER DEFAULT 0,
-        createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+        fund_wallet_balance DECIMAL(15,2) DEFAULT 0.00,
+        main_wallet_balance DECIMAL(15,2) DEFAULT 0.00,
+        status VARCHAR(50) DEFAULT 'PENDING',
+        role VARCHAR(50) DEFAULT 'user',
+        device_model VARCHAR(100) DEFAULT 'Unknown',
+        app_version VARCHAR(50) DEFAULT '1.0.0',
+        sponsor_id INT DEFAULT NULL,
+        bank_name VARCHAR(255) DEFAULT NULL,
+        account_holder VARCHAR(255) DEFAULT NULL,
+        account_no VARCHAR(100) DEFAULT NULL,
+        ifsc VARCHAR(50) DEFAULT NULL,
+        bank_verified INT DEFAULT 0,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // Fund Requests Table
     await query(`
       CREATE TABLE IF NOT EXISTS fund_requests (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        amount REAL NOT NULL,
-        utr TEXT DEFAULT NULL,
-        status TEXT DEFAULT 'PENDING',
-        createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        amount DECIMAL(15,2) NOT NULL,
+        utr VARCHAR(255) DEFAULT NULL,
+        status VARCHAR(50) DEFAULT 'PENDING',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // Transactions Table
     await query(`
       CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        wallet_type TEXT NOT NULL,
-        amount TEXT NOT NULL,
-        type TEXT NOT NULL,
-        date TEXT NOT NULL,
-        status TEXT DEFAULT 'Success',
-        createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        wallet_type VARCHAR(50) NOT NULL,
+        amount VARCHAR(50) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        date VARCHAR(100) NOT NULL,
+        status VARCHAR(50) DEFAULT 'Success',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // Cycles Table
     await query(`
       CREATE TABLE IF NOT EXISTS cycles (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        cycle_id TEXT NOT NULL,
-        status TEXT DEFAULT 'ACTIVE',
-        members_count INTEGER DEFAULT 0,
-        createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        cycle_id VARCHAR(100) NOT NULL,
+        status VARCHAR(50) DEFAULT 'ACTIVE',
+        members_count INT DEFAULT 0,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // Single Leg Queue Table
     await query(`
       CREATE TABLE IF NOT EXISTS single_leg_queue (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        cycle_id INTEGER NOT NULL,
-        user_id INTEGER NOT NULL,
-        createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        cycle_id INT NOT NULL,
+        user_id INT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     // System Settings Table
     await query(`
       CREATE TABLE IF NOT EXISTS system_settings (
-        key_name TEXT PRIMARY KEY,
+        key_name VARCHAR(255) PRIMARY KEY,
         val_value TEXT NOT NULL
       )
     `);
@@ -215,10 +215,10 @@ async function initDb() {
     // Create Notifications Table
     await query(`
       CREATE TABLE IF NOT EXISTS notifications (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
         message TEXT NOT NULL,
-        createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
@@ -243,8 +243,8 @@ async function initDb() {
       );
     }
 
-    // Seed Top-Level Master User for Mobile Registration Sponsor ID (Sponsor ID: 1, Mobile: 9988494936)
-    const checkMaster = await query('SELECT * FROM users WHERE mobileNumber = "9988494936" OR email = "master@srdigitalseva.com"');
+    // Seed Top-Level Master User for Mobile Registration Sponsor ID (Mobile: 9988494936)
+    const checkMaster = await query('SELECT * FROM users WHERE email = "master@srdigitalseva.com"');
     if (Array.isArray(checkMaster) && checkMaster.length === 0) {
       await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
