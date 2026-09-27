@@ -96,11 +96,33 @@ router.post('/register', verifyAppToken, async (req, res) => {
         [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId, cleanSponsorId.toLowerCase()]
       );
 
-      // Fallback for Master Sponsor ID (9988494936, 1, or admin)
-      if ((!sponsor || sponsor.length === 0) && (cleanSponsorId === '9988494936' || cleanSponsorId === '1' || cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM')) {
-        let adminUsers = await query('SELECT id FROM users WHERE role = "admin" OR email = "srdigitalseva9@gmail.com" ORDER BY id ASC LIMIT 1');
-        if (adminUsers && adminUsers.length > 0) {
-          sponsor = adminUsers;
+      // Auto-heal / Seed Master Sponsor if missing or searching for master
+      if (!sponsor || sponsor.length === 0) {
+        const isMasterQuery = (
+          cleanSponsorId === '9988494936' ||
+          cleanSponsorId === '1' ||
+          cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM' ||
+          cleanSponsorId === 'MASTER@SRDIGITALSEVA.COM'
+        );
+
+        const allUsersCount = await query('SELECT COUNT(id) as count FROM users');
+        const countVal = (allUsersCount && allUsersCount[0]) ? allUsersCount[0].count : 0;
+
+        if (isMasterQuery || countVal === 0) {
+          const salt = bcrypt.genSaltSync(10);
+          const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
+
+          await query(
+            'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
+            ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+          ).catch(() => {});
+
+          await query(
+            'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
+            ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+          ).catch(() => {});
+
+          sponsor = await query('SELECT id FROM users WHERE mobileNumber = "9988494936" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
         }
       }
 
@@ -182,11 +204,33 @@ router.post('/check-sponsor', verifyAppToken, async (req, res) => {
       [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId, cleanSponsorId.toLowerCase()]
     );
 
-    // Fallback for Master Sponsor ID (9988494936, 1, or admin)
-    if ((!users || users.length === 0) && (cleanSponsorId === '9988494936' || cleanSponsorId === '1' || cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM')) {
-      let adminUsers = await query('SELECT id, fullName FROM users WHERE role = "admin" OR email = "srdigitalseva9@gmail.com" ORDER BY id ASC LIMIT 1');
-      if (adminUsers && adminUsers.length > 0) {
-        users = adminUsers;
+    // Auto-heal / Seed Master Sponsor if missing or searching for master
+    if (!users || users.length === 0) {
+      const isMasterQuery = (
+        cleanSponsorId === '9988494936' ||
+        cleanSponsorId === '1' ||
+        cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM' ||
+        cleanSponsorId === 'MASTER@SRDIGITALSEVA.COM'
+      );
+
+      const allUsersCount = await query('SELECT COUNT(id) as count FROM users');
+      const countVal = (allUsersCount && allUsersCount[0]) ? allUsersCount[0].count : 0;
+
+      if (isMasterQuery || countVal === 0) {
+        const salt = bcrypt.genSaltSync(10);
+        const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
+
+        await query(
+          'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
+          ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ).catch(() => {});
+
+        await query(
+          'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
+          ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ).catch(() => {});
+
+        users = await query('SELECT id, fullName FROM users WHERE mobileNumber = "9988494936" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
       }
     }
 
