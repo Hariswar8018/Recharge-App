@@ -63,7 +63,7 @@ export default {
   name: 'AdminLogin',
   data() {
     return {
-      email: '',
+      email: 'srdigitalseva9@gmail.com',
       password: '',
       error: '',
       loading: false

@@ -222,26 +222,25 @@ async function initDb() {
       )
     `);
 
-    // Seed Admin users (haris@gmail.com & earnfarm99@gmail.com with password 123456)
+    // Seed single Admin user (srdigitalseva9@gmail.com with password Rajesh@1819)
     const salt = bcrypt.genSaltSync(10);
-    const passwordHash = bcrypt.hashSync('123456', salt);
+    const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
-    const checkHaris = await query('SELECT * FROM users WHERE email = ?', ['haris@gmail.com']);
-    if (Array.isArray(checkHaris) && checkHaris.length === 0) {
+    // Remove legacy admin accounts
+    await query('DELETE FROM users WHERE role = "admin" AND email != "srdigitalseva9@gmail.com"');
+
+    const checkAdmin = await query('SELECT * FROM users WHERE email = ?', ['srdigitalseva9@gmail.com']);
+    if (Array.isArray(checkAdmin) && checkAdmin.length === 0) {
       await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
-        ['Haris Admin', 'haris@gmail.com', '0000000000', passwordHash, '123456', 'admin']
+        ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819', 'admin']
       );
-      console.log('Haris Admin user seeded.');
-    }
-
-    const checkEarnfarm = await query('SELECT * FROM users WHERE email = ?', ['earnfarm99@gmail.com']);
-    if (Array.isArray(checkEarnfarm) && checkEarnfarm.length === 0) {
+      console.log('SR Digital Seva Admin user seeded.');
+    } else {
       await query(
-        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
-        ['Earnfarm Admin', 'earnfarm99@gmail.com', '1111111111', passwordHash, '123456', 'admin']
+        'UPDATE users SET passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE email = ?',
+        [passwordHash, 'Rajesh@1819', 'srdigitalseva9@gmail.com']
       );
-      console.log('Earnfarm Admin user seeded.');
     }
 
     // Seed default system settings

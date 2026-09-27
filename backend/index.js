@@ -20,7 +20,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Enable CORS & JSON Body Parser
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-app-token', 'x-access-token']
+}));
+app.options('*', cors());
 app.use(express.json());
 
 // Android App Links Verification Endpoint
