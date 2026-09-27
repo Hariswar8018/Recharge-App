@@ -69,6 +69,10 @@ export default {
   mounted() {
     if (localStorage.getItem('adminToken')) {
       this.$router.push('/admin-dashboard');
+      return;
+    }
+    if (this.$route.query.expired === 'true' || this.$route.query.msg) {
+      this.error = this.$route.query.msg || 'Your session has expired. Please login again.';
     }
   },
   methods: {
@@ -87,9 +91,21 @@ export default {
           })
         });
 
-        const data = await response.json();
+        let data = {};
+        try {
+          data = await response.json();
+        } catch (jsonErr) {
+          // Ignored
+        }
+
         if (!response.ok) {
-          throw new Error(data.error || 'Login failed');
+          const statusInfo = `[HTTP ${response.status} ${response.statusText}]`;
+          const detail = data.error || data.message || 'Invalid email or password';
+          throw new Error(`${detail} ${statusInfo}`);
+        }
+
+        if (!data.token) {
+          throw new Error('Authentication response missing session token.');
         }
 
         // Store JWT token & Email
@@ -99,7 +115,11 @@ export default {
         // Redirect to Dashboard
         this.$router.push('/admin-dashboard');
       } catch (err) {
-        this.error = err.message;
+        if (err.name === 'TypeError' && (err.message === 'Failed to fetch' || err.message.includes('fetch'))) {
+          this.error = `Failed to fetch API endpoint (${API_BASE_URL}/api/admin/login).\nPossible Cause: Internet connection issue, server offline, invalid SSL certificate, or CORS policy restrictions.`;
+        } else {
+          this.error = err.message || 'Login failed due to an unexpected error.';
+        }
       } finally {
         this.loading = false;
       }
@@ -190,6 +210,8 @@ export default {
   border-radius: 10px;
   font-size: 0.85rem;
   font-weight: 500;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .login-btn {

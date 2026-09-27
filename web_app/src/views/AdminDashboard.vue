@@ -3373,18 +3373,32 @@ export default {
         };
       }
     },
+    handleSessionExpired(reason) {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminEmail');
+      const msg = reason || 'Your session has expired. Please login again.';
+      this.$router.push({ path: '/admin-login', query: { expired: 'true', msg } });
+    },
+    checkAuthStatus(response) {
+      if (response && (response.status === 401 || response.status === 403)) {
+        this.handleSessionExpired('Your session has expired. Please login again.');
+        return true;
+      }
+      return false;
+    },
     async fetchDashboardData() {
       this.loading = true;
       const token = localStorage.getItem('adminToken');
       if (!token) {
-        this.$router.push('/admin-login');
+        this.handleSessionExpired('No session token found. Please login again.');
         return;
       }
       try {
         const response = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!response.ok) throw new Error('Unauthorized');
+        if (this.checkAuthStatus(response)) return;
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
         const data = await response.json();
         this.stats = data.stats || this.stats;
         this.users = data.users || [];
@@ -3402,6 +3416,7 @@ export default {
         const res = await fetch(`${API_BASE_URL}/api/admin/settings`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (this.checkAuthStatus(res)) return;
         if (res.ok) {
           const data = await res.json();
           Object.keys(data).forEach(key => {
@@ -3434,6 +3449,7 @@ export default {
         const res = await fetch(`${API_BASE_URL}/api/admin/system-admins`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (this.checkAuthStatus(res)) return;
         if (res.ok) {
           const data = await res.json();
           this.adminsList = Array.isArray(data) ? data : [];
@@ -3513,6 +3529,7 @@ export default {
         const response = await fetch(`${API_BASE_URL}/api/admin/fund-requests`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (this.checkAuthStatus(response)) return;
         if (response.ok) {
           const data = await response.json();
           this.fundRequests = Array.isArray(data) ? data : (data.requests || []);
@@ -3529,6 +3546,7 @@ export default {
         const response = await fetch(`${API_BASE_URL}/api/admin/teams`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (this.checkAuthStatus(response)) return;
         if (response.ok) {
           const data = await response.json();
           this.teamsData = data;
