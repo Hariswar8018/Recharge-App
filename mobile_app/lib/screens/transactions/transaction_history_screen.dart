@@ -64,7 +64,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
             !typeLower.contains('activation') &&
             !typeLower.contains('top-up');
 
-        String cleanAmt = amount.replaceAll(RegExp(r'[+\-₹\s]'), '');
+        String cleanAmt = amount.replaceAll(RegExp(r'[+\-₹?\s]|Rs\.?|INR', caseSensitive: false), '').trim();
         String refStr = id.startsWith('FR_') ? id : (id.startsWith('SR92728') ? id : "SR92728$id");
 
         return TransactionModel(
@@ -370,7 +370,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
       statusText = const Color(0xFFC62828);
     }
 
-    final String cleanAmount = tx.amount.replaceAll(RegExp(r'[+\-₹\s]'), '');
+    final String cleanAmount = tx.amount.replaceAll(RegExp(r'[+\-₹?\s]|Rs\.?|INR', caseSensitive: false), '').trim();
     String formattedRef = tx.reference;
     if (formattedRef.isEmpty) {
       formattedRef = tx.id;

@@ -44,7 +44,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
   @override
   Widget build(BuildContext context) {
     final String status = widget.transaction.status;
-    final String cleanAmount = widget.transaction.amount.replaceAll(RegExp(r'[+\-₹\s]'), '');
+    final String cleanAmount = widget.transaction.amount.replaceAll(RegExp(r'[+\-₹?\s]|Rs\.?|INR', caseSensitive: false), '').trim();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -219,10 +219,7 @@ class _TransactionReceiptScreenState extends State<TransactionReceiptScreen> {
                               ],
                             ),
                           ),
-                          const Padding(
-                            padding: EdgeInsets.only(top: 24.0),
-                            child: Text("Authorised Signatory", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0052CC))),
-                          ),
+                          
                         ],
                       ),
                     ],

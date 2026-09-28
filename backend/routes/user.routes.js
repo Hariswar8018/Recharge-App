@@ -152,7 +152,7 @@ router.get('/transactions', verifyAppToken, verifyUserToken, async (req, res) =>
       return {
         id: `FR_${r.id}`,
         wallet_type: 'FUND',
-        amount: `+₹${parseFloat(r.amount).toFixed(2)}`,
+        amount: `+${parseFloat(r.amount).toFixed(2)}`,
         type: 'Fund Deposit',
         description: `UTR: ${r.utr} • ${isPending ? 'Pending Verification' : 'Rejected by Admin'}`,
         date: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),

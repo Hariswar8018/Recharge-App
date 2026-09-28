@@ -521,7 +521,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
               final req = _requests[index];
               final String statusStr = (req['status'] ?? 'pending').toString().toLowerCase();
               final String utr = req['utr'] ?? 'N/A';
-              final String amt = (req['amount'] ?? 1200).toString();
+              final String amt = (req['amount'] ?? 1200).toString().replaceAll(RegExp(r'[+\-₹?\s]|Rs\.?|INR', caseSensitive: false), '').trim();
               final String date = req['createdAt'] != null
                   ? req['createdAt'].toString().split('T').first
                   : 'Recent';

@@ -392,7 +392,7 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
 
         await conn.execute(
           'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "FUND", ?, "Fund Deposit", ?, "Success")',
-          [request.user_id, `+₹${parseFloat(request.amount).toFixed(2)}`, dateStr]
+          [request.user_id, `+${parseFloat(request.amount).toFixed(2)}`, dateStr]
         );
       });
 
