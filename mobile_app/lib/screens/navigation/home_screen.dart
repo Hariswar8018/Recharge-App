@@ -1799,6 +1799,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       itemBuilder: (context, index) {
                         final tx = _transactions[index];
+                        final type = tx['type'] as String? ?? 'Transaction';
                         final rawAmount = (tx['amount'] as String? ?? '0.00').replaceAll(RegExp(r'[+\-₹?\s]|Rs\.?|INR', caseSensitive: false), '').trim();
                         final amount = "₹ $rawAmount";
                         final rawDate = tx['date'] ?? tx['createdAt'] ?? '';
