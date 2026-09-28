@@ -782,7 +782,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                       ),
                     ),
                   ],
-                ),
+                ),),
                 // Scrollable Main Content
             Expanded(
               child: SingleChildScrollView(
@@ -1044,7 +1044,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                   SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
-                                      "Deposit amount is fixed at ₹1,200. User enters UTR only.",
+                                      "Deposit amount is fixed at ₹1,200",
                                       style: TextStyle(
                                         color: Color(0xFF1565C0),
                                         fontSize: 11,

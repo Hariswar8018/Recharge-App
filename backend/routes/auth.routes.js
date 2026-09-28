@@ -205,9 +205,8 @@ async function findSponsorUser(sponsorInput) {
       const masterUsers = await query('SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
       if (masterUsers && masterUsers.length > 0) return masterUsers[0];
     }
-  }
 
-  return null;
+    return null;
 }
 
 // Check Sponsor ID for registration
