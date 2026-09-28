@@ -235,7 +235,12 @@ router.get('/transactions', verifyAdminToken, async (req, res) => {
       [limit, offset]
     );
 
-    res.json(list);
+    const cleanedList = list.map(tx => ({
+      ...tx,
+      amount: String(tx.amount || 0).replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim()
+    }));
+
+    res.json(cleanedList);
   } catch (err) {
     console.error('Error fetching admin transactions:', err);
     res.status(500).json({ error: 'Database error loading transactions', details: err.message });
@@ -274,9 +279,13 @@ router.get('/dashboard', verifyAdminToken, async (req, res) => {
       [limit, offset]
     );
 
-    const transactions = await query(
+    const rawTransactions = await query(
       'SELECT * FROM transactions ORDER BY id DESC LIMIT 15'
     );
+    const transactions = rawTransactions.map(tx => ({
+      ...tx,
+      amount: String(tx.amount || 0).replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim()
+    }));
 
     res.json({
       stats,

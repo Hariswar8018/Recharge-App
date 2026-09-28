@@ -1905,7 +1905,7 @@
                     <td>#{{ txn.id }}</td>
                     <td>User #{{ txn.user_id }}</td>
                     <td>{{ txn.wallet_type }}</td>
-                    <td class="font-bold">₹{{ String(txn.amount || 0).replace(/^₹/, '') }}</td>
+                    <td class="font-bold">₹{{ String(txn.amount || 0).replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim() }}</td>
                     <td>{{ txn.type }}</td>
                     <td><span :class="getStatusBadgeClass(txn.status)">{{ txn.status }}</span></td>
                     <td>{{ txn.date || txn.created_at || '-' }}</td>
@@ -3720,7 +3720,7 @@ export default {
       }
     },
     openInvoiceModal(txn) {
-      const rawAmt = String(txn.amount || txn.join_amount || 1200).replace(/^₹/, '').trim();
+      const rawAmt = String(txn.amount || txn.join_amount || 1200).replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim();
       const amt = parseFloat(rawAmt || 0);
       const formattedAmt = amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       

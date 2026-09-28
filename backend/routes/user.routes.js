@@ -161,7 +161,12 @@ router.get('/transactions', verifyAppToken, verifyUserToken, async (req, res) =>
       };
     });
 
-    const allTxns = [...pendingAndRejectedTxns, ...txns].sort((a, b) => {
+    const cleanedTxns = txns.map(t => ({
+      ...t,
+      amount: String(t.amount || '').replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim()
+    }));
+
+    const allTxns = [...pendingAndRejectedTxns, ...cleanedTxns].sort((a, b) => {
       const timeA = new Date(a.createdAt || a.date).getTime();
       const timeB = new Date(b.createdAt || b.date).getTime();
       return timeB - timeA;
