@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,6 +27,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   Map<String, dynamic> _settings = {};
   Map<String, dynamic>? _fundStatus;
   bool _isLoadingStatus = false;
+  Timer? _statusTimer;
 
   @override
   void initState() {
@@ -34,12 +36,21 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     _amountController.addListener(_onAmountChanged);
     _utrController.addListener(_onUtrChanged);
     _loadSettings();
-    _fetchFundStatus();
+    _fetchFundStatus(showLoading: true);
     _loadRequestHistory();
+
+    // Auto-refresh status & history every 4 seconds so Admin approval is reflected instantly
+    _statusTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (mounted) {
+        _fetchFundStatus(showLoading: false);
+        _loadRequestHistory();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _statusTimer?.cancel();
     _amountController.removeListener(_onAmountChanged);
     _amountController.dispose();
     _utrController.removeListener(_onUtrChanged);
@@ -47,10 +58,12 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchFundStatus() async {
-    setState(() {
-      _isLoadingStatus = true;
-    });
+  Future<void> _fetchFundStatus({bool showLoading = false}) async {
+    if (showLoading) {
+      setState(() {
+        _isLoadingStatus = true;
+      });
+    }
     final status = await ApiService.getFundStatus();
     if (mounted) {
       setState(() {
@@ -350,7 +363,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   Widget _buildStatusBanner() {
     if (_isLoadingStatus) {
       return Container(
-        margin: const EdgeInsets.bottom(14),
+        margin: const EdgeInsets.only(bottom:14),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -415,7 +428,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.bottom(14),
+      margin: const EdgeInsets.only(bottom:14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: bgColor,
@@ -985,7 +998,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                   ),
                                   child: const Text(
                                     "FIXED",
-                                    style: TextStyle(color: Color(0xFF1D4ED8), fontSize: 10, fontWeight: FontWeight.extrabold),
+                                    style: TextStyle(color: Color(0xFF1D4ED8), fontSize: 10, fontWeight: FontWeight.w800),
                                   ),
                                 ),
                               ],
@@ -1244,7 +1257,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                           if (_isLoading) {
                             buttonText = "SUBMITTING...";
                           } else if (statusStr == 'PENDING') {
-                            buttonText = "REQUEST PENDING APPROVAL";
+                            buttonText = "PENDING ADMIN APPROVAL";
                           } else if (statusStr == 'APPROVED_CYCLE_ACTIVE') {
                             buttonText = "ACTIVE CYCLE IN PROGRESS";
                           }

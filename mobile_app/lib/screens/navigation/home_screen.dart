@@ -48,14 +48,22 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _healthCheckTimer;
   Map<String, dynamic> _visibilitySettings = {};
 
+  Timer? _autoRefreshTimer;
+
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (mounted) {
+        _loadUserProfile();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _autoRefreshTimer?.cancel();
     _healthCheckTimer?.cancel();
     super.dispose();
   }
