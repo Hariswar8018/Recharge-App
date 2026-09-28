@@ -149,42 +149,41 @@ async function findSponsorUser(sponsorInput) {
   const last10 = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
   const numericId = parseInt(cleanSponsorId, 10);
 
-  // 1. Query by ID, exact mobile, or email
-  let users = await query(
-    `SELECT id, fullName, mobileNumber, email FROM users 
-     WHERE id = ? 
-        OR mobileNumber = ? 
-        OR mobileNumber = ? 
-        OR mobileNumber = ? 
-        OR email = ?`,
-    [
-      isNaN(numericId) ? -1 : numericId, 
-      cleanSponsorId, 
-      last10.length === 10 ? last10 : cleanSponsorId,
-      last10.length === 10 ? `+91${last10}` : cleanSponsorId,
-      cleanSponsorId.toLowerCase()
-    ]
-  );
-
-  // 2. Fuzzy LIKE match on mobile number if exact match returned nothing
-  if ((!users || users.length === 0) && last10.length === 10) {
-    users = await query(
-      `SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber LIKE ?`,
-      [`%${last10}%`]
-    );
+  // 1. Search by numeric ID
+  if (!isNaN(numericId) && numericId > 0 && numericId < 2147483647) {
+    const byId = await query(`SELECT id, fullName, mobileNumber, email FROM users WHERE id = ?`, [numericId]);
+    if (byId && byId.length > 0) return byId[0];
   }
 
-  // 3. Auto-heal / Seed Master Sponsor if missing or searching for master
-  if (!users || users.length === 0) {
-    const isMasterQuery = (
-      cleanSponsorId === '9988494936' ||
-      last10 === '9988494936' ||
-      cleanSponsorId === '8093426959' ||
-      last10 === '8093426959' ||
-      cleanSponsorId === '1' ||
-      cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM' ||
-      cleanSponsorId === 'MASTER@SRDIGITALSEVA.COM'
+  // 2. Search by mobile number
+  if (last10.length === 10) {
+    const byMobile = await query(
+      `SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber = ? OR mobileNumber = ? OR mobileNumber LIKE ?`,
+      [last10, `+91${last10}`, `%${last10}`]
     );
+    if (byMobile && byMobile.length > 0) return byMobile[0];
+  }
+
+  // 3. Search by email
+  if (cleanSponsorId.includes('@')) {
+    const byEmail = await query(`SELECT id, fullName, mobileNumber, email FROM users WHERE LOWER(email) = ?`, [cleanSponsorId.toLowerCase()]);
+    if (byEmail && byEmail.length > 0) return byEmail[0];
+  }
+
+  // 4. Fallback search
+  const fallback = await query(`SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber = ? OR email = ?`, [cleanSponsorId, cleanSponsorId.toLowerCase()]);
+  if (fallback && fallback.length > 0) return fallback[0];
+
+  // 5. Auto-heal / Seed Master Sponsor if missing or searching for master
+  const isMasterQuery = (
+    cleanSponsorId === '9988494936' ||
+    last10 === '9988494936' ||
+    cleanSponsorId === '8093426959' ||
+    last10 === '8093426959' ||
+    cleanSponsorId === '1' ||
+    cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM' ||
+    cleanSponsorId === 'MASTER@SRDIGITALSEVA.COM'
+  );
 
     const allUsersCount = await query('SELECT COUNT(id) as count FROM users');
     const countVal = (allUsersCount && allUsersCount[0]) ? allUsersCount[0].count : 0;
@@ -203,11 +202,12 @@ async function findSponsorUser(sponsorInput) {
         ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
       ).catch(() => {});
 
-      users = await query('SELECT id, fullName FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
+      const masterUsers = await query('SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
+      if (masterUsers && masterUsers.length > 0) return masterUsers[0];
     }
   }
 
-  return (users && users.length > 0) ? users[0] : null;
+  return null;
 }
 
 // Check Sponsor ID for registration

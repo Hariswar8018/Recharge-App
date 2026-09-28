@@ -27,6 +27,7 @@ const pool = useDbUrl
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      charset: 'utf8mb4',
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
@@ -93,9 +94,14 @@ async function query(sql, params = []) {
     const [results] = await pool.query(sql, params);
     return results;
   } catch (err) {
-    console.warn(`MySQL notice (${err.code || err.message}). Switching to local SQLite fallback database.`);
-    useSqlite = true;
-    return await runSqlite(sql, params);
+    console.error(`MySQL Query Error (${err.code || err.message}):`, sql);
+    const sqliteAvail = getSqliteModule() !== null;
+    if (sqliteAvail && (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND' || err.code === 'ER_BAD_DB_ERROR')) {
+      console.warn(`MySQL Connection Failed (${err.code}). Switching to local SQLite fallback database.`);
+      useSqlite = true;
+      return await runSqlite(sql, params);
+    }
+    throw err;
   }
 }
 
