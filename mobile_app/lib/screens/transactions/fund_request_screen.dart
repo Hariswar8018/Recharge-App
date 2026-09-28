@@ -783,7 +783,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                     ),
                   ],
                 ),
-                    // Scrollable Main Content
+                // Scrollable Main Content
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
@@ -1216,7 +1216,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                     ),
                                   ),
                                 ],
-                              ),
+                              ],
                             ),
                           );
                         },

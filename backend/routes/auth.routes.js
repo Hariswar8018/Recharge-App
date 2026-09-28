@@ -76,60 +76,11 @@ router.post('/register', verifyAppToken, async (req, res) => {
 
     let sponsorIdVal = null;
     if (sponsor_id) {
-      let cleanSponsorId = sponsor_id.toString().trim().toUpperCase();
-      if (cleanSponsorId.startsWith('EARNFARMX7AQ96SD')) {
-        cleanSponsorId = cleanSponsorId.replace('EARNFARMX7AQ96SD', '');
-      } else if (cleanSponsorId.startsWith('EARNFARM')) {
-        cleanSponsorId = cleanSponsorId.replace('EARNFARM', '');
-      } else if (cleanSponsorId.startsWith('EARNKARO97US77')) {
-        cleanSponsorId = cleanSponsorId.replace('EARNKARO97US77', '');
-      } else if (cleanSponsorId.startsWith('SRM')) {
-        cleanSponsorId = cleanSponsorId.replace('SRM', '');
-      } else if (cleanSponsorId.startsWith('SRSPO')) {
-        cleanSponsorId = cleanSponsorId.replace('SRSPO', '');
-      } else if (cleanSponsorId.startsWith('R')) {
-        cleanSponsorId = cleanSponsorId.replace('R', '');
-      }
-      const numericId = parseInt(cleanSponsorId, 10);
-      let sponsor = await query(
-        'SELECT id FROM users WHERE id = ? OR mobileNumber = ? OR email = ?',
-        [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId, cleanSponsorId.toLowerCase()]
-      );
-
-      // Auto-heal / Seed Master Sponsor if missing or searching for master
-      if (!sponsor || sponsor.length === 0) {
-        const isMasterQuery = (
-          cleanSponsorId === '9988494936' ||
-          cleanSponsorId === '1' ||
-          cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM' ||
-          cleanSponsorId === 'MASTER@SRDIGITALSEVA.COM'
-        );
-
-        const allUsersCount = await query('SELECT COUNT(id) as count FROM users');
-        const countVal = (allUsersCount && allUsersCount[0]) ? allUsersCount[0].count : 0;
-
-        if (isMasterQuery || countVal === 0) {
-          const salt = bcrypt.genSaltSync(10);
-          const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
-
-          await query(
-            'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-            ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
-          ).catch(() => {});
-
-          await query(
-            'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
-            ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
-          ).catch(() => {});
-
-          sponsor = await query('SELECT id FROM users WHERE mobileNumber = "9988494936" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
-        }
-      }
-
-      if (!sponsor || sponsor.length === 0) {
+      const sponsorUser = await findSponsorUser(sponsor_id);
+      if (!sponsorUser) {
         return res.status(400).json({ error: 'User Not Found' });
       }
-      sponsorIdVal = sponsor[0].id;
+      sponsorIdVal = sponsorUser.id;
     } else {
       const userCount = await query('SELECT COUNT(id) as count FROM users WHERE role = "user"');
       if (userCount[0].count > 0) {
@@ -175,14 +126,11 @@ router.post('/register', verifyAppToken, async (req, res) => {
   }
 });
 
-// Check Sponsor ID for registration
-router.post('/check-sponsor', verifyAppToken, async (req, res) => {
-  const { sponsor_id } = req.body;
-  if (!sponsor_id || !sponsor_id.toString().trim()) {
-    return res.status(400).json({ valid: false, error: 'Sponsor ID is required' });
-  }
+// Helper function to resolve sponsor user by ID, mobile number, or email
+async function findSponsorUser(sponsorInput) {
+  if (!sponsorInput || !sponsorInput.toString().trim()) return null;
 
-  let cleanSponsorId = sponsor_id.toString().trim().toUpperCase();
+  let cleanSponsorId = sponsorInput.toString().trim().toUpperCase();
   if (cleanSponsorId.startsWith('EARNFARMX7AQ96SD')) {
     cleanSponsorId = cleanSponsorId.replace('EARNFARMX7AQ96SD', '');
   } else if (cleanSponsorId.startsWith('EARNFARM')) {
@@ -193,51 +141,88 @@ router.post('/check-sponsor', verifyAppToken, async (req, res) => {
     cleanSponsorId = cleanSponsorId.replace('SRM', '');
   } else if (cleanSponsorId.startsWith('SRSPO')) {
     cleanSponsorId = cleanSponsorId.replace('SRSPO', '');
-  } else if (cleanSponsorId.startsWith('R')) {
-    cleanSponsorId = cleanSponsorId.replace('R', '');
+  } else if (cleanSponsorId.startsWith('R') && cleanSponsorId.length > 1 && /^\d+$/.test(cleanSponsorId.substring(1))) {
+    cleanSponsorId = cleanSponsorId.substring(1);
   }
+
+  const digitsOnly = cleanSponsorId.replace(/\D/g, '');
+  const last10 = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
   const numericId = parseInt(cleanSponsorId, 10);
 
-  try {
-    let users = await query(
-      'SELECT id, fullName FROM users WHERE id = ? OR mobileNumber = ? OR email = ?',
-      [isNaN(numericId) ? cleanSponsorId : numericId, cleanSponsorId, cleanSponsorId.toLowerCase()]
+  // 1. Query by ID, exact mobile, or email
+  let users = await query(
+    `SELECT id, fullName, mobileNumber, email FROM users 
+     WHERE id = ? 
+        OR mobileNumber = ? 
+        OR mobileNumber = ? 
+        OR mobileNumber = ? 
+        OR email = ?`,
+    [
+      isNaN(numericId) ? -1 : numericId, 
+      cleanSponsorId, 
+      last10.length === 10 ? last10 : cleanSponsorId,
+      last10.length === 10 ? `+91${last10}` : cleanSponsorId,
+      cleanSponsorId.toLowerCase()
+    ]
+  );
+
+  // 2. Fuzzy LIKE match on mobile number if exact match returned nothing
+  if ((!users || users.length === 0) && last10.length === 10) {
+    users = await query(
+      `SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber LIKE ?`,
+      [`%${last10}%`]
+    );
+  }
+
+  // 3. Auto-heal / Seed Master Sponsor if missing or searching for master
+  if (!users || users.length === 0) {
+    const isMasterQuery = (
+      cleanSponsorId === '9988494936' ||
+      last10 === '9988494936' ||
+      cleanSponsorId === '8093426959' ||
+      last10 === '8093426959' ||
+      cleanSponsorId === '1' ||
+      cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM' ||
+      cleanSponsorId === 'MASTER@SRDIGITALSEVA.COM'
     );
 
-    // Auto-heal / Seed Master Sponsor if missing or searching for master
-    if (!users || users.length === 0) {
-      const isMasterQuery = (
-        cleanSponsorId === '9988494936' ||
-        cleanSponsorId === '1' ||
-        cleanSponsorId === 'SRDIGITALSEVA9@GMAIL.COM' ||
-        cleanSponsorId === 'MASTER@SRDIGITALSEVA.COM'
-      );
+    const allUsersCount = await query('SELECT COUNT(id) as count FROM users');
+    const countVal = (allUsersCount && allUsersCount[0]) ? allUsersCount[0].count : 0;
 
-      const allUsersCount = await query('SELECT COUNT(id) as count FROM users');
-      const countVal = (allUsersCount && allUsersCount[0]) ? allUsersCount[0].count : 0;
+    if (isMasterQuery || countVal === 0) {
+      const salt = bcrypt.genSaltSync(10);
+      const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
-      if (isMasterQuery || countVal === 0) {
-        const salt = bcrypt.genSaltSync(10);
-        const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
+      await query(
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
+        ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+      ).catch(() => {});
 
-        await query(
-          'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-          ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
-        ).catch(() => {});
+      await query(
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
+        ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+      ).catch(() => {});
 
-        await query(
-          'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
-          ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
-        ).catch(() => {});
-
-        users = await query('SELECT id, fullName FROM users WHERE mobileNumber = "9988494936" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
-      }
+      users = await query('SELECT id, fullName FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
     }
+  }
 
-    if (!users || users.length === 0) {
+  return (users && users.length > 0) ? users[0] : null;
+}
+
+// Check Sponsor ID for registration
+router.post('/check-sponsor', verifyAppToken, async (req, res) => {
+  const { sponsor_id } = req.body;
+  if (!sponsor_id || !sponsor_id.toString().trim()) {
+    return res.status(400).json({ valid: false, error: 'Sponsor ID is required' });
+  }
+
+  try {
+    const sponsorUser = await findSponsorUser(sponsor_id);
+    if (!sponsorUser) {
       return res.json({ valid: false, error: 'User Not Found' });
     }
-    return res.json({ valid: true, name: users[0].fullName, sponsorId: users[0].id });
+    return res.json({ valid: true, name: sponsorUser.fullName, sponsorId: sponsorUser.id });
   } catch (err) {
     console.error('Check sponsor error:', err);
     res.status(500).json({ valid: false, error: 'Server error checking sponsor ID' });

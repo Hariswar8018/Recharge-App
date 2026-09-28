@@ -52,7 +52,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.addListener(_onEmailChanged);
     _mobileController.addListener(_onMobileChanged);
     _sponsorController.addListener(_onSponsorChanged);
-    _checkClipboardForSponsorLink();
     _loadVisibility();
   }
 
@@ -63,23 +62,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _visibilitySettings = v;
       });
     }
-  }
-
-  void _checkClipboardForSponsorLink() async {
-    try {
-      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-      if (clipboardData != null && clipboardData.text != null) {
-        final text = clipboardData.text!.trim();
-        final extracted = _extractSponsorCode(text);
-        if (extracted.isNotEmpty && _sponsorController.text.isEmpty) {
-          if (mounted) {
-            setState(() {
-              _sponsorController.text = text;
-            });
-          }
-        }
-      }
-    } catch (_) {}
   }
 
   @override
