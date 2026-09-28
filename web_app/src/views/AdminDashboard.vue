@@ -3609,6 +3609,11 @@ export default {
         this.requestRemark = '';
         this.fetchFundRequests();
         this.fetchDashboardData();
+
+        // Open official receipt modal at that point only when admin approves money
+        if (approve && data.receipt) {
+          this.openInvoiceModal(data.receipt);
+        }
       } catch (e) {
         alert('Error: ' + e.message);
       }

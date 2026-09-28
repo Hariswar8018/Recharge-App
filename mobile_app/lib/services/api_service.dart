@@ -498,6 +498,26 @@ class ApiService {
     return [];
   }
 
+  // Fetch user's fund status & cycle rules state
+  static Future<Map<String, dynamic>> getFundStatus() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/fund/status'),
+        headers: await _getHeaders(requireAuth: true),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (_) {}
+    return {
+      'canSubmit': true,
+      'statusState': 'AVAILABLE',
+      'statusMessage': 'Next Request Available. Pay ₹1,200 via UPI and enter your 12-digit UTR.',
+      'lastRequest': null,
+      'allRequests': []
+    };
+  }
+
   // Fetch landing info & app share settings
   static Future<Map<String, dynamic>> getLandingInfo() async {
     try {

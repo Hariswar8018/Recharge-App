@@ -363,7 +363,7 @@ router.get('/fund-requests', verifyAdminToken, async (req, res) => {
 // Admin approves a pending Fund Request
 router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => {
   try {
-    const { approve } = req.body;
+    const { approve, remark } = req.body;
     const requestId = req.params.id;
 
     const reqs = await query('SELECT * FROM fund_requests WHERE id = ?', [requestId]);
@@ -376,7 +376,12 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
       return res.status(400).json({ error: 'Request already processed' });
     }
 
+    // Fetch user details for receipt generation
+    const users = await query('SELECT id, fullName, email, mobileNumber FROM users WHERE id = ?', [request.user_id]);
+    const userObj = users.length > 0 ? users[0] : { fullName: 'User #' + request.user_id, mobileNumber: 'N/A', email: 'N/A' };
+
     if (approve === true) {
+      const dateStr = new Date().toLocaleString('en-US', { hour12: true });
       await transaction(async (conn) => {
         await conn.execute('UPDATE fund_requests SET status = "APPROVED" WHERE id = ?', [requestId]);
 
@@ -385,41 +390,53 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
           [request.amount, request.user_id]
         );
 
-        const dateStr = new Date().toLocaleString('en-US', { hour12: true });
         await conn.execute(
           'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "FUND", ?, "Fund Deposit", ?, "Success")',
-          [request.user_id, `₹${parseFloat(request.amount).toFixed(2)}`, dateStr]
+          [request.user_id, `+₹${parseFloat(request.amount).toFixed(2)}`, dateStr]
         );
       });
 
       await invalidateCache(`user_profile_${request.user_id}`);
       await invalidateCache('admin_stats');
 
-      query('SELECT email, fullName FROM users WHERE id = ?', [request.user_id]).then((users) => {
-        if (users.length > 0) {
-          sendNotificationEmail(users[0].email, "Fund Deposit Approved - EarnFarm", `
-            <h3>Hi ${users[0].fullName},</h3>
-            <p>Your fund request of <strong>₹${parseFloat(request.amount).toFixed(2)}</strong> has been approved. The funds are now available in your Fund Wallet.</p>
-          `);
-        }
-      }).catch((e) => console.error(e));
+      if (userObj.email && userObj.email !== 'N/A') {
+        sendNotificationEmail(userObj.email, "Fund Deposit Approved - SR Digital Seva", `
+          <h3>Hi ${userObj.fullName},</h3>
+          <p>Your fund request of <strong>₹${parseFloat(request.amount).toFixed(2)}</strong> (UTR: ${request.utr}) has been approved. The funds are available in your Fund Wallet.</p>
+        `).catch((e) => console.error(e));
+      }
 
-      res.json({ message: 'Fund deposit request approved successfully.' });
+      const receipt = {
+        id: request.id,
+        user_id: request.user_id,
+        fullName: userObj.fullName,
+        mobileNumber: userObj.mobileNumber,
+        email: userObj.email,
+        amount: request.amount,
+        utr_number: request.utr,
+        payment_method: 'UPI Deposit',
+        status: 'APPROVED',
+        created_at: request.createdAt || new Date().toISOString()
+      };
+
+      res.json({
+        message: 'Fund deposit request approved successfully.',
+        receipt
+      });
     } else {
       await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [requestId]);
 
-      query('SELECT email, fullName FROM users WHERE id = ?', [request.user_id]).then((users) => {
-        if (users.length > 0) {
-          sendNotificationEmail(users[0].email, "Fund Deposit Rejected - EarnFarm", `
-            <h3>Hi ${users[0].fullName},</h3>
-            <p>Your fund request of <strong>₹${parseFloat(request.amount).toFixed(2)}</strong> has been rejected by the administrator.</p>
-          `);
-        }
-      }).catch((e) => console.error(e));
+      if (userObj.email && userObj.email !== 'N/A') {
+        sendNotificationEmail(userObj.email, "Fund Deposit Rejected - SR Digital Seva", `
+          <h3>Hi ${userObj.fullName},</h3>
+          <p>Your fund request of <strong>₹${parseFloat(request.amount).toFixed(2)}</strong> (UTR: ${request.utr}) has been rejected by the administrator.${remark ? ' Remark: ' + remark : ''}</p>
+        `).catch((e) => console.error(e));
+      }
 
       res.json({ message: 'Fund request has been rejected.' });
     }
   } catch (err) {
+    console.error('Approve fund request error:', err);
     res.status(500).json({ error: 'Transaction failed' });
   }
 });

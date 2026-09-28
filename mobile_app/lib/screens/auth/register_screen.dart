@@ -686,9 +686,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           _buildLabel("Sponsor ID"),
                           TextFormField(
                             controller: _sponsorController,
+                            keyboardType: TextInputType.number,
+                            maxLength: 10,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(10),
+                            ],
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
-                              hintText: "Enter 10 Digit Phone Number or Sponsor ID",
+                              counterText: "",
+                              hintText: "Enter Exactly 10 Digit Phone Number or Sponsor ID",
                               hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                               prefixIcon: Container(
                                 margin: const EdgeInsets.all(8),
