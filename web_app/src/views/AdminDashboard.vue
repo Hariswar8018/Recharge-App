@@ -1777,14 +1777,68 @@
         <!-- SECTION: USERS LIST & PROFILE (14. Profile) -->
         <div v-if="currentTab === 'users'" class="users-list-pane">
           <div class="table-card">
-            <div class="table-header-row">
-              <h3>Registered Mobile App Users</h3>
+            <div class="table-header-row" style="flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h3>Registered Mobile App Users</h3>
+                <span class="badge-status-active" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 800;">
+                  {{ filteredUsers.length }} Users Found
+                </span>
+              </div>
               <div class="pagination-controls">
                 <button @click="changeUserPage(-1)" :disabled="userPage === 1" class="page-btn">&larr; Prev</button>
                 <span class="page-num">Page {{ userPage }}</span>
                 <button @click="changeUserPage(1)" :disabled="users.length < 10" class="page-btn">Next &rarr;</button>
               </div>
             </div>
+
+            <!-- DYNAMIC SEARCH & FILTER CONTROL BAR -->
+            <div style="padding: 1rem 1.25rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+              <!-- Dynamic Search Input (Name / Mobile / Email / ID) -->
+              <div style="flex: 1; min-width: 260px; position: relative; display: flex; align-items: center;">
+                <span style="position: absolute; left: 12px; color: #64748b; font-size: 0.9rem;">🔍</span>
+                <input 
+                  type="text" 
+                  v-model="userTableSearch" 
+                  placeholder="Search user by Name, Mobile Number, Email or User ID..." 
+                  style="width: 100%; padding: 0.6rem 0.75rem 0.6rem 36px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; background: white; color: #0f172a;"
+                />
+                <button v-if="userTableSearch" @click="userTableSearch = ''" style="position: absolute; right: 10px; background: transparent; border: none; font-size: 1rem; color: #94a3b8; cursor: pointer;">&times;</button>
+              </div>
+
+              <!-- Filter Dropdowns -->
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                <!-- Status Filter -->
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Status:</label>
+                  <select v-model="userStatusFilter" style="padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; font-weight: 700; outline: none; background: white; color: #1e293b; cursor: pointer;">
+                    <option value="ALL">All Statuses</option>
+                    <option value="ACTIVE">🟢 Active</option>
+                    <option value="PENDING">🟡 Pending</option>
+                    <option value="BLOCKED">🔴 Blocked</option>
+                    <option value="INACTIVE">⚪ Inactive</option>
+                  </select>
+                </div>
+
+                <!-- Sort By Filter -->
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <label style="font-size: 0.8rem; font-weight: 700; color: #475569;">Sort By:</label>
+                  <select v-model="userSortBy" style="padding: 0.55rem 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; font-weight: 700; outline: none; background: white; color: #1e293b; cursor: pointer;">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="name">Name (A-Z)</option>
+                    <option value="main_wallet_high">Highest Main Wallet</option>
+                    <option value="fund_wallet_high">Highest Fund Wallet</option>
+                  </select>
+                </div>
+
+                <!-- Reset Filters Button -->
+                <button v-if="userTableSearch || userStatusFilter !== 'ALL' || userSortBy !== 'newest'" @click="userTableSearch = ''; userStatusFilter = 'ALL'; userSortBy = 'newest';" style="background: #e2e8f0; color: #475569; border: none; padding: 0.55rem 0.85rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+                  ↺ Reset
+                </button>
+              </div>
+            </div>
+
+            <!-- TABLE CONTAINER -->
             <div class="table-container">
               <table class="nice-table">
                 <thead>
@@ -1800,7 +1854,12 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="user in users" :key="user.id" class="clickable-row" @click="selectUser(user)">
+                  <tr v-if="filteredUsers.length === 0">
+                    <td colspan="8" style="text-align: center; padding: 2rem; color: #64748b; font-weight: 600;">
+                      No registered users found matching "{{ userTableSearch }}".
+                    </td>
+                  </tr>
+                  <tr v-for="user in filteredUsers" :key="user.id" class="clickable-row" @click="selectUser(user)">
                     <td>#{{ user.id }}</td>
                     <td class="font-bold">{{ user.fullName }}</td>
                     <td>{{ user.email }}</td>
@@ -3502,8 +3561,10 @@ export default {
       qrStorageOption: 'file',
       qrPreviewUrl: '',
       uploadingQr: false,
-      qrUploadMsg: '',
-      qrUploadSuccess: false,
+      // Registered Mobile App Users Filter State
+      userTableSearch: '',
+      userStatusFilter: 'ALL',
+      userSortBy: 'newest',
       txnPage: 1,
       loading: true,
       error: '',
@@ -3681,6 +3742,38 @@ export default {
         const matchesAmt = !this.reqAmountFilter || String(req.amount) === this.reqAmountFilter;
         return matchesStatus && matchesQuery && matchesPM && matchesAmt;
       });
+    },
+    filteredUsers() {
+      let list = [...(this.users || [])];
+      const q = (this.userTableSearch || '').toLowerCase().trim();
+      
+      if (q) {
+        list = list.filter(u => 
+          (u.fullName && u.fullName.toLowerCase().includes(q)) ||
+          (u.mobileNumber && u.mobileNumber.toLowerCase().includes(q)) ||
+          (u.email && u.email.toLowerCase().includes(q)) ||
+          (String(u.id).toLowerCase().includes(q))
+        );
+      }
+
+      if (this.userStatusFilter && this.userStatusFilter !== 'ALL') {
+        list = list.filter(u => (u.status || 'ACTIVE').toUpperCase() === this.userStatusFilter.toUpperCase());
+      }
+
+      if (this.userSortBy === 'oldest') {
+        list.sort((a, b) => a.id - b.id);
+      } else if (this.userSortBy === 'main_wallet_high') {
+        list.sort((a, b) => (parseFloat(b.main_wallet_balance) || 0) - (parseFloat(a.main_wallet_balance) || 0));
+      } else if (this.userSortBy === 'fund_wallet_high') {
+        list.sort((a, b) => (parseFloat(b.fund_wallet_balance) || 0) - (parseFloat(a.fund_wallet_balance) || 0));
+      } else if (this.userSortBy === 'name') {
+        list.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+      } else {
+        // default newest
+        list.sort((a, b) => b.id - a.id);
+      }
+
+      return list;
     }
   },
   mounted() {
