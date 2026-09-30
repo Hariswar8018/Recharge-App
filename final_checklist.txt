@@ -1,9 +1,9 @@
 1. Direct Add Funds to User
-[x] Search user by Mobile Number / User ID
-[x] Select Main Wallet / Fund Wallet
-[x] Enter Amount + Remarks
-[x] Verify Wallet Credit
-[x] Verify Direct Fund History
+[O] Search user by Mobile Number / User ID
+[O] Select Main Wallet / Fund Wallet
+[O] Enter Amount + Remarks
+[O] Verify Wallet Credit
+[O] Verify Direct Fund History
 [x] Verify Balance & Transaction Update
 
 2. Income Plan / Single Leg — 6 Levels

@@ -223,20 +223,26 @@ router.delete('/notifications/:id', verifyAdminToken, async (req, res) => {
 });
 
 
-// GET Paginated Admin Transactions
+// GET Paginated Admin Transactions (with optional user_id filter)
 router.get('/transactions', verifyAdminToken, async (req, res) => {
   try {
+    const userId = req.query.user_id || req.query.userId;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 15;
+    const limit = parseInt(req.query.limit) || (userId ? 100 : 15);
     const offset = (page - 1) * limit;
 
-    const list = await query(
-      `SELECT t.*, u.fullName, u.email 
-       FROM transactions t 
-       LEFT JOIN users u ON t.user_id = u.id 
-       ORDER BY t.id DESC LIMIT ? OFFSET ?`,
-      [limit, offset]
-    );
+    let sql = `SELECT t.*, u.fullName, u.email, u.mobileNumber 
+               FROM transactions t 
+               LEFT JOIN users u ON t.user_id = u.id `;
+    let params = [];
+    if (userId) {
+      sql += ` WHERE t.user_id = ? OR u.mobileNumber = ? `;
+      params.push(userId, userId);
+    }
+    sql += ` ORDER BY t.id DESC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    const list = await query(sql, params);
 
     const cleanedList = list.map(tx => ({
       ...tx,
@@ -581,6 +587,65 @@ router.get('/users/:userId', verifyAdminToken, async (req, res) => {
   } catch (err) {
     console.error('Error fetching user profile:', err);
     res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
+// GET User Income & Earnings Breakdown
+router.get('/users/:userId/income', verifyAdminToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userRes = await query('SELECT id, fullName, email, mobileNumber, main_wallet_balance, fund_wallet_balance FROM users WHERE id = ? OR mobileNumber = ?', [userId, userId]);
+    if (!userRes || userRes.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const user = userRes[0];
+
+    const txns = await query(
+      `SELECT * FROM transactions 
+       WHERE user_id = ? AND (type LIKE '%Income%' OR type LIKE '%Reward%' OR type LIKE '%Bonus%' OR type LIKE '%Level%' OR type LIKE '%Direct%' OR type LIKE '%Commission%')
+       ORDER BY id DESC`,
+      [user.id]
+    );
+
+    let directIncome = 0;
+    let singleLegIncome = 0;
+    let captchaIncome = 0;
+    let otherIncome = 0;
+
+    txns.forEach(t => {
+      const amt = parseFloat(String(t.amount).replace(/[^\d.]/g, '')) || 0;
+      const tType = (t.type || '').toLowerCase();
+      if (tType.includes('direct')) {
+        directIncome += amt;
+      } else if (tType.includes('level') || tType.includes('single leg') || tType.includes('pool')) {
+        singleLegIncome += amt;
+      } else if (tType.includes('captcha')) {
+        captchaIncome += amt;
+      } else {
+        otherIncome += amt;
+      }
+    });
+
+    const totalIncome = directIncome + singleLegIncome + captchaIncome + otherIncome;
+
+    const downlines = await query(
+      'SELECT id, fullName, mobileNumber, email, status, createdAt FROM users WHERE sponsor_id = ? ORDER BY id DESC',
+      [user.id]
+    );
+
+    res.json({
+      user,
+      totalIncome: totalIncome.toFixed(2),
+      directIncome: directIncome.toFixed(2),
+      singleLegIncome: singleLegIncome.toFixed(2),
+      captchaIncome: captchaIncome.toFixed(2),
+      otherIncome: otherIncome.toFixed(2),
+      transactions: txns,
+      downlines
+    });
+  } catch (err) {
+    console.error('Error fetching user income details:', err);
+    res.status(500).json({ error: 'Failed to fetch user income details' });
   }
 });
 
