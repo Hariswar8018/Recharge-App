@@ -38,7 +38,10 @@
               Global User / Home
             </button>
             <button @click="switchTab('users')" class="sub-menu-item" :class="{ active: currentTab === 'users' }">
-              Profile
+              Profile / Users List
+            </button>
+            <button @click="switchTab('edit_user')" class="sub-menu-item" :class="{ active: currentTab === 'edit_user' }">
+              Edit User Details
             </button>
             <button @click="switchTab('teams')" class="sub-menu-item" :class="{ active: currentTab === 'teams' }">
               Team
