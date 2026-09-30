@@ -1,42 +1,95 @@
-5. Work Requirements
-Users must perform the available CAPTCHA work themselves and follow the required accuracy, quality, and performance standards. Work that is incomplete, rejected, invalid, or does not meet the applicable requirements may not qualify for earnings.
+1. Direct Add Funds to User
+[x] Search user by Mobile Number / User ID
+[x] Select Main Wallet / Fund Wallet
+[x] Enter Amount + Remarks
+[x] Verify Wallet Credit
+[x] Verify Direct Fund History
+[x] Verify Balance & Transaction Update
 
-6. User Account
-Users must provide accurate information and are responsible for keeping their account credentials confidential. Users must not share, sell, transfer, or allow unauthorized persons to use their account.
+2. Income Plan / Single Leg — 6 Levels
+[x] 6 Levels
+[x] Maximum 126 Members/Cycle
+[x] Structure: 2 + 4 + 8 + 16 + 32 + 64
+[x] Activation / Join: ₹1,200
+[x] Top-Up / Re-entry: ₹1,200
+[x] Direct Sponsor Income: ₹300
+[x] Global Single Leg Pool: ₹600
+[x] Level-wise Income Settings
+[x] Company Maintenance: ₹300
+[x] Withdrawal Deduction: 15%
+[x] Minimum Withdrawal: ₹500
+[x] Withdrawal Days: Monday / Wednesday / Friday
+[x] All values are Admin-editable
+[x] Verify Admin values are actually used by Backend
 
-7. Prohibited Activities
-Fraudulent activity, manipulation, automated abuse, unauthorized access, fake information, duplicate or misleading accounts, or any misuse of the platform is not permitted.
+3. CAPTCHA Work & Income
+[x] CAPTCHA Work ON/OFF
+[x] Per-CAPTCHA income editable from Admin
+[x] Only successful CAPTCHA solves are counted
+[x] Verify calculation: ₹0.50 × 10 successful CAPTCHAs = ₹5
+[x] Correct Wallet/Income credit
+[x] Income reflected in User Panel
+[x] When OFF → shows Under Maintenance
 
-Violation of platform rules may result in account restriction, suspension, or termination.
+4. Edit User
+[x] Search by Mobile Number / User ID
+[x] Edit Name / Mobile / Email / Password
+[x] Edit Sponsor ID / Joining Date / Status
+[x] Edit Bank Details
+[x] Show Main / Fund / Income / CAPTCHA Wallets
+[x] Transaction History
+[x] Income Details
+[x] Reset Password
+[x] Login as User
 
-8. Payments & Earnings
-Where payments or earnings are applicable, they are subject to verification, eligibility, completed and accepted work, applicable platform rules, and required processing procedures.
+5. Mobile Number Change — Single Leg
+When changing a user's mobile number:
+[x] Same User Record is retained
+[x] Single Leg Position does not change
+[x] Sponsor / Placement does not change
+[x] Cycle does not reset
+[x] No duplicate User / Position is created
+[x] Wallets & Transaction History remain connected
 
-9. Platform Changes
-Work availability, work requirements, features, procedures, and policies may be changed, suspended, or discontinued when reasonably required for operational, security, legal, regulatory, or business purposes.
+6. Payout / Withdrawal Request Management
+[x] Statuses: Pending / Approved / Rejected
+[x] Search by User ID / Mobile
+[x] Date / Status Filter
+[x] Select All
+[x] Bulk Approve / Bulk Reject
+[x] Approve All Pending
+[x] Individual Approve / Reject
+[x] User & Bank Details visible
+[x] Available Balance / Withdrawal Amount visible
+[x] Rejection Reason
+[x] Approve/Reject → Wallet & Status Update
+[x] Rejection Reason visible to User
+[x] Excel Download
 
-10. User Responsibility
-Users are responsible for reading and understanding the Terms & Conditions, Privacy Policy, work requirements, and applicable guidelines before participating.
+7. Bank Verification + Penny Drop
+Required flow:
+Account Number + IFSC
+↓
+Verification API
+↓
+If SUCCESS → ₹1 Penny Drop API
+↓
+Penny Drop SUCCESS → Bank Verified
+Checklist:
+[x] Account Number + IFSC → Verification API
+[x] Verification SUCCESS → ₹1 Penny Drop API
+[x] Penny Drop SUCCESS → Bank Verified
+[x] Verification FAIL → STOP
+[x] If Verification FAIL → Penny Drop API must NOT be called
+[x] Developer shows Backend/API Logs proving the exact flow
 
-11. No Employment Guarantee
-Participation in the SR Digital Seva CAPTCHA Work platform does not by itself create an employment relationship or guarantee employment.
-
-12. Acceptance
-By creating an account and using the platform, the user confirms that they have reviewed and agreed to the applicable Terms & Conditions and Privacy Policy.
-
-
----
-
-FINAL CHANGES
-
-Remove all old Recharge, DTH, Bill Payment, Wallet, Commission, and unrelated service content.
-
-This platform should be presented only as a CAPTCHA Work platform.
-
-Keep the existing page design and navigation unchanged.
-
-Make sure all content is properly readable and scrollable on mobile and desktop.
-
-No text should be cut off, overlapped, or hidden.
-
-Please check all 3 pages after updating and confirm that the old content has been completely removed.
+8. ₹1,200 ID Activation Invoice
+[x] Invoice generated only for ₹1,200 ID Activation Payment
+[x] Generate only after payment received + Admin approved
+[x] No invoice for other transactions
+[x] No invoice for other services/payments
+[x] Invoice available only in Admin Panel
+[x] Invoice must not appear in User Panel
+[x] Individual Download by User ID
+[x] Monthly Bulk Download
+[x] Pending/Rejected Payment → No Invoice
