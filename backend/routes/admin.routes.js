@@ -6,6 +6,9 @@ const { getCache, setCache, invalidateCache } = require('../cache');
 const { sendNotificationEmail } = require('../config/mailer');
 const { JWT_SECRET, verifyAdminToken } = require('../middleware/auth');
 
+const fs = require('fs');
+const path = require('path');
+
 const router = express.Router();
 
 // Admin Login
@@ -545,6 +548,195 @@ router.post('/transactions/:id/approve', verifyAdminToken, async (req, res) => {
   } catch (err) {
     console.error('Approve transaction error:', err);
     res.status(500).json({ error: 'Failed to update transaction status' });
+  }
+});
+
+// GET Detailed User Profile by ID or Mobile
+router.get('/users/:userId', verifyAdminToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    let users = await query('SELECT * FROM users WHERE id = ? OR mobileNumber = ?', [userId, userId]);
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const user = users[0];
+
+    // Fetch sponsor details if any
+    let sponsor = null;
+    if (user.sponsor_id) {
+      const sp = await query('SELECT id, fullName, mobileNumber, email FROM users WHERE id = ?', [user.sponsor_id]);
+      if (sp && sp.length > 0) sponsor = sp[0];
+    }
+
+    // Downline count
+    const downline = await query('SELECT COUNT(id) as count FROM users WHERE sponsor_id = ?', [user.id]);
+    const downlineCount = downline[0]?.count || 0;
+
+    res.json({
+      ...user,
+      sponsor_name: sponsor ? sponsor.fullName : (user.sponsor_id ? `User #${user.sponsor_id}` : 'None'),
+      sponsor_mobile: sponsor ? sponsor.mobileNumber : 'N/A',
+      downlineCount
+    });
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    res.status(500).json({ error: 'Failed to fetch user profile' });
+  }
+});
+
+// PUT Update Full User Details & Bank Info
+router.put('/users/:userId', verifyAdminToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const {
+      fullName,
+      email,
+      mobileNumber,
+      password,
+      status,
+      sponsor_id,
+      bank_name,
+      account_holder,
+      account_no,
+      ifsc,
+      branch,
+      account_type
+    } = req.body;
+
+    const existing = await query('SELECT * FROM users WHERE id = ?', [userId]);
+    if (!existing || existing.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    let passwordHash = existing[0].passwordHash;
+    let plainPassword = existing[0].plain_password;
+
+    if (password && password.trim().length > 0) {
+      const salt = bcrypt.genSaltSync(10);
+      passwordHash = bcrypt.hashSync(password.trim(), salt);
+      plainPassword = password.trim();
+    }
+
+    await query(
+      `UPDATE users SET 
+        fullName = ?, 
+        email = ?, 
+        mobileNumber = ?, 
+        passwordHash = ?, 
+        plain_password = ?, 
+        status = ?, 
+        sponsor_id = ?, 
+        bank_name = ?, 
+        account_holder = ?, 
+        account_no = ?, 
+        ifsc = ?, 
+        branch = ?, 
+        account_type = ? 
+       WHERE id = ?`,
+      [
+        fullName || existing[0].fullName,
+        email || existing[0].email,
+        mobileNumber || existing[0].mobileNumber,
+        passwordHash,
+        plainPassword,
+        status || existing[0].status,
+        sponsor_id !== undefined && sponsor_id !== null && sponsor_id !== '' ? sponsor_id : existing[0].sponsor_id,
+        bank_name || existing[0].bank_name,
+        account_holder || existing[0].account_holder,
+        account_no || existing[0].account_no,
+        ifsc || existing[0].ifsc,
+        branch || existing[0].branch,
+        account_type || existing[0].account_type || 'Savings',
+        userId
+      ]
+    );
+
+    const updated = await query('SELECT * FROM users WHERE id = ?', [userId]);
+    res.json({ message: 'User details updated successfully', user: updated[0] });
+  } catch (err) {
+    console.error('Error updating user details:', err);
+    res.status(500).json({ error: 'Failed to update user details' });
+  }
+});
+
+// POST Adjust / Add Funds to User Wallet
+router.post('/users/:userId/adjust-wallet', verifyAdminToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { walletType, actionType, amount, remark } = req.body;
+
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount entered' });
+    }
+
+    const users = await query('SELECT * FROM users WHERE id = ?', [userId]);
+    if (!users || users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isCredit = (actionType || 'CREDIT').toUpperCase() === 'CREDIT';
+    const targetWallet = (walletType || 'MAIN').toUpperCase() === 'FUND' ? 'fund_wallet_balance' : 'main_wallet_balance';
+    const walletLabel = targetWallet === 'fund_wallet_balance' ? 'FUND' : 'MAIN';
+
+    const delta = isCredit ? numAmount : -numAmount;
+
+    await query(`UPDATE users SET ${targetWallet} = ${targetWallet} + ? WHERE id = ?`, [delta, userId]);
+
+    // Record transaction entry
+    const formattedAmt = `${isCredit ? '+' : '-'}₹${numAmount.toFixed(2)}`;
+    const txnType = isCredit ? 'Admin Fund Credit' : 'Admin Fund Debit';
+    const nowStr = new Date().toISOString();
+
+    await query(
+      'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, ?, ?, ?, ?, "Success")',
+      [userId, walletLabel, formattedAmt, `${txnType}${remark ? ' (' + remark + ')' : ''}`, nowStr]
+    );
+
+    const updated = await query('SELECT * FROM users WHERE id = ?', [userId]);
+    res.json({
+      message: `Successfully ${isCredit ? 'added' : 'deducted'} ₹${numAmount.toFixed(2)} ${isCredit ? 'to' : 'from'} ${walletLabel} Wallet`,
+      user: updated[0]
+    });
+  } catch (err) {
+    console.error('Error adjusting wallet:', err);
+    res.status(500).json({ error: 'Failed to adjust user wallet' });
+  }
+});
+
+// POST Upload UPI QR Code Image (Cloud / MilesWeb / Local Storage)
+router.post('/upload-qr', verifyAdminToken, async (req, res) => {
+  try {
+    const { qrImageBase64, qrImageUrl } = req.body;
+    let finalUrl = qrImageUrl || '';
+
+    if (qrImageBase64 && qrImageBase64.includes('base64,')) {
+      const base64Data = qrImageBase64.split('base64,')[1];
+      const fileName = `upi_qr_${Date.now()}.png`;
+      const uploadPath = path.join(__dirname, '../uploads', fileName);
+
+      fs.writeFileSync(uploadPath, base64Data, 'base64');
+      const protocol = req.protocol || 'http';
+      const host = req.get('host') || 'localhost:5000';
+      finalUrl = `${protocol}://${host}/uploads/${fileName}`;
+    }
+
+    if (!finalUrl) {
+      return res.status(400).json({ error: 'Please provide an image file or URL' });
+    }
+
+    // Save into system_settings
+    const existing = await query('SELECT id FROM system_settings WHERE key_name = "upi_qr_url"');
+    if (existing && existing.length > 0) {
+      await query('UPDATE system_settings SET val_value = ? WHERE key_name = "upi_qr_url"', [finalUrl]);
+    } else {
+      await query('INSERT INTO system_settings (key_name, val_value) VALUES ("upi_qr_url", ?)', [finalUrl]);
+    }
+
+    res.json({ message: 'UPI QR Code updated successfully', upi_qr_url: finalUrl });
+  } catch (err) {
+    console.error('Error uploading QR code:', err);
+    res.status(500).json({ error: 'Failed to upload QR code image' });
   }
 });
 

@@ -455,6 +455,59 @@
                   </thead>
                   <tbody>
 
+                    <!-- Row 0: UPI QR Code Upload & Storage Option -->
+                    <tr style="background: #f8fafc;">
+                      <td>0</td>
+                      <td class="font-bold">
+                        UPI QR Code Image
+                        <br/><span style="font-size: 0.75rem; font-weight: normal; color: #64748b;">(Server/MilesWeb Hosting or Cloud URL)</span>
+                      </td>
+                      <td>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                          <div style="display: flex; gap: 12px; font-size: 0.82rem; font-weight: 700;">
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                              <input type="radio" v-model="qrStorageOption" value="file" /> 📁 Upload File (Server / MilesWeb)
+                            </label>
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                              <input type="radio" v-model="qrStorageOption" value="url" /> 🌐 External Cloud URL
+                            </label>
+                          </div>
+
+                          <div v-if="qrStorageOption === 'file'" style="display: flex; gap: 8px; align-items: center;">
+                            <input type="file" accept="image/*" @change="handleQrFileSelect" class="table-input" style="padding: 4px;" />
+                            <button @click="uploadQrCodeImage" :disabled="uploadingQr" class="btn-primary-small" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+                              {{ uploadingQr ? 'Uploading...' : '⬆ Upload QR' }}
+                            </button>
+                          </div>
+
+                          <div v-else style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" v-model="systemSettings.upi_qr_url" placeholder="https://yourdomain.com/uploads/qr.png or S3 Cloud URL" class="table-input" />
+                            <button @click="uploadQrCodeImage" :disabled="uploadingQr" class="btn-primary-small" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+                              💾 Save URL
+                            </button>
+                          </div>
+
+                          <div v-if="qrPreviewUrl || systemSettings.upi_qr_url" style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+                            <img :src="qrPreviewUrl || systemSettings.upi_qr_url" style="height: 60px; width: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #cbd5e1; background: white; padding: 2px;" />
+                            <span style="font-size: 0.78rem; color: #16a34a; font-weight: bold;">Live QR Image Active</span>
+                          </div>
+
+                          <div v-if="qrUploadMsg" :style="{ color: qrUploadSuccess ? '#16a34a' : '#ef4444', fontSize: '0.78rem', fontWeight: 'bold' }">
+                            {{ qrUploadMsg }}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="status-cell">
+                          <label class="switch small">
+                            <input type="checkbox" v-model="systemSettings.status_upi_qr" />
+                            <span class="slider round"></span>
+                          </label>
+                          <span class="badge-status-active">🟢 Active</span>
+                        </div>
+                      </td>
+                    </tr>
+
                     <!-- Row 1: UPI ID -->
                     <tr>
                       <td>1</td>
@@ -1754,8 +1807,9 @@
                     <td>
                       <span class="badge-status-active">{{ user.downlineCount || 0 }} Members</span>
                     </td>
-                    <td>
-                      <button class="btn-action-view">View Profile</button>
+                    <td style="white-space: nowrap;">
+                      <button @click.stop="openEditUserScreen(user)" class="btn-action-view" style="background: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">✏️ Edit User</button>
+                      <button @click.stop="openAddFundsModal(user)" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-left: 4px;">➕ Add Funds</button>
                     </td>
                   </tr>
                 </tbody>
@@ -1790,6 +1844,15 @@
                   </div>
                 </div>
 
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 1rem;">
+                  <button @click="openEditUserScreen(selectedUser); selectedUser = null" style="background: #2563eb; color: white; border: none; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%;">
+                    ✏️ Edit Full User Details
+                  </button>
+                  <button @click="openAddFundsModal(selectedUser); selectedUser = null" style="background: #10b981; color: white; border: none; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%;">
+                    ➕ Add / Deduct Funds
+                  </button>
+                </div>
+
                 <!-- Reset User Password Box (Admin Only) -->
                 <div style="margin-top: 1.25rem; padding: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
                   <h4 style="margin: 0 0 0.35rem; font-size: 0.88rem; font-weight: 700; color: #1e293b;">🔑 Reset Member Password</h4>
@@ -1814,6 +1877,280 @@
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION: DEDICATED EDIT USER DETAILS VIEW (Matching screenshot 100%) -->
+        <div v-if="currentTab === 'edit_user'" class="edit-user-page">
+          <!-- BREADCRUMB & HEADER -->
+          <div class="edit-user-header">
+            <div class="header-title-box">
+              <div class="breadcrumb">Dashboard &gt; Users Management &gt; Edit User</div>
+              <div class="title-with-icon">
+                <span class="icon-user-badge">👤</span>
+                <h2>Edit User Details</h2>
+              </div>
+              <p class="subnote">View and update user information. Changes will reflect immediately in the user panel.</p>
+            </div>
+            <button @click="currentTab = 'users'" class="btn-back-users">
+              &larr; Back to Users
+            </button>
+          </div>
+
+          <!-- USER SEARCH CARD -->
+          <div class="user-search-card">
+            <div class="search-input-wrapper">
+              <span class="search-icon">🔍</span>
+              <input 
+                type="text" 
+                v-model="searchUserQuery" 
+                @keyup.enter="searchUserForEdit" 
+                placeholder="Enter Mobile Number or User ID" 
+                class="user-search-input"
+              />
+            </div>
+            <button @click="searchUserForEdit" class="btn-search-blue">
+              🔍 Search
+            </button>
+          </div>
+
+          <!-- MAIN EDIT GRID -->
+          <div class="edit-user-grid">
+            <!-- LEFT COLUMN: Forms -->
+            <div class="edit-forms-column">
+              
+              <!-- CARD 1: User Details -->
+              <div class="form-card">
+                <div class="card-header-blue">
+                  <div class="header-left">
+                    <span class="header-icon">👤</span>
+                    <h3>User Details</h3>
+                  </div>
+                  <div class="status-dropdown-badge">
+                    <select v-model="editUserObj.status" class="status-select-badge" style="padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; background: #dcfce7; color: #15803d; border: 1px solid #86efac; outline: none; cursor: pointer;">
+                      <option value="ACTIVE">🟢 Active</option>
+                      <option value="PENDING">🟡 Pending</option>
+                      <option value="BLOCKED">🔴 Blocked</option>
+                      <option value="INACTIVE">⚪ Inactive</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-grid-2">
+                  <!-- User ID -->
+                  <div class="form-group">
+                    <label>User ID</label>
+                    <div class="copy-input-group">
+                      <input type="text" :value="editUserObj.id || editUserObj.mobileNumber" readonly class="input-readonly" />
+                      <button @click="copyToClipboard(editUserObj.id)" class="btn-copy-icon" title="Copy User ID">📋</button>
+                    </div>
+                  </div>
+
+                  <!-- Mobile Number -->
+                  <div class="form-group">
+                    <label>Mobile Number <span class="req">*</span></label>
+                    <input type="text" v-model="editUserObj.mobileNumber" class="input-styled" />
+                    <span class="input-subnote">If you change mobile number, user's position in the single leg will remain the same.</span>
+                  </div>
+
+                  <!-- Name -->
+                  <div class="form-group">
+                    <label>Name <span class="req">*</span></label>
+                    <input type="text" v-model="editUserObj.fullName" class="input-styled" />
+                  </div>
+
+                  <!-- Email ID -->
+                  <div class="form-group">
+                    <label>Email ID</label>
+                    <input type="email" v-model="editUserObj.email" class="input-styled" />
+                  </div>
+
+                  <!-- Password -->
+                  <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-input-group">
+                      <input :type="editUserObj.showPassword ? 'text' : 'password'" ref="userPasswordInput" v-model="editUserObj.password" placeholder="Enter new password to change" class="input-styled" style="width: 100%;" />
+                      <button type="button" @click="editUserObj.showPassword = !editUserObj.showPassword" class="btn-eye-toggle">
+                        {{ editUserObj.showPassword ? '🙈' : '👁️' }}
+                      </button>
+                    </div>
+                    <span class="input-subnote">This password will be updated and user can login with the new password.</span>
+                  </div>
+
+                  <!-- Sponsor ID -->
+                  <div class="form-group">
+                    <label>Sponsor ID</label>
+                    <input type="text" v-model="editUserObj.sponsor_id" placeholder="9123456780" class="input-styled" />
+                  </div>
+
+                  <!-- Date of Joining -->
+                  <div class="form-group">
+                    <label>Date of Joining</label>
+                    <div class="date-input-wrapper">
+                      <input type="text" :value="editUserObj.createdAt ? String(editUserObj.createdAt).substring(0, 10) : '19-09-2026'" readonly class="input-readonly" />
+                      <span class="calendar-icon">📅</span>
+                    </div>
+                  </div>
+
+                  <!-- Status -->
+                  <div class="form-group">
+                    <label>Status</label>
+                    <select v-model="editUserObj.status" class="input-styled select-styled">
+                      <option value="ACTIVE">Active</option>
+                      <option value="PENDING">Pending</option>
+                      <option value="BLOCKED">Blocked</option>
+                      <option value="INACTIVE">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CARD 2: Bank Account Details -->
+              <div class="form-card bank-card">
+                <div class="card-header-red">
+                  <span class="header-icon">🏛️</span>
+                  <h3>Bank Account Details</h3>
+                </div>
+
+                <div class="form-grid-3">
+                  <!-- Account Holder Name -->
+                  <div class="form-group">
+                    <label>Account Holder Name <span class="req">*</span></label>
+                    <input type="text" v-model="editUserObj.account_holder" placeholder="Rajesh Kumar" class="input-styled" />
+                  </div>
+
+                  <!-- Account Number -->
+                  <div class="form-group">
+                    <label>Account Number <span class="req">*</span></label>
+                    <input type="text" v-model="editUserObj.account_no" placeholder="123456789012" class="input-styled" />
+                  </div>
+
+                  <!-- IFSC Code -->
+                  <div class="form-group">
+                    <label>IFSC Code <span class="req">*</span></label>
+                    <input type="text" v-model="editUserObj.ifsc" placeholder="HDFC0001234" class="input-styled uppercase" />
+                  </div>
+                </div>
+
+                <div class="form-grid-3" style="margin-top: 1rem;">
+                  <!-- Bank Name -->
+                  <div class="form-group">
+                    <label>Bank Name <span class="req">*</span></label>
+                    <input type="text" v-model="editUserObj.bank_name" placeholder="HDFC Bank" class="input-styled" />
+                  </div>
+
+                  <!-- Branch -->
+                  <div class="form-group">
+                    <label>Branch</label>
+                    <input type="text" v-model="editUserObj.branch" placeholder="Warangal" class="input-styled" />
+                  </div>
+
+                  <!-- Account Type -->
+                  <div class="form-group">
+                    <label>Account Type</label>
+                    <select v-model="editUserObj.account_type" class="input-styled select-styled">
+                      <option value="Savings">Savings</option>
+                      <option value="Current">Current</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CARD 3: Important Notes -->
+              <div class="important-notes-box">
+                <div class="info-icon-large">ℹ️</div>
+                <div class="notes-content">
+                  <h4>Important Notes:</h4>
+                  <ul>
+                    <li>Changes will reflect immediately in the user panel.</li>
+                    <li>If mobile number is changed, the user's position in the single leg will remain the same.</li>
+                    <li>Ensure all details are correct before submitting.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- SUBMIT & RESET BUTTONS -->
+              <div class="form-actions-bar">
+                <button @click="handleSaveUserDetails" :disabled="loadingUserEdit" class="btn-submit-primary">
+                  💾 {{ loadingUserEdit ? 'Updating...' : 'Update User Details' }}
+                </button>
+                <button @click="openEditUserScreen(editUserObj)" class="btn-reset-secondary">
+                  🔄 Reset
+                </button>
+              </div>
+
+              <!-- Status Toast / Alert -->
+              <div v-if="updateUserMsg" :class="updateUserSuccess ? 'success-alert' : 'error-alert'" style="margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 700;">
+                {{ updateUserMsg }}
+              </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: User Summary & Wallet Balances & Quick Actions -->
+            <div class="edit-summary-column">
+              
+              <!-- CARD 1: User Summary -->
+              <div class="summary-card">
+                <div class="summary-header">
+                  <span class="icon">📁</span>
+                  <h3>User Summary</h3>
+                </div>
+                <div class="summary-profile-box">
+                  <div class="avatar-circle">
+                    <span>👤</span>
+                  </div>
+                  <h3 class="user-name-title">{{ editUserObj.fullName || 'Rajesh Kumar' }}</h3>
+                  <div class="summary-details-list">
+                    <div class="s-row"><span>User ID</span><strong>: {{ editUserObj.id || editUserObj.mobileNumber }}</strong></div>
+                    <div class="s-row"><span>Mobile</span><strong>: {{ editUserObj.mobileNumber }}</strong></div>
+                    <div class="s-row"><span>Email</span><strong>: {{ editUserObj.email || 'N/A' }}</strong></div>
+                    <div class="s-row"><span>Status</span><span>: <strong style="color: #16a34a;">{{ editUserObj.status || 'Active' }}</strong></span></div>
+                    <div class="s-row"><span>Joining Date</span><strong>: {{ editUserObj.createdAt ? String(editUserObj.createdAt).substring(0,10) : '19-09-2026' }}</strong></div>
+                    <div class="s-row"><span>Sponsor ID</span><strong>: {{ editUserObj.sponsor_id || 'None' }}</strong></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CARD 2: Wallet Balances -->
+              <div class="summary-card wallet-card">
+                <div class="summary-header">
+                  <span class="icon">👛</span>
+                  <h3>Wallet Balances</h3>
+                </div>
+                <div class="wallet-balances-list">
+                  <div class="w-row"><span>Main Wallet</span><strong style="color: #2563eb;">₹ {{ parseFloat(editUserObj.main_wallet_balance || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</strong></div>
+                  <div class="w-row"><span>Fund Wallet</span><strong style="color: #16a34a;">₹ {{ parseFloat(editUserObj.fund_wallet_balance || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</strong></div>
+                  <div class="w-row"><span>Income Wallet</span><strong style="color: #ea580c;">₹ {{ parseFloat(editUserObj.income_wallet_balance || editUserObj.main_wallet_balance || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</strong></div>
+                  <div class="w-row"><span>Captcha Wallet</span><strong style="color: #9333ea;">₹ {{ parseFloat(editUserObj.captcha_wallet_balance || 320).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</strong></div>
+                </div>
+                <button @click="openAddFundsModal(editUserObj)" class="btn-add-funds-wide" style="margin-top: 1rem; width: 100%; background: #2563eb; color: white; border: none; padding: 0.65rem; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  ➕ Add / Adjust Wallet Funds
+                </button>
+              </div>
+
+              <!-- CARD 3: Quick Actions -->
+              <div class="summary-card quick-actions-card">
+                <div class="summary-header">
+                  <span class="icon">⚙️</span>
+                  <h3>Quick Actions</h3>
+                </div>
+                <div class="quick-actions-list">
+                  <button @click="viewUserTransactions(editUserObj)" class="quick-btn">
+                    <span class="icon">📋</span> View Transaction History
+                  </button>
+                  <button @click="viewUserIncome(editUserObj)" class="quick-btn">
+                    <span class="icon">📊</span> View Income Details
+                  </button>
+                  <button @click="focusUserPassword(editUserObj)" class="quick-btn">
+                    <span class="icon">🔑</span> Reset Password
+                  </button>
+                  <button @click="loginAsUserPreview(editUserObj)" class="quick-btn">
+                    <span class="icon">➡️</span> Login as User
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -2998,6 +3335,77 @@
             </div>
           </div>
         </div>
+        <!-- ADD / DEDUCT FUNDS MODAL -->
+        <div v-if="showAddFundsModal" class="invoice-modal-backdrop" @click="showAddFundsModal = false">
+          <div class="invoice-modal-container" @click.stop style="max-width: 480px; padding: 0; overflow: hidden; border-radius: 12px; background: white;">
+            <div style="background: #2563eb; color: white; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+              <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                💳 Add / Adjust Funds to User Wallet
+              </h3>
+              <button @click="showAddFundsModal = false" style="background: transparent; border: none; color: white; font-size: 1.4rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div style="padding: 1.25rem;">
+              <div v-if="fundModalUser" style="background: #f1f5f9; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                  <div style="font-weight: 800; color: #0f172a;">{{ fundModalUser.fullName || 'User #' + fundModalUser.id }}</div>
+                  <div style="font-size: 0.8rem; color: #64748b;">Mobile: {{ fundModalUser.mobileNumber || 'N/A' }} | ID: #{{ fundModalUser.id }}</div>
+                </div>
+                <span class="badge-status-active">Active</span>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 4px; display: block;">Select Target Wallet</label>
+                <div style="display: flex; gap: 10px;">
+                  <button type="button" @click="fundModalWalletType = 'MAIN'" :style="{ flex: 1, padding: '0.6rem', border: fundModalWalletType === 'MAIN' ? '2px solid #2563eb' : '1px solid #cbd5e1', background: fundModalWalletType === 'MAIN' ? '#eff6ff' : 'white', color: fundModalWalletType === 'MAIN' ? '#1e40af' : '#475569', borderRadius: '8px', fontWeight: '800', cursor: 'pointer' }">
+                    Main Wallet (₹{{ parseFloat(fundModalUser?.main_wallet_balance || 0).toFixed(2) }})
+                  </button>
+                  <button type="button" @click="fundModalWalletType = 'FUND'" :style="{ flex: 1, padding: '0.6rem', border: fundModalWalletType === 'FUND' ? '2px solid #9333ea' : '1px solid #cbd5e1', background: fundModalWalletType === 'FUND' ? '#faf5ff' : 'white', color: fundModalWalletType === 'FUND' ? '#6b21a8' : '#475569', borderRadius: '8px', fontWeight: '800', cursor: 'pointer' }">
+                    Fund Wallet (₹{{ parseFloat(fundModalUser?.fund_wallet_balance || 0).toFixed(2) }})
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 4px; display: block;">Action Type</label>
+                <div style="display: flex; gap: 10px;">
+                  <button type="button" @click="fundModalActionType = 'CREDIT'" :style="{ flex: 1, padding: '0.55rem', border: fundModalActionType === 'CREDIT' ? '2px solid #16a34a' : '1px solid #cbd5e1', background: fundModalActionType === 'CREDIT' ? '#f0fdf4' : 'white', color: fundModalActionType === 'CREDIT' ? '#15803d' : '#475569', borderRadius: '8px', fontWeight: '800', cursor: 'pointer' }">
+                    ➕ Add Funds (Credit)
+                  </button>
+                  <button type="button" @click="fundModalActionType = 'DEBIT'" :style="{ flex: 1, padding: '0.55rem', border: fundModalActionType === 'DEBIT' ? '2px solid #dc2626' : '1px solid #cbd5e1', background: fundModalActionType === 'DEBIT' ? '#fef2f2' : 'white', color: fundModalActionType === 'DEBIT' ? '#b91c1c' : '#475569', borderRadius: '8px', fontWeight: '800', cursor: 'pointer' }">
+                    ➖ Deduct Funds (Debit)
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 4px; display: block;">Amount (₹) <span style="color:red">*</span></label>
+                <div style="position: relative;">
+                  <span style="position: absolute; left: 12px; top: 10px; font-weight: 800; color: #475569;">₹</span>
+                  <input type="number" v-model="fundModalAmount" placeholder="Enter amount (e.g. 1200)" style="width: 100%; padding: 0.6rem 0.75rem 0.6rem 28px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-weight: 800; font-size: 1rem; box-sizing: border-box;" />
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 4px; display: block;">Remark / Note (Optional)</label>
+                <input type="text" v-model="fundModalRemark" placeholder="e.g. Admin Approval, Reward Credit" style="width: 100%; padding: 0.6rem 0.75rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; box-sizing: border-box;" />
+              </div>
+
+              <div v-if="fundModalMsg" :style="{ color: fundModalSuccess ? '#16a34a' : '#ef4444', fontSize: '0.85rem', marginBottom: '1rem', fontWeight: 'bold' }">
+                {{ fundModalMsg }}
+              </div>
+
+              <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" @click="showAddFundsModal = false" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                  Cancel
+                </button>
+                <button type="button" @click="submitAddFunds" :disabled="submittingFunds" style="background: #2563eb; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 800; cursor: pointer;">
+                  {{ submittingFunds ? 'Processing...' : 'Submit Adjustment' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </main>
     </div>
@@ -3048,12 +3456,51 @@ export default {
       creatingAdmin: false,
       selectedUser: null,
       selectedRequest: null,
-      requestRemark: '',
-      reqFilterStatus: 'PENDING',
-      reqSearchQuery: '',
-      reqPaymentModeFilter: '',
-      reqAmountFilter: '',
       userPage: 1,
+      // Dedicated Edit User Screen State
+      editUserObj: {
+        id: '',
+        fullName: '',
+        email: '',
+        mobileNumber: '',
+        password: '',
+        showPassword: false,
+        status: 'ACTIVE',
+        sponsor_id: '',
+        sponsor_name: '',
+        createdAt: '',
+        bank_name: 'HDFC Bank',
+        account_holder: '',
+        account_no: '',
+        ifsc: '',
+        branch: '',
+        account_type: 'Savings',
+        fund_wallet_balance: 0,
+        main_wallet_balance: 0,
+        income_wallet_balance: 0,
+        captcha_wallet_balance: 320,
+        downlineCount: 0
+      },
+      searchUserQuery: '',
+      loadingUserEdit: false,
+      updateUserMsg: '',
+      updateUserSuccess: false,
+      // Add / Deduct Funds Modal State
+      showAddFundsModal: false,
+      fundModalUser: null,
+      fundModalWalletType: 'MAIN',
+      fundModalActionType: 'CREDIT',
+      fundModalAmount: '',
+      fundModalRemark: '',
+      submittingFunds: false,
+      fundModalMsg: '',
+      fundModalSuccess: false,
+      // QR Code Upload State
+      qrStorageOption: 'file',
+      qrPreviewUrl: '',
+      uploadingQr: false,
+      qrUploadMsg: '',
+      qrUploadSuccess: false,
       txnPage: 1,
       loading: true,
       error: '',
@@ -3243,6 +3690,208 @@ export default {
     this.fetchNotifications();
   },
   methods: {
+    openEditUserScreen(user) {
+      if (!user) return;
+      this.searchUserQuery = user.mobileNumber || String(user.id || '');
+      this.fetchUserForEdit(user.id || user.mobileNumber);
+    },
+    async fetchUserForEdit(identifier) {
+      this.loadingUserEdit = true;
+      this.updateUserMsg = '';
+      try {
+        const token = localStorage.getItem('adminToken') || '';
+        const res = await fetch(`${API_BASE_URL}/admin/users/${identifier}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch user details');
+        
+        this.editUserObj = {
+          ...data,
+          password: '',
+          showPassword: false,
+          bank_name: data.bank_name || 'HDFC Bank',
+          account_holder: data.account_holder || data.fullName || '',
+          account_no: data.account_no || '',
+          ifsc: data.ifsc || '',
+          branch: data.branch || '',
+          account_type: data.account_type || 'Savings',
+          income_wallet_balance: data.income_wallet_balance || data.main_wallet_balance || 0,
+          captcha_wallet_balance: data.captcha_wallet_balance || 320.00
+        };
+        this.currentTab = 'edit_user';
+      } catch (e) {
+        this.updateUserMsg = e.message;
+        this.updateUserSuccess = false;
+      } finally {
+        this.loadingUserEdit = false;
+      }
+    },
+    searchUserForEdit() {
+      if (!this.searchUserQuery || !this.searchUserQuery.trim()) {
+        alert('Please enter a Mobile Number or User ID to search.');
+        return;
+      }
+      this.fetchUserForEdit(this.searchUserQuery.trim());
+    },
+    async handleSaveUserDetails() {
+      if (!this.editUserObj.id) {
+        alert('No user selected for update.');
+        return;
+      }
+      this.loadingUserEdit = true;
+      this.updateUserMsg = '';
+      try {
+        const token = localStorage.getItem('adminToken') || '';
+        const res = await fetch(`${API_BASE_URL}/admin/users/${this.editUserObj.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            fullName: this.editUserObj.fullName,
+            email: this.editUserObj.email,
+            mobileNumber: this.editUserObj.mobileNumber,
+            password: this.editUserObj.password,
+            status: this.editUserObj.status,
+            sponsor_id: this.editUserObj.sponsor_id,
+            bank_name: this.editUserObj.bank_name,
+            account_holder: this.editUserObj.account_holder,
+            account_no: this.editUserObj.account_no,
+            ifsc: this.editUserObj.ifsc,
+            branch: this.editUserObj.branch,
+            account_type: this.editUserObj.account_type
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update user details');
+        
+        this.updateUserMsg = 'User details updated successfully!';
+        this.updateUserSuccess = true;
+        if (data.user) {
+          this.editUserObj = {
+            ...this.editUserObj,
+            ...data.user,
+            password: '',
+            showPassword: false
+          };
+        }
+        this.fetchDashboardData();
+      } catch (e) {
+        this.updateUserMsg = e.message;
+        this.updateUserSuccess = false;
+      } finally {
+        this.loadingUserEdit = false;
+      }
+    },
+    openAddFundsModal(user) {
+      this.fundModalUser = user || this.editUserObj;
+      this.fundModalWalletType = 'MAIN';
+      this.fundModalActionType = 'CREDIT';
+      this.fundModalAmount = '';
+      this.fundModalRemark = '';
+      this.fundModalMsg = '';
+      this.showAddFundsModal = true;
+    },
+    async submitAddFunds() {
+      if (!this.fundModalAmount || parseFloat(this.fundModalAmount) <= 0) {
+        this.fundModalMsg = 'Please enter a valid amount greater than ₹0';
+        this.fundModalSuccess = false;
+        return;
+      }
+      this.submittingFunds = true;
+      this.fundModalMsg = '';
+      try {
+        const token = localStorage.getItem('adminToken') || '';
+        const res = await fetch(`${API_BASE_URL}/admin/users/${this.fundModalUser.id}/adjust-wallet`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            walletType: this.fundModalWalletType,
+            actionType: this.fundModalActionType,
+            amount: this.fundModalAmount,
+            remark: this.fundModalRemark
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to adjust wallet');
+
+        this.fundModalMsg = data.message || 'Wallet adjusted successfully!';
+        this.fundModalSuccess = true;
+        if (data.user) {
+          if (this.editUserObj && String(this.editUserObj.id) === String(data.user.id)) {
+            this.editUserObj.main_wallet_balance = data.user.main_wallet_balance;
+            this.editUserObj.fund_wallet_balance = data.user.fund_wallet_balance;
+          }
+        }
+        setTimeout(() => {
+          this.showAddFundsModal = false;
+          this.fetchDashboardData();
+        }, 1200);
+      } catch (e) {
+        this.fundModalMsg = e.message;
+        this.fundModalSuccess = false;
+      } finally {
+        this.submittingFunds = false;
+      }
+    },
+    handleQrFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.qrPreviewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    async uploadQrCodeImage() {
+      this.uploadingQr = true;
+      this.qrUploadMsg = '';
+      try {
+        const token = localStorage.getItem('adminToken') || '';
+        const res = await fetch(`${API_BASE_URL}/admin/upload-qr`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            qrImageBase64: this.qrPreviewUrl,
+            qrImageUrl: this.systemSettings.upi_qr_url
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to upload QR code');
+
+        this.systemSettings.upi_qr_url = data.upi_qr_url;
+        this.qrUploadMsg = 'QR Code updated successfully!';
+        this.qrUploadSuccess = true;
+        this.handleSaveSystemSettings();
+      } catch (e) {
+        this.qrUploadMsg = e.message;
+        this.qrUploadSuccess = false;
+      } finally {
+        this.uploadingQr = false;
+      }
+    },
+    viewUserTransactions(user) {
+      this.currentTab = 'transactions';
+    },
+    viewUserIncome(user) {
+      this.currentTab = 'teams';
+    },
+    focusUserPassword(user) {
+      if (this.$refs.userPasswordInput) {
+        this.$refs.userPasswordInput.focus();
+      }
+    },
+    loginAsUserPreview(user) {
+      alert(`Simulating login preview as ${user.fullName || user.email} (User #${user.id})`);
+    },
     toggleGroup(groupKey) {
       this.expandedGroups[groupKey] = !this.expandedGroups[groupKey];
     },
@@ -6316,13 +6965,464 @@ input:checked + .slider:before { transform: translateX(22px); }
   font-weight: bold;
 }
 
-.sig-title {
-  font-size: 11px;
+/* EDIT USER DETAILS SCREEN STYLING (Matching Screenshot 100%) */
+.edit-user-page {
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.edit-user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.breadcrumb {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-user-badge {
+  font-size: 1.4rem;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+}
+
+.edit-user-header h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+}
+
+.subnote {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0.25rem 0 0;
+}
+
+.btn-back-users {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.2s;
+}
+
+.btn-back-users:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+/* User Search Card */
+.user-search-card {
+  background: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.search-input-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 0.75rem;
+}
+
+.user-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.65rem 0.5rem;
+  font-size: 0.9rem;
+  outline: none;
+  color: #0f172a;
+}
+
+.btn-search-blue {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+/* Main Grid Layout */
+.edit-user-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .edit-user-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.edit-forms-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.card-header-blue {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-left h3 {
+  font-size: 1.15rem;
   font-weight: 800;
-  color: #0052cc;
-  border-top: 1px solid #0052cc;
-  padding-top: 2px;
-  display: inline-block;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+.card-header-red {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff5f5;
+  margin: -1.5rem -1.5rem 1.25rem -1.5rem;
+  padding: 1rem 1.5rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom: 1px solid #fee2e2;
+}
+
+.card-header-red h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #991b1b;
+  margin: 0;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .form-grid-2, .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.req {
+  color: #ef4444;
+}
+
+.input-styled {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  outline: none;
+  background: #f8fafc;
+  color: #0f172a;
+  box-sizing: border-box;
+}
+
+.input-styled:focus {
+  border-color: #2563eb;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input-readonly {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: not-allowed;
+  flex: 1;
+}
+
+.copy-input-group, .password-input-group, .date-input-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.btn-copy-icon, .btn-eye-toggle {
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.password-input-group .btn-eye-toggle {
+  position: absolute;
+  right: 8px;
+}
+
+.date-input-wrapper .calendar-icon {
+  position: absolute;
+  right: 12px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.input-subnote {
+  font-size: 0.75rem;
+  color: #2563eb;
+  margin-top: 2px;
+}
+
+.important-notes-box {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.info-icon-large {
+  font-size: 1.2rem;
+  background: #2563eb;
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notes-content h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #1e40af;
+}
+
+.notes-content ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.82rem;
+  color: #1e3a8a;
+  line-height: 1.5;
+}
+
+.form-actions-bar {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.btn-submit-primary {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.75rem;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.btn-reset-secondary {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Edit Summary Column Right Side */
+.edit-summary-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.summary-header h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #6b21a8;
+  margin: 0;
+}
+
+.summary-profile-box {
+  text-align: center;
+}
+
+.avatar-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 0.75rem;
+}
+
+.user-name-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 1rem;
+}
+
+.summary-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.83rem;
+  text-align: left;
+}
+
+.s-row {
+  display: flex;
+  justify-content: space-between;
+  color: #475569;
+}
+
+.wallet-balances-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.w-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.w-row span {
+  color: #475569;
+  font-weight: 600;
+}
+
+.w-row strong {
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.quick-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.quick-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.83rem;
+  color: #334155;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.quick-btn:hover {
+  background: #f8fafc;
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 @media print {

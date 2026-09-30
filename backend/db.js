@@ -157,6 +157,8 @@ async function initDb() {
         account_holder VARCHAR(255) DEFAULT NULL,
         account_no VARCHAR(100) DEFAULT NULL,
         ifsc VARCHAR(50) DEFAULT NULL,
+        branch VARCHAR(255) DEFAULT NULL,
+        account_type VARCHAR(50) DEFAULT 'Savings',
         bank_verified INT DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -293,13 +295,17 @@ async function initDb() {
         ['forgot_password_enabled', 'true'],
         ['app_share_text', 'Download our App to Earn Money from Scratch Cards'],
         ['playstore_link', 'https://play.google.com/store/apps/details?id=com.app.earnfarm'],
-        ['playstore_package_id', 'com.app.earnfarm']
+        ['playstore_package_id', 'com.app.earnfarm'],
+        ['upi_qr_url', '']
       ];
       for (const [k, v] of defaultSettings) {
         await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);
       }
       console.log('Production default system settings seeded.');
     }
+
+    try { await query('ALTER TABLE users ADD COLUMN branch VARCHAR(255) DEFAULT NULL'); } catch(e) {}
+    try { await query('ALTER TABLE users ADD COLUMN account_type VARCHAR(50) DEFAULT "Savings"'); } catch(e) {}
 
     console.log('Database initialization complete.');
   } catch (err) {
