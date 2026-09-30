@@ -3796,10 +3796,12 @@ export default {
       this.updateUserMsg = '';
       try {
         const token = localStorage.getItem('adminToken') || '';
-        const res = await fetch(`${API_BASE_URL}/admin/users/${identifier}`, {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/${identifier}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch(e) { throw new Error(`Server response error (${res.status})`); }
         if (!res.ok) throw new Error(data.error || 'Failed to fetch user details');
         
         this.editUserObj = {
@@ -3839,7 +3841,7 @@ export default {
       this.updateUserMsg = '';
       try {
         const token = localStorage.getItem('adminToken') || '';
-        const res = await fetch(`${API_BASE_URL}/admin/users/${this.editUserObj.id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/${this.editUserObj.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -3860,7 +3862,9 @@ export default {
             account_type: this.editUserObj.account_type
           })
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch(e) { throw new Error(`Server response error (${res.status})`); }
         if (!res.ok) throw new Error(data.error || 'Failed to update user details');
         
         this.updateUserMsg = 'User details updated successfully!';
@@ -3900,7 +3904,7 @@ export default {
       this.fundModalMsg = '';
       try {
         const token = localStorage.getItem('adminToken') || '';
-        const res = await fetch(`${API_BASE_URL}/admin/users/${this.fundModalUser.id}/adjust-wallet`, {
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/${this.fundModalUser.id}/adjust-wallet`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -3913,7 +3917,9 @@ export default {
             remark: this.fundModalRemark
           })
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch(e) { throw new Error(`Server response error (${res.status})`); }
         if (!res.ok) throw new Error(data.error || 'Failed to adjust wallet');
 
         this.fundModalMsg = data.message || 'Wallet adjusted successfully!';
@@ -3949,7 +3955,7 @@ export default {
       this.qrUploadMsg = '';
       try {
         const token = localStorage.getItem('adminToken') || '';
-        const res = await fetch(`${API_BASE_URL}/admin/upload-qr`, {
+        const res = await fetch(`${API_BASE_URL}/api/admin/upload-qr`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -3960,7 +3966,9 @@ export default {
             qrImageUrl: this.systemSettings.upi_qr_url
           })
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data = {};
+        try { data = JSON.parse(text); } catch(e) { throw new Error(`Server response error (${res.status})`); }
         if (!res.ok) throw new Error(data.error || 'Failed to upload QR code');
 
         this.systemSettings.upi_qr_url = data.upi_qr_url;
