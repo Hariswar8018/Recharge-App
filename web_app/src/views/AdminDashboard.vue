@@ -38,11 +38,8 @@
             <button @click="switchTab('teams')" class="sub-menu-item" :class="{ active: currentTab === 'teams' }">
               4. Member Teams Tree
             </button>
-            <button @click="switchTab('sec_business_income')" class="sub-menu-item" :class="{ active: currentTab === 'sec_business_income' }">
-              5. Income & Single Leg
-            </button>
-            <button @click="switchTab('sec_global_cycle')" class="sub-menu-item" :class="{ active: currentTab === 'sec_global_cycle' }">
-              6. Global Single Leg Pool
+            <button @click="switchTab('sec_business_income')" class="sub-menu-item" :class="{ active: currentTab === 'sec_business_income' || currentTab === 'sec_global_cycle' }">
+              5. Income & Global Single Leg Pool
             </button>
           </div>
         </div>

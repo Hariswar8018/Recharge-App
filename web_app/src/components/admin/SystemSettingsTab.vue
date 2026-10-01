@@ -2,48 +2,6 @@
   <div class="settings-pane-wrapper" style="padding: 1.25rem; max-width: 100%; box-sizing: border-box;">
     <!-- 1. GENERAL SYSTEM SETTINGS TAB & INCOME / SINGLE LEG POOL RULES -->
     <div v-if="currentTab === 'settings' || currentTab === 'sec_business_income' || currentTab === 'sec_global_cycle'" class="settings-pane">
-      <div class="table-card" style="margin-bottom: 1.5rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-        <div class="card-title-row">
-          <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">🖼️ UPI QR Code Image & Storage Settings</h3>
-        </div>
-        <p class="card-desc" style="margin: 4px 0 1rem; font-size: 0.83rem; color: #64748b;">Upload payment QR code or link external image URL for user Add Money deposits.</p>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.25rem;">
-          <div>
-            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; display: block; margin-bottom: 8px;">QR Image Source</label>
-            <div style="display: flex; gap: 12px; margin-bottom: 1rem;">
-              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
-                <input type="radio" value="file" v-model="qrStorageOptionLocal" /> 📁 Upload File
-              </label>
-              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
-                <input type="radio" value="url" v-model="qrStorageOptionLocal" /> 🔗 External URL
-              </label>
-            </div>
-
-            <div v-if="qrStorageOptionLocal === 'file'" style="margin-bottom: 1rem;">
-              <input type="file" ref="qrFileInput" accept="image/*" @change="$emit('qr-file-change', $event)" style="font-size: 0.85rem;" />
-            </div>
-            <div v-else style="margin-bottom: 1rem;">
-              <input type="text" v-model="systemSettings.upi_qr_url" placeholder="https://domain.com/uploads/qr.jpg" class="input-styled" style="width: 100%; box-sizing: border-box;" />
-            </div>
-
-            <button @click="$emit('upload-qr')" :disabled="uploadingQr" style="background: #2563eb; color: white; border: none; padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 800; cursor: pointer;">
-              {{ uploadingQr ? 'Saving...' : '💾 Save QR Settings' }}
-            </button>
-
-            <div v-if="qrUploadMsg" :style="{ color: qrUploadSuccess ? '#16a34a' : '#ef4444', fontSize: '0.85rem', marginTop: '0.75rem', fontWeight: 'bold' }">
-              {{ qrUploadMsg }}
-            </div>
-          </div>
-
-          <div style="text-align: center; background: #f8fafc; padding: 1rem; border-radius: 10px; border: 1px dashed #cbd5e1;">
-            <div style="font-weight: 700; font-size: 0.85rem; color: #475569; margin-bottom: 8px;">Active UPI QR Code Preview</div>
-            <img v-if="systemSettings.upi_qr_url" :src="systemSettings.upi_qr_url" alt="UPI QR Code" style="max-width: 180px; max-height: 180px; border-radius: 8px; border: 1px solid #e2e8f0;" />
-            <div v-else style="color: #64748b; font-size: 0.82rem; padding: 2rem;">No QR Image Uploaded</div>
-          </div>
-        </div>
-      </div>
-
       <!-- MAIN SYSTEM SETTINGS FORM -->
       <div class="table-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 1.5rem;">
         <div class="card-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
