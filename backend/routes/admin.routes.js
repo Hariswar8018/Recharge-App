@@ -136,6 +136,11 @@ router.post('/settings', verifyAdminToken, async (req, res) => {
     if (updates.upi_id && !updates.upi_vpa_id) updates.upi_vpa_id = updates.upi_id;
     if (updates.upi_qr_url && !updates.qr_image_url) updates.qr_image_url = updates.upi_qr_url;
 
+    if (updates.min_withdrawal) updates.minimum_withdrawal = updates.min_withdrawal;
+    if (updates.minimum_withdrawal) updates.min_withdrawal = updates.minimum_withdrawal;
+    if (updates.withdrawal_deduction_percent) updates.withdrawal_percentage = updates.withdrawal_deduction_percent;
+    if (updates.withdrawal_percentage) updates.withdrawal_deduction_percent = updates.withdrawal_percentage;
+
     for (const [key, val] of Object.entries(updates)) {
       const strVal = val !== null && val !== undefined ? String(val) : '';
       const existing = await query('SELECT key_name FROM system_settings WHERE key_name = ?', [key]);

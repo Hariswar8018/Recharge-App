@@ -142,6 +142,14 @@ router.get('/visibility', async (req, res) => {
     settings['upi_vpa_id'] = resolvedUpiVpa;
     settings['upi_id'] = resolvedUpiVpa;
 
+    const resolvedMinW = settings['min_withdrawal'] || settings['minimum_withdrawal'] || '500';
+    settings['min_withdrawal'] = resolvedMinW;
+    settings['minimum_withdrawal'] = resolvedMinW;
+
+    const resolvedDedP = settings['withdrawal_deduction_percent'] || settings['withdrawal_percentage'] || '15';
+    settings['withdrawal_deduction_percent'] = resolvedDedP;
+    settings['withdrawal_percentage'] = resolvedDedP;
+
     res.json(visibility);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch visibility settings' });

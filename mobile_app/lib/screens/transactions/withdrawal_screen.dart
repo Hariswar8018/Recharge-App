@@ -65,9 +65,21 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
     final raw = (vis['raw_settings'] as Map<String, dynamic>?) ?? {};
     final settings = {...vis, ...raw};
 
-    final minW = double.tryParse((settings['min_withdrawal'] ?? '500').toString()) ?? 500.0;
-    final dedP = double.tryParse((settings['withdrawal_deduction_percent'] ?? '15').toString()) ?? 15.0;
-    final daysW = (settings['withdrawal_days'] ?? 'Monday, Wednesday, Friday').toString();
+    final String rawMin = (settings['min_withdrawal'] ?? settings['minimum_withdrawal'] ?? settings['min_withdrawal_amount'] ?? '500').toString().trim();
+    final minW = double.tryParse(rawMin) ?? 500.0;
+
+    final String rawDed = (settings['withdrawal_deduction_percent'] ?? settings['withdrawal_percentage'] ?? settings['withdrawal_deduction'] ?? '15').toString().trim();
+    final dedP = double.tryParse(rawDed) ?? 15.0;
+
+    final String daysW = (settings['withdrawal_days'] ?? settings['withdrawal_days_list'] ?? 'Monday, Wednesday, Friday').toString().trim();
+
+    if (mounted) {
+      setState(() {
+        _minWithdrawal = minW;
+        _deductionPercent = dedP;
+        _withdrawalDays = daysW;
+      });
+    }
 
     if (profileRes['success']) {
       final user = profileRes['user'];
@@ -84,9 +96,6 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
           _accountHolder = user['account_holder'] ?? "";
           _ifsc = user['ifsc'] ?? "";
           _isBankVerified = verified;
-          _minWithdrawal = minW;
-          _deductionPercent = dedP;
-          _withdrawalDays = daysW;
         });
       }
     }
@@ -472,9 +481,9 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                           final String text = _amountController.text.trim();
                           final double? parsed = double.tryParse(text);
                           final bool isTouched = text.isNotEmpty;
-                          final bool isValidAmount = parsed != null && parsed >= 500 && parsed <= 5000;
-                          final bool isLessThanMin = parsed != null && parsed < 500;
-                          final bool isMoreThanMax = parsed != null && parsed > 5000;
+                          final bool isValidAmount = parsed != null && parsed >= _minWithdrawal && parsed <= 50000;
+                          final bool isLessThanMin = parsed != null && parsed < _minWithdrawal;
+                          final bool isMoreThanMax = parsed != null && parsed > 50000;
 
                           Color borderColor = const Color(0xFFCBD5E1);
                           Widget? suffixIcon;
@@ -496,7 +505,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              statusMsg = "Minimum withdrawal amount is ₹500";
+                              statusMsg = "Minimum withdrawal amount is ₹${_minWithdrawal.toStringAsFixed(0)}";
                               statusColor = const Color(0xFFDC2626);
                             } else if (isMoreThanMax) {
                               borderColor = const Color(0xFFDC2626);
@@ -504,7 +513,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              statusMsg = "Maximum withdrawal amount is ₹5000";
+                              statusMsg = "Maximum withdrawal amount is ₹50000";
                               statusColor = const Color(0xFFDC2626);
                             }
                           }
@@ -521,8 +530,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                               children: [
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: const [
-                                    Text(
+                                  children: [
+                                    const Text(
                                       "Enter Amount",
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
@@ -531,8 +540,8 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                                       ),
                                     ),
                                     Text(
-                                      "Minimum: ₹500",
-                                      style: TextStyle(
+                                      "Minimum: ₹${_minWithdrawal.toStringAsFixed(0)}",
+                                      style: const TextStyle(
                                         color: Color(0xFF1565C0),
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12,
