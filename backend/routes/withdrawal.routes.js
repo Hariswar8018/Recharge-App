@@ -18,15 +18,17 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
     const settings = {};
     settingsRows.forEach(row => { settings[row.key_name] = row.val_value; });
 
-    const minWithdraw = parseFloat(settings['minimum_withdrawal'] || '500');
-    const feePercent = parseFloat(settings['withdrawal_percentage'] || '15');
-    const allowedDaysStr = settings['withdrawal_days'] || 'Mon,Wed,Fri';
+    const minWithdraw = parseFloat(settings['min_withdrawal'] || settings['minimum_withdrawal'] || '500');
+    const feePercent = parseFloat(settings['withdrawal_deduction_percent'] || settings['withdrawal_percentage'] || '15');
+    const allowedDaysStr = settings['withdrawal_days'] || 'Monday, Wednesday, Friday';
     
     // Check allowed days
-    const currentDayName = new Date().toLocaleDateString('en-US', { weekday: 'short' }); // e.g. "Mon", "Tue"
-    const allowedDaysList = allowedDaysStr.split(',').map(d => d.trim().toLowerCase());
-    if (!allowedDaysList.includes(currentDayName.toLowerCase())) {
-      return res.status(400).json({ error: `Withdrawals are allowed only on ${allowedDaysStr}. Today (${currentDayName}) is not an allowed withdrawal day.` });
+    const fullDay = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    const shortDay = new Date().toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+    const allowedLower = allowedDaysStr.toLowerCase();
+
+    if (!allowedLower.includes(fullDay) && !allowedLower.includes(shortDay)) {
+      return res.status(400).json({ error: `Withdrawals are allowed only on ${allowedDaysStr}. Today is not an allowed withdrawal day.` });
     }
 
     if (amt < minWithdraw) {
@@ -42,7 +44,7 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
       return res.status(400).json({ error: 'Free/Inactive members cannot withdraw Main Wallet balance. Please activate your ID.' });
     }
 
-    const balance = parseFloat(users[0].main_wallet_balance);
+    const balance = parseFloat(users[0].main_wallet_balance || 0);
 
     if (balance < amt) {
       return res.status(400).json({ error: 'Insufficient Main Wallet balance' });
