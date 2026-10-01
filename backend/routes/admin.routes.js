@@ -614,18 +614,25 @@ router.get('/users/:userId/income', verifyAdminToken, async (req, res) => {
     const incomeTxns = [];
 
     txns.forEach(t => {
-      const amt = parseFloat(String(t.amount).replace(/[^\d.]/g, '')) || 0;
+      let cleanAmt = t.amount;
+      if (typeof cleanAmt === 'string') {
+        cleanAmt = parseFloat(cleanAmt.replace(/[^0-9.-]/g, '')) || 0;
+      } else if (typeof cleanAmt !== 'number' || isNaN(cleanAmt)) {
+        cleanAmt = 0;
+      }
+      t.amount = cleanAmt;
+
       const tType = (t.type || '').toLowerCase();
       const isDebit = tType.includes('debit') || tType.includes('withdrawal') || tType.includes('recharge');
       
-      if (!isDebit && amt > 0) {
+      if (!isDebit && cleanAmt > 0) {
         incomeTxns.push(t);
         if (tType.includes('direct') || tType.includes('sponsor') || tType.includes('referral')) {
-          directIncome += amt;
+          directIncome += cleanAmt;
         } else if (tType.includes('level') || tType.includes('single leg') || tType.includes('pool') || tType.includes('cycle')) {
-          singleLegIncome += amt;
+          singleLegIncome += cleanAmt;
         } else {
-          otherIncome += amt;
+          otherIncome += cleanAmt;
         }
       }
     });
