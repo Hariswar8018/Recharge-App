@@ -425,7 +425,8 @@ router.get('/fund-requests', verifyAdminToken, async (req, res) => {
 // Admin approves a pending Fund Request
 router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => {
   try {
-    const { approve, remark } = req.body;
+    const approve = req.body.approve !== false;
+    const remark = req.body.remark;
     const requestId = req.params.id;
 
     const reqs = await query('SELECT * FROM fund_requests WHERE id = ?', [requestId]);
@@ -487,6 +488,8 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
       });
     } else {
       await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [requestId]);
+      await invalidateCache(`user_profile_${request.user_id}`);
+      await invalidateCache('admin_stats');
 
       if (userObj.email && userObj.email !== 'N/A') {
         sendNotificationEmail(userObj.email, "Fund Deposit Rejected - SR Digital Seva", `
@@ -498,6 +501,47 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
       res.json({ message: 'Fund request has been rejected.' });
     }
   } catch (err) {
+    console.error('Error approving fund request:', err);
+    res.status(500).json({ error: 'Failed to approve fund request' });
+  }
+});
+
+// Admin rejects a pending Fund Request
+router.post('/fund-requests/:id/reject', verifyAdminToken, async (req, res) => {
+  try {
+    const remark = req.body.remark || '';
+    const requestId = req.params.id;
+
+    const reqs = await query('SELECT * FROM fund_requests WHERE id = ?', [requestId]);
+    if (reqs.length === 0) {
+      return res.status(404).json({ error: 'Fund request not found' });
+    }
+
+    const request = reqs[0];
+    if (request.status !== 'PENDING') {
+      return res.status(400).json({ error: 'Request already processed' });
+    }
+
+    const users = await query('SELECT id, fullName, email, mobileNumber FROM users WHERE id = ?', [request.user_id]);
+    const userObj = users.length > 0 ? users[0] : { fullName: 'User #' + request.user_id, mobileNumber: 'N/A', email: 'N/A' };
+
+    await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [requestId]);
+    await invalidateCache(`user_profile_${request.user_id}`);
+    await invalidateCache('admin_stats');
+
+    if (userObj.email && userObj.email !== 'N/A') {
+      sendNotificationEmail(userObj.email, "Fund Deposit Rejected - SR Digital Seva", `
+        <h3>Hi ${userObj.fullName},</h3>
+        <p>Your fund request of <strong>₹${parseFloat(request.amount).toFixed(2)}</strong> (UTR: ${request.utr}) has been rejected by the administrator.${remark ? ' Remark: ' + remark : ''}</p>
+      `).catch((e) => console.error(e));
+    }
+
+    res.json({ message: 'Fund request has been rejected.' });
+  } catch (err) {
+    console.error('Error rejecting fund request:', err);
+    res.status(500).json({ error: 'Failed to reject fund request' });
+  }
+});
     console.error('Approve fund request error:', err);
     res.status(500).json({ error: 'Transaction failed' });
   }

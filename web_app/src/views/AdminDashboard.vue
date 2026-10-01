@@ -1144,7 +1144,11 @@ export default {
         const token = localStorage.getItem('adminToken') || '';
         const res = await fetch(`${API_BASE_URL}/api/admin/fund-requests/${reqId}/approve`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ approve: true })
         });
         if (res.ok) {
           this.fetchFundRequests();
@@ -1159,7 +1163,11 @@ export default {
         const token = localStorage.getItem('adminToken') || '';
         const res = await fetch(`${API_BASE_URL}/api/admin/fund-requests/${reqId}/reject`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ approve: false })
         });
         if (res.ok) {
           this.fetchFundRequests();
