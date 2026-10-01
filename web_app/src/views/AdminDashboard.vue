@@ -10,147 +10,289 @@
       <span>{{ globalToast.message }}</span>
     </div>
 
-    <!-- SIDEBAR NAVIGATION -->
-    <aside class="sidebar" :class="{ 'mobile-open': mobileMenuOpen }">
-      <div class="sidebar-header">
-        <div class="logo-box">
-          <img src="../assets/sr_logo.png" alt="SR Logo" class="logo-img" />
-          <div class="brand-text">
-            <h2>SR DIGITAL SEVA</h2>
-            <span class="badge-admin">Admin Portal</span>
+    <!-- TOP APP BAR HEADER (IMAGE 1 DESIGN) -->
+    <header class="top-app-bar">
+      <!-- Topbar Left: Logo + Brand + Mobile Toggle -->
+      <div class="topbar-brand-section">
+        <button @click="mobileMenuOpen = !mobileMenuOpen" class="mobile-toggle-btn" title="Toggle Navigation">☰</button>
+        <div class="brand-logo-wrapper" @click="switchTab('dashboard')" style="cursor: pointer;">
+          <img :src="asetsLogo" alt="SR Digital Seva" class="brand-logo-img" />
+          <div class="brand-title-group">
+            <h1 class="brand-main-title">SR DIGITAL SEVA</h1>
+            <span class="brand-sub-badge">Admin Control Panel</span>
           </div>
         </div>
-        <button @click="mobileMenuOpen = false" class="mobile-close-btn">&times;</button>
       </div>
 
-      <div class="sidebar-menu">
-        <div class="menu-label">CORE MANAGEMENT</div>
-
-        <button @click="switchTab('dashboard')" class="menu-item" :class="{ active: currentTab === 'dashboard' }">
-          <span class="icon">📊</span> Dashboard Overview
+      <!-- Topbar Center: Main Navigation Quick Tabs (Image 1 Style) -->
+      <nav class="topbar-main-nav">
+        <button 
+          @click="switchTab('dashboard')" 
+          class="nav-tab-btn" 
+          :class="{ active: currentTab === 'dashboard' }"
+        >
+          <span class="tab-icon">📊</span>
+          <span class="tab-label">Dashboard</span>
         </button>
 
-        <div class="menu-group">
-          <button @click="toggleGroup('users')" class="menu-item has-sub">
-            <span class="icon">👥</span> User & Member List
-            <span class="arrow">{{ expandedGroups.users ? '▼' : '▶' }}</span>
-          </button>
-          <div v-if="expandedGroups.users" class="sub-menu">
-            <button @click="switchTab('sec_home')" class="sub-menu-item" :class="{ active: currentTab === 'sec_home' }">
-              1. Member Dashboard
+        <button 
+          @click="switchTab('users')" 
+          class="nav-tab-btn" 
+          :class="{ active: currentTab === 'users' || currentTab === 'edit_user' }"
+        >
+          <span class="tab-icon">👥</span>
+          <span class="tab-label">Users</span>
+        </button>
+
+        <button 
+          @click="switchTab('withdrawals')" 
+          class="nav-tab-btn" 
+          :class="{ active: currentTab === 'withdrawals' || currentTab === 'sec_cashout' }"
+        >
+          <span class="tab-icon">💰</span>
+          <span class="tab-label">Withdrawals</span>
+        </button>
+
+        <button 
+          @click="switchTab('requests')" 
+          class="nav-tab-btn" 
+          :class="{ active: currentTab === 'requests' }"
+        >
+          <span class="tab-icon">📥</span>
+          <span class="tab-label">Add Money</span>
+          <span v-if="pendingRequestsCount > 0" class="nav-tab-badge">{{ pendingRequestsCount }}</span>
+        </button>
+
+        <button 
+          @click="switchTab('transactions')" 
+          class="nav-tab-btn" 
+          :class="{ active: currentTab === 'transactions' }"
+        >
+          <span class="tab-icon">📑</span>
+          <span class="tab-label">Platform Ledger</span>
+        </button>
+
+        <button 
+          @click="switchTab('settings')" 
+          class="nav-tab-btn" 
+          :class="{ active: currentTab === 'settings' || currentTab.startsWith('sec_') }"
+        >
+          <span class="tab-icon">⚙️</span>
+          <span class="tab-label">Settings</span>
+        </button>
+      </nav>
+
+      <!-- Active View Indicator Chip -->
+      <div class="active-view-chip">
+        <span class="chip-dot"></span>
+        <span class="chip-text">{{ formatTabTitle(currentTab) }}</span>
+      </div>
+
+      <!-- Topbar Right: Utility Navigation & Admin Profile (Image 1 & 2 Style) -->
+      <div class="topbar-utility-nav">
+        <!-- Quick Action Icons -->
+        <button class="utility-icon-btn" title="System Online Status">
+          <span class="status-pulse-dot"></span>
+        </button>
+
+        <button @click="switchTab('notifications')" class="utility-icon-btn" title="Push Notifications">
+          <span class="util-icon">🔔</span>
+          <span class="util-badge">3</span>
+        </button>
+
+        <button @click="switchTab('settings')" class="utility-icon-btn" title="App Settings">
+          <span class="util-icon">⚙️</span>
+        </button>
+
+        <!-- Profile Avatar & Dropdown -->
+        <div class="profile-dropdown-wrapper">
+          <div 
+            class="topbar-profile-card" 
+            @click="profileDropdownOpen = !profileDropdownOpen" 
+            :class="{ open: profileDropdownOpen }"
+          >
+            <div class="avatar-circle">
+              <span>A</span>
+            </div>
+            <div class="profile-text-group">
+              <span class="admin-email-text">{{ adminEmail }}</span>
+              <span class="admin-role-badge">Super Admin</span>
+            </div>
+            <span class="dropdown-chevron">{{ profileDropdownOpen ? '▲' : '▼' }}</span>
+          </div>
+
+          <!-- Dropdown Menu -->
+          <div v-if="profileDropdownOpen" class="profile-dropdown-menu" @mouseleave="profileDropdownOpen = false">
+            <div class="dropdown-header">
+              <span class="dh-title">Super Administrator</span>
+              <span class="dh-email">{{ adminEmail }}</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button @click="switchTab('admins'); profileDropdownOpen = false" class="dropdown-item">
+              <span>🔐 Admin Privileges</span>
             </button>
-            <button @click="switchTab('users')" class="sub-menu-item" :class="{ active: currentTab === 'users' }">
-              2. Registered App Users
+            <button @click="switchTab('settings'); profileDropdownOpen = false" class="dropdown-item">
+              <span>⚙️ System Configuration</span>
             </button>
-            <button @click="switchTab('edit_user')" class="sub-menu-item" :class="{ active: currentTab === 'edit_user' }">
-              3. Edit User Details
+            <button @click="switchTab('notifications'); profileDropdownOpen = false" class="dropdown-item">
+              <span>📢 Notifications Broadcast</span>
             </button>
-            <button @click="switchTab('teams')" class="sub-menu-item" :class="{ active: currentTab === 'teams' }">
-              4. Member Teams Tree
-            </button>
-            <button @click="switchTab('sec_business_income')" class="sub-menu-item" :class="{ active: currentTab === 'sec_business_income' || currentTab === 'sec_global_cycle' }">
-              5. Income & Global Single Leg Pool
+            <div class="dropdown-divider"></div>
+            <button @click="handleLogout" class="dropdown-item logout">
+              <span>🚪 Sign Out</span>
             </button>
           </div>
         </div>
+      </div>
+    </header>
 
-        <div class="menu-group">
-          <button @click="toggleGroup('financials')" class="menu-item has-sub">
-            <span class="icon">💰</span> Wallet & Financials
-            <span class="arrow">{{ expandedGroups.financials ? '▼' : '▶' }}</span>
+    <!-- SIDEBAR NAVIGATION (IMAGE 2 DARK SLATE DESIGN) -->
+    <aside class="sidebar" :class="{ 'mobile-open': mobileMenuOpen }">
+      <!-- Sidebar Top Admin Card (Image 2 Style) -->
+      <div class="sidebar-user-card">
+        <div class="user-avatar-large">
+          <img :src="asetsLogo" alt="Admin Avatar" class="user-avatar-img" />
+          <span class="online-indicator"></span>
+        </div>
+        <div class="user-card-details">
+          <h3 class="user-card-name">SR Digital Seva Admin</h3>
+          <p class="user-card-email">{{ adminEmail }}</p>
+          <span class="online-status-chip">🟢 System Live</span>
+        </div>
+        <button @click="mobileMenuOpen = false" class="sidebar-mobile-close">&times;</button>
+      </div>
+
+      <div class="sidebar-menu-scroll">
+        <!-- CORE MANAGEMENT GROUP -->
+        <div class="sidebar-group">
+          <div class="group-title">MAIN NAVIGATION</div>
+          
+          <button @click="switchTab('dashboard')" class="sidebar-nav-btn" :class="{ active: currentTab === 'dashboard' }">
+            <span class="sb-icon">📊</span>
+            <span class="sb-text">Dashboard Overview</span>
           </button>
-          <div v-if="expandedGroups.financials" class="sub-menu">
-            <button @click="switchTab('transactions')" class="sub-menu-item" :class="{ active: currentTab === 'transactions' }">
-              1. Platform Transactions
+
+          <div class="sidebar-menu-collapsible">
+            <button @click="toggleGroup('users')" class="sidebar-nav-btn has-sub" :class="{ active: currentTab === 'users' || currentTab === 'edit_user' || currentTab === 'sec_home' || currentTab === 'teams' }">
+              <span class="sb-icon">👥</span>
+              <span class="sb-text">User & Member List</span>
+              <span class="sb-arrow">{{ expandedGroups.users ? '▼' : '▶' }}</span>
             </button>
-            <button @click="switchTab('sec_add_money')" class="sub-menu-item" :class="{ active: currentTab === 'sec_add_money' }">
-              2. Add Money Settings
-            </button>
-            <button @click="switchTab('requests')" class="sub-menu-item" :class="{ active: currentTab === 'requests' }">
-              3. Add Money Requests
-              <span v-if="pendingRequestsCount > 0" class="badge-pending-count">{{ pendingRequestsCount }}</span>
-            </button>
-            <button @click="switchTab('sec_subscription')" class="sub-menu-item" :class="{ active: currentTab === 'sec_subscription' }">
-              4. Subscription & Plans
-            </button>
-            <button @click="switchTab('sec_bank_verification')" class="sub-menu-item" :class="{ active: currentTab === 'sec_bank_verification' }">
-              5. Bank Verification
-            </button>
-            <button @click="switchTab('sec_cashout')" class="sub-menu-item" :class="{ active: currentTab === 'sec_cashout' }">
-              6. Cashout & Withdrawals
-            </button>
+            <div v-if="expandedGroups.users" class="sidebar-sub-menu">
+              <button @click="switchTab('sec_home')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_home' }">
+                Member Dashboard
+              </button>
+              <button @click="switchTab('users')" class="sub-nav-btn" :class="{ active: currentTab === 'users' }">
+                Registered App Users
+              </button>
+              <button @click="switchTab('edit_user')" class="sub-nav-btn" :class="{ active: currentTab === 'edit_user' }">
+                Edit User Details
+              </button>
+              <button @click="switchTab('teams')" class="sub-nav-btn" :class="{ active: currentTab === 'teams' }">
+                Member Teams Tree
+              </button>
+              <button @click="switchTab('sec_business_income')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_business_income' || currentTab === 'sec_global_cycle' }">
+                Income & Global Pool
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="menu-label">APP CONFIGURATION</div>
+        <!-- WALLETS & FINANCIALS GROUP -->
+        <div class="sidebar-group">
+          <div class="group-title">FINANCIAL MANAGEMENT</div>
 
-        <div class="menu-group">
-          <button @click="toggleGroup('settings')" class="menu-item has-sub">
-            <span class="icon">⚙️</span> App Feature Rules
-            <span class="arrow">{{ expandedGroups.settings ? '▼' : '▶' }}</span>
-          </button>
-          <div v-if="expandedGroups.settings" class="sub-menu">
-            <button @click="switchTab('sec_app_share')" class="sub-menu-item" :class="{ active: currentTab === 'sec_app_share' }">
-              1. App Share & Referral
+          <div class="sidebar-menu-collapsible">
+            <button @click="toggleGroup('financials')" class="sidebar-nav-btn has-sub" :class="{ active: currentTab === 'transactions' || currentTab === 'requests' || currentTab === 'withdrawals' || currentTab === 'sec_cashout' || currentTab === 'sec_add_money' || currentTab === 'sec_subscription' || currentTab === 'sec_bank_verification' }">
+              <span class="sb-icon">💰</span>
+              <span class="sb-text">Wallet & Financials</span>
+              <span class="sb-arrow">{{ expandedGroups.financials ? '▼' : '▶' }}</span>
             </button>
-            <button @click="switchTab('sec_captcha')" class="sub-menu-item" :class="{ active: currentTab === 'sec_captcha' }">
-              2. CAPTCHA Work Rules
-            </button>
-            <button @click="switchTab('sec_login')" class="sub-menu-item" :class="{ active: currentTab === 'sec_login' }">
-              3. App Login Settings
-            </button>
-            <button @click="switchTab('sec_registration')" class="sub-menu-item" :class="{ active: currentTab === 'sec_registration' }">
-              4. Registration Rules
-            </button>
-            <button @click="switchTab('sec_otp')" class="sub-menu-item" :class="{ active: currentTab === 'sec_otp' }">
-              5. OTP / Security Rules
-            </button>
+            <div v-if="expandedGroups.financials" class="sidebar-sub-menu">
+              <button @click="switchTab('sec_cashout')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_cashout' || currentTab === 'withdrawals' }">
+                Payout & Withdrawals
+              </button>
+              <button @click="switchTab('transactions')" class="sub-nav-btn" :class="{ active: currentTab === 'transactions' }">
+                Platform Transactions
+              </button>
+              <button @click="switchTab('sec_add_money')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_add_money' }">
+                Add Money Settings
+              </button>
+              <button @click="switchTab('requests')" class="sub-nav-btn" :class="{ active: currentTab === 'requests' }">
+                Add Money Requests
+                <span v-if="pendingRequestsCount > 0" class="sub-badge-count">{{ pendingRequestsCount }}</span>
+              </button>
+              <button @click="switchTab('sec_subscription')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_subscription' }">
+                Subscription & Plans
+              </button>
+              <button @click="switchTab('sec_bank_verification')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_bank_verification' }">
+                Bank Verification
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="menu-label">ADMINISTRATION</div>
+        <!-- APP RULES & SETTINGS -->
+        <div class="sidebar-group">
+          <div class="group-title">APP CONFIGURATION</div>
 
-        <button @click="switchTab('notifications')" class="menu-item" :class="{ active: currentTab === 'notifications' }">
-          <span class="icon">📢</span> Push Broadcasts
-        </button>
+          <div class="sidebar-menu-collapsible">
+            <button @click="toggleGroup('settings')" class="sidebar-nav-btn has-sub" :class="{ active: currentTab === 'settings' || currentTab === 'sec_app_share' || currentTab === 'sec_captcha' || currentTab === 'sec_login' || currentTab === 'sec_registration' || currentTab === 'sec_otp' }">
+              <span class="sb-icon">⚙️</span>
+              <span class="sb-text">App Feature Rules</span>
+              <span class="sb-arrow">{{ expandedGroups.settings ? '▼' : '▶' }}</span>
+            </button>
+            <div v-if="expandedGroups.settings" class="sidebar-sub-menu">
+              <button @click="switchTab('sec_app_share')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_app_share' }">
+                App Share & Referral
+              </button>
+              <button @click="switchTab('sec_captcha')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_captcha' }">
+                CAPTCHA Work Rules
+              </button>
+              <button @click="switchTab('sec_login')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_login' }">
+                App Login Settings
+              </button>
+              <button @click="switchTab('sec_registration')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_registration' }">
+                Registration Rules
+              </button>
+              <button @click="switchTab('sec_otp')" class="sub-nav-btn" :class="{ active: currentTab === 'sec_otp' }">
+                OTP / Security Rules
+              </button>
+            </div>
+          </div>
+        </div>
 
-        <button @click="switchTab('admins')" class="menu-item" :class="{ active: currentTab === 'admins' }">
-          <span class="icon">🔐</span> Admin Privileges
-        </button>
+        <!-- ADMINISTRATION -->
+        <div class="sidebar-group">
+          <div class="group-title">ADMINISTRATION</div>
 
-        <button @click="switchTab('settings')" class="menu-item" :class="{ active: currentTab === 'settings' }">
-          <span class="icon">⚙️</span> System Settings
-        </button>
+          <button @click="switchTab('notifications')" class="sidebar-nav-btn" :class="{ active: currentTab === 'notifications' }">
+            <span class="sb-icon">📢</span>
+            <span class="sb-text">Push Broadcasts</span>
+          </button>
 
-        <button @click="handleLogout" class="menu-item btn-logout" style="margin-top: 1.5rem;">
-          <span class="icon">🚪</span> Sign Out
+          <button @click="switchTab('admins')" class="sidebar-nav-btn" :class="{ active: currentTab === 'admins' }">
+            <span class="sb-icon">🔐</span>
+            <span class="sb-text">Admin Privileges</span>
+          </button>
+
+          <button @click="switchTab('settings')" class="sidebar-nav-btn" :class="{ active: currentTab === 'settings' }">
+            <span class="sb-icon">⚙️</span>
+            <span class="sb-text">System Settings</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SIDEBAR FOOTER -->
+      <div class="sidebar-footer">
+        <button @click="handleLogout" class="sidebar-logout-btn">
+          <span>🚪 Sign Out</span>
         </button>
       </div>
     </aside>
 
     <!-- MAIN DASHBOARD CONTENT AREA -->
     <div class="main-wrapper">
-      <!-- TOP BAR HEADER -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <button @click="mobileMenuOpen = !mobileMenuOpen" class="mobile-toggle-btn">☰</button>
-          <div class="page-title-box">
-            <h1>Admin Control Panel</h1>
-            <span class="current-tab-name">{{ formatTabTitle(currentTab) }}</span>
-          </div>
-        </div>
-
-        <div class="topbar-right">
-          <div class="user-profile-badge">
-            <div class="avatar">A</div>
-            <div class="profile-info">
-              <span class="user-name">{{ adminEmail }}</span>
-              <span class="user-role">Super Admin</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <!-- BODY CONTENT PANES -->
       <main class="content-body">
         <!-- TAB 1: DASHBOARD OVERVIEW -->
@@ -361,6 +503,7 @@
 </template>
 
 <script>
+import asetsLogo from '../assets/asets.png';
 import DashboardOverviewTab from '../components/admin/DashboardOverviewTab.vue';
 import UserManagementTab from '../components/admin/UserManagementTab.vue';
 import EditUserTab from '../components/admin/EditUserTab.vue';
@@ -401,9 +544,11 @@ export default {
   },
   data() {
     return {
+      asetsLogo,
       currentTab: 'dashboard',
       mobileMenuOpen: false,
-      adminEmail: localStorage.getItem('adminEmail') || 'haris@gmail.com',
+      profileDropdownOpen: false,
+      adminEmail: localStorage.getItem('adminEmail') || 'srdigitalseva9@gmail.com',
       expandedGroups: {
         users: true,
         financials: true,
