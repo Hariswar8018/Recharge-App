@@ -124,22 +124,22 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
         let levelLabel = '';
 
         if (newMembersCount === c1) {
-          payout = parseFloat(settings['level_1_income'] || '50');
+          payout = parseFloat(settings['level_1_income'] || '300');
           levelLabel = 'Single Leg Level 1 Income';
         } else if (newMembersCount === c2) {
-          payout = parseFloat(settings['level_2_income'] || '100');
+          payout = parseFloat(settings['level_2_income'] || '400');
           levelLabel = 'Single Leg Level 2 Income';
         } else if (newMembersCount === c3) {
-          payout = parseFloat(settings['level_3_income'] || '150');
+          payout = parseFloat(settings['level_3_income'] || '800');
           levelLabel = 'Single Leg Level 3 Income';
         } else if (newMembersCount === c4) {
-          payout = parseFloat(settings['level_4_income'] || '200');
+          payout = parseFloat(settings['level_4_income'] || '1600');
           levelLabel = 'Single Leg Level 4 Income';
         } else if (newMembersCount === c5) {
-          payout = parseFloat(settings['level_5_income'] || '300');
+          payout = parseFloat(settings['level_5_income'] || '3200');
           levelLabel = 'Single Leg Level 5 Income';
         } else if (newMembersCount === c6) {
-          payout = parseFloat(settings['level_6_income'] || '400');
+          payout = parseFloat(settings['level_6_income'] || '6400');
           levelLabel = 'Single Leg Level 6 Income';
         }
 

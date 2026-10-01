@@ -322,6 +322,18 @@ async function initDb() {
         ['app_share_text', 'Download our App to Earn Money from Scratch Cards'],
         ['playstore_link', 'https://play.google.com/store/apps/details?id=com.app.earnfarm'],
         ['playstore_package_id', 'com.app.earnfarm'],
+        ['level_1_members', '2'],
+        ['level_1_income', '300'],
+        ['level_2_members', '4'],
+        ['level_2_income', '400'],
+        ['level_3_members', '8'],
+        ['level_3_income', '800'],
+        ['level_4_members', '16'],
+        ['level_4_income', '1600'],
+        ['level_5_members', '32'],
+        ['level_5_income', '3200'],
+        ['level_6_members', '64'],
+        ['level_6_income', '6400'],
         ['upi_qr_url', '']
       ];
       for (const [k, v] of defaultSettings) {
