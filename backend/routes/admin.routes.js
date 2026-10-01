@@ -542,10 +542,6 @@ router.post('/fund-requests/:id/reject', verifyAdminToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to reject fund request' });
   }
 });
-    console.error('Approve fund request error:', err);
-    res.status(500).json({ error: 'Transaction failed' });
-  }
-});
 
 // POST Update User Password (Admin feature)
 router.post('/users/:userId/update-password', verifyAdminToken, async (req, res) => {
