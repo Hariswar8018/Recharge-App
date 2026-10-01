@@ -257,7 +257,13 @@
           @send-notification="handleSendNotification($event)"
         />
 
-        <!-- TAB 9: SYSTEM SETTINGS -->
+        <!-- TAB 9: CASHOUT & WITHDRAWALS MANAGEMENT -->
+        <WithdrawalsTab 
+          v-else-if="currentTab === 'sec_cashout' || currentTab === 'withdrawals'"
+          @trigger-toast="triggerGlobalToast"
+        />
+
+        <!-- TAB 10: SYSTEM SETTINGS -->
         <SystemSettingsTab 
           v-else-if="currentTab === 'settings' || currentTab.startsWith('sec_')"
           :currentTab="currentTab"
@@ -364,6 +370,7 @@ import TeamsTreeTab from '../components/admin/TeamsTreeTab.vue';
 import AdminsManagementTab from '../components/admin/AdminsManagementTab.vue';
 import NotificationsTab from '../components/admin/NotificationsTab.vue';
 import SystemSettingsTab from '../components/admin/SystemSettingsTab.vue';
+import WithdrawalsTab from '../components/admin/WithdrawalsTab.vue';
 import AddFundsModal from '../components/admin/AddFundsModal.vue';
 import UserTransactionsModal from '../components/admin/UserTransactionsModal.vue';
 import UserIncomeModal from '../components/admin/UserIncomeModal.vue';
@@ -386,6 +393,7 @@ export default {
     AdminsManagementTab,
     NotificationsTab,
     SystemSettingsTab,
+    WithdrawalsTab,
     AddFundsModal,
     UserTransactionsModal,
     UserIncomeModal,
@@ -595,6 +603,14 @@ export default {
     this.fetchNotifications();
   },
   methods: {
+    triggerGlobalToast(msg, type = 'success') {
+      this.globalToast.message = msg;
+      this.globalToast.type = type;
+      this.globalToast.show = true;
+      setTimeout(() => {
+        this.globalToast.show = false;
+      }, 1500);
+    },
     formatTabTitle(tab) {
       const names = {
         dashboard: 'Dashboard Overview',
@@ -605,6 +621,8 @@ export default {
         teams: 'User Teams & Downlines',
         admins: 'System Administrator Accounts',
         notifications: 'Push Notification Broadcasts',
+        sec_cashout: 'Payout & Withdrawal Management',
+        withdrawals: 'Payout & Withdrawal Management',
         settings: 'Global App System Settings'
       };
       return names[tab] || 'Control Panel';

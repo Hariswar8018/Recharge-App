@@ -42,7 +42,7 @@
 [O] Reset Password
 [O] Login as User
 
-5. Mobile Number Change — Single Leg
+5. Mobile Number Change — Single Leg [ O ]
 When changing a user's mobile number:
 [x] Same User Record is retained
 [x] Single Leg Position does not change
@@ -66,7 +66,7 @@ When changing a user's mobile number:
 [x] Rejection Reason visible to User
 [x] Excel Download
 
-7. Bank Verification + Penny Drop
+7. Bank Verification + Penny Drop  [[ DONE ]]
 Required flow:
 Account Number + IFSC
 ↓
@@ -76,12 +76,12 @@ If SUCCESS → ₹1 Penny Drop API
 ↓
 Penny Drop SUCCESS → Bank Verified
 Checklist:
-[x] Account Number + IFSC → Verification API
-[x] Verification SUCCESS → ₹1 Penny Drop API
-[x] Penny Drop SUCCESS → Bank Verified
-[x] Verification FAIL → STOP
-[x] If Verification FAIL → Penny Drop API must NOT be called
-[x] Developer shows Backend/API Logs proving the exact flow
+[O] Account Number + IFSC → Verification API
+[O] Verification SUCCESS → ₹1 Penny Drop API
+[O] Penny Drop SUCCESS → Bank Verified
+[O] Verification FAIL → STOP
+[O] If Verification FAIL → Penny Drop API must NOT be called
+[O] Developer shows Backend/API Logs proving the exact flow
 
 8. ₹1,200 ID Activation Invoice
 [x] Invoice generated only for ₹1,200 ID Activation Payment

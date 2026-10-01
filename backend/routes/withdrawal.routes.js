@@ -35,16 +35,17 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
       return res.status(400).json({ error: `Minimum withdrawal amount is ₹${minWithdraw}` });
     }
 
-    const users = await query('SELECT status, main_wallet_balance FROM users WHERE id = ?', [req.user.id]);
+    const users = await query('SELECT status, main_wallet_balance, bank_name, account_holder, account_no, ifsc, branch, account_type FROM users WHERE id = ?', [req.user.id]);
     if (users.length === 0) return res.status(404).json({ error: 'User not found' });
     
     // Enforce Active Status requirement for withdrawal
-    const status = (users[0].status || '').toUpperCase();
+    const userRow = users[0];
+    const status = (userRow.status || '').toUpperCase();
     if (status !== 'ACTIVE') {
       return res.status(400).json({ error: 'Free/Inactive members cannot withdraw Main Wallet balance. Please activate your ID.' });
     }
 
-    const balance = parseFloat(users[0].main_wallet_balance || 0);
+    const balance = parseFloat(userRow.main_wallet_balance || 0);
 
     if (balance < amt) {
       return res.status(400).json({ error: 'Insufficient Main Wallet balance' });
@@ -54,14 +55,33 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
     const netCredit = amt - deduction;
 
     await transaction(async (conn) => {
+      // Deduct balance upfront to lock funds while pending approval
       await conn.execute(
         'UPDATE users SET main_wallet_balance = main_wallet_balance - ? WHERE id = ?',
         [amt, req.user.id]
       );
       
+      // Insert withdrawal request
+      await conn.execute(
+        `INSERT INTO withdrawals (user_id, amount, deduction_fee, net_amount, account_holder, account_no, ifsc, bank_name, branch, account_type, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')`,
+        [
+          req.user.id,
+          amt,
+          deduction,
+          netCredit,
+          userRow.account_holder || '',
+          userRow.account_no || '',
+          userRow.ifsc || '',
+          userRow.bank_name || '',
+          userRow.branch || '',
+          userRow.account_type || 'Savings'
+        ]
+      );
+
       const dateStr = new Date().toLocaleString('en-US', { hour12: true });
       await conn.execute(
-        'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", ?, "Cashout", ?, "Success")',
+        'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", ?, "Cashout Request", ?, "Pending")',
         [req.user.id, `-₹${amt.toFixed(2)}`, dateStr]
       );
     });
@@ -70,7 +90,7 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
     await invalidateCache('admin_stats');
 
     res.json({
-      message: 'Withdrawal processed successfully',
+      message: 'Withdrawal request submitted successfully. Awaiting Admin Approval.',
       requestedAmount: amt,
       deductionFee: deduction,
       netCredited: netCredit
@@ -78,6 +98,20 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to process withdrawal request' });
+  }
+});
+
+// GET /api/withdrawal/my-requests - Returns user's withdrawal request history
+router.get('/my-requests', verifyAppToken, verifyUserToken, async (req, res) => {
+  try {
+    const requests = await query(
+      'SELECT id, user_id, amount, deduction_fee, net_amount, account_holder, account_no, ifsc, bank_name, branch, account_type, status, rejection_reason, processed_at, createdAt FROM withdrawals WHERE user_id = ? ORDER BY id DESC',
+      [req.user.id]
+    );
+    res.json(requests);
+  } catch (err) {
+    console.error('Error fetching user withdrawal requests:', err);
+    res.status(500).json({ error: 'Failed to fetch withdrawal requests' });
   }
 });
 

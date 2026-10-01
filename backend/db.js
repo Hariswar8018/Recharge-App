@@ -176,6 +176,27 @@ async function initDb() {
       )
     `);
 
+    // Withdrawals Table
+    await query(`
+      CREATE TABLE IF NOT EXISTS withdrawals (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        amount DECIMAL(15,2) NOT NULL,
+        deduction_fee DECIMAL(15,2) DEFAULT 0.00,
+        net_amount DECIMAL(15,2) DEFAULT 0.00,
+        account_holder VARCHAR(255) DEFAULT NULL,
+        account_no VARCHAR(100) DEFAULT NULL,
+        ifsc VARCHAR(50) DEFAULT NULL,
+        bank_name VARCHAR(255) DEFAULT NULL,
+        branch VARCHAR(255) DEFAULT NULL,
+        account_type VARCHAR(50) DEFAULT 'Savings',
+        status VARCHAR(50) DEFAULT 'PENDING',
+        rejection_reason TEXT DEFAULT NULL,
+        processed_at DATETIME DEFAULT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Transactions Table
     await query(`
       CREATE TABLE IF NOT EXISTS transactions (

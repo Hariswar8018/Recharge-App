@@ -823,4 +823,176 @@ router.post('/upload-qr', verifyAdminToken, async (req, res) => {
   }
 });
 
+// GET Admin Withdrawal Requests (Filters: status, search, startDate, endDate)
+router.get('/withdrawals', verifyAdminToken, async (req, res) => {
+  try {
+    const { status, search, startDate, endDate } = req.query;
+    
+    let sql = `
+      SELECT 
+        w.id,
+        w.user_id,
+        w.amount,
+        w.deduction_fee,
+        w.net_amount,
+        w.account_holder,
+        w.account_no,
+        w.ifsc,
+        w.bank_name,
+        w.branch,
+        w.account_type,
+        w.status,
+        w.rejection_reason,
+        w.processed_at,
+        w.createdAt,
+        u.fullName,
+        u.mobileNumber,
+        u.email,
+        u.main_wallet_balance as available_balance
+      FROM withdrawals w
+      LEFT JOIN users u ON w.user_id = u.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (status && status.toUpperCase() !== 'ALL') {
+      sql += ' AND UPPER(w.status) = ?';
+      params.push(status.toUpperCase());
+    }
+
+    if (search && search.trim() !== '') {
+      const q = `%${search.trim()}%`;
+      sql += ' AND (u.fullName LIKE ? OR u.mobileNumber LIKE ? OR u.email LIKE ? OR CAST(w.user_id AS CHAR) LIKE ? OR w.account_no LIKE ? OR w.ifsc LIKE ? OR CAST(w.id AS CHAR) LIKE ?)';
+      params.push(q, q, q, q, q, q, q);
+    }
+
+    if (startDate && startDate.trim() !== '') {
+      sql += ' AND DATE(w.createdAt) >= ?';
+      params.push(startDate.trim());
+    }
+
+    if (endDate && endDate.trim() !== '') {
+      sql += ' AND DATE(w.createdAt) <= ?';
+      params.push(endDate.trim());
+    }
+
+    sql += ' ORDER BY w.id DESC';
+
+    const rows = await query(sql, params);
+    res.json(rows || []);
+  } catch (err) {
+    console.error('Error fetching admin withdrawal requests:', err);
+    res.status(500).json({ error: 'Failed to fetch withdrawal requests' });
+  }
+});
+
+// POST Bulk or Single Approve Withdrawal Requests
+router.post('/withdrawals/approve', verifyAdminToken, async (req, res) => {
+  try {
+    let { ids, approveAllPending } = req.body;
+    
+    let targetIds = [];
+
+    if (approveAllPending) {
+      const pending = await query('SELECT id FROM withdrawals WHERE status = "PENDING"');
+      targetIds = pending.map(r => r.id);
+    } else if (Array.isArray(ids) && ids.length > 0) {
+      targetIds = ids.map(id => parseInt(id)).filter(id => !isNaN(id));
+    }
+
+    if (targetIds.length === 0) {
+      return res.status(400).json({ error: 'No valid withdrawal requests selected to approve' });
+    }
+
+    const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    await transaction(async (conn) => {
+      for (const reqId of targetIds) {
+        // Fetch request info
+        const [wRows] = await conn.execute('SELECT user_id, amount, status FROM withdrawals WHERE id = ?', [reqId]);
+        if (wRows && wRows.length > 0) {
+          const w = wRows[0];
+          if (w.status === 'PENDING') {
+            await conn.execute('UPDATE withdrawals SET status = "APPROVED", processed_at = ? WHERE id = ?', [nowStr, reqId]);
+            await conn.execute('UPDATE transactions SET status = "Approved" WHERE user_id = ? AND type LIKE "%Cashout%" AND status = "Pending"', [w.user_id]);
+          }
+        }
+      }
+    });
+
+    res.json({
+      message: `Successfully approved ${targetIds.length} withdrawal request(s)`,
+      approvedCount: targetIds.length
+    });
+  } catch (err) {
+    console.error('Error approving withdrawal requests:', err);
+    res.status(500).json({ error: 'Failed to approve withdrawal request(s)' });
+  }
+});
+
+// POST Bulk or Single Reject Withdrawal Requests (With Reason & Refund to Main Wallet)
+router.post('/withdrawals/reject', verifyAdminToken, async (req, res) => {
+  try {
+    let { ids, rejection_reason } = req.body;
+    const reasonText = (rejection_reason || 'Rejected by Admin').trim();
+
+    const targetIds = (Array.isArray(ids) ? ids : []).map(id => parseInt(id)).filter(id => !isNaN(id));
+
+    if (targetIds.length === 0) {
+      return res.status(400).json({ error: 'No valid withdrawal requests selected to reject' });
+    }
+
+    const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    let rejectedCount = 0;
+
+    await transaction(async (conn) => {
+      for (const reqId of targetIds) {
+        const [wRows] = await conn.execute('SELECT user_id, amount, status FROM withdrawals WHERE id = ?', [reqId]);
+        if (wRows && wRows.length > 0) {
+          const w = wRows[0];
+          if (w.status === 'PENDING') {
+            const refundAmt = parseFloat(w.amount || 0);
+
+            // 1. Mark request as REJECTED with reason
+            await conn.execute(
+              'UPDATE withdrawals SET status = "REJECTED", rejection_reason = ?, processed_at = ? WHERE id = ?',
+              [reasonText, nowStr, reqId]
+            );
+
+            // 2. Refund balance back to user's main_wallet_balance
+            if (refundAmt > 0) {
+              await conn.execute(
+                'UPDATE users SET main_wallet_balance = main_wallet_balance + ? WHERE id = ?',
+                [refundAmt, w.user_id]
+              );
+            }
+
+            // 3. Log refund & update transaction status
+            const formattedRefund = `+₹${refundAmt.toFixed(2)}`;
+            await conn.execute(
+              'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", ?, ?, ?, "Success")',
+              [w.user_id, formattedRefund, `Withdrawal Refund (${reasonText})`, nowStr]
+            );
+
+            await conn.execute(
+              'UPDATE transactions SET status = "Rejected" WHERE user_id = ? AND type LIKE "%Cashout%" AND status = "Pending"',
+              [w.user_id]
+            );
+
+            rejectedCount++;
+          }
+        }
+      }
+    });
+
+    res.json({
+      message: `Successfully rejected ${rejectedCount} withdrawal request(s) and refunded balance to user wallet`,
+      rejectedCount
+    });
+  } catch (err) {
+    console.error('Error rejecting withdrawal requests:', err);
+    res.status(500).json({ error: 'Failed to reject withdrawal request(s)' });
+  }
+});
+
 module.exports = router;
