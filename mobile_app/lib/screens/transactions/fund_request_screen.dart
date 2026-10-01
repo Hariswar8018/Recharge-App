@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:upi_uri/qr_widget.dart';
 import '../../services/api_service.dart';
 import '../../widgets/processing_dialog.dart';
 
@@ -327,32 +326,45 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
           final base64Str = url.split(',').last;
           return Image.memory(
             base64Decode(base64Str),
-            width: 180,
-            height: 180,
+            width: 200,
+            height: 200,
             fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => _buildQrPlaceholder(),
           );
         } else if (url.startsWith('http')) {
           return Image.network(
             url,
-            width: 180,
-            height: 180,
+            width: 200,
+            height: 200,
             fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => _buildFallbackQr(),
+            errorBuilder: (context, error, stackTrace) => _buildQrPlaceholder(),
           );
         }
       } catch (_) {}
     }
-    return _buildFallbackQr();
+    return _buildQrPlaceholder();
   }
 
-  Widget _buildFallbackQr() {
-    final amt = _amountController.text.trim();
-    return UpiQrCode(
-      payeeVpa: payeeVpa,
-      payeeName: payeeName,
-      amount: amt.isNotEmpty ? amt : minAddMoney.toStringAsFixed(0),
-      txnRef: "TXN${DateTime.now().millisecondsSinceEpoch}",
-      size: 180,
+  Widget _buildQrPlaceholder() {
+    return Container(
+      width: 180,
+      height: 180,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.qr_code_2_rounded, size: 64, color: Color(0xFF94A3B8)),
+          SizedBox(height: 8),
+          Text(
+            "QR Image Not Available",
+            style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 
