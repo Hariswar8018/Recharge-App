@@ -1,10 +1,4 @@
-1. Direct Add Funds to User
-[O] Search user by Mobile Number / User ID
-[O] Select Main Wallet / Fund Wallet
-[O] Enter Amount + Remarks
-[O] Verify Wallet Credit
-[O] Verify Direct Fund History
-[x] Verify Balance & Transaction Update
+
 
 2. Income Plan / Single Leg — 6 Levels
 [x] 6 Levels
@@ -22,35 +16,6 @@
 [x] All values are Admin-editable
 [x] Verify Admin values are actually used by Backend
 
-3. CAPTCHA Work & Income
-[x] CAPTCHA Work ON/OFF
-[x] Per-CAPTCHA income editable from Admin
-[x] Only successful CAPTCHA solves are counted
-[x] Verify calculation: ₹0.50 × 10 successful CAPTCHAs = ₹5
-[x] Correct Wallet/Income credit
-[x] Income reflected in User Panel
-[x] When OFF → shows Under Maintenance
-
-4. Edit User
-[O] Search by Mobile Number / User ID
-[O] Edit Name / Mobile / Email / Password
-[x] Edit Sponsor ID / Joining Date / Status
-[O] Edit Bank Details
-[O] Show Main / Fund / Income / CAPTCHA Wallets
-[O] Transaction History
-[O] Income Details
-[O] Reset Password
-[O] Login as User
-
-5. Mobile Number Change — Single Leg [ O ]
-When changing a user's mobile number:
-[x] Same User Record is retained
-[x] Single Leg Position does not change
-[x] Sponsor / Placement does not change
-[x] Cycle does not reset
-[x] No duplicate User / Position is created
-[x] Wallets & Transaction History remain connected
-
 6. Payout / Withdrawal Request Management
 [x] Statuses: Pending / Approved / Rejected
 [x] Search by User ID / Mobile
@@ -66,22 +31,6 @@ When changing a user's mobile number:
 [x] Rejection Reason visible to User
 [x] Excel Download
 
-7. Bank Verification + Penny Drop  [[ DONE ]]
-Required flow:
-Account Number + IFSC
-↓
-Verification API
-↓
-If SUCCESS → ₹1 Penny Drop API
-↓
-Penny Drop SUCCESS → Bank Verified
-Checklist:
-[O] Account Number + IFSC → Verification API
-[O] Verification SUCCESS → ₹1 Penny Drop API
-[O] Penny Drop SUCCESS → Bank Verified
-[O] Verification FAIL → STOP
-[O] If Verification FAIL → Penny Drop API must NOT be called
-[O] Developer shows Backend/API Logs proving the exact flow
 
 8. ₹1,200 ID Activation Invoice
 [x] Invoice generated only for ₹1,200 ID Activation Payment

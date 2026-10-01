@@ -794,8 +794,8 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                       // 0. Fund Request Status Banner
                       _buildStatusBanner(),
 
-                      // 1. UPI QR Code Card (Setting #1)
-                      if (showQrCode) ...[
+                      // 1. Payment Options & QR Configuration (Uploaded QR + UPI ID / VPA ONLY)
+                      if (showQrCode || showUpiId) ...[
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(20),
@@ -813,154 +813,80 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                           ),
                           child: Column(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE3F2FD),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Text(
-                                  "Scan & Pay",
-                                  style: TextStyle(
-                                    color: Color(0xFF1565C0),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                "Scan QR Code using any UPI App",
-                                style: TextStyle(
-                                  color: Color(0xFF475569),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.blue.withValues(alpha: 0.05),
-                                      blurRadius: 15,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                                child: _buildQrDisplay(),
-                              ),
-                              const SizedBox(height: 16),
-                              const Row(
-                                children: [
-                                  Expanded(child: Divider(color: Color(0xFFCBD5E1))),
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 12),
-                                    child: Text("OR", style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold, fontSize: 12)),
-                                  ),
-                                  Expanded(child: Divider(color: Color(0xFFCBD5E1))),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.account_balance, color: Color(0xFF1565C0), size: 18),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    "UPI",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1565C0),
-                                      letterSpacing: 1.0,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF22C55E),
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                    child: const Text(
-                                      "✓",
-                                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // 2. UPI ID Box (Setting #2)
-                      if (showUpiId) ...[
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(Icons.person_outline_rounded, color: Color(0xFF1565C0), size: 22),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "UPI ID",
-                                      style: TextStyle(
-                                        color: Color(0xFF1565C0),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      payeeVpa,
-                                      style: const TextStyle(
-                                        color: Color(0xFF0F172A),
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: Container(
-                                  padding: const EdgeInsets.all(8),
+                              if (showQrCode) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: const Color(0xFFCBD5E1)),
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue.withValues(alpha: 0.05),
+                                        blurRadius: 15,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
                                   ),
-                                  child: const Icon(Icons.copy_rounded, color: Color(0xFF1565C0), size: 18),
+                                  child: _buildQrDisplay(),
                                 ),
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: payeeVpa));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("UPI ID copied to clipboard!")),
-                                  );
-                                },
-                              ),
+                                if (showUpiId) const SizedBox(height: 16),
+                              ],
+                              if (showUpiId) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "UPI ID / VPA",
+                                              style: TextStyle(
+                                                color: Color(0xFF1565C0),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            SelectableText(
+                                              payeeVpa,
+                                              style: const TextStyle(
+                                                color: Color(0xFF0F172A),
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                                          ),
+                                          child: const Icon(Icons.copy_rounded, color: Color(0xFF1565C0), size: 18),
+                                        ),
+                                        onPressed: () {
+                                          Clipboard.setData(ClipboardData(text: payeeVpa));
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text("UPI ID copied to clipboard!")),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
