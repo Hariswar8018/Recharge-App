@@ -154,6 +154,8 @@
           :transactions="transactions"
           :pendingRequestsCount="pendingRequestsCount"
           :gatewayStatus="gatewayStatus"
+          @switch-tab="switchTab($event)"
+          @refresh="fetchDashboardData"
         />
 
         <!-- TAB 2: REGISTERED USERS MANAGEMENT -->
@@ -224,6 +226,7 @@
         <TeamsTreeTab 
           v-else-if="currentTab === 'teams' || currentTab === 'sec_team' || currentTab === 'sec_direct_members' || currentTab === 'sec_business_income' || currentTab === 'sec_global_cycle'"
           :teamsData="teamsData"
+          :users="users"
           :loadingTeams="loadingTeams"
         />
 
@@ -719,13 +722,11 @@ export default {
           password: '',
           showPassword: false,
           bank_name: data.bank_name || '',
-          account_holder: data.account_holder || data.fullName || '',
+          account_holder: data.account_holder || '',
           account_no: data.account_no || '',
           ifsc: data.ifsc || '',
           branch: data.branch || '',
-          account_type: data.account_type || 'Savings',
-          income_wallet_balance: data.income_wallet_balance || data.main_wallet_balance || 0,
-          captcha_wallet_balance: data.captcha_wallet_balance || 320.00
+          account_type: data.account_type || 'Savings'
         };
         this.currentTab = 'edit_user';
       } catch (e) {

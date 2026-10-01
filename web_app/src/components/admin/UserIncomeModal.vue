@@ -17,8 +17,8 @@
         </div>
 
         <div v-else>
-          <!-- SUMMARY STAT CARDS -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+          <!-- SUMMARY STAT CARDS (Main & Fund Wallet Income Overview - NO hardcoded values) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
             <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 0.85rem;">
               <div style="font-size: 0.78rem; font-weight: 700; color: #15803d; text-transform: uppercase;">Total Income Earned</div>
               <div style="font-size: 1.3rem; font-weight: 900; color: #16a34a; margin-top: 4px;">₹ {{ parseFloat(incomeData.totalIncome || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</div>
@@ -31,9 +31,9 @@
               <div style="font-size: 0.78rem; font-weight: 700; color: #7e22ce; text-transform: uppercase;">Single Leg Level Income</div>
               <div style="font-size: 1.3rem; font-weight: 900; color: #9333ea; margin-top: 4px;">₹ {{ parseFloat(incomeData.singleLegIncome || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</div>
             </div>
-            <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 0.85rem;">
-              <div style="font-size: 0.78rem; font-weight: 700; color: #c2410c; text-transform: uppercase;">Captcha Rewards</div>
-              <div style="font-size: 1.3rem; font-weight: 900; color: #ea580c; margin-top: 4px;">₹ {{ parseFloat(incomeData.captchaIncome || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.85rem;">
+              <div style="font-size: 0.78rem; font-weight: 700; color: #475569; text-transform: uppercase;">Other Credits & Earnings</div>
+              <div style="font-size: 1.3rem; font-weight: 900; color: #0f172a; margin-top: 4px;">₹ {{ parseFloat(incomeData.otherIncome || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</div>
             </div>
           </div>
 
@@ -125,7 +125,7 @@ export default {
         totalIncome: '0.00',
         directIncome: '0.00',
         singleLegIncome: '0.00',
-        captchaIncome: '0.00',
+        otherIncome: '0.00',
         transactions: [],
         downlines: []
       })

@@ -602,35 +602,39 @@ router.get('/users/:userId/income', verifyAdminToken, async (req, res) => {
 
     const txns = await query(
       `SELECT * FROM transactions 
-       WHERE user_id = ? AND (type LIKE '%Income%' OR type LIKE '%Reward%' OR type LIKE '%Bonus%' OR type LIKE '%Level%' OR type LIKE '%Direct%' OR type LIKE '%Commission%')
+       WHERE user_id = ?
        ORDER BY id DESC`,
       [user.id]
     );
 
     let directIncome = 0;
     let singleLegIncome = 0;
-    let captchaIncome = 0;
     let otherIncome = 0;
+
+    const incomeTxns = [];
 
     txns.forEach(t => {
       const amt = parseFloat(String(t.amount).replace(/[^\d.]/g, '')) || 0;
       const tType = (t.type || '').toLowerCase();
-      if (tType.includes('direct')) {
-        directIncome += amt;
-      } else if (tType.includes('level') || tType.includes('single leg') || tType.includes('pool')) {
-        singleLegIncome += amt;
-      } else if (tType.includes('captcha')) {
-        captchaIncome += amt;
-      } else {
-        otherIncome += amt;
+      const isDebit = tType.includes('debit') || tType.includes('withdrawal') || tType.includes('recharge');
+      
+      if (!isDebit && amt > 0) {
+        incomeTxns.push(t);
+        if (tType.includes('direct') || tType.includes('sponsor') || tType.includes('referral')) {
+          directIncome += amt;
+        } else if (tType.includes('level') || tType.includes('single leg') || tType.includes('pool') || tType.includes('cycle')) {
+          singleLegIncome += amt;
+        } else {
+          otherIncome += amt;
+        }
       }
     });
 
-    const totalIncome = directIncome + singleLegIncome + captchaIncome + otherIncome;
+    const totalIncome = directIncome + singleLegIncome + otherIncome;
 
     const downlines = await query(
-      'SELECT id, fullName, mobileNumber, email, status, createdAt FROM users WHERE sponsor_id = ? ORDER BY id DESC',
-      [user.id]
+      'SELECT id, fullName, mobileNumber, email, status, createdAt FROM users WHERE sponsor_id = ? OR sponsor_id = ? ORDER BY id DESC',
+      [user.id, user.mobileNumber || '']
     );
 
     res.json({
@@ -638,10 +642,9 @@ router.get('/users/:userId/income', verifyAdminToken, async (req, res) => {
       totalIncome: totalIncome.toFixed(2),
       directIncome: directIncome.toFixed(2),
       singleLegIncome: singleLegIncome.toFixed(2),
-      captchaIncome: captchaIncome.toFixed(2),
       otherIncome: otherIncome.toFixed(2),
-      transactions: txns,
-      downlines
+      transactions: incomeTxns.length > 0 ? incomeTxns : txns,
+      downlines: downlines || []
     });
   } catch (err) {
     console.error('Error fetching user income details:', err);

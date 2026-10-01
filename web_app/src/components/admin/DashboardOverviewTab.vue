@@ -12,27 +12,28 @@
     </div>
 
     <!-- Systems & API Operational Status Cards -->
-    <div class="op-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+    <div class="op-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
       <div class="op-card green" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 10px;">
         <span class="op-label" style="font-size: 0.78rem; font-weight: 700; color: #15803d; display: block;">Database Connection</span>
-        <strong class="op-value" style="font-size: 1rem; font-weight: 800; color: #166534; margin-top: 4px; display: block;">{{ gatewayStatus.database || 'Operational (Online)' }}</strong>
+        <strong class="op-value" style="font-size: 0.95rem; font-weight: 800; color: #166534; margin-top: 4px; display: block;">{{ gatewayStatus.database || 'Operational (Online)' }}</strong>
       </div>
       <div class="op-card green" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: 10px;">
         <span class="op-label" style="font-size: 0.78rem; font-weight: 700; color: #15803d; display: block;">Recharge API Server</span>
-        <strong class="op-value" style="font-size: 1rem; font-weight: 800; color: #166534; margin-top: 4px; display: block;">{{ gatewayStatus.app_api || 'Operational (Online)' }}</strong>
+        <strong class="op-value" style="font-size: 0.95rem; font-weight: 800; color: #166534; margin-top: 4px; display: block;">{{ gatewayStatus.app_api || 'Operational (Online)' }}</strong>
       </div>
       <div class="op-card orange" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 1rem; border-radius: 10px;">
         <span class="op-label" style="font-size: 0.78rem; font-weight: 700; color: #1d4ed8; display: block;">Scriza Gateway API</span>
-        <strong class="op-value" style="font-size: 1rem; font-weight: 800; color: #1e40af; margin-top: 4px; display: block;">{{ gatewayStatus.scriza_api || 'Operational (Live)' }}</strong>
+        <strong class="op-value" style="font-size: 0.95rem; font-weight: 800; color: #1e40af; margin-top: 4px; display: block;">{{ gatewayStatus.scriza_api || 'Operational (Live)' }}</strong>
       </div>
       <div class="op-card orange" style="background: #faf5ff; border: 1px solid #e9d5ff; padding: 1rem; border-radius: 10px;">
         <span class="op-label" style="font-size: 0.78rem; font-weight: 700; color: #7e22ce; display: block;">Razorpay Gateway API</span>
-        <strong class="op-value" style="font-size: 1rem; font-weight: 800; color: #6b21a8; margin-top: 4px; display: block;">{{ gatewayStatus.razorpay_gateway || 'Operational (Live)' }}</strong>
+        <strong class="op-value" style="font-size: 0.95rem; font-weight: 800; color: #6b21a8; margin-top: 4px; display: block;">{{ gatewayStatus.razorpay_gateway || 'Operational (Live)' }}</strong>
       </div>
     </div>
 
-    <!-- Real Metrics Cards Grid -->
-    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+    <!-- REAL METRICS CARDS GRID (6 STAT CONTAINERS) -->
+    <div class="metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem;">
+      <!-- CARD 1: TOTAL REGISTERED USERS -->
       <div class="metric-card bg-blue" @click="$emit('switch-tab', 'users')" style="cursor: pointer; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
         <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
           <span class="metric-title" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px;">REGISTERED APP USERS</span>
@@ -44,6 +45,55 @@
         </div>
       </div>
 
+      <!-- CARD 2: ACTIVE ID SUBSCRIPTIONS -->
+      <div class="metric-card bg-emerald" @click="$emit('switch-tab', 'users')" style="cursor: pointer; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="metric-title" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px;">ACTIVE ID SUBSCRIPTIONS</span>
+          <span class="metric-icon" style="font-size: 1.2rem;">🟢</span>
+        </div>
+        <div class="metric-value" style="font-size: 1.8rem; font-weight: 900; color: #16a34a; margin: 0.5rem 0 0.25rem;">{{ activeUsersCount }}</div>
+        <div class="metric-footer text-green" style="font-size: 0.78rem; font-weight: 700; color: #15803d;">
+          <span>Verified Active Members</span>
+        </div>
+      </div>
+
+      <!-- CARD 3: MAIN WALLET POOL / INCOME -->
+      <div class="metric-card bg-blue" @click="$emit('switch-tab', 'users')" style="cursor: pointer; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="metric-title" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px;">MAIN WALLET POOL / INCOME</span>
+          <span class="metric-icon" style="font-size: 1.2rem;">💳</span>
+        </div>
+        <div class="metric-value" style="font-size: 1.4rem; font-weight: 900; color: #1d4ed8; margin: 0.5rem 0 0.25rem;">₹ {{ totalMainWallet.toLocaleString('en-IN', {minimumFractionDigits:2}) }}</div>
+        <div class="metric-footer text-blue" style="font-size: 0.78rem; font-weight: 700; color: #2563eb;">
+          <span>Total Member Main Funds</span>
+        </div>
+      </div>
+
+      <!-- CARD 4: FUND WALLET POOL / INCOME -->
+      <div class="metric-card bg-purple" @click="$emit('switch-tab', 'users')" style="cursor: pointer; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="metric-title" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px;">FUND WALLET POOL / INCOME</span>
+          <span class="metric-icon" style="font-size: 1.2rem;">👛</span>
+        </div>
+        <div class="metric-value" style="font-size: 1.4rem; font-weight: 900; color: #9333ea; margin: 0.5rem 0 0.25rem;">₹ {{ totalFundWallet.toLocaleString('en-IN', {minimumFractionDigits:2}) }}</div>
+        <div class="metric-footer text-purple" style="font-size: 0.78rem; font-weight: 700; color: #7c3aed;">
+          <span>Total Deposit Balance</span>
+        </div>
+      </div>
+
+      <!-- CARD 5: TOTAL SYSTEM TRANSACTIONS -->
+      <div class="metric-card bg-purple" @click="$emit('switch-tab', 'transactions')" style="cursor: pointer; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="metric-title" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px;">TOTAL TRANSACTIONS</span>
+          <span class="metric-icon" style="font-size: 1.2rem;">📊</span>
+        </div>
+        <div class="metric-value" style="font-size: 1.8rem; font-weight: 900; color: #6b21a8; margin: 0.5rem 0 0.25rem;">{{ transactions.length }}</div>
+        <div class="metric-footer text-purple" style="font-size: 0.78rem; font-weight: 700; color: #7c3aed;">
+          <span>General Ledger Records</span>
+        </div>
+      </div>
+
+      <!-- CARD 6: PENDING FUND REQUESTS -->
       <div class="metric-card bg-green" @click="$emit('switch-tab', 'requests')" style="cursor: pointer; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
         <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
           <span class="metric-title" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px;">PENDING FUND REQUESTS</span>
@@ -52,28 +102,6 @@
         <div class="metric-value" style="font-size: 1.8rem; font-weight: 900; color: #f59e0b; margin: 0.5rem 0 0.25rem;">{{ pendingRequestsCount }}</div>
         <div class="metric-footer text-amber" style="font-size: 0.78rem; font-weight: 700; color: #d97706;">
           <span>Requires Admin Approval</span>
-        </div>
-      </div>
-
-      <div class="metric-card bg-purple" @click="$emit('switch-tab', 'transactions')" style="cursor: pointer; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-        <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
-          <span class="metric-title" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px;">TOTAL TRANSACTIONS</span>
-          <span class="metric-icon" style="font-size: 1.2rem;">📊</span>
-        </div>
-        <div class="metric-value" style="font-size: 1.8rem; font-weight: 900; color: #9333ea; margin: 0.5rem 0 0.25rem;">{{ transactions.length }}</div>
-        <div class="metric-footer text-purple" style="font-size: 0.78rem; font-weight: 700; color: #7c3aed;">
-          <span>General Ledger Records</span>
-        </div>
-      </div>
-
-      <div class="metric-card bg-amber" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
-        <div class="metric-header" style="display: flex; justify-content: space-between; align-items: center;">
-          <span class="metric-title" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.5px;">SYSTEM INFRASTRUCTURE</span>
-          <span class="metric-icon" style="font-size: 1.2rem;">⚡</span>
-        </div>
-        <div class="metric-value" style="font-size: 1.1rem; font-weight: 800; color: #16a34a; margin: 0.5rem 0 0.25rem;">100% Operational</div>
-        <div class="metric-footer text-green" style="font-size: 0.78rem; font-weight: 700; color: #16a34a;">
-          <span>Scriza & Razorpay Live</span>
         </div>
       </div>
     </div>
@@ -159,27 +187,27 @@
     <div class="quick-nav-section" style="margin-top: 1.5rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem;">
       <h3 style="margin: 0 0 1rem; font-size: 1.05rem; font-weight: 800; color: #0f172a;">⚡ Quick Section Shortcuts</h3>
       <div class="quick-nav-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-        <div class="qnav-card" @click="$emit('switch-tab', 'users')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+        <div class="qnav-card" @click="$emit('switch-tab', 'users')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; transition: all 0.2s;">
           <span class="qnav-title" style="font-weight: 700; font-size: 0.85rem;">📱 App Users</span>
           <span style="color: #2563eb; font-weight: 800;">→</span>
         </div>
-        <div class="qnav-card" @click="$emit('switch-tab', 'requests')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+        <div class="qnav-card" @click="$emit('switch-tab', 'requests')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; transition: all 0.2s;">
           <span class="qnav-title" style="font-weight: 700; font-size: 0.85rem;">📥 Fund Requests ({{ pendingRequestsCount }})</span>
           <span style="color: #2563eb; font-weight: 800;">→</span>
         </div>
-        <div class="qnav-card" @click="$emit('switch-tab', 'transactions')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+        <div class="qnav-card" @click="$emit('switch-tab', 'transactions')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; transition: all 0.2s;">
           <span class="qnav-title" style="font-weight: 700; font-size: 0.85rem;">📋 Platform Ledger</span>
           <span style="color: #2563eb; font-weight: 800;">→</span>
         </div>
-        <div class="qnav-card" @click="$emit('switch-tab', 'teams')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+        <div class="qnav-card" @click="$emit('switch-tab', 'teams')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; transition: all 0.2s;">
           <span class="qnav-title" style="font-weight: 700; font-size: 0.85rem;">👥 Member Teams</span>
           <span style="color: #2563eb; font-weight: 800;">→</span>
         </div>
-        <div class="qnav-card" @click="$emit('switch-tab', 'admins')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+        <div class="qnav-card" @click="$emit('switch-tab', 'admins')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; transition: all 0.2s;">
           <span class="qnav-title" style="font-weight: 700; font-size: 0.85rem;">👑 System Admins</span>
           <span style="color: #2563eb; font-weight: 800;">→</span>
         </div>
-        <div class="qnav-card" @click="$emit('switch-tab', 'settings')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+        <div class="qnav-card" @click="$emit('switch-tab', 'settings')" style="padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; transition: all 0.2s;">
           <span class="qnav-title" style="font-weight: 700; font-size: 0.85rem;">⚙️ System Settings</span>
           <span style="color: #2563eb; font-weight: 800;">→</span>
         </div>
@@ -204,6 +232,17 @@ export default {
         scriza_api: 'Operational (Live)',
         razorpay_gateway: 'Operational (Live)'
       })
+    }
+  },
+  computed: {
+    activeUsersCount() {
+      return (this.users || []).filter(u => (u.status || 'ACTIVE').toUpperCase() === 'ACTIVE').length;
+    },
+    totalMainWallet() {
+      return (this.users || []).reduce((sum, u) => sum + (parseFloat(u.main_wallet_balance) || 0), 0);
+    },
+    totalFundWallet() {
+      return (this.users || []).reduce((sum, u) => sum + (parseFloat(u.fund_wallet_balance) || 0), 0);
     }
   }
 };
