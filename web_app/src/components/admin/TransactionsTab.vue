@@ -47,7 +47,7 @@
           <p>Complete audit log of user recharges, wallet loads, referrals, single-leg pool payouts, and admin fund adjustments.</p>
         </div>
         <div class="header-actions">
-          <button @click="downloadExcel" class="btn btn-excel">
+          <button @click="openExportModal" class="btn btn-excel">
             📥 Download Excel Report
           </button>
           <button @click="fetchTransactions" class="btn btn-secondary btn-icon" title="Refresh transactions">
@@ -169,6 +169,7 @@
               <th>Wallet</th>
               <th>Type / Description</th>
               <th>Amount</th>
+              <th>Bank Account Info</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -207,6 +208,17 @@
                 </div>
               </td>
 
+              <!-- Bank Account Info -->
+              <td>
+                <div v-if="tx.account_no || tx.bank_name" class="bank-info-box">
+                  <div class="bank-name">🏛️ {{ tx.bank_name || 'Bank Account' }}</div>
+                  <div class="bank-sub">A/C: {{ tx.account_no || 'N/A' }}</div>
+                  <div class="bank-sub">IFSC: {{ tx.ifsc || 'N/A' }}</div>
+                  <div v-if="tx.account_holder" class="bank-sub">Holder: {{ tx.account_holder }}</div>
+                </div>
+                <span v-else class="text-muted">—</span>
+              </td>
+
               <!-- Status -->
               <td>
                 <span :class="['status-badge', getStatusClass(tx.status)]">
@@ -242,6 +254,126 @@
         </div>
       </div>
     </div>
+
+    <!-- CUSTOM EXCEL EXPORT OPTIONS DIALOG -->
+    <div v-if="showExportModal" class="modal-backdrop" @click="closeExportModal">
+      <div class="modal-dialog export-modal" @click.stop>
+        <div class="modal-header">
+          <h3>📊 Custom Excel Export (.xlsx)</h3>
+          <button @click="closeExportModal" class="close-modal-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-intro">
+            Select custom filters below to generate and download a native <strong>Microsoft Excel (.xlsx)</strong> report.
+          </p>
+
+          <!-- 1. DATE RANGE & PRESETS -->
+          <div class="export-section">
+            <label class="section-title">📅 Date Range</label>
+            <div class="preset-chips">
+              <button 
+                v-for="preset in datePresets" 
+                :key="preset.id"
+                @click="applyDatePreset(preset.id)"
+                type="button" 
+                class="chip-btn"
+                :class="{ active: activeDatePreset === preset.id }"
+              >
+                {{ preset.label }}
+              </button>
+            </div>
+            <div class="date-row">
+              <div class="date-field">
+                <label>From Date:</label>
+                <input type="date" v-model="exportStartDate" class="form-control" />
+              </div>
+              <div class="date-field">
+                <label>To Date:</label>
+                <input type="date" v-model="exportEndDate" class="form-control" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. WALLET SELECTION -->
+          <div class="export-section">
+            <label class="section-title">💼 Wallet Selection</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" value="ALL" v-model="exportWallet" />
+                Both Wallets (Main & Fund)
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="MAIN" v-model="exportWallet" />
+                Main Wallet Only
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="FUND" v-model="exportWallet" />
+                Fund Wallet Only
+              </label>
+            </div>
+          </div>
+
+          <!-- 3. STATUS SELECTION -->
+          <div class="export-section">
+            <label class="section-title">🚦 Transaction Status</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" value="ALL" v-model="exportStatus" />
+                All Statuses
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="SUCCESS" v-model="exportStatus" />
+                Success / Approved Only
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="PENDING" v-model="exportStatus" />
+                Pending Only
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="FAILED" v-model="exportStatus" />
+                Failed / Rejected Only
+              </label>
+            </div>
+          </div>
+
+          <!-- 4. CATEGORIES / TYPES -->
+          <div class="export-section">
+            <label class="section-title">🏷️ Transaction Category / Type</label>
+            <select v-model="exportType" class="form-control">
+              <option value="ALL">All Categories & Types</option>
+              <option value="CASHOUT">Withdrawal / Cashout Requests</option>
+              <option value="ADMIN">Admin Fund Credits & Debits</option>
+              <option value="CAPTCHA">Captcha Solve Rewards</option>
+              <option value="DEPOSIT">Fund Deposit / Add Money</option>
+              <option value="SPONSOR">Direct Sponsor Income</option>
+              <option value="SINGLE LEG">Level & Single Leg Pool</option>
+              <option value="RECHARGE">Mobile & DTH Recharges</option>
+            </select>
+          </div>
+
+          <!-- LIVE PREVIEW COUNT SUMMARY BOX -->
+          <div class="preview-count-box">
+            <div class="count-icon">📥</div>
+            <div class="count-details">
+              <strong>{{ exportMatchingCount }} Matching Records Found</strong>
+              <p>Contains Member Names, Mobile Numbers, Bank Names, Account Numbers, IFSC, and Statuses.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button @click="closeExportModal" class="btn btn-secondary">Cancel</button>
+          <button 
+            @click="executeExcelDownload" 
+            class="btn btn-excel" 
+            :disabled="exportMatchingCount === 0"
+          >
+            📥 Download {{ exportMatchingCount }} Records (.xlsx)
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -261,7 +393,23 @@ export default {
       startDate: '',
       endDate: '',
       currentPage: 1,
-      itemsPerPage: 50
+      itemsPerPage: 50,
+
+      // Export Dialog State
+      showExportModal: false,
+      exportStartDate: '',
+      exportEndDate: '',
+      exportWallet: 'ALL',
+      exportStatus: 'ALL',
+      exportType: 'ALL',
+      activeDatePreset: 'ALL',
+      datePresets: [
+        { id: 'ALL', label: 'All Time' },
+        { id: 'TODAY', label: 'Today' },
+        { id: 'WEEK', label: 'This Week' },
+        { id: 'MONTH', label: 'This Month' },
+        { id: '30DAYS', label: 'Last 30 Days' }
+      ]
     };
   },
   computed: {
@@ -322,6 +470,51 @@ export default {
 
         return true;
       });
+    },
+
+    exportFilteredTxns() {
+      return this.txnsList.filter(tx => {
+        // 1. Wallet Filter
+        if (this.exportWallet !== 'ALL' && (tx.wallet_type || 'MAIN').toUpperCase() !== this.exportWallet) {
+          return false;
+        }
+
+        // 2. Status Filter
+        if (this.exportStatus !== 'ALL') {
+          const st = (tx.status || '').toUpperCase();
+          if (this.exportStatus === 'SUCCESS' && (st !== 'SUCCESS' && st !== 'APPROVED')) return false;
+          if (this.exportStatus === 'PENDING' && st !== 'PENDING') return false;
+          if (this.exportStatus === 'FAILED' && (st !== 'FAILED' && st !== 'REJECTED')) return false;
+        }
+
+        // 3. Category/Type Filter
+        if (this.exportType !== 'ALL') {
+          const t = (tx.type || '').toUpperCase();
+          if (this.exportType === 'ADMIN' && !t.includes('ADMIN')) return false;
+          if (this.exportType === 'CASHOUT' && (!t.includes('CASHOUT') && !t.includes('WITHDRAWAL'))) return false;
+          if (this.exportType === 'CAPTCHA' && !t.includes('CAPTCHA')) return false;
+          if (this.exportType === 'DEPOSIT' && (!t.includes('DEPOSIT') && !t.includes('ADD MONEY'))) return false;
+          if (this.exportType === 'SPONSOR' && (!t.includes('SPONSOR') && !t.includes('DIRECT') && !t.includes('REFERRAL'))) return false;
+          if (this.exportType === 'SINGLE LEG' && (!t.includes('SINGLE LEG') && !t.includes('LEVEL') && !t.includes('POOL'))) return false;
+          if (this.exportType === 'RECHARGE' && !t.includes('RECHARGE')) return false;
+        }
+
+        // 4. Date Range Filter
+        if (this.exportStartDate) {
+          const rawDate = tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : tx.date;
+          if (rawDate && rawDate < this.exportStartDate) return false;
+        }
+        if (this.exportEndDate) {
+          const rawDate = tx.createdAt ? new Date(tx.createdAt).toISOString().split('T')[0] : tx.date;
+          if (rawDate && rawDate > this.exportEndDate) return false;
+        }
+
+        return true;
+      });
+    },
+
+    exportMatchingCount() {
+      return this.exportFilteredTxns.length;
     },
 
     totalRecords() {
@@ -434,15 +627,56 @@ export default {
       this.endDate = '';
     },
 
-    // Native .xlsx Excel Download for FILTERED records only, including Bank details
-    downloadExcel() {
-      if (this.filteredTxns.length === 0) {
-        alert('No transaction records found for the current filters');
+    openExportModal() {
+      // Pre-fill export options with current active filters
+      this.exportStartDate = this.startDate;
+      this.exportEndDate = this.endDate;
+      this.exportWallet = this.filterWallet;
+      this.exportStatus = this.filterStatus;
+      this.exportType = this.filterType;
+      this.activeDatePreset = (this.startDate || this.endDate) ? 'CUSTOM' : 'ALL';
+      this.showExportModal = true;
+    },
+
+    closeExportModal() {
+      this.showExportModal = false;
+    },
+
+    applyDatePreset(presetId) {
+      this.activeDatePreset = presetId;
+      const today = new Date();
+
+      if (presetId === 'ALL') {
+        this.exportStartDate = '';
+        this.exportEndDate = '';
+      } else if (presetId === 'TODAY') {
+        const dStr = today.toISOString().split('T')[0];
+        this.exportStartDate = dStr;
+        this.exportEndDate = dStr;
+      } else if (presetId === 'WEEK') {
+        const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
+        this.exportStartDate = firstDay.toISOString().split('T')[0];
+        this.exportEndDate = new Date().toISOString().split('T')[0];
+      } else if (presetId === 'MONTH') {
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        this.exportStartDate = firstDay.toISOString().split('T')[0];
+        this.exportEndDate = new Date().toISOString().split('T')[0];
+      } else if (presetId === '30DAYS') {
+        const prior30 = new Date(new Date().setDate(new Date().getDate() - 30));
+        this.exportStartDate = prior30.toISOString().split('T')[0];
+        this.exportEndDate = new Date().toISOString().split('T')[0];
+      }
+    },
+
+    // Native .xlsx Excel Download for FILTERED records
+    executeExcelDownload() {
+      if (this.exportFilteredTxns.length === 0) {
+        alert('No transaction records match the chosen export options');
         return;
       }
 
-      // Map ONLY the filtered items
-      const excelData = this.filteredTxns.map(tx => ({
+      // Map ONLY the matching items
+      const excelData = this.exportFilteredTxns.map(tx => ({
         'Transaction ID': `TXN-${tx.id}`,
         'Date & Time': this.formatDate(tx.date || tx.createdAt),
         'User ID': `#${tx.user_id}`,
@@ -491,6 +725,7 @@ export default {
 
       const dateStr = new Date().toISOString().slice(0, 10);
       XLSX.writeFile(workbook, `Platform_Transactions_Filtered_${dateStr}.xlsx`);
+      this.closeExportModal();
     }
   }
 };
@@ -775,6 +1010,17 @@ export default {
   color: #64748b;
 }
 
+.bank-info-box {
+  background: #f8fafc;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+}
+
+.bank-name { font-weight: 800; color: #1e293b; }
+.bank-sub { color: #64748b; }
+
 .wallet-tag {
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
@@ -834,7 +1080,7 @@ export default {
 }
 
 .btn-excel { background: #16a34a; color: white; }
-.btn-excel:hover { background: #15803d; }
+.btn-excel:hover:not(:disabled) { background: #15803d; }
 
 .btn-secondary { background: #e2e8f0; color: #334155; }
 .btn-secondary:hover { background: #cbd5e1; }
@@ -854,11 +1100,179 @@ export default {
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   font-size: 0.88rem;
+  width: 100%;
 }
 .form-control:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* EXPORT MODAL */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.export-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 580px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.modal-header {
+  background: #0f172a;
+  color: white;
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.close-modal-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.6rem;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.modal-intro {
+  font-size: 0.88rem;
+  color: #475569;
+  margin: 0;
+}
+
+.export-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #f8fafc;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.section-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip-btn {
+  padding: 0.35rem 0.65rem;
+  border-radius: 20px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chip-btn.active, .chip-btn:hover {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.date-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.date-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+}
+
+.preview-count-box {
+  background: #ecfdf5;
+  border: 1.5px solid #6ee7b7;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.count-icon { font-size: 1.8rem; }
+
+.count-details strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #065f46;
+}
+
+.count-details p {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.78rem;
+  color: #047857;
+}
+
+.modal-footer {
+  padding: 1rem 1.4rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 /* PAGINATION BAR */

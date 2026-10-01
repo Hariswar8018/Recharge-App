@@ -47,7 +47,7 @@
           <p>Manage, review, approve, reject, and export member cashout requests.</p>
         </div>
         <div class="header-actions">
-          <button @click="downloadExcel" class="btn btn-excel">
+          <button @click="openExportModal" class="btn btn-excel">
             📥 Download Excel Report
           </button>
           <button @click="fetchWithdrawals" class="btn btn-secondary btn-icon" title="Refresh list">
@@ -340,6 +340,92 @@
         </div>
       </div>
     </div>
+
+    <!-- CUSTOM EXCEL EXPORT OPTIONS DIALOG -->
+    <div v-if="showExportModal" class="modal-backdrop" @click="closeExportModal">
+      <div class="modal-dialog export-modal" @click.stop>
+        <div class="modal-header">
+          <h3>📊 Custom Withdrawal Excel Export (.xlsx)</h3>
+          <button @click="closeExportModal" class="close-modal-btn">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-intro">
+            Select custom filters below to generate and download a native <strong>Microsoft Excel (.xlsx)</strong> payout report.
+          </p>
+
+          <!-- 1. DATE RANGE & PRESETS -->
+          <div class="export-section">
+            <label class="section-title">📅 Date Range</label>
+            <div class="preset-chips">
+              <button 
+                v-for="preset in datePresets" 
+                :key="preset.id"
+                @click="applyDatePreset(preset.id)"
+                type="button" 
+                class="chip-btn"
+                :class="{ active: activeDatePreset === preset.id }"
+              >
+                {{ preset.label }}
+              </button>
+            </div>
+            <div class="date-row">
+              <div class="date-field">
+                <label>From Date:</label>
+                <input type="date" v-model="exportStartDate" class="form-control" />
+              </div>
+              <div class="date-field">
+                <label>To Date:</label>
+                <input type="date" v-model="exportEndDate" class="form-control" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. STATUS SELECTION -->
+          <div class="export-section">
+            <label class="section-title">🚦 Payout Request Status</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" value="ALL" v-model="exportStatus" />
+                All Statuses
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="PENDING" v-model="exportStatus" />
+                Pending Payouts Only
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="APPROVED" v-model="exportStatus" />
+                Approved Payouts Only
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="REJECTED" v-model="exportStatus" />
+                Rejected Payouts Only
+              </label>
+            </div>
+          </div>
+
+          <!-- LIVE PREVIEW COUNT SUMMARY BOX -->
+          <div class="preview-count-box">
+            <div class="count-icon">📥</div>
+            <div class="count-details">
+              <strong>{{ exportMatchingCount }} Matching Withdrawal Requests Found</strong>
+              <p>Contains User IDs, Full Names, Mobile Numbers, Bank Names, Account Numbers, IFSC, Amounts, Net Payable, and Statuses.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button @click="closeExportModal" class="btn btn-secondary">Cancel</button>
+          <button 
+            @click="executeExcelDownload" 
+            class="btn btn-excel" 
+            :disabled="exportMatchingCount === 0"
+          >
+            📥 Download {{ exportMatchingCount }} Requests (.xlsx)
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -370,6 +456,20 @@ export default {
         'Account Holder Name Mismatch',
         'Bank Account Not Verified',
         'Duplicate Withdrawal Request'
+      ],
+
+      // Export Dialog State
+      showExportModal: false,
+      exportStartDate: '',
+      exportEndDate: '',
+      exportStatus: 'ALL',
+      activeDatePreset: 'ALL',
+      datePresets: [
+        { id: 'ALL', label: 'All Time' },
+        { id: 'TODAY', label: 'Today' },
+        { id: 'WEEK', label: 'This Week' },
+        { id: 'MONTH', label: 'This Month' },
+        { id: '30DAYS', label: 'Last 30 Days' }
       ]
     };
   },
@@ -409,6 +509,31 @@ export default {
 
         return true;
       });
+    },
+
+    exportFilteredRequests() {
+      return this.requests.filter(req => {
+        // 1. Status Filter
+        if (this.exportStatus !== 'ALL' && (req.status || '').toUpperCase() !== this.exportStatus) {
+          return false;
+        }
+
+        // 2. Date Range Filter
+        if (this.exportStartDate) {
+          const reqDate = new Date(req.createdAt).toISOString().split('T')[0];
+          if (reqDate < this.exportStartDate) return false;
+        }
+        if (this.exportEndDate) {
+          const reqDate = new Date(req.createdAt).toISOString().split('T')[0];
+          if (reqDate > this.exportEndDate) return false;
+        }
+
+        return true;
+      });
+    },
+
+    exportMatchingCount() {
+      return this.exportFilteredRequests.length;
     },
 
     totalAmount() {
@@ -600,14 +725,52 @@ export default {
       }
     },
 
-    // Native .xlsx Excel Export for FILTERED requests only
-    downloadExcel() {
-      if (this.filteredRequests.length === 0) {
-        alert('No withdrawal requests found for current filters');
+    openExportModal() {
+      this.exportStartDate = this.startDate;
+      this.exportEndDate = this.endDate;
+      this.exportStatus = this.filterStatus;
+      this.activeDatePreset = (this.startDate || this.endDate) ? 'CUSTOM' : 'ALL';
+      this.showExportModal = true;
+    },
+
+    closeExportModal() {
+      this.showExportModal = false;
+    },
+
+    applyDatePreset(presetId) {
+      this.activeDatePreset = presetId;
+      const today = new Date();
+
+      if (presetId === 'ALL') {
+        this.exportStartDate = '';
+        this.exportEndDate = '';
+      } else if (presetId === 'TODAY') {
+        const dStr = today.toISOString().split('T')[0];
+        this.exportStartDate = dStr;
+        this.exportEndDate = dStr;
+      } else if (presetId === 'WEEK') {
+        const firstDay = new Date(today.setDate(today.getDate() - today.getDay()));
+        this.exportStartDate = firstDay.toISOString().split('T')[0];
+        this.exportEndDate = new Date().toISOString().split('T')[0];
+      } else if (presetId === 'MONTH') {
+        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        this.exportStartDate = firstDay.toISOString().split('T')[0];
+        this.exportEndDate = new Date().toISOString().split('T')[0];
+      } else if (presetId === '30DAYS') {
+        const prior30 = new Date(new Date().setDate(new Date().getDate() - 30));
+        this.exportStartDate = prior30.toISOString().split('T')[0];
+        this.exportEndDate = new Date().toISOString().split('T')[0];
+      }
+    },
+
+    // Native .xlsx Excel Export for FILTERED requests
+    executeExcelDownload() {
+      if (this.exportFilteredRequests.length === 0) {
+        alert('No withdrawal requests match the chosen export options');
         return;
       }
 
-      const excelData = this.filteredRequests.map(r => ({
+      const excelData = this.exportFilteredRequests.map(r => ({
         'Request ID': `REQ-${r.id}`,
         'Date & Time': this.formatDate(r.createdAt),
         'User ID': `#${r.user_id}`,
@@ -661,6 +824,7 @@ export default {
       XLSX.writeFile(workbook, `Withdrawal_Requests_Filtered_${dateStr}.xlsx`);
 
       this.$emit('trigger-toast', 'Excel (.xlsx) report downloaded successfully!');
+      this.closeExportModal();
     }
   }
 };
@@ -1077,20 +1241,12 @@ export default {
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   font-size: 0.88rem;
+  width: 100%;
 }
 .form-control:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-/* CHECKBOX */
-.checkbox-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  user-select: none;
 }
 
 /* MODAL */
@@ -1100,9 +1256,9 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(4px);
-  z-index: 9999;
+  z-index: 99999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1118,10 +1274,14 @@ export default {
   overflow: hidden;
 }
 
+.export-modal {
+  max-width: 580px;
+}
+
 .modal-header {
   background: #0f172a;
   color: white;
-  padding: 1rem 1.25rem;
+  padding: 1.1rem 1.4rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1129,7 +1289,8 @@ export default {
 
 .modal-header h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
 .close-modal-btn {
@@ -1141,22 +1302,34 @@ export default {
 }
 
 .modal-body {
-  padding: 1.25rem;
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-height: 75vh;
+  overflow-y: auto;
 }
 
 .modal-intro {
   font-size: 0.88rem;
   color: #475569;
-  margin-bottom: 1rem;
-  line-height: 1.4;
+  margin: 0;
 }
 
-.field-label {
-  display: block;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #334155;
-  margin-bottom: 0.4rem;
+.export-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: #f8fafc;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.section-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0f172a;
 }
 
 .preset-chips {
@@ -1166,24 +1339,80 @@ export default {
 }
 
 .chip-btn {
-  padding: 0.3rem 0.6rem;
+  padding: 0.35rem 0.65rem;
   border-radius: 20px;
   border: 1px solid #cbd5e1;
-  background: #f8fafc;
+  background: white;
   color: #475569;
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .chip-btn.active, .chip-btn:hover {
-  background: #dc2626;
+  background: #2563eb;
   color: white;
-  border-color: #dc2626;
+  border-color: #2563eb;
+}
+
+.date-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.date-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+}
+
+.preview-count-box {
+  background: #ecfdf5;
+  border: 1.5px solid #6ee7b7;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.count-icon { font-size: 1.8rem; }
+
+.count-details strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #065f46;
+}
+
+.count-details p {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.78rem;
+  color: #047857;
 }
 
 .modal-footer {
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.4rem;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
   display: flex;
