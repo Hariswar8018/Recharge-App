@@ -222,7 +222,7 @@
 
         <!-- TAB 6: TEAMS & AFFILIATE TREE -->
         <TeamsTreeTab 
-          v-else-if="currentTab === 'teams' || currentTab === 'sec_team' || currentTab === 'sec_direct_members'"
+          v-else-if="currentTab === 'teams' || currentTab === 'sec_team' || currentTab === 'sec_direct_members' || currentTab === 'sec_business_income' || currentTab === 'sec_global_cycle'"
           :teamsData="teamsData"
           :loadingTeams="loadingTeams"
         />
@@ -250,7 +250,9 @@
         <!-- TAB 9: SYSTEM SETTINGS -->
         <SystemSettingsTab 
           v-else-if="currentTab === 'settings' || currentTab.startsWith('sec_')"
+          :currentTab="currentTab"
           :systemSettings="systemSettings"
+          :pendingRequestsCount="pendingRequestsCount"
           :qrStorageOption="qrStorageOption"
           :uploadingQr="uploadingQr"
           :qrUploadMsg="qrUploadMsg"
@@ -258,6 +260,7 @@
           :savingSettings="savingSettings"
           :saveSettingsMsg="saveSettingsMsg"
           :saveSettingsSuccess="saveSettingsSuccess"
+          @switch-tab="switchTab($event)"
           @qr-file-change="onQrFileSelected($event)"
           @upload-qr="handleQrUpload"
           @save-system-settings="handleSaveSystemSettings"

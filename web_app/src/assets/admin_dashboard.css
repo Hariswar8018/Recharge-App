@@ -7,6 +7,15 @@
   color: #172b4d;
 }
 
+.logo-img {
+  width: 36px !important;
+  height: 36px !important;
+  max-width: 36px !important;
+  max-height: 36px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+}
+
 /* Sidebar styling (Classic Royal Blue Theme) */
 .sidebar {
   width: 260px;
