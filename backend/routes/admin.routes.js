@@ -223,31 +223,75 @@ router.delete('/notifications/:id', verifyAdminToken, async (req, res) => {
 });
 
 
-// GET Paginated Admin Transactions (with optional user_id filter)
+// GET Paginated & Filterable Admin Transactions
 router.get('/transactions', verifyAdminToken, async (req, res) => {
   try {
     const userId = req.query.user_id || req.query.userId;
+    const { search, wallet_type, status, type, startDate, endDate } = req.query;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || (userId ? 100 : 15);
+    const limit = parseInt(req.query.limit) || 200;
     const offset = (page - 1) * limit;
 
     let sql = `SELECT t.*, u.fullName, u.email, u.mobileNumber 
                FROM transactions t 
-               LEFT JOIN users u ON t.user_id = u.id `;
+               LEFT JOIN users u ON t.user_id = u.id 
+               WHERE 1=1 `;
     let params = [];
+
     if (userId) {
-      sql += ` WHERE t.user_id = ? OR u.mobileNumber = ? `;
+      sql += ` AND (t.user_id = ? OR u.mobileNumber = ?) `;
       params.push(userId, userId);
     }
+
+    if (wallet_type && wallet_type.toUpperCase() !== 'ALL') {
+      sql += ` AND UPPER(t.wallet_type) = ? `;
+      params.push(wallet_type.toUpperCase());
+    }
+
+    if (status && status.toUpperCase() !== 'ALL') {
+      sql += ` AND UPPER(t.status) = ? `;
+      params.push(status.toUpperCase());
+    }
+
+    if (type && type.toUpperCase() !== 'ALL') {
+      sql += ` AND UPPER(t.type) LIKE ? `;
+      params.push(`%${type.toUpperCase()}%`);
+    }
+
+    if (search && search.trim() !== '') {
+      const q = `%${search.trim()}%`;
+      sql += ` AND (u.fullName LIKE ? OR u.mobileNumber LIKE ? OR u.email LIKE ? OR CAST(t.user_id AS CHAR) LIKE ? OR t.type LIKE ? OR t.amount LIKE ? OR CAST(t.id AS CHAR) LIKE ?) `;
+      params.push(q, q, q, q, q, q, q);
+    }
+
+    if (startDate && startDate.trim() !== '') {
+      sql += ` AND (DATE(t.createdAt) >= ? OR t.date >= ?) `;
+      params.push(startDate.trim(), startDate.trim());
+    }
+
+    if (endDate && endDate.trim() !== '') {
+      sql += ` AND (DATE(t.createdAt) <= ? OR t.date <= ?) `;
+      params.push(endDate.trim(), endDate.trim() + ' 23:59:59');
+    }
+
     sql += ` ORDER BY t.id DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
     const list = await query(sql, params);
 
-    const cleanedList = list.map(tx => ({
-      ...tx,
-      amount: String(tx.amount || 0).replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim()
-    }));
+    const cleanedList = list.map(tx => {
+      const rawAmt = String(tx.amount || 0);
+      const cleanAmt = rawAmt.replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim();
+      const numAmt = parseFloat(cleanAmt) || 0;
+      const isDebit = rawAmt.includes('-') || (tx.type && (tx.type.toLowerCase().includes('debit') || tx.type.toLowerCase().includes('withdrawal') || tx.type.toLowerCase().includes('cashout') || tx.type.toLowerCase().includes('recharge')));
+      return {
+        ...tx,
+        raw_amount: tx.amount,
+        numeric_amount: numAmt,
+        is_debit: isDebit,
+        amount: numAmt.toFixed(2)
+      };
+    });
 
     res.json(cleanedList);
   } catch (err) {
