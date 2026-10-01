@@ -131,9 +131,13 @@ router.get('/settings', verifyAdminToken, async (req, res) => {
 // UPDATE Admin System Settings
 router.post('/settings', verifyAdminToken, async (req, res) => {
   try {
-    const updates = req.body;
+    const updates = { ...req.body };
+    if (updates.upi_vpa_id && !updates.upi_id) updates.upi_id = updates.upi_vpa_id;
+    if (updates.upi_id && !updates.upi_vpa_id) updates.upi_vpa_id = updates.upi_id;
+    if (updates.upi_qr_url && !updates.qr_image_url) updates.qr_image_url = updates.upi_qr_url;
+
     for (const [key, val] of Object.entries(updates)) {
-      const strVal = String(val);
+      const strVal = val !== null && val !== undefined ? String(val) : '';
       const existing = await query('SELECT key_name FROM system_settings WHERE key_name = ?', [key]);
       if (existing && existing.length > 0) {
         await query('UPDATE system_settings SET val_value = ? WHERE key_name = ?', [strVal, key]);
@@ -878,12 +882,17 @@ router.post('/users/:userId/adjust-wallet', verifyAdminToken, async (req, res) =
 router.post('/upload-qr', verifyAdminToken, async (req, res) => {
   try {
     const { qrImageBase64, qrImageUrl } = req.body;
+    let inputStr = qrImageBase64 || qrImageUrl || '';
     let finalUrl = qrImageUrl || '';
 
-    if (qrImageBase64 && qrImageBase64.includes('base64,')) {
-      const base64Data = qrImageBase64.split('base64,')[1];
+    if (inputStr && inputStr.includes('base64,')) {
+      const base64Data = inputStr.split('base64,')[1];
       const fileName = `upi_qr_${Date.now()}.png`;
-      const uploadPath = path.join(__dirname, '../uploads', fileName);
+      const uploadDir = path.join(__dirname, '../uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const uploadPath = path.join(uploadDir, fileName);
 
       fs.writeFileSync(uploadPath, base64Data, 'base64');
       const protocol = req.protocol || 'http';
@@ -895,12 +904,14 @@ router.post('/upload-qr', verifyAdminToken, async (req, res) => {
       return res.status(400).json({ error: 'Please provide an image file or URL' });
     }
 
-    // Save into system_settings
-    const existing = await query('SELECT id FROM system_settings WHERE key_name = "upi_qr_url"');
-    if (existing && existing.length > 0) {
-      await query('UPDATE system_settings SET val_value = ? WHERE key_name = "upi_qr_url"', [finalUrl]);
-    } else {
-      await query('INSERT INTO system_settings (key_name, val_value) VALUES ("upi_qr_url", ?)', [finalUrl]);
+    // Save into system_settings under both upi_qr_url and qr_image_url
+    for (const k of ['upi_qr_url', 'qr_image_url']) {
+      const existing = await query('SELECT id FROM system_settings WHERE key_name = ?', [k]);
+      if (existing && existing.length > 0) {
+        await query('UPDATE system_settings SET val_value = ? WHERE key_name = ?', [finalUrl, k]);
+      } else {
+        await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, finalUrl]);
+      }
     }
 
     res.json({ message: 'UPI QR Code updated successfully', upi_qr_url: finalUrl });

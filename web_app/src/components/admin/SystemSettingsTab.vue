@@ -168,7 +168,7 @@
             <!-- UPI VPA ID -->
             <div>
               <label style="font-size: 0.83rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">UPI ID / VPA</label>
-              <input type="text" v-model="systemSettings.upi_id" placeholder="srdigitalseva@ybl" class="input-styled" style="width: 100%; box-sizing: border-box; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #cbd5e1;" />
+              <input type="text" v-model="systemSettings.upi_id" @input="systemSettings.upi_vpa_id = systemSettings.upi_id" placeholder="srdigitalseva@ybl" class="input-styled" style="width: 100%; box-sizing: border-box; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #cbd5e1;" />
             </div>
           </div>
 

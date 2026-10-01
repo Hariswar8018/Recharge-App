@@ -31,14 +31,3 @@
 [x] Rejection Reason visible to User
 [x] Excel Download
 
-
-8. ₹1,200 ID Activation Invoice
-[x] Invoice generated only for ₹1,200 ID Activation Payment
-[x] Generate only after payment received + Admin approved
-[x] No invoice for other transactions
-[x] No invoice for other services/payments
-[x] Invoice available only in Admin Panel
-[x] Invoice must not appear in User Panel
-[x] Individual Download by User ID
-[x] Monthly Bulk Download
-[x] Pending/Rejected Payment → No Invoice

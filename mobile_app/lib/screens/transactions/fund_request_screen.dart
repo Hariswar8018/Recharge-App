@@ -74,7 +74,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
   Future<void> _loadSettings() async {
     try {
-      final vis = await ApiService.getVisibility();
+      final vis = await ApiService.getVisibility(forceRefresh: true);
       final raw = (vis['raw_settings'] as Map<String, dynamic>?) ?? {};
       if (mounted) {
         setState(() {
@@ -105,12 +105,23 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       _stringSetting('add_money_enabled_bool') == 'false';
 
   bool get showQrCode => _boolSetting('status_upi_qr', defaultValue: true);
-  String get customQrUrl => _stringSetting('upi_qr_url');
+  String get customQrUrl {
+    final v1 = _stringSetting('upi_qr_url').trim();
+    if (v1.isNotEmpty) return v1;
+    final v2 = _stringSetting('qr_image_url').trim();
+    if (v2.isNotEmpty) return v2;
+    return '';
+  }
 
   bool get showUpiId => _boolSetting('status_upi_id', defaultValue: true);
   String get payeeVpa {
-    final val = _stringSetting('upi_vpa_id', defaultValue: _defaultPayeeVpa).trim();
-    return val.isNotEmpty ? val : _defaultPayeeVpa;
+    final v1 = _stringSetting('upi_vpa_id').trim();
+    if (v1.isNotEmpty) return v1;
+    final v2 = _stringSetting('upi_id').trim();
+    if (v2.isNotEmpty) return v2;
+    final v3 = _stringSetting('upi_vpa').trim();
+    if (v3.isNotEmpty) return v3;
+    return _defaultPayeeVpa;
   }
   String get payeeName {
     final val = _stringSetting('upi_payee_name', defaultValue: "EarnFarm").trim();
@@ -319,11 +330,11 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   }
 
   Widget _buildQrDisplay() {
-    final url = customQrUrl.trim();
+    String url = customQrUrl.trim();
     if (url.isNotEmpty) {
       try {
         if (url.startsWith('data:image')) {
-          final base64Str = url.split(',').last;
+          final base64Str = url.split(',').last.replaceAll(RegExp(r'\s+'), '');
           return Image.memory(
             base64Decode(base64Str),
             width: 200,
@@ -331,14 +342,21 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) => _buildQrPlaceholder(),
           );
-        } else if (url.startsWith('http')) {
-          return Image.network(
-            url,
-            width: 200,
-            height: 200,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => _buildQrPlaceholder(),
-          );
+        } else {
+          String fullUrl = url;
+          if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+            final cleanPath = url.startsWith('/') ? url : '/$url';
+            fullUrl = '${ApiService.baseUrl}$cleanPath';
+          }
+          if (fullUrl.startsWith('http')) {
+            return Image.network(
+              fullUrl,
+              width: 200,
+              height: 200,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => _buildQrPlaceholder(),
+            );
+          }
         }
       } catch (_) {}
     }
