@@ -20,6 +20,7 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
   Timer? _timer;
   bool _isSubmitting = false;
   Map<String, dynamic> _visibilitySettings = {};
+  double _rewardAmount = 0.50;
 
   @override
   void initState() {
@@ -29,10 +30,12 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
   }
 
   Future<void> _loadVisibility() async {
-    final v = await ApiService.getVisibility();
+    final v = await ApiService.getVisibility(forceRefresh: true);
     if (mounted) {
+      final double reward = double.tryParse(v['captcha_reward_amount']?.toString() ?? v['raw_settings']?['captcha_reward_amount']?.toString() ?? "0.50") ?? 0.50;
       setState(() {
         _visibilitySettings = v;
+        _rewardAmount = reward;
       });
     }
   }
@@ -102,34 +105,52 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
       _isSubmitting = true;
     });
 
-    await ApiService.submitCaptchaEarnings(earnedAmount: 0.01);
+    final result = await ApiService.submitCaptchaEarnings();
     if (!mounted) return;
 
     setState(() {
       _isSubmitting = false;
     });
 
-    widget.onEarn(0.01);
+    if (result['success']) {
+      final double earned = (result['earnedAmount'] is num) 
+          ? (result['earnedAmount'] as num).toDouble() 
+          : _rewardAmount;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 8),
-            Text("Success! ₹ 0.01 added to your balance.", style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
+      widget.onEarn(earned);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 8),
+              Text("Success! ₹ ${earned.toStringAsFixed(2)} added to your balance.", style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          backgroundColor: const Color(0xFF16A34A),
+          duration: const Duration(seconds: 2),
         ),
-        backgroundColor: Color(0xFF16A34A),
-        duration: Duration(seconds: 2),
-      ),
-    );
+      );
 
-    _generateNewCaptcha();
+      _generateNewCaptcha();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error'] ?? "Failed to credit captcha reward."),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final String vis = (_visibilitySettings['sec_captcha_visibility'] ?? _visibilitySettings['captcha_section_visibility'] ?? 'Show').toString();
+    final bool rawEnabled = (_visibilitySettings['raw_settings']?['captcha_enabled'] ?? _visibilitySettings['sec_captcha_enabled'])?.toString() != 'false';
+    final String ruleMode = (_visibilitySettings['sec_captcha_rule_mode'] ?? '').toString();
+    final bool isCaptchaDisabled = vis == 'Hide' || !rawEnabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -171,229 +192,216 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
           ),
           const SizedBox(height: 14),
 
-          Builder(
-            builder: (context) {
-              final String vis = (_visibilitySettings['sec_captcha_visibility'] ?? _visibilitySettings['captcha_section_visibility'] ?? 'Show').toString();
-              final bool enabled = _visibilitySettings['sec_captcha_enabled'] != false && _visibilitySettings['sec_captcha_enabled_bool'] != 'false';
-              final String ruleMode = (_visibilitySettings['sec_captcha_rule_mode'] ?? '').toString();
-              final bool isCaptchaDisabled = vis == 'Hide' || !enabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
-              
-              if (isCaptchaDisabled) {
-                return Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF2F2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFCA5A5)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.block_rounded, color: Colors.red, size: 24),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _visibilitySettings['sec_captcha_notice']?.toString().isNotEmpty == true
-                              ? _visibilitySettings['sec_captcha_notice']
-                              : "CAPTCHA Work is currently disabled by Administrator. Please check back later.",
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return Column(
+          if (isCaptchaDisabled) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFCA5A5)),
+              ),
+              child: Row(
                 children: [
-                  if (_visibilitySettings['sec_captcha_notice'] != null && _visibilitySettings['sec_captcha_notice'].toString().isNotEmpty) ...[
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.blue.shade200),
+                  const Icon(Icons.block_rounded, color: Colors.red, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _visibilitySettings['raw_settings']?['captcha_maintenance_msg'] ??
+                      _visibilitySettings['sec_captcha_notice'] ??
+                      "CAPTCHA Work is currently under maintenance by Administrator. Please check back later.",
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.info, color: Color(0xFF0052CC), size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              _visibilitySettings['sec_captcha_notice'],
-                              style: const TextStyle(
-                                color: Color(0xFF0052CC),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            if (_visibilitySettings['sec_captcha_notice'] != null && _visibilitySettings['sec_captcha_notice'].toString().isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info, color: Color(0xFF0052CC), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _visibilitySettings['sec_captcha_notice'],
+                        style: const TextStyle(
+                          color: Color(0xFF0052CC),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
-                ],
-              );
-            },
-          ),
-
-          // Captcha Box & Refresh Button Row
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      // Visual Captcha Canvas
-                      Expanded(
-                        child: CustomPaint(
-                          size: const Size(double.infinity, 72),
-                          painter: _CaptchaPainter(text: _currentCaptcha),
-                        ),
-                      ),
-
-                      // Divider
-                      Container(
-                        width: 1,
-                        height: 48,
-                        color: const Color(0xFFE2E8F0),
-                      ),
-
-                      // Time Left Column
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              "Time Left",
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF64748B),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              "${_timeLeft}s",
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF0052CC),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-
-              // Refresh Button
-              InkWell(
-                onTap: _generateNewCaptcha,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: 48,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFCBD5E1)),
-                  ),
-                  child: const Icon(
-                    Icons.sync_rounded,
-                    color: Color(0xFF0052CC),
-                    size: 26,
-                  ),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 14),
 
-          // Captcha Input Field
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFCBD5E1)),
-            ),
-            child: TextField(
-              controller: _captchaController,
-              autocorrect: false,
-              enableSuggestions: false,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2.0,
-                color: Color(0xFF0F172A),
-              ),
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.lock_outline_rounded, color: Color(0xFF475569), size: 20),
-                hintText: "Enter Captcha",
-                hintStyle: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                  letterSpacing: 0,
-                  color: Color(0xFF94A3B8),
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Submit & Earn Button
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _handleSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0052CC),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text(
-                          "Submit & Earn ₹ 0.01",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+            // Captcha Box & Refresh Button Row
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      children: [
+                        // Visual Captcha Canvas
+                        Expanded(
+                          child: CustomPaint(
+                            size: const Size(double.infinity, 72),
+                            painter: _CaptchaPainter(text: _currentCaptcha),
                           ),
                         ),
-                        SizedBox(width: 6),
-                        Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+
+                        // Divider
+                        Container(
+                          width: 1,
+                          height: 48,
+                          color: const Color(0xFFE2E8F0),
+                        ),
+
+                        // Time Left Column
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                "Time Left",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF64748B),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "${_timeLeft}s",
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF0052CC),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+
+                // Refresh Button
+                InkWell(
+                  onTap: _generateNewCaptcha,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 48,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFCBD5E1)),
+                    ),
+                    child: const Icon(
+                      Icons.sync_rounded,
+                      color: Color(0xFF0052CC),
+                      size: 26,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
+            const SizedBox(height: 14),
+
+            // Captcha Input Field
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFCBD5E1)),
+              ),
+              child: TextField(
+                controller: _captchaController,
+                autocorrect: false,
+                enableSuggestions: false,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2.0,
+                  color: Color(0xFF0F172A),
+                ),
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.lock_outline_rounded, color: Color(0xFF475569), size: 20),
+                  hintText: "Enter Captcha",
+                  hintStyle: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                    letterSpacing: 0,
+                    color: Color(0xFF94A3B8),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Submit & Earn Button
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _handleSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0052CC),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Submit & Earn ₹ ${_rewardAmount.toStringAsFixed(2)}",
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+                        ],
+                      ),
+              ),
+            ),
+          ],
         ],
       ),
     );

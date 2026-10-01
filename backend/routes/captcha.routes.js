@@ -1,28 +1,70 @@
 const express = require('express');
-const { transaction } = require('../db');
+const { query, transaction } = require('../db');
 const { invalidateCache } = require('../cache');
 const { verifyAppToken, verifyUserToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.post('/earn', verifyAppToken, verifyUserToken, async (req, res) => {
-  const earnedAmount = parseFloat(req.body.amount || '0.01');
-  if (isNaN(earnedAmount) || earnedAmount <= 0) {
-    return res.status(400).json({ error: 'Invalid reward amount' });
-  }
-
+// GET /api/captcha/config - Public Captcha Work Config (ON/OFF status & per-captcha reward rate)
+router.get('/config', async (req, res) => {
   try {
+    const settingsRows = await query('SELECT key_name, val_value FROM system_settings');
+    const settings = {};
+    settingsRows.forEach(r => { settings[r.key_name] = r.val_value; });
+
+    const isEnabled = settings['captcha_enabled'] !== 'false' && 
+                      settings['sec_captcha_enabled_bool'] !== 'false' && 
+                      (settings['sec_captcha_rule_mode'] || '').indexOf('Disabled') === -1 && 
+                      (settings['sec_captcha_rule_mode'] || '').indexOf('Maintenance') === -1;
+
+    const rewardAmount = parseFloat(settings['captcha_reward_amount'] || settings['captcha_per_solve_income'] || '0.50');
+    const maintenanceMsg = settings['sec_captcha_notice'] || settings['captcha_maintenance_msg'] || 'CAPTCHA Work is currently under maintenance. Please check back later.';
+
+    res.json({
+      captcha_enabled: isEnabled,
+      captcha_reward_amount: rewardAmount,
+      maintenance_message: maintenanceMsg
+    });
+  } catch (err) {
+    console.error('Error fetching captcha config:', err);
+    res.status(500).json({ error: 'Failed to fetch captcha configuration' });
+  }
+});
+
+// POST /api/captcha/earn - Submit successful captcha solve & credit reward
+router.post('/earn', verifyAppToken, verifyUserToken, async (req, res) => {
+  try {
+    const settingsRows = await query('SELECT key_name, val_value FROM system_settings');
+    const settings = {};
+    settingsRows.forEach(r => { settings[r.key_name] = r.val_value; });
+
+    const isEnabled = settings['captcha_enabled'] !== 'false' && 
+                      settings['sec_captcha_enabled_bool'] !== 'false' && 
+                      (settings['sec_captcha_rule_mode'] || '').indexOf('Disabled') === -1 && 
+                      (settings['sec_captcha_rule_mode'] || '').indexOf('Maintenance') === -1;
+
+    if (!isEnabled) {
+      const msg = settings['sec_captcha_notice'] || settings['captcha_maintenance_msg'] || 'CAPTCHA Work is currently under maintenance. Please check back later.';
+      return res.status(400).json({ error: msg });
+    }
+
+    // Dynamic Admin-editable Per-CAPTCHA Income (Default: ₹0.50)
+    const rewardAmount = parseFloat(settings['captcha_reward_amount'] || settings['captcha_per_solve_income'] || '0.50');
+    if (isNaN(rewardAmount) || rewardAmount <= 0) {
+      return res.status(400).json({ error: 'Invalid captcha reward rate setting' });
+    }
+
     await transaction(async (conn) => {
-      // Credit reward directly to Main Wallet for both active and free/inactive users
+      // Credit reward directly to Main Wallet
       await conn.execute(
         'UPDATE users SET main_wallet_balance = main_wallet_balance + ? WHERE id = ?',
-        [earnedAmount, req.user.id]
+        [rewardAmount, req.user.id]
       );
 
       const dateStr = new Date().toLocaleString('en-US', { hour12: true });
       await conn.execute(
         'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", ?, "Captcha Solve Reward", ?, "Success")',
-        [req.user.id, `+₹${earnedAmount.toFixed(2)}`, dateStr]
+        [req.user.id, `+₹${rewardAmount.toFixed(2)}`, dateStr]
       );
     });
 
@@ -30,8 +72,8 @@ router.post('/earn', verifyAppToken, verifyUserToken, async (req, res) => {
     await invalidateCache('admin_stats');
 
     res.json({
-      message: `Reward ₹${earnedAmount.toFixed(2)} credited to Main Wallet`,
-      earnedAmount: earnedAmount
+      message: `Reward ₹${rewardAmount.toFixed(2)} credited to Main Wallet`,
+      earnedAmount: rewardAmount
     });
   } catch (err) {
     console.error('Captcha earn error:', err);

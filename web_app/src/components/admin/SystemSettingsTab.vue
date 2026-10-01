@@ -187,7 +187,61 @@
       </div>
     </div>
 
-    <!-- 3. GENERIC SECTION CHECKLIST CONFIG CARD -->
+    <!-- 3. DEDICATED CAPTCHA WORK & REWARDS CONFIG CARD -->
+    <div v-else-if="currentTab === 'sec_captcha'" class="section-settings-pane">
+      <div class="table-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div class="card-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">⚙️ 7. Captcha Rewards & Work Configuration</h3>
+          <button @click="$emit('save-system-settings')" :disabled="savingSettings" style="background: #16a34a; color: white; border: none; padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 800; cursor: pointer;">
+            💾 {{ savingSettings ? 'Saving...' : 'Save Configuration' }}
+          </button>
+        </div>
+        <p class="card-desc" style="margin: 4px 0 1rem; font-size: 0.83rem; color: #64748b;">Configure Per-CAPTCHA reward income, work ON/OFF status, and maintenance notice messages.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
+          <!-- CAPTCHA Work ON/OFF -->
+          <div class="form-group">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">CAPTCHA Work Status (ON / OFF)</label>
+            <select v-model="systemSettings.captcha_enabled" class="input-styled select-styled" style="width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+              <option value="true">🟢 ON - Captcha Work Active</option>
+              <option value="false">🔴 OFF - Under Maintenance</option>
+            </select>
+          </div>
+
+          <!-- Per-CAPTCHA Reward Income -->
+          <div class="form-group">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">Per-CAPTCHA Reward Income (₹)</label>
+            <input type="number" step="0.05" min="0.01" v-model="systemSettings.captcha_reward_amount" placeholder="0.50" class="input-styled" style="width: 100%; box-sizing: border-box; padding: 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 800; font-size: 1rem; color: #0f172a;" />
+          </div>
+
+          <!-- Maintenance Notice -->
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">Maintenance Notice (Shown to Users when OFF)</label>
+            <input type="text" v-model="systemSettings.captcha_maintenance_msg" placeholder="CAPTCHA Work is currently under maintenance. Please check back later." class="input-styled" style="width: 100%; box-sizing: border-box; padding: 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1;" />
+          </div>
+        </div>
+
+        <!-- LIVE CALCULATION VERIFICATION BOX -->
+        <div style="margin-top: 1.5rem; background: #f0fdf4; border: 1.5px solid #86efac; padding: 1.25rem; border-radius: 12px; display: flex; align-items: center; gap: 1rem;">
+          <div style="font-size: 2rem;">🧮</div>
+          <div>
+            <strong style="color: #166534; font-size: 0.95rem; display: block;">Verification Calculation:</strong>
+            <div style="font-size: 1.05rem; font-weight: 800; color: #15803d; margin-top: 2px;">
+              ₹{{ parseFloat(systemSettings.captcha_reward_amount || '0.50').toFixed(2) }} × 10 successful CAPTCHAs = ₹{{ (parseFloat(systemSettings.captcha_reward_amount || '0.50') * 10).toFixed(2) }}
+            </div>
+            <p style="margin: 3px 0 0 0; font-size: 0.78rem; color: #166534;">
+              Only successful captcha solves are counted and credited directly to the user's Main Wallet balance.
+            </p>
+          </div>
+        </div>
+
+        <div v-if="saveSettingsMsg" style="margin-top: 1rem; font-weight: 700; font-size: 0.88rem;" :style="{ color: saveSettingsSuccess ? '#16a34a' : '#ef4444' }">
+          {{ saveSettingsMsg }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. GENERIC SECTION CHECKLIST CONFIG CARD -->
     <div v-else class="section-settings-pane">
       <div class="table-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
         <div class="card-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">

@@ -661,39 +661,43 @@ class ApiService {
   }
 
   // Submit Captcha Earnings
-  static Future<Map<String, dynamic>> submitCaptchaEarnings({
-    double earnedAmount = 0.01,
-  }) async {
-    await _initCaptchaPersistence();
-    _accumulatedCaptchaEarnings += earnedAmount;
-    final newTx = {
-      'type': 'Captcha Solve Reward',
-      'amount': '+ ₹${earnedAmount.toStringAsFixed(2)}',
-      'date': DateTime.now()
-          .toLocal()
-          .toString()
-          .substring(0, 19)
-          .replaceAll('T', ' '),
-      'reference_id': 'TXN_CPT_${DateTime.now().millisecondsSinceEpoch}',
-    };
-    _localCaptchaTxns.insert(0, newTx);
-    await _saveCaptchaPersistence();
-
+  static Future<Map<String, dynamic>> submitCaptchaEarnings() async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/api/captcha/earn'),
         headers: await _getHeaders(requireAuth: true),
-        body: jsonEncode({'amount': earnedAmount}),
       );
       final decoded = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final double earned = double.tryParse(decoded['earnedAmount']?.toString() ?? "0.50") ?? 0.50;
+        await _initCaptchaPersistence();
+        _accumulatedCaptchaEarnings += earned;
+        final newTx = {
+          'type': 'Captcha Solve Reward',
+          'amount': '+ ₹${earned.toStringAsFixed(2)}',
+          'date': DateTime.now()
+              .toLocal()
+              .toString()
+              .substring(0, 19)
+              .replaceAll('T', ' '),
+          'reference_id': 'TXN_CPT_${DateTime.now().millisecondsSinceEpoch}',
+        };
+        _localCaptchaTxns.insert(0, newTx);
+        await _saveCaptchaPersistence();
         return {
           'success': true,
           'message': decoded['message'] ?? 'Reward added',
+          'earnedAmount': earned
+        };
+      } else {
+        return {
+          'success': false,
+          'error': decoded['error'] ?? 'Failed to submit captcha reward'
         };
       }
-    } catch (_) {}
-    return {'success': true, 'message': 'Reward ₹0.01 added to balance'};
+    } catch (_) {
+      return {'success': false, 'error': 'Server connection error'};
+    }
   }
 
   // Update User Profile

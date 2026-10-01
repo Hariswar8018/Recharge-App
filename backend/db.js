@@ -313,6 +313,8 @@ async function initDb() {
         ['add_money_enabled', 'true'],
         ['withdrawal_enabled', 'true'],
         ['captcha_enabled', 'true'],
+        ['captcha_reward_amount', '0.50'],
+        ['captcha_maintenance_msg', 'CAPTCHA Work is currently under maintenance. Please check back later.'],
         ['forgot_password_enabled', 'true'],
         ['app_share_text', 'Download our App to Earn Money from Scratch Cards'],
         ['playstore_link', 'https://play.google.com/store/apps/details?id=com.app.earnfarm'],
