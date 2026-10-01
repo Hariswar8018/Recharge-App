@@ -670,6 +670,7 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
       password,
       status,
       sponsor_id,
+      createdAt,
       bank_name,
       account_holder,
       account_no,
@@ -692,6 +693,11 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
       plainPassword = password.trim();
     }
 
+    let updatedCreatedAt = existing[0].createdAt;
+    if (createdAt && String(createdAt).trim().length >= 10) {
+      updatedCreatedAt = String(createdAt).trim();
+    }
+
     await query(
       `UPDATE users SET 
         fullName = ?, 
@@ -701,6 +707,7 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
         plain_password = ?, 
         status = ?, 
         sponsor_id = ?, 
+        createdAt = ?,
         bank_name = ?, 
         account_holder = ?, 
         account_no = ?, 
@@ -709,18 +716,19 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
         account_type = ? 
        WHERE id = ?`,
       [
-        fullName || existing[0].fullName,
-        email || existing[0].email,
-        mobileNumber || existing[0].mobileNumber,
+        fullName !== undefined ? fullName : existing[0].fullName,
+        email !== undefined ? email : existing[0].email,
+        mobileNumber !== undefined ? mobileNumber : existing[0].mobileNumber,
         passwordHash,
         plainPassword,
         status || existing[0].status,
-        sponsor_id !== undefined && sponsor_id !== null && sponsor_id !== '' ? sponsor_id : existing[0].sponsor_id,
-        bank_name || existing[0].bank_name,
-        account_holder || existing[0].account_holder,
-        account_no || existing[0].account_no,
-        ifsc || existing[0].ifsc,
-        branch || existing[0].branch,
+        sponsor_id !== undefined && sponsor_id !== null ? sponsor_id : existing[0].sponsor_id,
+        updatedCreatedAt,
+        bank_name !== undefined ? bank_name : existing[0].bank_name,
+        account_holder !== undefined ? account_holder : existing[0].account_holder,
+        account_no !== undefined ? account_no : existing[0].account_no,
+        ifsc !== undefined ? ifsc : existing[0].ifsc,
+        branch !== undefined ? branch : existing[0].branch,
         account_type || existing[0].account_type || 'Savings',
         userId
       ]

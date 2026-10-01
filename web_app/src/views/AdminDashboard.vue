@@ -1,5 +1,15 @@
 <template>
   <div class="admin-layout">
+    <!-- FLOATING TOP-CENTERED SUCCESS TOAST ALERT BOX (1.5 SECONDS) -->
+    <div 
+      v-if="globalToast.show" 
+      class="floating-top-toast" 
+      style="position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 999999; background: #16a34a; color: white; padding: 12px 28px; border-radius: 30px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); border: 2px solid #bbf7d0;"
+    >
+      <span>✅</span>
+      <span>{{ globalToast.message }}</span>
+    </div>
+
     <!-- SIDEBAR NAVIGATION -->
     <aside class="sidebar" :class="{ 'mobile-open': mobileMenuOpen }">
       <div class="sidebar-header">
@@ -507,7 +517,12 @@ export default {
       adminFormSuccess: '',
       sendingNotification: false,
       notifFormError: '',
-      notifFormSuccess: ''
+      notifFormSuccess: '',
+      globalToast: {
+        show: false,
+        message: '',
+        type: 'success'
+      }
     };
   },
   computed: {
@@ -769,6 +784,7 @@ export default {
             password: this.editUserObj.password,
             status: this.editUserObj.status,
             sponsor_id: this.editUserObj.sponsor_id,
+            createdAt: this.editUserObj.createdAt,
             bank_name: this.editUserObj.bank_name,
             account_holder: this.editUserObj.account_holder,
             account_no: this.editUserObj.account_no,
@@ -784,6 +800,7 @@ export default {
         
         this.updateUserMsg = 'User details updated successfully!';
         this.updateUserSuccess = true;
+        this.triggerSuccessToast('User Details Updated Successfully!', 1500);
         this.fetchUsers();
       } catch (e) {
         this.updateUserMsg = e.message;
@@ -1078,12 +1095,21 @@ export default {
 
         this.saveSettingsMsg = 'All system settings saved successfully!';
         this.saveSettingsSuccess = true;
+        this.triggerSuccessToast('All System Settings Saved Successfully!', 1500);
       } catch (e) {
         this.saveSettingsMsg = e.message;
         this.saveSettingsSuccess = false;
       } finally {
         this.savingSettings = false;
       }
+    },
+    triggerSuccessToast(msg, duration = 1500) {
+      this.globalToast.message = msg;
+      this.globalToast.show = true;
+      if (this.globalToastTimer) clearTimeout(this.globalToastTimer);
+      this.globalToastTimer = setTimeout(() => {
+        this.globalToast.show = false;
+      }, duration);
     },
     copyToClipboard(text) {
       if (!text) return;

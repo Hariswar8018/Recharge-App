@@ -32,15 +32,15 @@
 [x] When OFF → shows Under Maintenance
 
 4. Edit User
-[x] Search by Mobile Number / User ID
-[x] Edit Name / Mobile / Email / Password
+[O] Search by Mobile Number / User ID
+[O] Edit Name / Mobile / Email / Password
 [x] Edit Sponsor ID / Joining Date / Status
-[x] Edit Bank Details
-[x] Show Main / Fund / Income / CAPTCHA Wallets
-[x] Transaction History
-[x] Income Details
-[x] Reset Password
-[x] Login as User
+[O] Edit Bank Details
+[O] Show Main / Fund / Income / CAPTCHA Wallets
+[O] Transaction History
+[O] Income Details
+[O] Reset Password
+[O] Login as User
 
 5. Mobile Number Change — Single Leg
 When changing a user's mobile number:

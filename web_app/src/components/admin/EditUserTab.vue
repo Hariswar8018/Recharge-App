@@ -6,7 +6,7 @@
         <h2 style="margin: 0; font-size: 1.35rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
           <span>✏️</span> Edit User Details
         </h2>
-        <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b;">Modify profile, reset password, change status, and update verified bank account info.</p>
+        <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b;">Modify profile, mobile number, email, sponsor ID, joining date, password, and bank account info.</p>
       </div>
 
       <div class="search-input-group" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; flex: 1; max-width: 500px; justify-content: flex-end;">
@@ -39,12 +39,12 @@
       <!-- LEFT COLUMN: Forms -->
       <div class="edit-forms-column" style="min-width: 0; display: flex; flex-direction: column; gap: 1.25rem;">
         
-        <!-- CARD 1: User Details -->
+        <!-- CARD 1: User Profile Settings -->
         <div class="form-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
           <div class="card-header-blue" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
             <div class="header-left" style="display: flex; align-items: center; gap: 0.5rem;">
               <span class="header-icon" style="font-size: 1.2rem;">👤</span>
-              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #1e3a8a;">User Profile & Settings</h3>
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #1e3a8a;">User Profile Settings</h3>
             </div>
             <div class="status-dropdown-badge">
               <select v-model="editUserObj.status" class="status-select-badge" style="padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; background: #dcfce7; color: #15803d; border: 1px solid #86efac; outline: none; cursor: pointer;">
@@ -57,7 +57,7 @@
           </div>
 
           <div class="form-grid-2" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
-            <!-- User ID -->
+            <!-- User ID (Readonly System Key) -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">User ID</label>
               <div class="copy-input-group" style="display: flex; gap: 0.5rem;">
@@ -66,37 +66,38 @@
               </div>
             </div>
 
-            <!-- Mobile Number -->
+            <!-- Mobile Number (Editable) -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Mobile Number <span class="req" style="color: #ef4444;">*</span></label>
               <input type="text" v-model="editUserObj.mobileNumber" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
+              <span style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">Changing mobile retains single leg position, cycles, sponsor & wallets.</span>
             </div>
 
-            <!-- Name -->
+            <!-- Full Name (Editable) -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Full Name <span class="req" style="color: #ef4444;">*</span></label>
               <input type="text" v-model="editUserObj.fullName" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
             </div>
 
-            <!-- Email ID -->
+            <!-- Email Address (Editable) -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Email Address</label>
               <input type="email" v-model="editUserObj.email" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
             </div>
 
-            <!-- Sponsor ID -->
+            <!-- Sponsor ID (Editable) -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
-              <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Sponsor ID</label>
+              <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Sponsor ID / Mobile</label>
               <input type="text" v-model="editUserObj.sponsor_id" placeholder="Enter Sponsor Mobile or ID" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
             </div>
 
-            <!-- Date of Joining -->
+            <!-- Date of Joining (Editable) -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Date of Joining</label>
-              <input type="text" :value="editUserObj.createdAt ? String(editUserObj.createdAt).substring(0, 10) : 'N/A'" readonly class="input-readonly" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; background: #f1f5f9; color: #475569;" />
+              <input type="text" v-model="editUserObj.createdAt" placeholder="YYYY-MM-DD" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
             </div>
 
-            <!-- Status -->
+            <!-- Account Status -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Account Status</label>
               <select v-model="editUserObj.status" class="input-styled select-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; background: white; cursor: pointer; box-sizing: border-box; width: 100%;">
@@ -199,11 +200,6 @@
           </button>
         </div>
 
-        <!-- Status Toast / Alert -->
-        <div v-if="updateUserMsg" :class="updateUserSuccess ? 'success-alert' : 'error-alert'" style="padding: 0.75rem 1rem; border-radius: 8px; font-weight: 700;" :style="{ background: updateUserSuccess ? '#f0fdf4' : '#fef2f2', color: updateUserSuccess ? '#166534' : '#991b1b', border: updateUserSuccess ? '1px solid #bbf7d0' : '1px solid #fecaca' }">
-          {{ updateUserMsg }}
-        </div>
-
       </div>
 
       <!-- RIGHT COLUMN: User Summary & Wallet Balances & Quick Actions -->
@@ -231,7 +227,7 @@
           </div>
         </div>
 
-        <!-- CARD 2: Wallet Balances (ONLY Main & Fund Wallets from live API data) -->
+        <!-- CARD 2: Wallet Balances -->
         <div class="summary-card wallet-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
           <div class="summary-header" style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9;">
             <span class="icon" style="font-size: 1.1rem;">👛</span>
