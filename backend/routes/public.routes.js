@@ -138,6 +138,10 @@ router.get('/visibility', async (req, res) => {
       raw_settings: settings
     };
 
+    const resolvedUpiVpa = settings['upi_id'] || settings['upi_vpa_id'] || settings['upi_vpa'] || 'vp110064@okaxis';
+    settings['upi_vpa_id'] = resolvedUpiVpa;
+    settings['upi_id'] = resolvedUpiVpa;
+
     res.json(visibility);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch visibility settings' });

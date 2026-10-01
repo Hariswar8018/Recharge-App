@@ -72,15 +72,27 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     }
   }
 
+  String _lastQrUrl = "";
+  String _lastPayeeVpa = "";
+
   Future<void> _loadSettings() async {
     try {
       final vis = await ApiService.getVisibility(forceRefresh: true);
       final raw = (vis['raw_settings'] as Map<String, dynamic>?) ?? {};
-      if (mounted) {
-        setState(() {
-          _settings = {...vis, ...raw};
-          _amountController.text = "1200";
-        });
+      final newSettings = {...vis, ...raw};
+
+      final newQrUrl = (newSettings['upi_qr_url'] ?? newSettings['qr_image_url'] ?? '').toString().trim();
+      final newVpa = (newSettings['upi_id'] ?? newSettings['upi_vpa_id'] ?? newSettings['upi_vpa'] ?? '').toString().trim();
+
+      if (_settings.isEmpty || _lastQrUrl != newQrUrl || _lastPayeeVpa != newVpa) {
+        _lastQrUrl = newQrUrl;
+        _lastPayeeVpa = newVpa;
+        if (mounted) {
+          setState(() {
+            _settings = newSettings;
+            _amountController.text = "1200";
+          });
+        }
       }
     } catch (_) {}
   }
@@ -115,11 +127,14 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
   bool get showUpiId => _boolSetting('status_upi_id', defaultValue: true);
   String get payeeVpa {
-    final v1 = _stringSetting('upi_vpa_id').trim();
-    if (v1.isNotEmpty) return v1;
-    final v2 = _stringSetting('upi_id').trim();
-    if (v2.isNotEmpty) return v2;
+    final v1 = _stringSetting('upi_id').trim();
+    if (v1.isNotEmpty && v1 != _defaultPayeeVpa) return v1;
+    final v2 = _stringSetting('upi_vpa_id').trim();
+    if (v2.isNotEmpty && v2 != _defaultPayeeVpa) return v2;
     final v3 = _stringSetting('upi_vpa').trim();
+    if (v3.isNotEmpty && v3 != _defaultPayeeVpa) return v3;
+    if (v1.isNotEmpty) return v1;
+    if (v2.isNotEmpty) return v2;
     if (v3.isNotEmpty) return v3;
     return _defaultPayeeVpa;
   }
@@ -337,6 +352,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
           final base64Str = url.split(',').last.replaceAll(RegExp(r'\s+'), '');
           return Image.memory(
             base64Decode(base64Str),
+            key: ValueKey(url),
             width: 200,
             height: 200,
             fit: BoxFit.contain,
@@ -351,6 +367,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
           if (fullUrl.startsWith('http')) {
             return Image.network(
               fullUrl,
+              key: ValueKey(fullUrl),
               width: 200,
               height: 200,
               fit: BoxFit.contain,

@@ -53,6 +53,9 @@ function runSqlite(sql, params = []) {
     let cleanSql = sql.trim();
 
     // Adapt MySQL specific syntax for SQLite compatibility
+    cleanSql = cleanSql.replace(/INT AUTO_INCREMENT PRIMARY KEY/gi, 'INTEGER PRIMARY KEY AUTOINCREMENT');
+    cleanSql = cleanSql.replace(/INTEGER AUTO_INCREMENT PRIMARY KEY/gi, 'INTEGER PRIMARY KEY AUTOINCREMENT');
+    cleanSql = cleanSql.replace(/AUTO_INCREMENT PRIMARY KEY/gi, 'PRIMARY KEY AUTOINCREMENT');
     cleanSql = cleanSql.replace(/AUTO_INCREMENT/gi, 'AUTOINCREMENT');
     cleanSql = cleanSql.replace(/ENGINE=InnoDB;/gi, ';');
     cleanSql = cleanSql.replace(/ENGINE=InnoDB/gi, '');
