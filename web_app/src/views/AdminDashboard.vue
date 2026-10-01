@@ -224,7 +224,7 @@
 
         <!-- TAB 6: TEAMS & AFFILIATE TREE -->
         <TeamsTreeTab 
-          v-else-if="currentTab === 'teams' || currentTab === 'sec_team' || currentTab === 'sec_direct_members' || currentTab === 'sec_business_income' || currentTab === 'sec_global_cycle'"
+          v-else-if="currentTab === 'teams' || currentTab === 'sec_team' || currentTab === 'sec_direct_members'"
           :teamsData="teamsData"
           :users="users"
           :loadingTeams="loadingTeams"

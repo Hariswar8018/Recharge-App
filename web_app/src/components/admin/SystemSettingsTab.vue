@@ -1,7 +1,7 @@
 <template>
   <div class="settings-pane-wrapper" style="padding: 1.25rem; max-width: 100%; box-sizing: border-box;">
-    <!-- 1. GENERAL SYSTEM SETTINGS TAB (currentTab === 'settings') -->
-    <div v-if="currentTab === 'settings'" class="settings-pane">
+    <!-- 1. GENERAL SYSTEM SETTINGS TAB & INCOME / SINGLE LEG POOL RULES -->
+    <div v-if="currentTab === 'settings' || currentTab === 'sec_business_income' || currentTab === 'sec_global_cycle'" class="settings-pane">
       <div class="table-card" style="margin-bottom: 1.5rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
         <div class="card-title-row">
           <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">🖼️ UPI QR Code Image & Storage Settings</h3>
