@@ -790,7 +790,10 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
 router.post('/users/:userId/adjust-wallet', verifyAdminToken, async (req, res) => {
   try {
     const { userId } = req.params;
-    const { walletType, actionType, amount, remark } = req.body;
+    const walletType = req.body.walletType || req.body.wallet_type || 'MAIN';
+    const actionType = req.body.actionType || req.body.action_type || 'CREDIT';
+    const amount = req.body.amount;
+    const remark = req.body.remark;
 
     const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {

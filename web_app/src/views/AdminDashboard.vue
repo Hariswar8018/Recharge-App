@@ -1001,7 +1001,9 @@ export default {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
+            walletType: this.fundModalWalletType,
             wallet_type: this.fundModalWalletType,
+            actionType: this.fundModalActionType,
             action_type: this.fundModalActionType,
             amount: parseFloat(this.fundModalAmount),
             remark: this.fundModalRemark

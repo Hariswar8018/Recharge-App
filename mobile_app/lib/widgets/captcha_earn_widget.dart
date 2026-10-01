@@ -32,7 +32,14 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
   Future<void> _loadVisibility() async {
     final v = await ApiService.getVisibility(forceRefresh: true);
     if (mounted) {
-      final double reward = double.tryParse(v['captcha_reward_amount']?.toString() ?? v['raw_settings']?['captcha_reward_amount']?.toString() ?? "0.50") ?? 0.50;
+      final rawReward = v['captcha_reward_amount'] ?? 
+                         v['captcha_per_solve_income'] ?? 
+                         v['per_captcha_income'] ?? 
+                         v['raw_settings']?['captcha_reward_amount'] ?? 
+                         v['raw_settings']?['captcha_per_solve_income'] ?? 
+                         v['raw_settings']?['per_captcha_income'] ?? 
+                         "0.50";
+      final double reward = double.tryParse(rawReward.toString()) ?? 0.50;
       setState(() {
         _visibilitySettings = v;
         _rewardAmount = reward;
@@ -115,7 +122,11 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
     if (result['success']) {
       final double earned = (result['earnedAmount'] is num) 
           ? (result['earnedAmount'] as num).toDouble() 
-          : _rewardAmount;
+          : (double.tryParse(result['earnedAmount']?.toString() ?? '') ?? _rewardAmount);
+
+      setState(() {
+        _rewardAmount = earned;
+      });
 
       widget.onEarn(earned);
 

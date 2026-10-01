@@ -17,7 +17,13 @@ router.get('/config', async (req, res) => {
                       (settings['sec_captcha_rule_mode'] || '').indexOf('Disabled') === -1 && 
                       (settings['sec_captcha_rule_mode'] || '').indexOf('Maintenance') === -1;
 
-    const rewardAmount = parseFloat(settings['captcha_reward_amount'] || settings['captcha_per_solve_income'] || '0.50');
+    const rawVal = settings['captcha_reward_amount'] || 
+                   settings['captcha_per_solve_income'] || 
+                   settings['per_captcha_income'] || 
+                   settings['sec_captcha_reward'] || 
+                   settings['captcha_reward'] || 
+                   '0.50';
+    const rewardAmount = parseFloat(rawVal);
     const maintenanceMsg = settings['sec_captcha_notice'] || settings['captcha_maintenance_msg'] || 'CAPTCHA Work is currently under maintenance. Please check back later.';
 
     res.json({
@@ -48,8 +54,13 @@ router.post('/earn', verifyAppToken, verifyUserToken, async (req, res) => {
       return res.status(400).json({ error: msg });
     }
 
-    // Dynamic Admin-editable Per-CAPTCHA Income (Default: ₹0.50)
-    const rewardAmount = parseFloat(settings['captcha_reward_amount'] || settings['captcha_per_solve_income'] || '0.50');
+    const rawVal = settings['captcha_reward_amount'] || 
+                   settings['captcha_per_solve_income'] || 
+                   settings['per_captcha_income'] || 
+                   settings['sec_captcha_reward'] || 
+                   settings['captcha_reward'] || 
+                   '0.50';
+    const rewardAmount = parseFloat(rawVal);
     if (isNaN(rewardAmount) || rewardAmount <= 0) {
       return res.status(400).json({ error: 'Invalid captcha reward rate setting' });
     }
