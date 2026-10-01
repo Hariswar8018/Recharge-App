@@ -6,6 +6,25 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: #172b4d;
 }
+.avatar-circle.security-container {
+  width: 30px;
+  height: 30px;
+  background-color: #f0f4f8; /* Soft background color */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Icon styling with a built-in margin/padding effect */
+.security-icon {
+  font-size: 20px;       /* Controls the icon size */
+  color: #1a73e8;        /* Security blue color */
+  padding: 8px;          /* Creates the small circle margin around the icon */
+  border: 2px solid #1a73e8; /* Optional: adds a defined inner circle border */
+  border-radius: 50%;
+}
 
 .logo-img {
   width: 36px !important;
@@ -248,18 +267,19 @@
 }
 
 .avatar-circle {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: white;
   font-weight: 800;
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid #38bdf8;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  border: 1px solid #38bdf8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  flex-shrink: 0;
 }
 
 .profile-text-group {

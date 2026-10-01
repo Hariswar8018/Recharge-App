@@ -255,6 +255,14 @@
             <button @click="$emit('view-user-income', editUserObj)" class="quick-btn" style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 0.6rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.83rem; color: #1e293b; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px;">
               <span class="icon">📊</span> View Income Details
             </button>
+            <button 
+              v-if="hasActiveUser" 
+              @click="openActivationInvoice" 
+              class="quick-btn" 
+              style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.6rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.83rem; color: #15803d; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px;"
+            >
+              <span class="icon">📄</span> Download ₹1,200 ID Activation Invoice
+            </button>
             <button @click="scrollToResetPassword" class="quick-btn" style="background: #fff1f2; border: 1px solid #fecdd3; padding: 0.6rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.83rem; color: #9f1239; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px;">
               <span class="icon">🔑</span> Reset User Password
             </button>
@@ -263,12 +271,25 @@
 
       </div>
     </div>
+
+    <!-- INDIVIDUAL INVOICE MODAL -->
+    <InvoiceModal 
+      :show="showInvoiceModal"
+      :transaction="activationTx"
+      :user="editUserObj"
+      @close="showInvoiceModal = false"
+    />
   </div>
 </template>
 
 <script>
+import InvoiceModal from './InvoiceModal.vue';
+
 export default {
   name: 'EditUserTab',
+  components: {
+    InvoiceModal
+  },
   props: {
     editUserObj: { type: Object, default: () => ({}) },
     searchQuery: { type: String, default: '' },
@@ -279,7 +300,9 @@ export default {
   data() {
     return {
       searchQueryLocal: this.searchQuery,
-      showResetPassword: false
+      showResetPassword: false,
+      showInvoiceModal: false,
+      activationTx: null
     };
   },
   computed: {
@@ -298,6 +321,22 @@ export default {
       if (this.$refs.resetPasswordSection) {
         this.$refs.resetPasswordSection.scrollIntoView({ behavior: 'smooth' });
       }
+    },
+    openActivationInvoice() {
+      this.activationTx = {
+        id: this.editUserObj.id || '1001',
+        user_id: this.editUserObj.id || this.editUserObj.mobileNumber,
+        fullName: this.editUserObj.fullName,
+        mobileNumber: this.editUserObj.mobileNumber,
+        email: this.editUserObj.email,
+        amount: 1200,
+        numeric_amount: 1200,
+        type: 'ID Package Activation',
+        wallet_type: 'MAIN',
+        status: 'Approved',
+        date: this.editUserObj.createdAt ? String(this.editUserObj.createdAt).substring(0,10) : new Date().toISOString().substring(0,10)
+      };
+      this.showInvoiceModal = true;
     }
   }
 };

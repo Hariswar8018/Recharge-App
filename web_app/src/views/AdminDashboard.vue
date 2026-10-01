@@ -107,9 +107,16 @@
             @click="profileDropdownOpen = !profileDropdownOpen" 
             :class="{ open: profileDropdownOpen }"
           >
-            <div class="avatar-circle">
-              <span>A</span>
-            </div>
+            <div class="avatar-circle" style="width: 36px; height: 36px; background: #e8f0fe; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+  <!-- Inner circle margin wrapper (shrunk padding) -->
+  <div style="padding: 4px; border: 1.5px solid #185abc; border-radius: 50%; display: flex;">
+    <!-- Security Shield SVG Icon (shrunk to 14px) -->
+    <svg xmlns="http://w3.org" height="14px" viewBox="0 0 24 24" width="14px" fill="#185abc">
+      <path d="M0 0h24v24H0V0z" fill="none"/>
+      <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+    </svg>
+  </div>
+</div>
             <div class="profile-text-group">
               <span class="admin-email-text">{{ adminEmail }}</span>
               <span class="admin-role-badge">Super Admin</span>

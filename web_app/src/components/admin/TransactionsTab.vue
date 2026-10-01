@@ -47,6 +47,9 @@
           <p>Complete audit log of user recharges, wallet loads, referrals, single-leg pool payouts, and admin fund adjustments.</p>
         </div>
         <div class="header-actions">
+          <button @click="showBulkMonthlyModal = true" class="btn btn-invoice-bulk" style="background: #15803d; color: white; border: none; padding: 0.55rem 1rem; border-radius: 8px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            📦 Monthly Bulk 1200 Invoices
+          </button>
           <button @click="openExportModal" class="btn btn-excel">
             📥 Download Excel Report
           </button>
@@ -171,6 +174,7 @@
               <th>Amount</th>
               <th>Bank Account Info</th>
               <th>Status</th>
+              <th>Action / Invoice</th>
             </tr>
           </thead>
           <tbody>
@@ -224,6 +228,19 @@
                 <span :class="['status-badge', getStatusClass(tx.status)]">
                   {{ tx.status || 'Success' }}
                 </span>
+              </td>
+
+              <!-- Invoice Action -->
+              <td>
+                <button 
+                  v-if="isEligibleFor1200Invoice(tx)" 
+                  @click="openInvoice(tx)" 
+                  class="btn-invoice-action"
+                  style="background: #15803d; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;"
+                >
+                  📄 Invoice
+                </button>
+                <span v-else style="color: #94a3b8; font-size: 0.8rem;">—</span>
               </td>
             </tr>
           </tbody>
@@ -374,14 +391,53 @@
         </div>
       </div>
     </div>
+
+    <!-- MONTHLY BULK 1200 INVOICES DOWNLOAD DIALOG -->
+    <div v-if="showBulkMonthlyModal" class="modal-backdrop" @click="showBulkMonthlyModal = false">
+      <div class="modal-dialog export-modal" @click.stop style="max-width: 480px;">
+        <div class="modal-header" style="background: #15803d; color: white;">
+          <h3>📦 Monthly Bulk 1,200 ID Activation Invoices</h3>
+          <button @click="showBulkMonthlyModal = false" class="close-modal-btn" style="color: white;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 1.25rem;">
+          <p style="margin: 0 0 1rem; font-size: 0.88rem; color: #475569;">
+            Select a target month below to download all approved <strong>₹1,200 ID Activation Tax Invoices</strong> for that period in a consolidated Microsoft Excel (.xlsx) report.
+          </p>
+          <div class="export-section">
+            <label class="section-title">📅 Select Month & Year</label>
+            <input type="month" v-model="bulkMonthSelect" class="form-control" style="padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 0.9rem; width: 100%; box-sizing: border-box;" />
+          </div>
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.85rem; border-radius: 8px; margin-top: 1rem; font-size: 0.82rem; color: #166534;">
+            <strong>ℹ️ Note:</strong> Only approved ₹1,200 ID activation payments are included. Pending/Rejected payments and non-activation transactions are automatically excluded.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button @click="showBulkMonthlyModal = false" class="btn btn-secondary">Cancel</button>
+          <button @click="downloadMonthlyBulkInvoices" class="btn btn-excel" style="background: #15803d;">
+            📥 Generate Bulk Invoices Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INDIVIDUAL INVOICE MODAL -->
+    <InvoiceModal 
+      :show="showInvoiceModal"
+      :transaction="selectedInvoiceTx"
+      @close="closeInvoiceModal"
+    />
   </div>
 </template>
 
 <script>
 import * as XLSX from 'xlsx';
+import InvoiceModal from './InvoiceModal.vue';
 
 export default {
   name: 'TransactionsTab',
+  components: {
+    InvoiceModal
+  },
   data() {
     return {
       txnsList: [],
@@ -394,6 +450,12 @@ export default {
       endDate: '',
       currentPage: 1,
       itemsPerPage: 50,
+
+      // Invoice State
+      showInvoiceModal: false,
+      selectedInvoiceTx: null,
+      showBulkMonthlyModal: false,
+      bulkMonthSelect: new Date().toISOString().substring(0, 7),
 
       // Export Dialog State
       showExportModal: false,
@@ -569,6 +631,78 @@ export default {
     this.fetchTransactions();
   },
   methods: {
+    isEligibleFor1200Invoice(tx) {
+      if (!tx) return false;
+      const amt = parseFloat(tx.numeric_amount || tx.amount || 0);
+      const statusStr = String(tx.status || '').toUpperCase();
+      const isApproved = statusStr === 'SUCCESS' || statusStr === 'APPROVED';
+      
+      // Invoice generated ONLY for ₹1,200 ID Activation Payment that is APPROVED
+      if (amt !== 1200 || !isApproved) {
+        return false;
+      }
+      
+      const typeStr = String(tx.type || '').toUpperCase();
+      const walletStr = String(tx.wallet_type || '').toUpperCase();
+      
+      return typeStr.includes('ACTIVATION') || 
+             typeStr.includes('PACKAGE') || 
+             typeStr.includes('TOPUP') || 
+             typeStr.includes('FUND') || 
+             typeStr.includes('DEPOSIT') ||
+             typeStr.includes('JOIN') ||
+             walletStr === 'FUND';
+    },
+
+    openInvoice(tx) {
+      this.selectedInvoiceTx = tx;
+      this.showInvoiceModal = true;
+    },
+
+    closeInvoiceModal() {
+      this.showInvoiceModal = false;
+      this.selectedInvoiceTx = null;
+    },
+
+    downloadMonthlyBulkInvoices() {
+      const targetMonth = this.bulkMonthSelect; // e.g. '2026-10'
+      const eligibleTxns = this.txnsList.filter(tx => {
+        if (!this.isEligibleFor1200Invoice(tx)) return false;
+        if (!targetMonth) return true;
+        const txDateStr = tx.createdAt ? new Date(tx.createdAt).toISOString().substring(0, 7) : String(tx.date || '').substring(0, 7);
+        return txDateStr === targetMonth;
+      });
+
+      if (eligibleTxns.length === 0) {
+        alert(`No approved ₹1,200 ID activation invoices found for month ${targetMonth || 'selected'}.`);
+        return;
+      }
+
+      const exportRows = eligibleTxns.map((tx, idx) => ({
+        'S.No': idx + 1,
+        'Invoice Number': `INV-1200-${tx.id}`,
+        'Invoice Date': tx.date || (tx.createdAt ? String(tx.createdAt).substring(0, 10) : 'N/A'),
+        'User ID': `#${tx.user_id}`,
+        'Member Name': tx.fullName || `Member #${tx.user_id}`,
+        'Mobile Number': tx.mobileNumber || 'N/A',
+        'Email': tx.email || '',
+        'Service Description': '₹1,200 ID Package Activation & Digital Portal Membership',
+        'SAC Code': '998439',
+        'Base Value (₹)': 1016.95,
+        'CGST 9% (₹)': 91.53,
+        'SGST 9% (₹)': 91.53,
+        'Total Paid (₹)': 1200.00,
+        'UTR / Ref No': tx.utr || tx.utr_number || `TXN-${tx.id}`,
+        'Payment Status': 'APPROVED'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportRows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, '1200 Invoices');
+      XLSX.writeFile(workbook, `SR_Digital_Seva_1200_Invoices_Bulk_${targetMonth || 'All'}.xlsx`);
+      this.showBulkMonthlyModal = false;
+    },
+
     async fetchTransactions() {
       this.loading = true;
       try {

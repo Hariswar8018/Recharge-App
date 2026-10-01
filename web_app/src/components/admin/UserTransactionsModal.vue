@@ -43,6 +43,7 @@
                 <th style="padding: 10px;">Type / Description</th>
                 <th style="padding: 10px; text-align: right;">Amount</th>
                 <th style="padding: 10px; text-align: center;">Status</th>
+                <th style="padding: 10px; text-align: center;">Invoice</th>
               </tr>
             </thead>
             <tbody>
@@ -67,6 +68,16 @@
                     {{ tx.status || 'Success' }}
                   </span>
                 </td>
+                <td style="padding: 10px; text-align: center;">
+                  <button 
+                    v-if="isEligibleFor1200Invoice(tx)" 
+                    @click="openInvoice(tx)" 
+                    style="background: #15803d; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                  >
+                    📄 Invoice
+                  </button>
+                  <span v-else style="color: #94a3b8; font-size: 0.8rem;">—</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -79,12 +90,25 @@
         </button>
       </div>
     </div>
+
+    <!-- INDIVIDUAL INVOICE MODAL -->
+    <InvoiceModal 
+      :show="showInvoiceModal"
+      :transaction="selectedInvoiceTx"
+      :user="user"
+      @close="showInvoiceModal = false"
+    />
   </div>
 </template>
 
 <script>
+import InvoiceModal from './InvoiceModal.vue';
+
 export default {
   name: 'UserTransactionsModal',
+  components: {
+    InvoiceModal
+  },
   props: {
     show: { type: Boolean, default: false },
     user: { type: Object, default: null },
@@ -94,11 +118,28 @@ export default {
   },
   data() {
     return {
-      searchQueryLocal: this.searchQuery
+      searchQueryLocal: this.searchQuery,
+      showInvoiceModal: false,
+      selectedInvoiceTx: null
     };
   },
   watch: {
     searchQuery(newVal) { this.searchQueryLocal = newVal; }
+  },
+  methods: {
+    isEligibleFor1200Invoice(tx) {
+      if (!tx) return false;
+      const amt = parseFloat(tx.amount || 0);
+      const statusStr = String(tx.status || '').toUpperCase();
+      const isApproved = statusStr === 'SUCCESS' || statusStr === 'APPROVED';
+      if (amt !== 1200 || !isApproved) return false;
+      const typeStr = String(tx.type || '').toUpperCase();
+      return typeStr.includes('ACTIVATION') || typeStr.includes('PACKAGE') || typeStr.includes('TOPUP') || typeStr.includes('FUND') || typeStr.includes('DEPOSIT') || typeStr.includes('JOIN');
+    },
+    openInvoice(tx) {
+      this.selectedInvoiceTx = tx;
+      this.showInvoiceModal = true;
+    }
   }
 };
 </script>
