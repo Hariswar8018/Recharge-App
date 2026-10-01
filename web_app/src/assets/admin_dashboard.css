@@ -375,8 +375,58 @@
 }
 
 /* ==========================================================================
-   SIDEBAR NAVIGATION (DARK SLATE THEME - IMAGE 2 MATCHING DESIGN)
+   MODERN TOGGLE SWITCH (iOS / GLASSMORPHISM STYLE)
    ========================================================================== */
+.modern-toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.modern-toggle-switch input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  background-color: #cbd5e1;
+  border-radius: 30px;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.modern-toggle-switch input:checked + .toggle-slider {
+  background-color: #16a34a; /* Vibrant Emerald Green */
+}
+
+.modern-toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(24px);
+}
+
+.toggle-label-text {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+/* SIDEBAR NAVIGATION (DARK SLATE THEME - IMAGE 2 MATCHING DESIGN) */
 .sidebar {
   width: 260px;
   background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);

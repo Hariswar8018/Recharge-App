@@ -241,7 +241,208 @@
       </div>
     </div>
 
-    <!-- 4. GENERIC SECTION CHECKLIST CONFIG CARD -->
+    <!-- 4. DEDICATED SUBSCRIPTION & PLANS CONFIG CARD -->
+    <div v-else-if="currentTab === 'sec_subscription'" class="section-settings-pane">
+      <div class="table-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div class="card-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+          <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">💳 Subscription & Package Plans Configuration</h3>
+          <button @click="$emit('save-system-settings')" :disabled="savingSettings" style="background: #16a34a; color: white; border: none; padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 800; cursor: pointer;">
+            💾 {{ savingSettings ? 'Saving...' : 'Save Configuration' }}
+          </button>
+        </div>
+        <p class="card-desc" style="margin: 4px 0 1rem; font-size: 0.83rem; color: #64748b;">Configure ₹1,200 package activation rules, mandatory subscription toggles, and package durations.</p>
+
+        <!-- BEAUTIFUL TOGGLE SWITCH BOX FOR MANDATORY SUBSCRIPTION MODE -->
+        <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; margin-top: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <span>🔑</span> Mandatory ₹1,200 ID Activation Mode
+            </h4>
+            <p style="margin: 4px 0 0; font-size: 0.83rem; color: #64748b;">Require users to complete ₹1,200 subscription top-up before unlocking referral earnings, withdraw & downline pool access.</p>
+          </div>
+          <label class="modern-toggle-switch">
+            <input type="checkbox" v-model="systemSettings.subscription_required" :true-value="true" :false-value="false" />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label-text">{{ systemSettings.subscription_required ? '🟢 MANDATORY' : '🔴 OPTIONAL' }}</span>
+          </label>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
+          <div class="form-group">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">ID Activation Package Price (₹)</label>
+            <input type="number" v-model="systemSettings.join_amount" class="input-styled" style="width: 100%; box-sizing: border-box; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 800;" />
+          </div>
+          <div class="form-group">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Subscription Duration (Days)</label>
+            <input type="number" v-model="systemSettings.subscription_days" placeholder="365" class="input-styled" style="width: 100%; box-sizing: border-box; padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #cbd5e1;" />
+          </div>
+        </div>
+
+        <div v-if="saveSettingsMsg" style="margin-top: 1rem; font-weight: 700; font-size: 0.88rem;" :style="{ color: saveSettingsSuccess ? '#16a34a' : '#ef4444' }">
+          {{ saveSettingsMsg }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. DEDICATED BANK VERIFICATION CONFIG CARD WITH USER AUDIT TABLE -->
+    <div v-else-if="currentTab === 'sec_bank_verification'" class="section-settings-pane">
+      <!-- CONFIG CARD WITH TOGGLE -->
+      <div class="table-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 1.5rem;">
+        <div class="card-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+          <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">🏛️ Bank Account Verification Rules</h3>
+          <button @click="$emit('save-system-settings')" :disabled="savingSettings" style="background: #16a34a; color: white; border: none; padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 800; cursor: pointer;">
+            💾 {{ savingSettings ? 'Saving...' : 'Save Configuration' }}
+          </button>
+        </div>
+        <p class="card-desc" style="margin: 4px 0 1rem; font-size: 0.83rem; color: #64748b;">Configure bank verification requirement toggles and review all member submitted bank details.</p>
+
+        <!-- TOGGLE SWITCH BOX FOR BANK VERIFICATION REQUIREMENT -->
+        <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <span>🔒</span> Mandatory Bank Account Verification Status
+            </h4>
+            <p style="margin: 4px 0 0; font-size: 0.83rem; color: #64748b;">When ON, members must verify Account Holder Name, A/C Number, and IFSC Code before requesting withdrawal cashouts.</p>
+          </div>
+          <label class="modern-toggle-switch">
+            <input type="checkbox" v-model="systemSettings.bank_verification_required" :true-value="true" :false-value="false" />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label-text">{{ systemSettings.bank_verification_required ? '🟢 MANDATORY' : '⚪ OPTIONAL' }}</span>
+          </label>
+        </div>
+
+        <div v-if="saveSettingsMsg" style="margin-top: 1rem; font-weight: 700; font-size: 0.88rem;" :style="{ color: saveSettingsSuccess ? '#16a34a' : '#ef4444' }">
+          {{ saveSettingsMsg }}
+        </div>
+      </div>
+
+      <!-- BELOW: VERIFIED BANK ACCOUNTS AUDIT TABLE -->
+      <div class="table-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+              <span>📋</span> Member Submitted & Verified Bank Accounts
+            </h4>
+            <p style="margin: 2px 0 0; font-size: 0.82rem; color: #64748b;">Click on any member row or button below to immediately view and edit their full user profile.</p>
+          </div>
+          <span style="background: #f0fdf4; color: #166534; font-weight: 800; font-size: 0.82rem; padding: 4px 12px; border-radius: 12px; border: 1px solid #bbf7d0;">
+            {{ verifiedBankUsers.length }} Verified Accounts
+          </span>
+        </div>
+
+        <div v-if="verifiedBankUsers.length === 0" style="padding: 2.5rem; text-align: center; background: #f8fafc; border-radius: 8px; color: #64748b; font-weight: 600;">
+          No member bank account records found in system database.
+        </div>
+
+        <div v-else class="table-container" style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <table class="nice-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700;">
+                <th style="padding: 10px 12px;">User ID</th>
+                <th style="padding: 10px 12px;">Member Name</th>
+                <th style="padding: 10px 12px;">Mobile Number</th>
+                <th style="padding: 10px 12px;">Account Holder</th>
+                <th style="padding: 10px 12px;">Bank Name</th>
+                <th style="padding: 10px 12px;">Account Number</th>
+                <th style="padding: 10px 12px;">IFSC Code</th>
+                <th style="padding: 10px 12px;">Status</th>
+                <th style="padding: 10px 12px; text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr 
+                v-for="u in verifiedBankUsers" 
+                :key="u.id" 
+                @click="$emit('open-edit-user', u)"
+                style="border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s ease;"
+              >
+                <td style="padding: 10px 12px; font-weight: 700; color: #2563eb;">#{{ u.id }}</td>
+                <td style="padding: 10px 12px; font-weight: 800; color: #0f172a;">{{ u.fullName || 'Member' }}</td>
+                <td style="padding: 10px 12px; color: #334155; font-weight: 600;">{{ u.mobileNumber }}</td>
+                <td style="padding: 10px 12px; font-weight: 700;">{{ u.account_holder || 'N/A' }}</td>
+                <td style="padding: 10px 12px;">🏛️ {{ u.bank_name || 'N/A' }}</td>
+                <td style="padding: 10px 12px; font-weight: 700; color: #0f172a;">{{ u.account_no || 'N/A' }}</td>
+                <td style="padding: 10px 12px; text-transform: uppercase; font-weight: 700; color: #2563eb;">{{ u.ifsc || 'N/A' }}</td>
+                <td style="padding: 10px 12px;">
+                  <span style="background: #dcfce7; color: #15803d; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 10px;">
+                    VERIFIED
+                  </span>
+                </td>
+                <td style="padding: 10px 12px; text-align: center;">
+                  <button 
+                    @click.stop="$emit('open-edit-user', u)" 
+                    style="background: #2563eb; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer;"
+                  >
+                    ✏️ Edit User
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. DEDICATED APP SHARE & REFERRAL CONFIG CARD WITH REFERRAL SHARE TEXT -->
+    <div v-else-if="currentTab === 'sec_app_share'" class="section-settings-pane">
+      <div class="table-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+        <div class="card-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+          <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">📢 6. App Share & Referral Settings Configuration</h3>
+          <button @click="$emit('save-system-settings')" :disabled="savingSettings" style="background: #16a34a; color: white; border: none; padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 800; cursor: pointer;">
+            💾 {{ savingSettings ? 'Saving...' : 'Save Configuration' }}
+          </button>
+        </div>
+        <p class="card-desc" style="margin: 4px 0 1rem; font-size: 0.83rem; color: #64748b;">Configure section visibility, rule mode, and custom referral message share text for WhatsApp & social sharing.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-top: 1.25rem;">
+          <div class="form-group">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">Section Visibility</label>
+            <select v-model="systemSettings.sec_app_share_visibility" class="input-styled select-styled" style="width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+              <option value="Show">👁️ Show on Mobile App</option>
+              <option value="Hide">🙈 Hide / Lock Section</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label style="font-size: 0.85rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">Rule / Mode</label>
+            <select v-model="systemSettings.sec_app_share_rule_mode" class="input-styled select-styled" style="width: 100%; padding: 0.65rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+              <option value="Enabled (Standard)">🟢 Enabled (Standard)</option>
+              <option value="Disabled (Maintenance)">🔴 Maintenance Mode</option>
+              <option value="Strict Verification">🔒 Strict Verification Required</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- REFERRAL SHARE MESSAGE TEXTAREA -->
+        <div style="margin-top: 1.5rem;">
+          <label style="font-size: 0.88rem; font-weight: 800; color: #0f172a; display: block; margin-bottom: 6px;">
+            💬 App Referral Share Message / Text
+          </label>
+          <p style="margin: 0 0 8px; font-size: 0.78rem; color: #64748b;">
+            This text is automatically copied or sent when users tap <strong>"Share App / Referral Link"</strong> on WhatsApp, SMS, or Social Media.
+          </p>
+          <textarea 
+            v-model="systemSettings.referral_share_text" 
+            rows="4" 
+            placeholder="Join SR Digital Seva today and start earning daily income! Use my Referral Code: {REFERRAL_CODE}. Download App now: https://srdigitalseva.com/app"
+            style="width: 100%; box-sizing: border-box; padding: 0.75rem 0.9rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-family: inherit; font-size: 0.88rem; line-height: 1.5; color: #0f172a;"
+          ></textarea>
+
+          <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; font-size: 0.75rem; color: #475569;">
+            <span style="font-weight: 700; color: #2563eb;">Available Dynamic Placeholders:</span>
+            <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{REFERRAL_CODE}</code>
+            <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{USER_NAME}</code>
+            <code style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{APP_LINK}</code>
+          </div>
+        </div>
+
+        <div v-if="saveSettingsMsg" style="margin-top: 1rem; font-weight: 700; font-size: 0.88rem;" :style="{ color: saveSettingsSuccess ? '#16a34a' : '#ef4444' }">
+          {{ saveSettingsMsg }}
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. GENERIC SECTION CHECKLIST CONFIG CARD -->
     <div v-else class="section-settings-pane">
       <div class="table-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
         <div class="card-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -281,6 +482,7 @@ export default {
   props: {
     systemSettings: { type: Object, default: () => ({}) },
     currentTab: { type: String, default: 'settings' },
+    users: { type: Array, default: () => [] },
     savingSettings: { type: Boolean, default: false },
     saveSettingsMsg: { type: String, default: '' },
     saveSettingsSuccess: { type: Boolean, default: false },
@@ -293,6 +495,12 @@ export default {
     return {
       qrSourceOption: 'file'
     };
+  },
+  computed: {
+    verifiedBankUsers() {
+      if (!this.users || !Array.isArray(this.users)) return [];
+      return this.users.filter(u => u.account_no || u.bank_name || u.account_holder || u.ifsc);
+    }
   },
   methods: {
     handleSaveAndUpload() {
