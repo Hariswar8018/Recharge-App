@@ -344,6 +344,8 @@
 </template>
 
 <script>
+import * as XLSX from 'xlsx';
+
 export default {
   name: 'WithdrawalsTab',
   emits: ['trigger-toast'],
@@ -598,70 +600,67 @@ export default {
       }
     },
 
-    // Excel Export Feature
+    // Native .xlsx Excel Export for FILTERED requests only
     downloadExcel() {
       if (this.filteredRequests.length === 0) {
-        alert('No withdrawal data to export');
+        alert('No withdrawal requests found for current filters');
         return;
       }
 
-      const headers = [
-        'Request ID',
-        'Date & Time',
-        'User ID',
-        'Full Name',
-        'Mobile Number',
-        'Email',
-        'Available Balance (INR)',
-        'Requested Amount (INR)',
-        '15% Deduction Fee (INR)',
-        'Net Amount Payable (INR)',
-        'Bank Name',
-        'Account Holder Name',
-        'Account Number',
-        'IFSC Code',
-        'Branch',
-        'Account Type',
-        'Status',
-        'Rejection Reason',
-        'Processed At'
+      const excelData = this.filteredRequests.map(r => ({
+        'Request ID': `REQ-${r.id}`,
+        'Date & Time': this.formatDate(r.createdAt),
+        'User ID': `#${r.user_id}`,
+        'Full Name': r.fullName || '',
+        'Mobile Number': r.mobileNumber || '',
+        'Email': r.email || '',
+        'Available Balance (INR)': parseFloat(this.formatAmount(r.available_balance)),
+        'Requested Amount (INR)': parseFloat(this.formatAmount(r.amount)),
+        '15% Fee (INR)': parseFloat(this.formatAmount(r.deduction_fee)),
+        'Net Amount Payable (INR)': parseFloat(this.formatAmount(r.net_amount)),
+        'Bank Name': r.bank_name || 'N/A',
+        'Account Holder Name': r.account_holder || 'N/A',
+        'Account Number': r.account_no ? `'${r.account_no}` : 'N/A',
+        'IFSC Code': r.ifsc || 'N/A',
+        'Branch': r.branch || 'N/A',
+        'Account Type': r.account_type || 'Savings',
+        'Status': r.status || 'PENDING',
+        'Rejection Reason': r.rejection_reason || 'N/A',
+        'Processed At': this.formatDate(r.processed_at)
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      
+      const colWidths = [
+        { wch: 14 }, // Request ID
+        { wch: 22 }, // Date
+        { wch: 10 }, // User ID
+        { wch: 22 }, // Full Name
+        { wch: 16 }, // Mobile
+        { wch: 26 }, // Email
+        { wch: 22 }, // Balance
+        { wch: 22 }, // Requested Amount
+        { wch: 16 }, // Fee
+        { wch: 24 }, // Net Payable
+        { wch: 22 }, // Bank Name
+        { wch: 22 }, // Account Holder
+        { wch: 20 }, // Account No
+        { wch: 14 }, // IFSC
+        { wch: 18 }, // Branch
+        { wch: 14 }, // Account Type
+        { wch: 14 }, // Status
+        { wch: 30 }, // Rejection Reason
+        { wch: 22 }  // Processed At
       ];
+      worksheet['!cols'] = colWidths;
 
-      const rows = this.filteredRequests.map(r => [
-        `"REQ-${r.id}"`,
-        `"${this.formatDate(r.createdAt)}"`,
-        `"#${r.user_id}"`,
-        `"${(r.fullName || '').replace(/"/g, '""')}"`,
-        `"${r.mobileNumber || ''}"`,
-        `"${r.email || ''}"`,
-        `"${this.formatAmount(r.available_balance)}"`,
-        `"${this.formatAmount(r.amount)}"`,
-        `"${this.formatAmount(r.deduction_fee)}"`,
-        `"${this.formatAmount(r.net_amount)}"`,
-        `"${(r.bank_name || '').replace(/"/g, '""')}"`,
-        `"${(r.account_holder || '').replace(/"/g, '""')}"`,
-        `"'${r.account_no || ''}"`, // apostrophe prevents excel scientific notation
-        `"${r.ifsc || ''}"`,
-        `"${(r.branch || '').replace(/"/g, '""')}"`,
-        `"${r.account_type || 'Savings'}"`,
-        `"${r.status || 'PENDING'}"`,
-        `"${(r.rejection_reason || '').replace(/"/g, '""')}"`,
-        `"${this.formatDate(r.processed_at)}"`
-      ]);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Filtered Withdrawals');
 
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const filename = `Payout_Withdrawal_Requests_${new Date().toISOString().slice(0,10)}.csv`;
+      const dateStr = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `Withdrawal_Requests_Filtered_${dateStr}.xlsx`);
 
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      this.$emit('trigger-toast', 'Excel report downloaded successfully!');
+      this.$emit('trigger-toast', 'Excel (.xlsx) report downloaded successfully!');
     }
   }
 };

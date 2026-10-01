@@ -246,6 +246,8 @@
 </template>
 
 <script>
+import * as XLSX from 'xlsx';
+
 export default {
   name: 'TransactionsTab',
   data() {
@@ -297,11 +299,15 @@ export default {
                             (tx.mobileNumber || '').toLowerCase().includes(q) ||
                             (tx.email || '').toLowerCase().includes(q) ||
                             String(tx.user_id).includes(q);
+          const matchBank = (tx.account_no || '').toLowerCase().includes(q) ||
+                            (tx.ifsc || '').toLowerCase().includes(q) ||
+                            (tx.account_holder || '').toLowerCase().includes(q) ||
+                            (tx.bank_name || '').toLowerCase().includes(q);
           const matchType = (tx.type || '').toLowerCase().includes(q);
           const matchAmount = String(tx.amount || '').includes(q);
           const matchId = String(tx.id).includes(q);
 
-          if (!matchUser && !matchType && !matchAmount && !matchId) return false;
+          if (!matchUser && !matchBank && !matchType && !matchAmount && !matchId) return false;
         }
 
         // 5. Date Range Filter
@@ -374,7 +380,7 @@ export default {
       this.loading = true;
       try {
         const token = localStorage.getItem('adminToken');
-        const res = await fetch('https://api.srdigitalseva.com/api/admin/transactions?limit=1000', {
+        const res = await fetch('https://api.srdigitalseva.com/api/admin/transactions?limit=2000', {
           headers: {
             'x-app-token': 'srdigitalseva-secret-app-token-2026',
             'Authorization': `Bearer ${token}`
@@ -428,52 +434,63 @@ export default {
       this.endDate = '';
     },
 
-    // Excel Export Feature
+    // Native .xlsx Excel Download for FILTERED records only, including Bank details
     downloadExcel() {
       if (this.filteredTxns.length === 0) {
-        alert('No transaction records to export');
+        alert('No transaction records found for the current filters');
         return;
       }
 
-      const headers = [
-        'Txn ID',
-        'Date & Time',
-        'User ID',
-        'Member Name',
-        'Mobile Number',
-        'Email',
-        'Wallet Type',
-        'Transaction Type / Description',
-        'Amount (INR)',
-        'Direction',
-        'Status'
+      // Map ONLY the filtered items
+      const excelData = this.filteredTxns.map(tx => ({
+        'Transaction ID': `TXN-${tx.id}`,
+        'Date & Time': this.formatDate(tx.date || tx.createdAt),
+        'User ID': `#${tx.user_id}`,
+        'Member Name': tx.fullName || '',
+        'Mobile Number': tx.mobileNumber || '',
+        'Email': tx.email || '',
+        'Wallet Type': (tx.wallet_type || 'MAIN').toUpperCase(),
+        'Type / Description': tx.type || 'Transaction',
+        'Amount (INR)': parseFloat(tx.numeric_amount || tx.amount || 0),
+        'Direction': tx.is_debit ? 'DEBIT (-)' : 'CREDIT (+)',
+        'Bank Name': tx.bank_name || 'N/A',
+        'Account Holder Name': tx.account_holder || 'N/A',
+        'Account Number': tx.account_no ? `'${tx.account_no}` : 'N/A',
+        'IFSC Code': tx.ifsc || 'N/A',
+        'Branch': tx.branch || 'N/A',
+        'Account Type': tx.account_type || 'Savings',
+        'Status': tx.status || 'Success'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      
+      // Auto-size column widths
+      const colWidths = [
+        { wch: 14 }, // Txn ID
+        { wch: 22 }, // Date
+        { wch: 10 }, // User ID
+        { wch: 22 }, // Name
+        { wch: 16 }, // Mobile
+        { wch: 26 }, // Email
+        { wch: 14 }, // Wallet
+        { wch: 30 }, // Type
+        { wch: 14 }, // Amount
+        { wch: 14 }, // Direction
+        { wch: 22 }, // Bank Name
+        { wch: 22 }, // Account Holder Name
+        { wch: 20 }, // Account Number
+        { wch: 14 }, // IFSC
+        { wch: 18 }, // Branch
+        { wch: 14 }, // Account Type
+        { wch: 12 }  // Status
       ];
+      worksheet['!cols'] = colWidths;
 
-      const rows = this.filteredTxns.map(tx => [
-        `"TXN-${tx.id}"`,
-        `"${this.formatDate(tx.date || tx.createdAt)}"`,
-        `"#${tx.user_id}"`,
-        `"${(tx.fullName || '').replace(/"/g, '""')}"`,
-        `"${tx.mobileNumber || ''}"`,
-        `"${tx.email || ''}"`,
-        `"${(tx.wallet_type || 'MAIN').toUpperCase()}"`,
-        `"${(tx.type || 'Transaction').replace(/"/g, '""')}"`,
-        `"${this.formatAmount(tx.numeric_amount || tx.amount)}"`,
-        `"${tx.is_debit ? 'DEBIT (-)' : 'CREDIT (+)'}"`,
-        `"${tx.status || 'Success'}"`
-      ]);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Filtered Ledger');
 
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const filename = `Platform_Transactions_General_Ledger_${new Date().toISOString().slice(0,10)}.csv`;
-
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `Platform_Transactions_Filtered_${dateStr}.xlsx`);
     }
   }
 };

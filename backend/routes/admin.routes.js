@@ -232,7 +232,7 @@ router.get('/transactions', verifyAdminToken, async (req, res) => {
     const limit = parseInt(req.query.limit) || 200;
     const offset = (page - 1) * limit;
 
-    let sql = `SELECT t.*, u.fullName, u.email, u.mobileNumber 
+    let sql = `SELECT t.*, u.fullName, u.email, u.mobileNumber, u.bank_name, u.account_holder, u.account_no, u.ifsc, u.branch, u.account_type 
                FROM transactions t 
                LEFT JOIN users u ON t.user_id = u.id 
                WHERE 1=1 `;
