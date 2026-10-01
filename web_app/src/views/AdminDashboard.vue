@@ -18,8 +18,8 @@
         <div class="brand-logo-wrapper" @click="switchTab('dashboard')" style="cursor: pointer;">
           <img :src="asetsLogo" alt="SR Digital Seva" class="brand-logo-img" />
           <div class="brand-title-group">
-            <h1 class="brand-main-title">SR DIGITAL SEVA</h1>
-            <span class="brand-sub-badge">Admin Control Panel</span>
+            <h1 class="brand-main-title">Admin</h1>
+            <span class="brand-sub-badge">Panel</span>
           </div>
         </div>
       </div>
@@ -50,7 +50,7 @@
           :class="{ active: currentTab === 'withdrawals' || currentTab === 'sec_cashout' }"
         >
           <span class="tab-icon">💰</span>
-          <span class="tab-label">Withdrawals</span>
+          <span class="tab-label">Withdrawal</span>
         </button>
 
         <button 
@@ -59,7 +59,7 @@
           :class="{ active: currentTab === 'requests' }"
         >
           <span class="tab-icon">📥</span>
-          <span class="tab-label">Add Money</span>
+          <span class="tab-label">Add</span>
           <span v-if="pendingRequestsCount > 0" class="nav-tab-badge">{{ pendingRequestsCount }}</span>
         </button>
 
@@ -69,7 +69,7 @@
           :class="{ active: currentTab === 'transactions' }"
         >
           <span class="tab-icon">📑</span>
-          <span class="tab-label">Platform Ledger</span>
+          <span class="tab-label">Ledger</span>
         </button>
 
         <button 
@@ -82,11 +82,7 @@
         </button>
       </nav>
 
-      <!-- Active View Indicator Chip -->
-      <div class="active-view-chip">
-        <span class="chip-dot"></span>
-        <span class="chip-text">{{ formatTabTitle(currentTab) }}</span>
-      </div>
+      
 
       <!-- Topbar Right: Utility Navigation & Admin Profile (Image 1 & 2 Style) -->
       <div class="topbar-utility-nav">

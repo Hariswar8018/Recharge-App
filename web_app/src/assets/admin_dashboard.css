@@ -233,11 +233,11 @@
 .topbar-profile-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.45rem;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 0.35rem 0.85rem;
-  border-radius: 24px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -248,54 +248,59 @@
 }
 
 .avatar-circle {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
   color: white;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #38bdf8;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  border: 1.5px solid #38bdf8;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 .profile-text-group {
   display: flex;
   flex-direction: column;
+  max-width: 140px;
 }
 
 .admin-email-text {
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #ffffff;
-  line-height: 1.2;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-role-badge {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: #38bdf8;
   font-weight: 700;
+  line-height: 1;
 }
 
 .dropdown-chevron {
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   color: #94a3b8;
-  margin-left: 0.2rem;
+  margin-left: 0.15rem;
 }
 
 .profile-dropdown-menu {
   position: absolute;
-  top: 48px;
+  top: 40px;
   right: 0;
-  width: 240px;
+  width: 230px;
   background: #1e293b;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-  padding: 0.5rem;
+  padding: 0.4rem;
   z-index: 1010;
 }
 
