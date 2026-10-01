@@ -98,7 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (mounted) {
       setState(() {
-        _visibilitySettings = visibility;
+        final raw = (visibility['raw_settings'] as Map<String, dynamic>?) ?? {};
+        _visibilitySettings = {...visibility, ...raw};
         _fullName = user['fullName'] ?? "Rajesh Reddy";
         _userId = user['id'] ?? 0;
         _email = user['email'] ?? "";
@@ -2712,7 +2713,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildTeamTab() {
     final int realTeamCount = _teamMembers.where((m) => (m['status'] ?? '').toString().toUpperCase() == 'ACTIVE').length;
-    final double progressRatio = (realTeamCount / 126.0).clamp(0.0, 1.0);
+    final int m1 = int.tryParse((_visibilitySettings['level_1_members'] ?? '2').toString()) ?? 2;
+    final int m2 = int.tryParse((_visibilitySettings['level_2_members'] ?? '4').toString()) ?? 4;
+    final int m3 = int.tryParse((_visibilitySettings['level_3_members'] ?? '8').toString()) ?? 8;
+    final int m4 = int.tryParse((_visibilitySettings['level_4_members'] ?? '16').toString()) ?? 16;
+    final int m5 = int.tryParse((_visibilitySettings['level_5_members'] ?? '32').toString()) ?? 32;
+    final int m6 = int.tryParse((_visibilitySettings['level_6_members'] ?? '64').toString()) ?? 64;
+
+    final double i1 = double.tryParse((_visibilitySettings['level_1_income'] ?? '300').toString()) ?? 300.0;
+    final double i2 = double.tryParse((_visibilitySettings['level_2_income'] ?? '400').toString()) ?? 400.0;
+    final double i3 = double.tryParse((_visibilitySettings['level_3_income'] ?? '800').toString()) ?? 800.0;
+    final double i4 = double.tryParse((_visibilitySettings['level_4_income'] ?? '1600').toString()) ?? 1600.0;
+    final double i5 = double.tryParse((_visibilitySettings['level_5_income'] ?? '3200').toString()) ?? 3200.0;
+    final double i6 = double.tryParse((_visibilitySettings['level_6_income'] ?? '6400').toString()) ?? 6400.0;
+
+    final int cum1 = m1;
+    final int cum2 = cum1 + m2;
+    final int cum3 = cum2 + m3;
+    final int cum4 = cum3 + m4;
+    final int cum5 = cum4 + m5;
+    final int cum6 = cum5 + m6;
+    final int maxTarget = cum6 > 0 ? cum6 : 126;
+
+    final double progressRatio = (realTeamCount / (maxTarget * 1.0)).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
     final String visG = (_visibilitySettings['sec_global_cycle_visibility'] ?? 'Show').toString();
     final bool enabledG = _visibilitySettings['sec_global_cycle_enabled'] != false && _visibilitySettings['sec_global_cycle_enabled_bool'] != 'false';
@@ -2720,12 +2743,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final bool isGlobalCycleDisabled = visG == 'Hide' || !enabledG || ruleModeG.contains('Disabled') || ruleModeG.contains('Maintenance');
 
     final List<Map<String, dynamic>> levelData = [
-      {"level": "1", "team": "2", "income": "₹ 200.00", "cumTarget": 2},
-      {"level": "2", "team": "4", "income": "₹ 400.00", "cumTarget": 6},
-      {"level": "3", "team": "8", "income": "₹ 800.00", "cumTarget": 14},
-      {"level": "4", "team": "16", "income": "₹ 1,600.00", "cumTarget": 30},
-      {"level": "5", "team": "32", "income": "₹ 3,200.00", "cumTarget": 62},
-      {"level": "6", "team": "64", "income": "₹ 6,400.00", "cumTarget": 126},
+      {"level": "1", "team": "$m1", "income": "₹ ${i1.toStringAsFixed(2)}", "cumTarget": cum1},
+      {"level": "2", "team": "$m2", "income": "₹ ${i2.toStringAsFixed(2)}", "cumTarget": cum2},
+      {"level": "3", "team": "$m3", "income": "₹ ${i3.toStringAsFixed(2)}", "cumTarget": cum3},
+      {"level": "4", "team": "$m4", "income": "₹ ${i4.toStringAsFixed(2)}", "cumTarget": cum4},
+      {"level": "5", "team": "$m5", "income": "₹ ${i5.toStringAsFixed(2)}", "cumTarget": cum5},
+      {"level": "6", "team": "$m6", "income": "₹ ${i6.toStringAsFixed(2)}", "cumTarget": cum6},
     ];
 
     Widget teamContent = SingleChildScrollView(
@@ -2808,9 +2831,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            "TARGET : 126",
-                            style: TextStyle(
+                          Text(
+                            "TARGET : $maxTarget",
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,

@@ -31,6 +31,10 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   bool _isBankVerified = false;
   String _status = "INACTIVE";
 
+  double _minWithdrawal = 500.0;
+  double _deductionPercent = 15.0;
+  String _withdrawalDays = "Monday, Wednesday, Friday";
+
   @override
   void initState() {
     super.initState();
@@ -57,21 +61,34 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
 
   Future<void> _loadBalanceAndProfile() async {
     final profileRes = await ApiService.getProfile();
+    final vis = await ApiService.getVisibility(forceRefresh: true);
+    final raw = (vis['raw_settings'] as Map<String, dynamic>?) ?? {};
+    final settings = {...vis, ...raw};
+
+    final minW = double.tryParse((settings['min_withdrawal'] ?? '500').toString()) ?? 500.0;
+    final dedP = double.tryParse((settings['withdrawal_deduction_percent'] ?? '15').toString()) ?? 15.0;
+    final daysW = (settings['withdrawal_days'] ?? 'Monday, Wednesday, Friday').toString();
+
     if (profileRes['success']) {
       final user = profileRes['user'];
       final balance = double.tryParse(user['main_wallet_balance']?.toString() ?? "1200.0") ?? 1200.0;
       final mobile = user['mobileNumber'] ?? "7989293968";
       final bool verified = user['bank_verified'] == 1 || user['bank_verified'] == true;
-      setState(() {
-        _mainBalance = balance;
-        _userUpiId = user['upi_id'] ?? "$mobile@ybl";
-        _status = (user['status'] ?? "INACTIVE").toString().toUpperCase();
-        _bankName = user['bank_name'] ?? "";
-        _accountNo = user['account_no'] ?? "";
-        _accountHolder = user['account_holder'] ?? "";
-        _ifsc = user['ifsc'] ?? "";
-        _isBankVerified = verified;
-      });
+      if (mounted) {
+        setState(() {
+          _mainBalance = balance;
+          _userUpiId = user['upi_id'] ?? "$mobile@ybl";
+          _status = (user['status'] ?? "INACTIVE").toString().toUpperCase();
+          _bankName = user['bank_name'] ?? "";
+          _accountNo = user['account_no'] ?? "";
+          _accountHolder = user['account_holder'] ?? "";
+          _ifsc = user['ifsc'] ?? "";
+          _isBankVerified = verified;
+          _minWithdrawal = minW;
+          _deductionPercent = dedP;
+          _withdrawalDays = daysW;
+        });
+      }
     }
   }
 
@@ -159,9 +176,9 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
     if (!_formKey.currentState!.validate()) return;
     
     final amtVal = double.tryParse(_amountController.text.trim());
-    if (amtVal == null || amtVal < 500) {
+    if (amtVal == null || amtVal < _minWithdrawal) {
       setState(() {
-        _error = "Minimum withdrawal amount is ₹500";
+        _error = "Minimum withdrawal amount is ₹${_minWithdrawal.toStringAsFixed(0)}";
       });
       return;
     }
@@ -789,13 +806,13 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Icon(Icons.info_outline_rounded, color: Color(0xFF1565C0), size: 18),
-                                  SizedBox(width: 8),
+                                children: [
+                                  const Icon(Icons.info_outline_rounded, color: Color(0xFF1565C0), size: 18),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      "15% processing fee will be deducted from the withdrawal amount. Requests are usually processed within 24 hours.",
-                                      style: TextStyle(
+                                      "${_deductionPercent.toStringAsFixed(0)}% processing fee will be deducted. Minimum withdrawal: ₹${_minWithdrawal.toStringAsFixed(0)}. Allowed Days: $_withdrawalDays.",
+                                      style: const TextStyle(
                                         color: Color(0xFF1E293B),
                                         fontSize: 11,
                                         height: 1.35,

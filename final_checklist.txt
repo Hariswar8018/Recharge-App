@@ -16,18 +16,5 @@
 [x] All values are Admin-editable
 [x] Verify Admin values are actually used by Backend
 
-6. Payout / Withdrawal Request Management
-[x] Statuses: Pending / Approved / Rejected
-[x] Search by User ID / Mobile
-[x] Date / Status Filter
-[x] Select All
-[x] Bulk Approve / Bulk Reject
-[x] Approve All Pending
-[x] Individual Approve / Reject
-[x] User & Bank Details visible
-[x] Available Balance / Withdrawal Amount visible
-[x] Rejection Reason
-[x] Approve/Reject → Wallet & Status Update
-[x] Rejection Reason visible to User
-[x] Excel Download
+
 
