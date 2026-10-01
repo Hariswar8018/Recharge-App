@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../models/transaction_model.dart';
 import '../../services/api_service.dart';
@@ -14,6 +15,7 @@ class TransactionHistoryScreen extends StatefulWidget {
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   List<TransactionModel> _allTransactions = [];
   bool _isLoading = true;
+  Timer? _refreshTimer;
 
   String _searchQuery = "";
   String _selectedFilter = "All";
@@ -35,10 +37,16 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   void initState() {
     super.initState();
     _loadTransactions();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
+        _loadTransactions();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }

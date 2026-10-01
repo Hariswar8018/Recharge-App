@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
@@ -20,15 +21,22 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   
   String _memberStatus = "ACTIVE";
   bool _isLoading = true;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
+        _loadProfile();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _nameController.dispose();
     _emailController.dispose();
     _mobileController.dispose();
@@ -109,28 +117,41 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE8F5E9),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: const Color(0xFFA5D6A7)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.verified, color: Color(0xFF2E7D32), size: 14),
-                              const SizedBox(width: 6),
-                              Text(
-                                "Status: $_memberStatus",
-                                style: const TextStyle(
-                                  color: Color(0xFF2E7D32),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 11,
-                                ),
+                        Builder(
+                          builder: (context) {
+                            final bool isActive = _memberStatus.toLowerCase().trim() == 'active';
+                            final Color bgCol = isActive ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE);
+                            final Color borderCol = isActive ? const Color(0xFFA5D6A7) : const Color(0xFFEF9A9A);
+                            final Color textCol = isActive ? const Color(0xFF2E7D32) : const Color(0xFFC62828);
+
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: bgCol,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: borderCol),
                               ),
-                            ],
-                          ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isActive ? Icons.verified : Icons.cancel_outlined,
+                                    color: textCol,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    "Status: $_memberStatus",
+                                    style: TextStyle(
+                                      color: textCol,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

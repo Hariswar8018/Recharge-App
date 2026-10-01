@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../widgets/processing_dialog.dart';
@@ -19,6 +20,7 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
   bool _isVerified = false;
   bool _isLoading = false;
   Map<String, dynamic> _visibilitySettings = {};
+  Timer? _refreshTimer;
 
   @override
   void initState() {
@@ -26,6 +28,11 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
     _bankNameController.addListener(_onFieldChanged);
     _ifscController.addListener(_onFieldChanged);
     _checkVerificationStatus();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) {
+        _checkVerificationStatus();
+      }
+    });
   }
 
   void _onFieldChanged() {
@@ -34,6 +41,7 @@ class _BankVerifyScreenState extends State<BankVerifyScreen> {
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _bankNameController.removeListener(_onFieldChanged);
     _ifscController.removeListener(_onFieldChanged);
     _bankNameController.dispose();

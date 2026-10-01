@@ -1291,10 +1291,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                             ),
                           );
                         },
-                      ),
-
-                      // 7. Request History Card
-                      _buildRequestHistoryCard(),
+                      ),                      
                     ],
                   ),
                 ),

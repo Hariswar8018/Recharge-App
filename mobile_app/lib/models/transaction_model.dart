@@ -22,6 +22,9 @@ class TransactionModel {
     this.status = "Success",
     required this.reference,
   });
+
+  bool get isDebit => !isIncome;
+  String get walletType => (descLine1.toLowerCase().contains("fund") || descLine2.toLowerCase().contains("fund")) ? "Fund" : "Main";
 }
 
 // Sample fallback list matching the reference design 100%
