@@ -480,10 +480,22 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
           [request.amount, request.user_id]
         );
 
-        await conn.execute(
-          'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "FUND", ?, "Fund Deposit", ?, "Success")',
-          [request.user_id, `+${parseFloat(request.amount).toFixed(2)}`, dateStr]
+        // Update pending transaction if exists, else insert
+        const [pendingTxs] = await conn.execute(
+          'SELECT id FROM transactions WHERE user_id = ? AND wallet_type = "FUND" AND status = "PENDING" ORDER BY id DESC LIMIT 1',
+          [request.user_id]
         );
+        if (pendingTxs && pendingTxs.length > 0) {
+          await conn.execute(
+            'UPDATE transactions SET status = "Success", amount = ? WHERE id = ?',
+            [`+${parseFloat(request.amount).toFixed(2)}`, pendingTxs[0].id]
+          );
+        } else {
+          await conn.execute(
+            'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "FUND", ?, "Fund Deposit", ?, "Success")',
+            [request.user_id, `+${parseFloat(request.amount).toFixed(2)}`, dateStr]
+          );
+        }
       });
 
       await invalidateCache(`user_profile_${request.user_id}`);
@@ -515,6 +527,10 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
       });
     } else {
       await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [requestId]);
+      await query(
+        'UPDATE transactions SET status = "Failed" WHERE user_id = ? AND wallet_type = "FUND" AND status = "PENDING" ORDER BY id DESC LIMIT 1',
+        [request.user_id]
+      );
       await invalidateCache(`user_profile_${request.user_id}`);
       await invalidateCache('admin_stats');
 

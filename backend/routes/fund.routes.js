@@ -101,10 +101,17 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
       return res.status(400).json({ error: fundStatus.statusMessage });
     }
 
-    // 3. Insert as PENDING for admin approval
+    // 3. Insert into fund_requests as PENDING for admin approval
     await query(
       'INSERT INTO fund_requests (user_id, amount, utr, status) VALUES (?, ?, ?, "PENDING")',
       [req.user.id, numericAmt, cleanUtr]
+    );
+
+    // 4. Also insert PENDING record into general ledger transactions table
+    const dateStr = new Date().toLocaleString('en-US', { hour12: true });
+    await query(
+      'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "FUND", ?, "Fund Deposit", ?, "PENDING")',
+      [req.user.id, `+${numericAmt.toFixed(2)}`, dateStr]
     );
 
     await invalidateCache(`user_profile_${req.user.id}`);

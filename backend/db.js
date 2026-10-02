@@ -372,6 +372,28 @@ async function initDb() {
       console.error('Error auto-generating SRM user codes:', e);
     }
 
+    // Auto-heal / sync fund_requests into transactions table
+    try {
+      const unsyncedReqs = await query(`
+        SELECT fr.*, u.fullName 
+        FROM fund_requests fr 
+        LEFT JOIN users u ON fr.user_id = u.id
+      `);
+      for (const fr of unsyncedReqs) {
+        const dateStr = fr.createdAt ? new Date(fr.createdAt).toLocaleString('en-US', { hour12: true }) : new Date().toLocaleString('en-US', { hour12: true });
+        const st = fr.status === 'APPROVED' ? 'Success' : (fr.status === 'REJECTED' ? 'Failed' : 'PENDING');
+        const checkTx = await query('SELECT id FROM transactions WHERE user_id = ? AND wallet_type = "FUND" AND amount LIKE ?', [fr.user_id, `%${parseFloat(fr.amount).toFixed(2)}%`]);
+        if (checkTx.length === 0) {
+          await query(
+            'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "FUND", ?, "Fund Deposit", ?, ?)',
+            [fr.user_id, `+${parseFloat(fr.amount).toFixed(2)}`, dateStr, st]
+          );
+        }
+      }
+    } catch (e) {
+      console.error('Error auto-healing fund requests transactions:', e);
+    }
+
     console.log('Database initialization complete.');
   } catch (err) {
     console.error('Error during database migration:', err);

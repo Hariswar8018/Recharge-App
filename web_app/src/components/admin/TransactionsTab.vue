@@ -509,10 +509,10 @@ export default {
         // 3. Category/Type Filter
         if (this.filterType !== 'ALL') {
           const t = (tx.type || '').toUpperCase();
-          if (this.filterType === 'ADMIN' && !t.includes('ADMIN')) return false;
+          if (this.filterType === 'ADMIN' && (!t.includes('ADMIN') && !t.includes('FUND') && !t.includes('DEPOSIT'))) return false;
           if (this.filterType === 'CASHOUT' && (!t.includes('CASHOUT') && !t.includes('WITHDRAWAL'))) return false;
           if (this.filterType === 'CAPTCHA' && !t.includes('CAPTCHA')) return false;
-          if (this.filterType === 'DEPOSIT' && (!t.includes('DEPOSIT') && !t.includes('ADD MONEY'))) return false;
+          if (this.filterType === 'DEPOSIT' && (!t.includes('DEPOSIT') && !t.includes('ADD MONEY') && !t.includes('FUND'))) return false;
           if (this.filterType === 'SPONSOR' && (!t.includes('SPONSOR') && !t.includes('DIRECT') && !t.includes('REFERRAL'))) return false;
           if (this.filterType === 'SINGLE LEG' && (!t.includes('SINGLE LEG') && !t.includes('LEVEL') && !t.includes('POOL'))) return false;
           if (this.filterType === 'RECHARGE' && !t.includes('RECHARGE')) return false;
