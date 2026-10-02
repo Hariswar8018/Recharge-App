@@ -372,8 +372,9 @@ async function initDb() {
       console.error('Error auto-generating SRM user codes:', e);
     }
 
-    // Auto-heal / sync fund_requests into transactions table
+    // 2-Way Sync between fund_requests and transactions
     try {
+      // 1. Sync fund_requests -> transactions
       const unsyncedReqs = await query(`
         SELECT fr.*, u.fullName 
         FROM fund_requests fr 
@@ -390,8 +391,21 @@ async function initDb() {
           );
         }
       }
+
+      // 2. Sync transactions -> fund_requests
+      const fundTxns = await query('SELECT * FROM transactions WHERE wallet_type = "FUND" AND (type LIKE "%Deposit%" OR type LIKE "%FUND%")');
+      for (const tx of fundTxns) {
+        const checkReq = await query('SELECT id FROM fund_requests WHERE user_id = ? AND amount = ?', [tx.user_id, Math.abs(parseFloat(tx.amount || 0))]);
+        if (checkReq.length === 0) {
+          const st = (tx.status === 'Success' || tx.status === 'APPROVED') ? 'APPROVED' : ((tx.status === 'Failed' || tx.status === 'REJECTED') ? 'REJECTED' : 'PENDING');
+          await query(
+            'INSERT INTO fund_requests (user_id, amount, utr, status, createdAt) VALUES (?, ?, ?, ?, ?)',
+            [tx.user_id, Math.abs(parseFloat(tx.amount || 1200)), `SYNCHED${tx.id}`, st, tx.date || new Date().toISOString()]
+          );
+        }
+      }
     } catch (e) {
-      console.error('Error auto-healing fund requests transactions:', e);
+      console.error('Error auto-syncing fund requests and transactions:', e);
     }
 
     console.log('Database initialization complete.');
