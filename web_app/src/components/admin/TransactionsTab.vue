@@ -392,29 +392,40 @@
       </div>
     </div>
 
-    <!-- MONTHLY BULK 1200 INVOICES DOWNLOAD DIALOG -->
+    <!-- MONTHLY BULK INVOICES ZIP DOWNLOAD DIALOG -->
     <div v-if="showBulkMonthlyModal" class="modal-backdrop" @click="showBulkMonthlyModal = false">
-      <div class="modal-dialog export-modal" @click.stop style="max-width: 480px;">
-        <div class="modal-header" style="background: #15803d; color: white;">
-          <h3>📦 Monthly Bulk 1,200 ID Activation Invoices</h3>
+      <div class="modal-dialog export-modal" @click.stop style="max-width: 480px; background: white; border-radius: 12px; overflow: hidden;">
+        <div class="modal-header" style="background: #0047BA; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800;">📦 Monthly Bulk PDF Invoices (ZIP)</h3>
           <button @click="showBulkMonthlyModal = false" class="close-modal-btn" style="color: white;">&times;</button>
         </div>
         <div class="modal-body" style="padding: 1.25rem;">
           <p style="margin: 0 0 1rem; font-size: 0.88rem; color: #475569;">
-            Select a target month below to download all approved <strong>₹1,200 ID Activation Tax Invoices</strong> for that period in a consolidated Microsoft Excel (.xlsx) report.
+            Select a target month below to download individual <strong>PDF Invoices</strong> for all approved transactions in a single <strong>ZIP archive</strong>.
           </p>
           <div class="export-section">
-            <label class="section-title">📅 Select Month & Year</label>
+            <label class="section-title" style="font-weight: 800; color: #0047BA;">📅 Select Month & Year</label>
             <input type="month" v-model="bulkMonthSelect" class="form-control" style="padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; font-size: 0.9rem; width: 100%; box-sizing: border-box;" />
           </div>
-          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.85rem; border-radius: 8px; margin-top: 1rem; font-size: 0.82rem; color: #166534;">
-            <strong>ℹ️ Note:</strong> Only approved ₹1,200 ID activation payments are included. Pending/Rejected payments and non-activation transactions are automatically excluded.
+
+          <div v-if="isGeneratingTxZip" style="margin-top: 1rem; background: #e0f2fe; border: 1px solid #7dd3fc; padding: 1rem; border-radius: 8px;">
+            <div style="font-weight: 800; font-size: 0.85rem; color: #0369a1; margin-bottom: 6px;">
+              ⏳ Generating PDF Invoices... ({{ txZipProgress }} / {{ txZipTotal }})
+            </div>
+            <div style="background: #bae6fd; height: 10px; border-radius: 5px; overflow: hidden;">
+              <div :style="{ width: (txZipTotal ? (txZipProgress / txZipTotal * 100) : 0) + '%' }" style="background: #0284c7; height: 100%; transition: width 0.2s;"></div>
+            </div>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.85rem; border-radius: 8px; margin-top: 1rem; font-size: 0.82rem; color: #475569;">
+            <strong>ℹ️ Note:</strong> Invoices are generated <strong>ONLY for Approved transactions</strong>. Pending and Rejected transactions do not generate invoices.
           </div>
         </div>
-        <div class="modal-footer">
-          <button @click="showBulkMonthlyModal = false" class="btn btn-secondary">Cancel</button>
-          <button @click="downloadMonthlyBulkInvoices" class="btn btn-excel" style="background: #15803d;">
-            📥 Generate Bulk Invoices Excel
+        <div class="modal-footer" style="padding: 1rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button @click="showBulkMonthlyModal = false" :disabled="isGeneratingTxZip" class="btn btn-secondary">Cancel</button>
+          <button @click="downloadMonthlyBulkInvoices" :disabled="isGeneratingTxZip" class="btn" style="background: #0047BA; color: white; font-weight: 800;">
+            <span v-if="isGeneratingTxZip">Generating...</span>
+            <span v-else>⚡ Download PDF ZIP</span>
           </button>
         </div>
       </div>
@@ -430,6 +441,8 @@
 </template>
 
 <script>
+import JSZip from 'jszip';
+import html2pdf from 'html2pdf.js';
 import * as XLSX from 'xlsx';
 import InvoiceModal from './InvoiceModal.vue';
 
@@ -456,6 +469,9 @@ export default {
       selectedInvoiceTx: null,
       showBulkMonthlyModal: false,
       bulkMonthSelect: new Date().toISOString().substring(0, 7),
+      isGeneratingTxZip: false,
+      txZipProgress: 0,
+      txZipTotal: 0,
 
       // Export Dialog State
       showExportModal: false,

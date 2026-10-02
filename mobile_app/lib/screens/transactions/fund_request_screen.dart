@@ -1011,12 +1011,12 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
                                 border: Border.all(color: const Color(0xFF90CAF9)),
                               ),
                               child: Row(
-                                children: const [
+                                children: [
                                   Icon(Icons.info_outline_rounded, color: Color(0xFF1565C0), size: 16),
                                   SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
-                                      "Deposit amount is fixed at ₹1,200",
+                                      "Deposit amount is fixed at ₹${_amountController.text}",
                                       style: TextStyle(
                                         color: Color(0xFF1565C0),
                                         fontSize: 11,

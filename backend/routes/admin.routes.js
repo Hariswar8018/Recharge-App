@@ -435,7 +435,7 @@ router.get('/fund-requests', verifyAdminToken, async (req, res) => {
     const offset = (page - 1) * limit;
 
     const requests = await query(
-      `SELECT fr.*, u.fullName, u.email, u.mobileNumber 
+      `SELECT fr.*, u.fullName, u.email, u.mobileNumber, u.address, u.city, u.state, u.pincode, u.sponsor_code 
        FROM fund_requests fr 
        LEFT JOIN users u ON fr.user_id = u.id 
        ORDER BY fr.id DESC LIMIT ? OFFSET ?`,
