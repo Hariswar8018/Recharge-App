@@ -230,13 +230,21 @@
                 </span>
               </td>
 
-              <!-- Invoice Action -->
-              <td>
+              <!-- Action / Invoice -->
+              <td style="white-space: nowrap;">
+                <div v-if="(tx.status || '').toUpperCase() === 'PENDING'" style="display: flex; gap: 4px;">
+                  <button @click="$emit('approve-request', tx.id)" class="btn-action-approve" style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">
+                    ✓ Approve
+                  </button>
+                  <button @click="$emit('reject-request', tx.id)" class="btn-action-reject" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">
+                    ✗ Reject
+                  </button>
+                </div>
                 <button 
-                  v-if="isEligibleFor1200Invoice(tx)" 
+                  v-else-if="isEligibleFor1200Invoice(tx)" 
                   @click="openInvoice(tx)" 
                   class="btn-invoice-action"
-                  style="background: #15803d; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;"
+                  style="background: #0047BA; color: white; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;"
                 >
                   📄 Invoice
                 </button>

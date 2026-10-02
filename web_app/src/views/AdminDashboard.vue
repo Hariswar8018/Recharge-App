@@ -372,6 +372,8 @@
           :txnPage="txnPage"
           @prev-page="fetchTransactions(txnPage - 1)"
           @next-page="fetchTransactions(txnPage + 1)"
+          @approve-request="handleApproveRequest($event)"
+          @reject-request="handleRejectRequest($event)"
         />
 
         <!-- TAB 6: TEAMS & AFFILIATE TREE -->
@@ -1156,6 +1158,7 @@ export default {
         if (res.ok) {
           this.fetchFundRequests();
           this.fetchUsers();
+          this.fetchTransactions();
         }
       } catch (e) {
         console.error('Error approving fund request:', e);
@@ -1174,6 +1177,7 @@ export default {
         });
         if (res.ok) {
           this.fetchFundRequests();
+          this.fetchTransactions();
         }
       } catch (e) {
         console.error('Error rejecting fund request:', e);

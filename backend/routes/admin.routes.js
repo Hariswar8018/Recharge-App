@@ -456,7 +456,13 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
     const remark = req.body.remark;
     const requestId = req.params.id;
 
-    const reqs = await query('SELECT * FROM fund_requests WHERE id = ?', [requestId]);
+    let reqs = await query('SELECT * FROM fund_requests WHERE id = ?', [requestId]);
+    if (reqs.length === 0) {
+      const txs = await query('SELECT * FROM transactions WHERE id = ?', [requestId]);
+      if (txs.length > 0) {
+        reqs = await query('SELECT * FROM fund_requests WHERE user_id = ? AND status = "PENDING" ORDER BY id DESC LIMIT 1', [txs[0].user_id]);
+      }
+    }
     if (reqs.length === 0) {
       return res.status(404).json({ error: 'Fund request not found' });
     }
@@ -555,7 +561,13 @@ router.post('/fund-requests/:id/reject', verifyAdminToken, async (req, res) => {
     const remark = req.body.remark || '';
     const requestId = req.params.id;
 
-    const reqs = await query('SELECT * FROM fund_requests WHERE id = ?', [requestId]);
+    let reqs = await query('SELECT * FROM fund_requests WHERE id = ?', [requestId]);
+    if (reqs.length === 0) {
+      const txs = await query('SELECT * FROM transactions WHERE id = ?', [requestId]);
+      if (txs.length > 0) {
+        reqs = await query('SELECT * FROM fund_requests WHERE user_id = ? AND status = "PENDING" ORDER BY id DESC LIMIT 1', [txs[0].user_id]);
+      }
+    }
     if (reqs.length === 0) {
       return res.status(404).json({ error: 'Fund request not found' });
     }
