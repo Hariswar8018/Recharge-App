@@ -9,10 +9,7 @@
           <span class="badge-approved">✅ Approved</span>
         </div>
         <div class="top-actions">
-          <button @click="downloadPdf" class="btn btn-pdf-sm" :disabled="downloading">
-            <span v-if="downloading">⏳ Generating PDF...</span>
-            <span v-else>📥 Download PDF</span>
-          </button>
+          
           <button @click="printInvoice" class="btn btn-print">
             🖨️ Print
           </button>
@@ -217,32 +214,13 @@
           <div class="stamp-column">
             <div class="stamp-wrapper">
               <!-- DOUBLE CIRCLE STAMP SVG -->
-              <svg class="stamp-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
-                <!-- Outer circle -->
-                <circle cx="80" cy="80" r="74" fill="none" stroke="#003399" stroke-width="3"/>
-                <!-- Inner circle -->
-                <circle cx="80" cy="80" r="62" fill="none" stroke="#003399" stroke-width="1.5"/>
-                <!-- Circular Text path -->
-                <path id="circlePath" d="M 25, 80 a 55,55 0 1,1 110,0 a 55,55 0 1,1 -110,0" fill="none"/>
-                <text font-family="'Inter', sans-serif" font-weight="900" font-size="10.5" fill="#003399" letter-spacing="1">
-                  <textPath href="#circlePath" startOffset="50%" text-anchor="middle">
-                    SR DIGITAL SEVA KENDRAM
-                  </textPath>
-                </text>
-                <!-- Center text -->
-                <text x="80" y="74" font-family="'Inter', sans-serif" font-weight="800" font-size="11" fill="#003399" text-anchor="middle">Regd. No:</text>
-                <text x="80" y="92" font-family="'Inter', sans-serif" font-weight="900" font-size="13" fill="#003399" text-anchor="middle">34294</text>
-                <text x="80" y="116" font-family="'Inter', sans-serif" font-size="14" fill="#003399" text-anchor="middle">★</text>
-              </svg>
+             
 
               <!-- OVERLAID SIGNATURE -->
-              <img :src="signatureImg" alt="Rajesh Signature" class="signature-overlay-img" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: auto; pointer-events: none; mix-blend-mode: multiply;" />
+              <img :src="signatureImg" alt="Rajesh Signature" class="signature-overlay-img" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: auto; pointer-events: none; mix-blend-mode: multiply;" />
             </div>
 
-            <div class="signatory-line-box">
-              <div class="sign-line"></div>
-              <div class="signatory-text">Authorised Signatory</div>
-            </div>
+            
           </div>
         </div>
 

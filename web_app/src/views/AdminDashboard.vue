@@ -699,19 +699,21 @@ export default {
       });
     },
     pendingRequestsCount() {
-      return this.fundRequests.filter(r => r.status === 'PENDING').length;
+      return (this.fundRequests || []).filter(r => (r.status || '').toUpperCase() === 'PENDING').length;
     },
     filteredRequests() {
-      return this.fundRequests.filter(req => {
-        const matchesStatus = !this.reqFilterStatus || req.status === this.reqFilterStatus;
+      return (this.fundRequests || []).filter(req => {
+        const reqSt = (req.status || '').toUpperCase();
+        const filterSt = (this.reqFilterStatus || '').toUpperCase();
+        const matchesStatus = !filterSt || reqSt === filterSt;
         const q = (this.reqSearchQuery || '').toLowerCase().trim();
         const matchesQuery = !q || 
           (req.fullName && req.fullName.toLowerCase().includes(q)) ||
-          (req.mobileNumber && req.mobileNumber.includes(q)) ||
+          (req.mobileNumber && req.mobileNumber.toLowerCase().includes(q)) ||
           (req.utr_number && req.utr_number.toLowerCase().includes(q)) ||
           (req.utr && req.utr.toLowerCase().includes(q)) ||
-          (req.id && String(req.id).includes(q)) ||
-          (req.user_id && String(req.user_id).includes(q));
+          (req.id && String(req.id).toLowerCase().includes(q)) ||
+          (req.user_id && String(req.user_id).toLowerCase().includes(q));
         const matchesPM = !this.reqPaymentModeFilter || (req.payment_method && req.payment_method.toLowerCase().includes(this.reqPaymentModeFilter.toLowerCase()));
         const matchesAmt = !this.reqAmountFilter || Math.round(parseFloat(req.amount || 0)) === Math.round(parseFloat(this.reqAmountFilter));
         return matchesStatus && matchesQuery && matchesPM && matchesAmt;
@@ -1140,8 +1142,16 @@ export default {
     switchTab(tab) {
       this.currentTab = tab;
       this.mobileMenuOpen = false;
-      if (tab === 'notifications' || tab === 'sec_notifications') {
+      if (tab === 'requests' || tab === 'sec_requests') {
+        this.fetchFundRequests();
+      } else if (tab === 'transactions' || tab === 'sec_transactions') {
+        this.fetchTransactions();
+      } else if (tab === 'notifications' || tab === 'sec_notifications') {
         this.fetchNotifications();
+      } else if (tab === 'users' || tab === 'dashboard') {
+        this.fetchUsers();
+        this.fetchFundRequests();
+        this.fetchTransactions();
       }
     },
     async handleApproveRequest(reqId) {
