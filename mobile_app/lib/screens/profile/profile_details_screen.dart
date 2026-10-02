@@ -15,6 +15,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   final _emailController = TextEditingController();
   final _mobileController = TextEditingController();
   final _memberIdController = TextEditingController();
+  final _userSrmCodeController = TextEditingController();
   final _sponsorIdController = TextEditingController();
   final _dateJoiningController = TextEditingController();
   final _dateActivationController = TextEditingController();
@@ -41,6 +42,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     _emailController.dispose();
     _mobileController.dispose();
     _memberIdController.dispose();
+    _userSrmCodeController.dispose();
     _sponsorIdController.dispose();
     _dateJoiningController.dispose();
     _dateActivationController.dispose();
@@ -53,6 +55,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       final user = response['user'];
       final mobile = (user['mobileNumber'] ?? "").toString().trim();
       final sponsorMobile = (user['sponsor_mobileNumber'] ?? user['sponsor_mobile'] ?? "").toString().trim();
+      final sponsorCode = (user['sponsor_user_code'] ?? "").toString().trim();
+      final rawUserCode = (user['user_code'] ?? user['user_sponsor_id'] ?? user['sponsor_code'] ?? "").toString().trim();
       final rawCreatedAt = user['createdAt']?.toString() ?? "";
       
       String formattedDate = "25 Aug 2026";
@@ -63,12 +67,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         } catch (_) {}
       }
 
+      final String srmId = rawUserCode.isNotEmpty
+          ? rawUserCode
+          : "SRM${mobile.length >= 7 ? mobile.substring(mobile.length - 7) : '2411795'}";
+
+      final String sponsorDisplay = sponsorCode.isNotEmpty
+          ? sponsorCode
+          : ((sponsorMobile.isNotEmpty && sponsorMobile != "null") ? sponsorMobile : "None");
+
       setState(() {
         _nameController.text = user['fullName'] ?? "Member";
         _emailController.text = user['email'] ?? "";
         _mobileController.text = mobile;
         _memberIdController.text = mobile.isNotEmpty ? mobile : "N/A";
-        _sponsorIdController.text = (sponsorMobile.isNotEmpty && sponsorMobile != "null") ? sponsorMobile : "None";
+        _userSrmCodeController.text = srmId;
+        _sponsorIdController.text = sponsorDisplay;
         _dateJoiningController.text = formattedDate;
         _dateActivationController.text = formattedDate;
         _memberStatus = (user['status'] ?? "ACTIVE").toUpperCase();
@@ -185,6 +198,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                   _buildReadOnlyField("Mobile Number", _mobileController, Icons.phone_android),
                   _buildReadOnlyField("Email Address", _emailController, Icons.mail_outline),
                   _buildReadOnlyField("Member ID", _memberIdController, Icons.badge_outlined),
+                  _buildReadOnlyField("User Sponsor Code / SRM ID", _userSrmCodeController, Icons.qr_code_rounded),
                   _buildReadOnlyField("Sponsor ID", _sponsorIdController, Icons.people_outline),
                   _buildReadOnlyField("Date of Joining", _dateJoiningController, Icons.calendar_today_outlined),
                   _buildReadOnlyField("Date of Activation", _dateActivationController, Icons.verified_outlined),

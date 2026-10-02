@@ -39,9 +39,9 @@ router.get('/profile', verifyAppToken, verifyUserToken, async (req, res) => {
     }
 
     const users = await query(
-      `SELECT u.id, u.fullName, u.email, u.mobileNumber, u.fund_wallet_balance, u.main_wallet_balance, u.status, u.sponsor_id, u.createdAt,
+      `SELECT u.id, u.fullName, u.email, u.mobileNumber, u.user_code, u.fund_wallet_balance, u.main_wallet_balance, u.status, u.sponsor_id, u.createdAt,
               u.bank_name, u.account_holder, u.account_no, u.ifsc, u.bank_verified,
-              s.mobileNumber AS sponsor_mobileNumber
+              s.mobileNumber AS sponsor_mobileNumber, s.user_code AS sponsor_user_code
        FROM users u
        LEFT JOIN users s ON u.sponsor_id = s.id
        WHERE u.id = ?`,
