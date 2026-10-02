@@ -79,8 +79,8 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
   const { amount, utr } = req.body;
   const numericAmt = parseFloat(amount);
   
-  if (isNaN(numericAmt) || Math.round(numericAmt) !== 1200) {
-    return res.status(400).json({ error: 'Deposit amount is fixed at exactly ₹1,200' });
+  if (isNaN(numericAmt) || numericAmt <= 0) {
+    return res.status(400).json({ error: 'Deposit amount must be a valid positive amount' });
   }
 
   const cleanUtr = (utr || '').toString().trim();
@@ -103,8 +103,8 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
 
     // 3. Insert as PENDING for admin approval
     await query(
-      'INSERT INTO fund_requests (user_id, amount, utr, status) VALUES (?, 1200.00, ?, "PENDING")',
-      [req.user.id, cleanUtr]
+      'INSERT INTO fund_requests (user_id, amount, utr, status) VALUES (?, ?, ?, "PENDING")',
+      [req.user.id, numericAmt, cleanUtr]
     );
 
     await invalidateCache(`user_profile_${req.user.id}`);

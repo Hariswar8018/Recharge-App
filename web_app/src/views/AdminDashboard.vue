@@ -702,13 +702,16 @@ export default {
     filteredRequests() {
       return this.fundRequests.filter(req => {
         const matchesStatus = !this.reqFilterStatus || req.status === this.reqFilterStatus;
-        const q = this.reqSearchQuery.toLowerCase();
+        const q = (this.reqSearchQuery || '').toLowerCase().trim();
         const matchesQuery = !q || 
           (req.fullName && req.fullName.toLowerCase().includes(q)) ||
           (req.mobileNumber && req.mobileNumber.includes(q)) ||
-          (req.utr_number && req.utr_number.toLowerCase().includes(q));
-        const matchesPM = !this.reqPaymentModeFilter || (req.payment_method && req.payment_method.includes(this.reqPaymentModeFilter));
-        const matchesAmt = !this.reqAmountFilter || String(req.amount) === this.reqAmountFilter;
+          (req.utr_number && req.utr_number.toLowerCase().includes(q)) ||
+          (req.utr && req.utr.toLowerCase().includes(q)) ||
+          (req.id && String(req.id).includes(q)) ||
+          (req.user_id && String(req.user_id).includes(q));
+        const matchesPM = !this.reqPaymentModeFilter || (req.payment_method && req.payment_method.toLowerCase().includes(this.reqPaymentModeFilter.toLowerCase()));
+        const matchesAmt = !this.reqAmountFilter || Math.round(parseFloat(req.amount || 0)) === Math.round(parseFloat(this.reqAmountFilter));
         return matchesStatus && matchesQuery && matchesPM && matchesAmt;
       });
     },

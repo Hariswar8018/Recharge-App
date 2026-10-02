@@ -1,0 +1,111 @@
+================================================================================
+SR DIGITAL SEVA RECHARGE APP - SQL DATABASE TABLES & STRUCTURE
+================================================================================
+
+1. users
+--------------------------------------------------------------------------------
+Purpose: Stores user & admin accounts, auth details, wallet balances, bank info, and sponsor SRM IDs.
+Columns:
+  - id (INT, AUTO_INCREMENT, PRIMARY KEY)
+  - fullName (VARCHAR 255)
+  - email (VARCHAR 255, UNIQUE)
+  - mobileNumber (VARCHAR 20)
+  - passwordHash (TEXT)
+  - plain_password (TEXT)
+  - user_code (VARCHAR 20, Unique 10-char SRM Sponsor ID, e.g. SRM1234567)
+  - sponsor_id (INT, Foreign key to user sponsor)
+  - fund_wallet_balance (DECIMAL 15,2, DEFAULT 0.00)
+  - main_wallet_balance (DECIMAL 15,2, DEFAULT 0.00)
+  - status (VARCHAR 50, DEFAULT 'PENDING')
+  - role (VARCHAR 50, DEFAULT 'user' / 'admin')
+  - device_model (VARCHAR 100)
+  - app_version (VARCHAR 50)
+  - bank_name (VARCHAR 255)
+  - account_holder (VARCHAR 255)
+  - account_no (VARCHAR 100)
+  - ifsc (VARCHAR 50)
+  - branch (VARCHAR 255)
+  - account_type (VARCHAR 50, DEFAULT 'Savings')
+  - bank_verified (INT, DEFAULT 0)
+  - createdAt (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+
+2. fund_requests
+--------------------------------------------------------------------------------
+Purpose: Stores user Add Money / Fund Deposit requests for admin approval.
+Columns:
+  - id (INT, AUTO_INCREMENT, PRIMARY KEY)
+  - user_id (INT, NOT NULL)
+  - amount (DECIMAL 15,2, NOT NULL)
+  - utr (VARCHAR 255, 12-digit UTR transaction ref)
+  - status (VARCHAR 50, DEFAULT 'PENDING' / 'APPROVED' / 'REJECTED')
+  - createdAt (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+
+3. withdrawals
+--------------------------------------------------------------------------------
+Purpose: Stores income withdrawal / cashout requests.
+Columns:
+  - id (INT, AUTO_INCREMENT, PRIMARY KEY)
+  - user_id (INT, NOT NULL)
+  - amount (DECIMAL 15,2, Gross requested amount)
+  - deduction_fee (DECIMAL 15,2, 15% maintenance deduction)
+  - net_amount (DECIMAL 15,2, Net payout amount)
+  - account_holder (VARCHAR 255)
+  - account_no (VARCHAR 100)
+  - ifsc (VARCHAR 50)
+  - bank_name (VARCHAR 255)
+  - branch (VARCHAR 255)
+  - account_type (VARCHAR 50)
+  - status (VARCHAR 50, DEFAULT 'PENDING' / 'APPROVED' / 'REJECTED')
+  - rejection_reason (TEXT)
+  - processed_at (DATETIME)
+  - createdAt (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+
+4. transactions
+--------------------------------------------------------------------------------
+Purpose: Platform-wide audit ledger tracking all recharges, credits, debits, referral income, single-leg pool payouts, and adjustments.
+Columns:
+  - id (INT, AUTO_INCREMENT, PRIMARY KEY)
+  - user_id (INT, NOT NULL)
+  - wallet_type (VARCHAR 50, 'MAIN' / 'FUND')
+  - amount (VARCHAR 50, Numeric amount value)
+  - type (VARCHAR 50, Transaction category description)
+  - date (VARCHAR 100, Transaction date string)
+  - status (VARCHAR 50, DEFAULT 'Success')
+  - createdAt (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+
+5. cycles
+--------------------------------------------------------------------------------
+Purpose: Manages Single-Leg Pool matrix cycle tracking for active participants.
+Columns:
+  - id (INT, AUTO_INCREMENT, PRIMARY KEY)
+  - user_id (INT, NOT NULL)
+  - cycle_id (VARCHAR 100)
+  - status (VARCHAR 50, DEFAULT 'ACTIVE')
+  - members_count (INT, DEFAULT 0)
+  - createdAt (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+
+6. single_leg_queue
+--------------------------------------------------------------------------------
+Purpose: Queues members sequentially to calculate 6-level pool payouts.
+Columns:
+  - id (INT, AUTO_INCREMENT, PRIMARY KEY)
+  - cycle_id (INT, NOT NULL)
+  - user_id (INT, NOT NULL)
+  - createdAt (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+
+7. system_settings
+--------------------------------------------------------------------------------
+Purpose: Global system configuration settings managed dynamically from the Admin Panel.
+Columns:
+  - key_name (VARCHAR 255, PRIMARY KEY)
+  - val_value (TEXT, NOT NULL)
+
+8. notifications
+--------------------------------------------------------------------------------
+Purpose: Stores broadcast push notifications and announcements sent by Admin to users.
+Columns:
+  - id (INT, AUTO_INCREMENT, PRIMARY KEY)
+  - title (VARCHAR 255)
+  - message (TEXT)
+  - createdAt (DATETIME, DEFAULT CURRENT_TIMESTAMP)
+================================================================================
