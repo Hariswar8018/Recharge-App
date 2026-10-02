@@ -344,6 +344,33 @@ async function initDb() {
 
     try { await query('ALTER TABLE users ADD COLUMN branch VARCHAR(255) DEFAULT NULL'); } catch(e) {}
     try { await query('ALTER TABLE users ADD COLUMN account_type VARCHAR(50) DEFAULT "Savings"'); } catch(e) {}
+    try { await query('ALTER TABLE users ADD COLUMN user_code VARCHAR(20) DEFAULT NULL'); } catch(e) {}
+
+    // Auto-heal SRM 10-digit unique Sponsor Code for all users
+    try {
+      const usersToCode = await query('SELECT id, user_code FROM users');
+      const usedCodes = new Set();
+      usersToCode.forEach(u => { if (u.user_code) usedCodes.add(u.user_code); });
+
+      for (const u of usersToCode) {
+        if (!u.user_code || !/^SRM\d{7}$/.test(u.user_code) || (usedCodes.has(u.user_code) && Array.from(usedCodes).filter(c => c === u.user_code).length > 1)) {
+          let newCode = '';
+          for (let attempt = 0; attempt < 100; attempt++) {
+            const random7 = Math.floor(1000000 + Math.random() * 9000000).toString();
+            const candidate = `SRM${random7}`;
+            if (!usedCodes.has(candidate)) {
+              newCode = candidate;
+              usedCodes.add(candidate);
+              break;
+            }
+          }
+          if (!newCode) newCode = `SRM${Math.floor(1000000 + Math.random() * 9000000)}`;
+          await query('UPDATE users SET user_code = ? WHERE id = ?', [newCode, u.id]);
+        }
+      }
+    } catch (e) {
+      console.error('Error auto-generating SRM user codes:', e);
+    }
 
     console.log('Database initialization complete.');
   } catch (err) {

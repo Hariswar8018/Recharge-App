@@ -14,6 +14,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
   final TextEditingController _mobileController = TextEditingController(text: "7989293968");
   
   double _fundWalletBalance = 1200.0;
+  double _joinAmount = 1200.0;
   String _userName = "Raju Reddy";
   String _userMobile = "7989293968";
   String _userEmail = "ravikanth@gmail.com";
@@ -136,9 +137,16 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
 
   Future<void> _loadUserData() async {
     final response = await ApiService.getProfile();
+    final vis = await ApiService.getVisibility(forceRefresh: true);
+    final raw = (vis['raw_settings'] as Map<String, dynamic>?) ?? {};
+    final settings = {...vis, ...raw};
+    final String rawJoin = (settings['join_amount'] ?? settings['top_up_amount'] ?? '1200').toString().trim();
+    final double dynamicJoin = double.tryParse(rawJoin) ?? 1200.0;
+
     if (response['success'] == true) {
       final user = response['user'];
       setState(() {
+        _joinAmount = dynamicJoin;
         _fundWalletBalance = double.tryParse(user['fund_wallet_balance']?.toString() ?? "1200.0") ?? 1200.0;
         _userName = user['name']?.toString() ?? "Raju Reddy";
         _userMobile = user['mobile']?.toString() ?? "7989293968";
@@ -156,6 +164,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
       });
     } else {
       setState(() {
+        _joinAmount = dynamicJoin;
         _isLoading = false;
       });
     }
@@ -173,10 +182,10 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
       return;
     }
 
-    if (_fundWalletBalance < 1200.0) {
+    if (_fundWalletBalance < _joinAmount) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Insufficient Fund Wallet balance! Please add funds."),
+        SnackBar(
+          content: Text("Insufficient Fund Wallet balance! Required: ₹${_joinAmount.toStringAsFixed(2)}. Please add funds."),
           backgroundColor: Colors.red,
         ),
       );
@@ -200,7 +209,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
 
     if (res['success'] == true) {
       setState(() {
-        _fundWalletBalance -= 1200.0;
+        _fundWalletBalance -= _joinAmount;
       });
       showDialog(
         context: context,
@@ -213,7 +222,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
               Text("Subscription Active", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
-          content: Text("ID $mobile activated successfully for ₹1200.00!"),
+          content: Text("ID $mobile activated successfully for ₹${_joinAmount.toStringAsFixed(2)}!"),
           actions: [
             ElevatedButton(
               onPressed: () {
@@ -678,9 +687,9 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
                                       color: const Color(0xFFEFF6FF),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: const Text(
-                                      "₹1200.00",
-                                      style: TextStyle(
+                                    child: Text(
+                                      "₹${_joinAmount.toStringAsFixed(2)}",
+                                      style: const TextStyle(
                                         color: Color(0xFF0A369D),
                                         fontSize: 16,
                                         fontWeight: FontWeight.w900,

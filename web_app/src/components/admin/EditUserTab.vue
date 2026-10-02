@@ -85,10 +85,17 @@
               <input type="email" v-model="editUserObj.email" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
             </div>
 
+            <!-- User Sponsor Code / SRM ID (Editable) -->
+            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">User Sponsor Code / SRM ID</label>
+              <input type="text" v-model="editUserObj.user_code" maxlength="10" placeholder="e.g. SRM1234567" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%; font-weight: 800; color: #0f172a;" />
+              <span style="font-size: 0.73rem; color: #64748b; margin-top: 2px;">Must be unique 10 chars starting with SRM (e.g. SRM1234567). Auto-generated if blank.</span>
+            </div>
+
             <!-- Sponsor ID (Editable) -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
-              <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Sponsor ID / Mobile</label>
-              <input type="text" v-model="editUserObj.sponsor_id" placeholder="Enter Sponsor Mobile or ID" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
+              <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Parent Sponsor ID / Mobile</label>
+              <input type="text" v-model="editUserObj.sponsor_id" placeholder="Enter Parent Sponsor Mobile or ID" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
             </div>
 
             <!-- Date of Joining (Editable) -->

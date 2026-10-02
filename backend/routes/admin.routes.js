@@ -141,6 +141,14 @@ router.post('/settings', verifyAdminToken, async (req, res) => {
     if (updates.withdrawal_deduction_percent) updates.withdrawal_percentage = updates.withdrawal_deduction_percent;
     if (updates.withdrawal_percentage) updates.withdrawal_deduction_percent = updates.withdrawal_percentage;
 
+    if (updates.captcha_enabled !== undefined) {
+      updates.sec_captcha_enabled_bool = String(updates.captcha_enabled);
+      updates.captcha_enabled_bool = String(updates.captcha_enabled);
+    } else if (updates.sec_captcha_enabled_bool !== undefined) {
+      updates.captcha_enabled = String(updates.sec_captcha_enabled_bool);
+      updates.captcha_enabled_bool = String(updates.sec_captcha_enabled_bool);
+    }
+
     for (const [key, val] of Object.entries(updates)) {
       const strVal = val !== null && val !== undefined ? String(val) : '';
       const existing = await query('SELECT key_name FROM system_settings WHERE key_name = ?', [key]);
@@ -791,6 +799,32 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
       updatedCreatedAt = String(createdAt).trim();
     }
 
+    // Handle user_code / Sponsor Code (Must be unique 10-char string: SRM + 7 digits)
+    let finalUserCode = existing[0].user_code;
+    const inputUserCode = req.body.user_code || req.body.sponsor_code || req.body.user_sponsor_id;
+    if (inputUserCode !== undefined && inputUserCode !== null && String(inputUserCode).trim().length > 0) {
+      const codeStr = String(inputUserCode).trim().toUpperCase();
+      if (!/^SRM\d{7}$/.test(codeStr)) {
+        return res.status(400).json({ error: 'Sponsor ID / User Code must be exactly 10 characters starting with SRM followed by 7 digits (e.g. SRM1234567)' });
+      }
+      const dup = await query('SELECT id FROM users WHERE user_code = ? AND id != ?', [codeStr, userId]);
+      if (dup && dup.length > 0) {
+        return res.status(400).json({ error: 'Sponsor ID / User Code is already taken by another user' });
+      }
+      finalUserCode = codeStr;
+    }
+
+    if (!finalUserCode || !/^SRM\d{7}$/.test(finalUserCode)) {
+      for (let attempt = 0; attempt < 50; attempt++) {
+        const candidate = `SRM${Math.floor(1000000 + Math.random() * 9000000)}`;
+        const ex = await query('SELECT id FROM users WHERE user_code = ? AND id != ?', [candidate, userId]);
+        if (!ex || ex.length === 0) {
+          finalUserCode = candidate;
+          break;
+        }
+      }
+    }
+
     await query(
       `UPDATE users SET 
         fullName = ?, 
@@ -800,6 +834,7 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
         plain_password = ?, 
         status = ?, 
         sponsor_id = ?, 
+        user_code = ?,
         createdAt = ?,
         bank_name = ?, 
         account_holder = ?, 
@@ -816,6 +851,7 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
         plainPassword,
         status || existing[0].status,
         sponsor_id !== undefined && sponsor_id !== null ? sponsor_id : existing[0].sponsor_id,
+        finalUserCode,
         updatedCreatedAt,
         bank_name !== undefined ? bank_name : existing[0].bank_name,
         account_holder !== undefined ? account_holder : existing[0].account_holder,

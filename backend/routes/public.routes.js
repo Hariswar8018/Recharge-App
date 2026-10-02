@@ -122,7 +122,12 @@ router.get('/visibility', async (req, res) => {
       sec_global_cycle_rule_mode: settings['sec_global_cycle_rule_mode'] || 'Enabled (Standard)',
       sec_global_cycle_notice: settings['sec_global_cycle_notice'] || '',
       sec_captcha_visibility: settings['sec_captcha_visibility'] || settings['captcha_section_visibility'] || 'Show',
-      sec_captcha_enabled: settings['sec_captcha_enabled_bool'] !== 'false',
+      sec_captcha_enabled: (
+        settings['captcha_enabled'] !== 'false' &&
+        settings['captcha_enabled'] !== 'OFF' &&
+        settings['captcha_enabled_bool'] !== 'false' &&
+        settings['sec_captcha_enabled_bool'] !== 'false'
+      ),
       sec_captcha_rule_mode: settings['sec_captcha_rule_mode'] || 'Enabled (Standard)',
       sec_captcha_notice: settings['sec_captcha_notice'] || '',
       captcha_reward_amount: parseFloat(settings['captcha_reward_amount'] || settings['captcha_per_solve_income'] || settings['per_captcha_income'] || '0.50'),

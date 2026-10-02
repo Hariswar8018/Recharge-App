@@ -158,7 +158,8 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
   @override
   Widget build(BuildContext context) {
     final String vis = (_visibilitySettings['sec_captcha_visibility'] ?? _visibilitySettings['captcha_section_visibility'] ?? 'Show').toString();
-    final bool rawEnabled = (_visibilitySettings['raw_settings']?['captcha_enabled'] ?? _visibilitySettings['sec_captcha_enabled'])?.toString() != 'false';
+    final String captchaEnabledStr = (_visibilitySettings['raw_settings']?['captcha_enabled'] ?? _visibilitySettings['sec_captcha_enabled'])?.toString().toLowerCase() ?? 'true';
+    final bool rawEnabled = captchaEnabledStr != 'false' && captchaEnabledStr != 'off' && captchaEnabledStr != '0';
     final String ruleMode = (_visibilitySettings['sec_captcha_rule_mode'] ?? '').toString();
     final bool isCaptchaDisabled = vis == 'Hide' || !rawEnabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
 
@@ -179,52 +180,81 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Title
-          Center(
-            child: RichText(
-              text: const TextSpan(
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  fontFamily: 'Inter',
-                ),
-                children: [
-                  TextSpan(
-                    text: "Solve Captcha & ",
-                    style: TextStyle(color: Color(0xFF0F172A)),
-                  ),
-                  TextSpan(
-                    text: "Earn Money",
-                    style: TextStyle(color: Color(0xFF0052CC)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-
           if (isCaptchaDisabled) ...[
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               decoration: BoxDecoration(
-                color: const Color(0xFFFEF2F2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFCA5A5)),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFEF4444), width: 1.8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withOpacity(0.05),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.block_rounded, color: Colors.red, size: 24),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _visibilitySettings['raw_settings']?['captcha_maintenance_msg'] ??
-                      _visibilitySettings['sec_captcha_notice'] ??
-                      "CAPTCHA Work is currently under maintenance by Administrator. Please check back later.",
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                  Container(
+                    width: 66,
+                    height: 66,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFEE2E2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.settings_rounded,
+                      color: Color(0xFFDC2626),
+                      size: 34,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Under Maintenance",
+                    style: TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "CAPTCHA service is temporarily\nunavailable.\nWe'll get back to you soon.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF475569),
+                      fontSize: 14,
+                      height: 1.4,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _loadVisibility();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1565C0),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -232,6 +262,29 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
               ),
             ),
           ] else ...[
+            // Header Title
+            Center(
+              child: RichText(
+                text: const TextSpan(
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: 'Inter',
+                  ),
+                  children: [
+                    TextSpan(
+                      text: "Solve Captcha & ",
+                      style: TextStyle(color: Color(0xFF0F172A)),
+                    ),
+                    TextSpan(
+                      text: "Earn Money",
+                      style: TextStyle(color: Color(0xFF0052CC)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
             if (_visibilitySettings['sec_captcha_notice'] != null && _visibilitySettings['sec_captcha_notice'].toString().isNotEmpty) ...[
               Container(
                 width: double.infinity,

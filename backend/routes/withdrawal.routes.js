@@ -35,6 +35,25 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
       return res.status(400).json({ error: `Minimum withdrawal amount is ₹${minWithdraw}` });
     }
 
+    // Enforce strict 1 withdrawal per day per user limit (even if rejected or approved)
+    const userWithdrawals = await query(
+      `SELECT createdAt FROM withdrawals WHERE user_id = ? ORDER BY id DESC`,
+      [req.user.id]
+    );
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const hasDoneWithdrawalToday = userWithdrawals.some(w => {
+      if (!w.createdAt) return false;
+      const d = new Date(w.createdAt);
+      return d >= todayStart;
+    });
+
+    if (hasDoneWithdrawalToday) {
+      return res.status(400).json({ error: 'Only 1 withdrawal request is allowed per day. You have already submitted a withdrawal request today.' });
+    }
+
     const users = await query('SELECT status, main_wallet_balance, bank_name, account_holder, account_no, ifsc, branch, account_type FROM users WHERE id = ?', [req.user.id]);
     if (users.length === 0) return res.status(404).json({ error: 'User not found' });
     

@@ -95,9 +95,21 @@ router.post('/register', verifyAppToken, async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync(password, salt);
 
+    // Auto-generate unique 10-digit SRM code (SRM + 7 digits)
+    let userCode = '';
+    for (let attempt = 0; attempt < 50; attempt++) {
+      const candidate = `SRM${Math.floor(1000000 + Math.random() * 9000000)}`;
+      const ex = await query('SELECT id FROM users WHERE user_code = ?', [candidate]);
+      if (!ex || ex.length === 0) {
+        userCode = candidate;
+        break;
+      }
+    }
+    if (!userCode) userCode = `SRM${Math.floor(1000000 + Math.random() * 9000000)}`;
+
     await query(
-      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, device_model, app_version, sponsor_id) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "PENDING", ?, ?, ?)',
-      [fullName, email.toLowerCase(), cleanMobile, passwordHash, password, device_model || 'Unknown', app_version || '1.0.0', sponsorIdVal]
+      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, device_model, app_version, sponsor_id, user_code) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "PENDING", ?, ?, ?, ?)',
+      [fullName, email.toLowerCase(), cleanMobile, passwordHash, password, device_model || 'Unknown', app_version || '1.0.0', sponsorIdVal, userCode]
     );
 
     await invalidateCache('admin_stats');
@@ -105,6 +117,7 @@ router.post('/register', verifyAppToken, async (req, res) => {
     sendNotificationEmail(email.toLowerCase(), "Welcome to SR Digital Seva!", `
       <h3>Welcome, ${fullName}!</h3>
       <p>Your account was successfully registered.</p>
+      <p>Your Sponsor ID / User Code is: <strong>${userCode}</strong></p>
       <p>Your Mobile Number / User ID is: <strong>${cleanMobile}</strong></p>
     `);
 
@@ -119,16 +132,22 @@ router.post('/register', verifyAppToken, async (req, res) => {
       }).catch((e) => console.error('Sponsor query fail:', e));
     }
 
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({ message: 'User registered successfully', user_code: userCode });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error occurred during registration' });
   }
 });
 
-// Helper function to resolve sponsor user by ID, mobile number, or email
+// Helper function to resolve sponsor user by ID, mobile number, email, or SRM code
 async function findSponsorUser(sponsorInput) {
   if (!sponsorInput || !sponsorInput.toString().trim()) return null;
+
+  const rawInput = sponsorInput.toString().trim().toUpperCase();
+
+  // 0. Search by exact SRM user_code
+  const byCode = await query(`SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE user_code = ?`, [rawInput]);
+  if (byCode && byCode.length > 0) return byCode[0];
 
   let cleanSponsorId = sponsorInput.toString().trim().toUpperCase();
   if (cleanSponsorId.startsWith('EARNFARMX7AQ96SD')) {
