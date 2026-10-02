@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final cycles = await ApiService.getCyclesHistory();
     final team = await ApiService.getTeam();
     final txns = await ApiService.getTransactions();
-    final visibility = await ApiService.getVisibility();
+    final visibility = await ApiService.getVisibility(forceRefresh: true);
 
     dynamic activeCycle;
     try {
@@ -764,6 +764,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSubscriptionActivationView() {
     String formattedId = "SRD${_userId.toString().padLeft(8, '0')}";
+    final String rawJoin = (_visibilitySettings['join_amount'] ?? _visibilitySettings['top_up_amount'] ?? '1200').toString().trim();
+    final double joinAmount = double.tryParse(rawJoin) ?? 1200.0;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -873,16 +876,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: const [
+                  children: [
                     Text(
-                      "₹1200",
-                      style: TextStyle(
+                      "₹${joinAmount.toStringAsFixed(0)}",
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                         color: AppTheme.primaryBlue,
                       ),
                     ),
-                    Text(
+                    const Text(
                       "One Time",
                       style: TextStyle(color: AppTheme.textGray, fontSize: 11),
                     ),
@@ -977,9 +980,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               children: [
-                _buildPayRow("Plan Amount", "₹1200.00"),
+                _buildPayRow("Plan Amount", "₹${joinAmount.toStringAsFixed(2)}"),
                 const Divider(),
-                _buildPayRow("Total Amount", "₹1200.00", isBold: true),
+                _buildPayRow("Total Amount", "₹${joinAmount.toStringAsFixed(2)}", isBold: true),
                 const SizedBox(height: 8),
                 InkWell(
                   onTap: () {
@@ -1046,7 +1049,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               child: Text(
-                _isLoading ? "ACTIVATING..." : "SUBSCRIBE NOW - ₹1200",
+                _isLoading ? "ACTIVATING..." : "SUBSCRIBE NOW - ₹${joinAmount.toStringAsFixed(0)}",
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
