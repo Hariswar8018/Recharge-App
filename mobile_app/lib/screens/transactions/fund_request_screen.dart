@@ -31,20 +31,11 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   @override
   void initState() {
     super.initState();
-    _amountController.text = "1200";
     _amountController.addListener(_onAmountChanged);
     _utrController.addListener(_onUtrChanged);
     _loadSettings();
     _fetchFundStatus(showLoading: true);
     _loadRequestHistory();
-
-    // Auto-refresh status & history every 4 seconds so Admin approval is reflected instantly
-    _statusTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-      if (mounted) {
-        _fetchFundStatus(showLoading: false);
-        _loadRequestHistory();
-      }
-    });
   }
 
   @override
@@ -75,6 +66,11 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   String _lastQrUrl = "";
   String _lastPayeeVpa = "";
 
+  double get configuredTopUpAmount {
+    final String rawVal = (_settings['top_up_amount'] ?? _settings['join_amount'] ?? '1200').toString().trim();
+    return double.tryParse(rawVal) ?? 1200.0;
+  }
+
   Future<void> _loadSettings() async {
     try {
       final vis = await ApiService.getVisibility(forceRefresh: true);
@@ -84,13 +80,16 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       final newQrUrl = (newSettings['upi_qr_url'] ?? newSettings['qr_image_url'] ?? '').toString().trim();
       final newVpa = (newSettings['upi_id'] ?? newSettings['upi_vpa_id'] ?? newSettings['upi_vpa'] ?? '').toString().trim();
 
+      final String rawTopUp = (newSettings['top_up_amount'] ?? newSettings['join_amount'] ?? '1200').toString().trim();
+      final double topUpVal = double.tryParse(rawTopUp) ?? 1200.0;
+
       if (_settings.isEmpty || _lastQrUrl != newQrUrl || _lastPayeeVpa != newVpa) {
         _lastQrUrl = newQrUrl;
         _lastPayeeVpa = newVpa;
         if (mounted) {
           setState(() {
             _settings = newSettings;
-            _amountController.text = "1200";
+            _amountController.text = topUpVal.toInt().toString();
           });
         }
       }
@@ -145,7 +144,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
   bool get statusMinAddMoney => _boolSetting('status_min_add_money', defaultValue: true);
   double get minAddMoney => statusMinAddMoney
-      ? (double.tryParse(_stringSetting('min_add_money', defaultValue: '1200')) ?? 1200.0)
+      ? (double.tryParse(_stringSetting('min_add_money', defaultValue: '')) ?? configuredTopUpAmount)
       : 0.0;
 
   bool get statusMaxAddMoney => _boolSetting('status_max_add_money', defaultValue: true);
@@ -1217,7 +1216,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
                           final String amtText = _amountController.text.trim();
                           final double? amt = double.tryParse(amtText);
-                          final bool isValidAmt = amt != null && amt == 1200;
+                          final bool isValidAmt = amt != null && amt >= configuredTopUpAmount;
 
                           final String utrText = _utrController.text.trim();
                           final bool isNumeric = RegExp(r'^[0-9]+$').hasMatch(utrText);

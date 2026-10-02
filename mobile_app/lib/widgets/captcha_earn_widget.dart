@@ -284,34 +284,7 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
               ),
             ),
             const SizedBox(height: 14),
-            if (_visibilitySettings['sec_captcha_notice'] != null && _visibilitySettings['sec_captcha_notice'].toString().isNotEmpty) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.blue.shade200),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info, color: Color(0xFF0052CC), size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _visibilitySettings['sec_captcha_notice'],
-                        style: const TextStyle(
-                          color: Color(0xFF0052CC),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            
 
             // Captcha Box & Refresh Button Row
             Row(
