@@ -479,7 +479,7 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
     if (approve === true) {
       const dateStr = new Date().toLocaleString('en-US', { hour12: true });
       await transaction(async (conn) => {
-        await conn.execute('UPDATE fund_requests SET status = "APPROVED" WHERE id = ?', [requestId]);
+        await conn.execute('UPDATE fund_requests SET status = "APPROVED" WHERE id = ?', [request.id]);
 
         await conn.execute(
           'UPDATE users SET fund_wallet_balance = fund_wallet_balance + ? WHERE id = ?',
@@ -488,7 +488,7 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
 
         // Update pending transaction if exists, else insert
         const [pendingTxs] = await conn.execute(
-          'SELECT id FROM transactions WHERE user_id = ? AND wallet_type = "FUND" AND status = "PENDING" ORDER BY id DESC LIMIT 1',
+          'SELECT id FROM transactions WHERE user_id = ? AND wallet_type = "FUND" AND (status = "PENDING" OR status = "pending") ORDER BY id DESC LIMIT 1',
           [request.user_id]
         );
         if (pendingTxs && pendingTxs.length > 0) {
@@ -532,9 +532,9 @@ router.post('/fund-requests/:id/approve', verifyAdminToken, async (req, res) => 
         receipt
       });
     } else {
-      await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [requestId]);
+      await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [request.id]);
       await query(
-        'UPDATE transactions SET status = "Failed" WHERE user_id = ? AND wallet_type = "FUND" AND status = "PENDING" ORDER BY id DESC LIMIT 1',
+        'UPDATE transactions SET status = "Failed" WHERE user_id = ? AND wallet_type = "FUND" AND (status = "PENDING" OR status = "pending") ORDER BY id DESC LIMIT 1',
         [request.user_id]
       );
       await invalidateCache(`user_profile_${request.user_id}`);
@@ -580,7 +580,11 @@ router.post('/fund-requests/:id/reject', verifyAdminToken, async (req, res) => {
     const users = await query('SELECT id, fullName, email, mobileNumber FROM users WHERE id = ?', [request.user_id]);
     const userObj = users.length > 0 ? users[0] : { fullName: 'User #' + request.user_id, mobileNumber: 'N/A', email: 'N/A' };
 
-    await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [requestId]);
+    await query('UPDATE fund_requests SET status = "REJECTED" WHERE id = ?', [request.id]);
+    await query(
+      'UPDATE transactions SET status = "Failed" WHERE user_id = ? AND wallet_type = "FUND" AND (status = "PENDING" OR status = "pending") ORDER BY id DESC LIMIT 1',
+      [request.user_id]
+    );
     await invalidateCache(`user_profile_${request.user_id}`);
     await invalidateCache('admin_stats');
 
