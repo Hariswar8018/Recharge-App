@@ -510,7 +510,7 @@
 </template>
 
 <script>
-import asetsLogo from '../assets/asets.png';
+import asetsLogo from '../assets/sr_receipt_logo_index_logo.png';
 import DashboardOverviewTab from '../components/admin/DashboardOverviewTab.vue';
 import UserManagementTab from '../components/admin/UserManagementTab.vue';
 import EditUserTab from '../components/admin/EditUserTab.vue';

@@ -25,19 +25,7 @@
         <!-- TOP HEADER: LOGO LEFT & CONTACT RIGHT -->
         <div class="header-section">
           <div class="brand-logo-container">
-            <!-- SR DIGITAL SEVA KENDRAM LOGO GRAPHIC -->
-            <svg class="brand-logo-svg" viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
-              <!-- Red and Blue swoosh arcs -->
-              <path d="M 45 10 A 32 32 0 1 0 77 42" fill="none" stroke="#0047BA" stroke-width="7" stroke-linecap="round"/>
-              <path d="M 45 74 A 32 32 0 1 0 13 42" fill="none" stroke="#D9232D" stroke-width="7" stroke-linecap="round"/>
-              <circle cx="45" cy="42" r="8" fill="#D9232D"/>
-              <!-- SR Styled Text inside logo -->
-              <text x="32" y="50" font-family="'Inter', sans-serif" font-weight="900" font-size="24" fill="#0047BA">S</text>
-              <text x="46" y="50" font-family="'Inter', sans-serif" font-weight="900" font-size="24" fill="#D9232D">R</text>
-              <!-- Brand Title -->
-              <text x="92" y="36" font-family="'Inter', sans-serif" font-weight="900" font-size="22" fill="#0047BA" letter-spacing="0.5">SR DIGITAL SEVA</text>
-              <text x="92" y="62" font-family="'Inter', sans-serif" font-weight="900" font-size="22" fill="#D9232D" letter-spacing="3">KENDRAM</text>
-            </svg>
+            <img :src="receiptLogo" alt="SR Digital Seva Kendram" style="height: 75px; width: auto; object-fit: contain;" />
           </div>
 
           <div class="contact-info-block">
@@ -248,7 +236,7 @@
               </svg>
 
               <!-- OVERLAID SIGNATURE -->
-              <div class="signature-overlay">Rajesh</div>
+              <img :src="signatureImg" alt="Rajesh Signature" class="signature-overlay-img" style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: auto; pointer-events: none; mix-blend-mode: multiply;" />
             </div>
 
             <div class="signatory-line-box">
@@ -272,6 +260,8 @@
 
 <script>
 import html2pdf from 'html2pdf.js';
+import receiptLogo from '../../assets/sr_receipt_logo_index_logo.png';
+import signatureImg from '../../assets/signature.png';
 
 export default {
   name: 'InvoiceModal',
@@ -282,6 +272,8 @@ export default {
   },
   data() {
     return {
+      receiptLogo,
+      signatureImg,
       downloading: false
     };
   },

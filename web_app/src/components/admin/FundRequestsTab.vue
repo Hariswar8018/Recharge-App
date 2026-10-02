@@ -245,15 +245,7 @@
         <!-- TOP HEADER: LOGO LEFT & CONTACT RIGHT -->
         <div class="header-section">
           <div class="brand-logo-container">
-            <svg class="brand-logo-svg" viewBox="0 0 280 80" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 45 10 A 32 32 0 1 0 77 42" fill="none" stroke="#0047BA" stroke-width="7" stroke-linecap="round"/>
-              <path d="M 45 74 A 32 32 0 1 0 13 42" fill="none" stroke="#D9232D" stroke-width="7" stroke-linecap="round"/>
-              <circle cx="45" cy="42" r="8" fill="#D9232D"/>
-              <text x="32" y="50" font-family="'Inter', sans-serif" font-weight="900" font-size="24" fill="#0047BA">S</text>
-              <text x="46" y="50" font-family="'Inter', sans-serif" font-weight="900" font-size="24" fill="#D9232D">R</text>
-              <text x="92" y="36" font-family="'Inter', sans-serif" font-weight="900" font-size="22" fill="#0047BA" letter-spacing="0.5">SR DIGITAL SEVA</text>
-              <text x="92" y="62" font-family="'Inter', sans-serif" font-weight="900" font-size="22" fill="#D9232D" letter-spacing="3">KENDRAM</text>
-            </svg>
+            <img :src="receiptLogo" alt="SR Digital Seva Kendram" style="height: 75px; width: auto; object-fit: contain;" />
           </div>
           <div class="contact-info-block">
             <div class="contact-row"><span class="contact-text font-bold">9988494936</span></div>
@@ -307,6 +299,8 @@
 <script>
 import JSZip from 'jszip';
 import html2pdf from 'html2pdf.js';
+import receiptLogo from '../../assets/sr_receipt_logo_index_logo.png';
+import signatureImg from '../../assets/signature.png';
 import InvoiceModal from './InvoiceModal.vue';
 
 export default {
@@ -324,6 +318,8 @@ export default {
   },
   data() {
     return {
+      receiptLogo,
+      signatureImg,
       reqSearchQueryLocal: this.reqSearchQuery,
       reqFilterModeLocal: this.reqFilterMode,
       reqPaymentModeFilterLocal: this.reqPaymentModeFilter,

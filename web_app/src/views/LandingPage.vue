@@ -5,7 +5,7 @@
       <!-- Top Logo Header -->
       <header v-if="visibility.web_show_header_logo" class="header">
         <div class="logo-container">
-          <img src="../assets/sr_logo.png" alt="SR Logo" class="sr-logo-img" />
+          <img src="../assets/sr_receipt_logo_index_logo.png" alt="SR Digital Seva Logo" class="sr-logo-img" style="max-height: 80px; width: auto;" />
         </div>
       </header>
 
