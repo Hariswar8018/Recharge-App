@@ -142,11 +142,21 @@ router.post('/settings', verifyAdminToken, async (req, res) => {
     if (updates.withdrawal_percentage) updates.withdrawal_deduction_percent = updates.withdrawal_percentage;
 
     if (updates.captcha_enabled !== undefined) {
-      updates.sec_captcha_enabled_bool = String(updates.captcha_enabled);
-      updates.captcha_enabled_bool = String(updates.captcha_enabled);
+      const isVal = String(updates.captcha_enabled).toLowerCase() === 'true' || String(updates.captcha_enabled) === '1';
+      updates.captcha_enabled = isVal ? 'true' : 'false';
+      updates.sec_captcha_enabled_bool = isVal ? 'true' : 'false';
+      updates.captcha_enabled_bool = isVal ? 'true' : 'false';
+      updates.sec_captcha_rule_mode = isVal ? 'Enabled (Standard)' : 'Disabled (Maintenance)';
+      updates.sec_captcha_visibility = 'Show';
+      updates.captcha_section_visibility = 'Show';
     } else if (updates.sec_captcha_enabled_bool !== undefined) {
-      updates.captcha_enabled = String(updates.sec_captcha_enabled_bool);
-      updates.captcha_enabled_bool = String(updates.sec_captcha_enabled_bool);
+      const isVal = String(updates.sec_captcha_enabled_bool).toLowerCase() === 'true' || String(updates.sec_captcha_enabled_bool) === '1';
+      updates.captcha_enabled = isVal ? 'true' : 'false';
+      updates.sec_captcha_enabled_bool = isVal ? 'true' : 'false';
+      updates.captcha_enabled_bool = isVal ? 'true' : 'false';
+      updates.sec_captcha_rule_mode = isVal ? 'Enabled (Standard)' : 'Disabled (Maintenance)';
+      updates.sec_captcha_visibility = 'Show';
+      updates.captcha_section_visibility = 'Show';
     }
 
     for (const [key, val] of Object.entries(updates)) {

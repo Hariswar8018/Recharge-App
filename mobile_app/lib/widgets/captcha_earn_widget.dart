@@ -160,8 +160,7 @@ class _CaptchaEarnWidgetState extends State<CaptchaEarnWidget> {
     final String vis = (_visibilitySettings['sec_captcha_visibility'] ?? _visibilitySettings['captcha_section_visibility'] ?? 'Show').toString();
     final String captchaEnabledStr = (_visibilitySettings['raw_settings']?['captcha_enabled'] ?? _visibilitySettings['sec_captcha_enabled'])?.toString().toLowerCase() ?? 'true';
     final bool rawEnabled = captchaEnabledStr != 'false' && captchaEnabledStr != 'off' && captchaEnabledStr != '0';
-    final String ruleMode = (_visibilitySettings['sec_captcha_rule_mode'] ?? '').toString();
-    final bool isCaptchaDisabled = vis == 'Hide' || !rawEnabled || ruleMode.contains('Disabled') || ruleMode.contains('Maintenance');
+    final bool isCaptchaDisabled = vis == 'Hide' || !rawEnabled;
 
     return Container(
       padding: const EdgeInsets.all(16),

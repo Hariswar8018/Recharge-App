@@ -13,9 +13,8 @@ router.get('/config', async (req, res) => {
     settingsRows.forEach(r => { settings[r.key_name] = r.val_value; });
 
     const isEnabled = settings['captcha_enabled'] !== 'false' && 
-                      settings['sec_captcha_enabled_bool'] !== 'false' && 
-                      (settings['sec_captcha_rule_mode'] || '').indexOf('Disabled') === -1 && 
-                      (settings['sec_captcha_rule_mode'] || '').indexOf('Maintenance') === -1;
+                      settings['captcha_enabled'] !== '0' &&
+                      settings['sec_captcha_enabled_bool'] !== 'false';
 
     const rawVal = settings['captcha_reward_amount'] || 
                    settings['captcha_per_solve_income'] || 
@@ -45,9 +44,8 @@ router.post('/earn', verifyAppToken, verifyUserToken, async (req, res) => {
     settingsRows.forEach(r => { settings[r.key_name] = r.val_value; });
 
     const isEnabled = settings['captcha_enabled'] !== 'false' && 
-                      settings['sec_captcha_enabled_bool'] !== 'false' && 
-                      (settings['sec_captcha_rule_mode'] || '').indexOf('Disabled') === -1 && 
-                      (settings['sec_captcha_rule_mode'] || '').indexOf('Maintenance') === -1;
+                      settings['captcha_enabled'] !== '0' &&
+                      settings['sec_captcha_enabled_bool'] !== 'false';
 
     if (!isEnabled) {
       const msg = settings['sec_captcha_notice'] || settings['captcha_maintenance_msg'] || 'CAPTCHA Work is currently under maintenance. Please check back later.';

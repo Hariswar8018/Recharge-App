@@ -671,7 +671,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             keyboardType: TextInputType.number,
                             maxLength: 10,
                             inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
+                            //  FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(10),
                             ],
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
