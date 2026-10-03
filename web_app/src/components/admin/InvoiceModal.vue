@@ -9,7 +9,7 @@
           <span class="badge-approved">✅ Approved</span>
         </div>
         <div class="top-actions">
-          
+            
           <button @click="printInvoice" class="btn btn-print">
             🖨️ Print
           </button>
@@ -411,7 +411,15 @@ export default {
           margin:       [4, 4, 4, 4],
           filename:     filename,
           image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true, logging: false },
+          html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false, 
+            backgroundColor: '#ffffff',
+            scrollX: 0,
+            scrollY: 0,
+            width: 794
+          },
           jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         await html2pdf().set(opt).from(element).save();
@@ -530,6 +538,9 @@ export default {
 
 /* PRINTABLE INVOICE PAPER STYLES (MATCHING REFERENCE IMAGE 1:1) */
 .printable-invoice-paper {
+  width: 794px;
+  max-width: 100%;
+  margin: 0 auto;
   padding: 2.2rem 2.5rem 1.5rem 2.5rem;
   overflow-y: auto;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -537,6 +548,8 @@ export default {
   background: #ffffff;
   position: relative;
   box-sizing: border-box;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 /* TOP HEADER */
@@ -569,12 +582,15 @@ export default {
 .contact-icon-circle {
   width: 20px;
   height: 20px;
-  background: #0047BA;
+  background-color: #0047BA !important;
+  background: #0047BA !important;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .contact-text {
@@ -588,8 +604,9 @@ export default {
 
 /* BANNER */
 .service-invoice-banner {
-  background: #0047BA;
-  color: #ffffff;
+  background-color: #0047BA !important;
+  background: #0047BA !important;
+  color: #ffffff !important;
   font-weight: 900;
   font-size: 1.65rem;
   letter-spacing: 2px;
@@ -599,6 +616,8 @@ export default {
   margin-bottom: 1.25rem;
   text-transform: uppercase;
   box-shadow: 0 4px 6px -1px rgba(0, 71, 186, 0.2);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 /* DETAILS GRID */
@@ -617,13 +636,16 @@ export default {
 }
 
 .box-header {
-  background: #DCEBFB;
-  color: #0047BA;
+  background-color: #DCEBFB !important;
+  background: #DCEBFB !important;
+  color: #0047BA !important;
   font-weight: 900;
   font-size: 0.88rem;
   padding: 6px 12px;
   letter-spacing: 0.5px;
   border-bottom: 1px solid #0052B4;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .box-body {
@@ -697,13 +719,16 @@ export default {
 }
 
 .items-table th {
-  background: #0047BA;
-  color: white;
+  background-color: #0047BA !important;
+  background: #0047BA !important;
+  color: white !important;
   font-size: 0.82rem;
   font-weight: 800;
   padding: 8px 10px;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   letter-spacing: 0.5px;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .items-table th:last-child {
@@ -816,13 +841,20 @@ export default {
 }
 
 .grand-total-row {
+  background-color: #0047BA !important;
   background: #0047BA !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .grand-total-row td {
+  background-color: #0047BA !important;
+  background: #0047BA !important;
   color: white !important;
   font-weight: 900 !important;
   font-size: 0.95rem !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 /* FOOTER SECTION */
