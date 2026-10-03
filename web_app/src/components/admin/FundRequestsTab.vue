@@ -3,15 +3,33 @@
     <div class="table-card">
       <div class="card-title-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
         <div>
-          <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: #0f172a;">💳 Manage User Add Money / Fund Deposit Requests</h3>
-          <span class="count-pill" style="background: #f59e0b; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;">{{ pendingRequestsCount }} Pending Requests</span>
+          <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+            <span>💳</span> Manage User Add Money / Fund Deposit Requests
+          </h3>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center;">
+            <span class="count-pill" style="background: #2563eb; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;">
+              📑 {{ fundRequests.length }} Total Requests
+            </span>
+            <span class="count-pill" style="background: #f59e0b; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;">
+              🟡 {{ calcPendingCount }} Pending
+            </span>
+            <span class="count-pill" style="background: #10b981; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;">
+              🟢 {{ calcApprovedCount }} Approved
+            </span>
+            <span class="count-pill" style="background: #ef4444; color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;">
+              🔴 {{ calcRejectedCount }} Rejected
+            </span>
+            <span class="count-pill" style="background: #0f172a; color: #38bdf8; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800;">
+              💰 Total Vol: ₹{{ totalApprovedVolume.toFixed(2) }}
+            </span>
+          </div>
         </div>
         
         <!-- BULK MONTHLY INVOICE DOWNLOAD BUTTON -->
         <button 
           @click="showBulkModal = true" 
           class="btn-bulk-zip" 
-          style="background: #0047BA; color: white; border: none; padding: 0.6rem 1.1rem; border-radius: 8px; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 6px -1px rgba(0, 71, 186, 0.25);"
+          style="background: #0047BA; color: white; border: none; padding: 0.65rem 1.2rem; border-radius: 8px; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 6px -1px rgba(0, 71, 186, 0.25);"
         >
           📦 Bulk Download Monthly Invoices (ZIP)
         </button>
@@ -33,7 +51,7 @@
           style="padding: 0.5rem 1rem; border: none; border-radius: 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer;"
           :style="{ background: reqFilterStatus === 'PENDING' ? '#f59e0b' : '#f1f5f9', color: reqFilterStatus === 'PENDING' ? 'white' : '#475569' }"
         >
-          🟡 Pending Approval ({{ pendingRequestsCount }})
+          🟡 Pending Approval ({{ calcPendingCount }})
         </button>
         <button 
           @click="$emit('update:reqFilterStatus', 'APPROVED')" 
@@ -41,7 +59,7 @@
           style="padding: 0.5rem 1rem; border: none; border-radius: 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer;"
           :style="{ background: reqFilterStatus === 'APPROVED' ? '#10b981' : '#f1f5f9', color: reqFilterStatus === 'APPROVED' ? 'white' : '#475569' }"
         >
-          🟢 Approved Credit
+          🟢 Approved Credit ({{ calcApprovedCount }})
         </button>
         <button 
           @click="$emit('update:reqFilterStatus', 'REJECTED')" 
@@ -49,7 +67,7 @@
           style="padding: 0.5rem 1rem; border: none; border-radius: 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer;"
           :style="{ background: reqFilterStatus === 'REJECTED' ? '#ef4444' : '#f1f5f9', color: reqFilterStatus === 'REJECTED' ? 'white' : '#475569' }"
         >
-          🔴 Rejected
+          🔴 Rejected ({{ calcRejectedCount }})
         </button>
       </div>
 
@@ -120,8 +138,7 @@
             <tr>
               <th>ID</th>
               <th>Date & Time</th>
-              <th>Member Name</th>
-              <th>Mobile Number</th>
+              <th>Member Information</th>
               <th>Payment Method</th>
               <th>UTR / Ref Number</th>
               <th>Amount</th>
@@ -133,29 +150,50 @@
           </thead>
           <tbody>
             <tr v-if="filteredRequests.length === 0">
-              <td colspan="11" style="text-align: center; padding: 2rem; color: #64748b; font-weight: 600;">
+              <td colspan="10" style="text-align: center; padding: 2rem; color: #64748b; font-weight: 600;">
                 No fund requests found matching filters.
               </td>
             </tr>
             <tr v-for="req in filteredRequests" :key="req.id">
-              <td>#{{ req.id }}</td>
-              <td style="white-space: nowrap;">{{ req.createdAt ? String(req.createdAt).substring(0,16) : 'N/A' }}</td>
-              <td class="font-bold">{{ req.fullName || 'User #' + req.user_id }}</td>
-              <td class="font-mono">{{ req.mobileNumber || 'N/A' }}</td>
-              <td>
-                <span class="badge-payment">{{ req.payment_method || 'UPI / QR' }}</span>
+              <td class="font-bold">#{{ req.id }}</td>
+              <td style="white-space: nowrap; font-size: 0.82rem; color: #475569;">
+                {{ req.createdAt ? String(req.createdAt).substring(0,16) : (req.date ? String(req.date).substring(0,16) : 'N/A') }}
               </td>
-              <td class="font-mono">{{ req.utr_number || req.utr || 'N/A' }}</td>
-              <td class="font-bold text-green">₹{{ parseFloat(req.amount).toFixed(2) }}</td>
               <td>
-                <button v-if="req.payment_proof_url" @click="$emit('view-receipt', req)" class="btn-receipt-link">
+                <div style="font-weight: 800; color: #0f172a; font-size: 0.9rem;">{{ req.fullName || 'User #' + req.user_id }}</div>
+                <div style="font-size: 0.78rem; color: #64748b;" class="font-mono">📞 {{ req.mobileNumber || 'N/A' }}</div>
+                <div style="font-size: 0.72rem; color: #94a3b8;">ID: #{{ req.user_id }}</div>
+              </td>
+              <td>
+                <span class="badge-payment" style="background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.78rem;">
+                  {{ req.payment_method || 'UPI / QR' }}
+                </span>
+              </td>
+              <td class="font-mono" style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">
+                {{ req.utr_number || req.utr || 'N/A' }}
+              </td>
+              <td class="font-bold" style="font-size: 0.98rem; color: #16a34a;">
+                ₹{{ parseFloat(req.amount || 0).toFixed(2) }}
+              </td>
+              <td>
+                <button v-if="req.payment_proof_url" @click="$emit('view-receipt', req)" class="btn-receipt-link" style="background: #e2e8f0; color: #1e293b; border: none; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
                   📷 View Proof
                 </button>
-                <span v-else class="text-muted">No File</span>
+                <span v-else style="font-size: 0.78rem; color: #94a3b8;">No File</span>
               </td>
               <td>
-                <span :class="req.status === 'APPROVED' ? 'badge-status-active' : (req.status === 'REJECTED' ? 'badge-status-blocked' : 'badge-status-pending')">
-                  {{ req.status }}
+                <span 
+                  :style="{
+                    background: req.status === 'APPROVED' ? '#dcfce7' : (req.status === 'REJECTED' ? '#fee2e2' : '#fef3c7'),
+                    color: req.status === 'APPROVED' ? '#15803d' : (req.status === 'REJECTED' ? '#b91c1c' : '#d97706'),
+                    padding: '4px 10px',
+                    borderRadius: '12px',
+                    fontWeight: '800',
+                    fontSize: '0.78rem',
+                    display: 'inline-block'
+                  }"
+                >
+                  {{ req.status === 'APPROVED' ? '🟢 APPROVED' : (req.status === 'REJECTED' ? '🔴 REJECTED' : '🟡 PENDING') }}
                 </span>
               </td>
               
@@ -169,21 +207,26 @@
                 >
                   📄 Download PDF
                 </button>
-                <span v-else class="text-muted" style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">
+                <span v-else style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">
                   No Invoice (Unapproved)
                 </span>
               </td>
 
               <td style="white-space: nowrap;">
                 <div v-if="req.status === 'PENDING'" style="display: flex; gap: 4px;">
-                  <button @click="$emit('approve-request', req.id)" class="btn-action-approve" style="background: #10b981; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">
+                  <button @click="$emit('approve-request', req.id)" class="btn-action-approve" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
                     ✓ Approve
                   </button>
-                  <button @click="$emit('reject-request', req.id)" class="btn-action-reject" style="background: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">
+                  <button @click="$emit('reject-request', req.id)" class="btn-action-reject" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
                     ✗ Reject
                   </button>
                 </div>
-                <span v-else class="text-muted" style="font-size: 0.8rem;">Completed</span>
+                <span v-else-if="req.status === 'APPROVED'" style="background: #dcfce7; color: #166534; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700;">
+                  ✓ Approved
+                </span>
+                <span v-else-if="req.status === 'REJECTED'" style="background: #fee2e2; color: #991b1b; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700;">
+                  ✗ Rejected
+                </span>
               </td>
             </tr>
           </tbody>
@@ -310,6 +353,8 @@ export default {
     fundRequests: { type: Array, default: () => [] },
     filteredRequests: { type: Array, default: () => [] },
     pendingRequestsCount: { type: Number, default: 0 },
+    approvedRequestsCount: { type: Number, default: 0 },
+    rejectedRequestsCount: { type: Number, default: 0 },
     reqFilterStatus: { type: String, default: '' },
     reqSearchQuery: { type: String, default: '' },
     reqFilterMode: { type: String, default: 'ALL' },
@@ -333,6 +378,25 @@ export default {
       bulkTotal: 0,
       currentBulkReq: null
     };
+  },
+  computed: {
+    calcPendingCount() {
+      if (typeof this.pendingRequestsCount === 'number' && this.pendingRequestsCount > 0) return this.pendingRequestsCount;
+      return (this.fundRequests || []).filter(r => (r.status || '').toUpperCase() === 'PENDING').length;
+    },
+    calcApprovedCount() {
+      if (typeof this.approvedRequestsCount === 'number' && this.approvedRequestsCount > 0) return this.approvedRequestsCount;
+      return (this.fundRequests || []).filter(r => (r.status || '').toUpperCase() === 'APPROVED').length;
+    },
+    calcRejectedCount() {
+      if (typeof this.rejectedRequestsCount === 'number' && this.rejectedRequestsCount > 0) return this.rejectedRequestsCount;
+      return (this.fundRequests || []).filter(r => (r.status || '').toUpperCase() === 'REJECTED').length;
+    },
+    totalApprovedVolume() {
+      return (this.fundRequests || [])
+        .filter(r => (r.status || '').toUpperCase() === 'APPROVED')
+        .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+    }
   },
   watch: {
     reqSearchQuery(newVal) { this.reqSearchQueryLocal = newVal; },

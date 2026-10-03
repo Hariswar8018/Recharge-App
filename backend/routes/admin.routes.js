@@ -431,8 +431,28 @@ router.get('/teams', verifyAdminToken, async (req, res) => {
 router.get('/fund-requests', verifyAdminToken, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 200;
+    const limit = parseInt(req.query.limit) || 1000;
     const offset = (page - 1) * limit;
+
+    // Ensure 2-way sync so all money deposit transactions of users appear in fund_requests
+    try {
+      const fundTxns = await query('SELECT * FROM transactions WHERE (wallet_type = "FUND" OR type LIKE "%Fund%" OR type LIKE "%Deposit%") AND type NOT LIKE "%Debit%" AND type NOT LIKE "%Deduction%"');
+      for (const tx of fundTxns) {
+        const cleanAmt = Math.abs(parseFloat((tx.amount || '0').replace(/[^0-9.]/g, '')) || 0);
+        if (cleanAmt > 0) {
+          const checkReq = await query('SELECT id FROM fund_requests WHERE user_id = ? AND amount = ?', [tx.user_id, cleanAmt]);
+          if (checkReq.length === 0) {
+            const st = (tx.status === 'Success' || tx.status === 'APPROVED') ? 'APPROVED' : ((tx.status === 'Failed' || tx.status === 'REJECTED') ? 'REJECTED' : 'PENDING');
+            await query(
+              'INSERT INTO fund_requests (user_id, amount, utr, status, createdAt) VALUES (?, ?, ?, ?, ?)',
+              [tx.user_id, cleanAmt, `TXN_${tx.id}`, st, tx.date || tx.createdAt || new Date().toISOString()]
+            );
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Sync error on GET fund-requests:', e.message);
+    }
 
     const requests = await query(
       `SELECT fr.*, u.fullName, u.email, u.mobileNumber, u.address, u.city, u.state, u.pincode, u.sponsor_code 

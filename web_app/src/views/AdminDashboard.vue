@@ -350,6 +350,8 @@
           :fundRequests="fundRequests"
           :filteredRequests="filteredRequests"
           :pendingRequestsCount="pendingRequestsCount"
+          :approvedRequestsCount="approvedRequestsCount"
+          :rejectedRequestsCount="rejectedRequestsCount"
           :reqFilterStatus="reqFilterStatus"
           :reqSearchQuery="reqSearchQuery"
           :reqFilterMode="reqFilterMode"
@@ -701,6 +703,12 @@ export default {
     pendingRequestsCount() {
       return (this.fundRequests || []).filter(r => (r.status || '').toUpperCase() === 'PENDING').length;
     },
+    approvedRequestsCount() {
+      return (this.fundRequests || []).filter(r => (r.status || '').toUpperCase() === 'APPROVED').length;
+    },
+    rejectedRequestsCount() {
+      return (this.fundRequests || []).filter(r => (r.status || '').toUpperCase() === 'REJECTED').length;
+    },
     filteredRequests() {
       return (this.fundRequests || []).filter(req => {
         const reqSt = (req.status || '').toUpperCase();
@@ -710,6 +718,7 @@ export default {
         const matchesQuery = !q || 
           (req.fullName && req.fullName.toLowerCase().includes(q)) ||
           (req.mobileNumber && req.mobileNumber.toLowerCase().includes(q)) ||
+          (req.email && req.email.toLowerCase().includes(q)) ||
           (req.utr_number && req.utr_number.toLowerCase().includes(q)) ||
           (req.utr && req.utr.toLowerCase().includes(q)) ||
           (req.id && String(req.id).toLowerCase().includes(q)) ||
