@@ -395,13 +395,16 @@ async function initDb() {
       // 2. Sync transactions -> fund_requests
       const fundTxns = await query('SELECT * FROM transactions WHERE wallet_type = "FUND" AND (type LIKE "%Deposit%" OR type LIKE "%FUND%")');
       for (const tx of fundTxns) {
-        const checkReq = await query('SELECT id FROM fund_requests WHERE user_id = ? AND amount = ?', [tx.user_id, Math.abs(parseFloat(tx.amount || 0))]);
-        if (checkReq.length === 0) {
-          const st = (tx.status === 'Success' || tx.status === 'APPROVED') ? 'APPROVED' : ((tx.status === 'Failed' || tx.status === 'REJECTED') ? 'REJECTED' : 'PENDING');
-          await query(
-            'INSERT INTO fund_requests (user_id, amount, utr, status, createdAt) VALUES (?, ?, ?, ?, ?)',
-            [tx.user_id, Math.abs(parseFloat(tx.amount || 1200)), `SYNCHED${tx.id}`, st, tx.date || new Date().toISOString()]
-          );
+        const cleanAmt = Math.abs(parseFloat(String(tx.amount || '0').replace(/[^0-9.]/g, '')) || 0);
+        if (cleanAmt > 0) {
+          const checkReq = await query('SELECT id FROM fund_requests WHERE user_id = ? AND amount = ?', [tx.user_id, cleanAmt]);
+          if (checkReq.length === 0) {
+            const st = (tx.status === 'Success' || tx.status === 'APPROVED') ? 'APPROVED' : ((tx.status === 'Failed' || tx.status === 'REJECTED') ? 'REJECTED' : 'PENDING');
+            await query(
+              'INSERT INTO fund_requests (user_id, amount, utr, status, createdAt) VALUES (?, ?, ?, ?, ?)',
+              [tx.user_id, cleanAmt, `SYNCHED${tx.id}`, st, tx.date || new Date().toISOString()]
+            );
+          }
         }
       }
     } catch (e) {
