@@ -1460,7 +1460,7 @@ export default {
         }
 
         alert('✅ System database reset successfully! All notifications, transactions, withdrawals, fund requests, cycles, and non-top users have been cleared.');
-        this.fetchDashboardStats();
+        this.fetchDashboardData();
         this.fetchUsers();
         this.fetchNotifications();
       } catch (e) {
