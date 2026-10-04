@@ -95,6 +95,12 @@ router.get('/visibility', async (req, res) => {
       add_money_section_visibility: settings['add_money_section_visibility'] || 'Show',
       captcha_section_visibility: settings['captcha_section_visibility'] || 'Show',
       notice_marquee_visibility: settings['notice_marquee_visibility'] || 'Show',
+      marquee_text: settings['marquee_text'] || settings['notice_marquee_text'] || settings['marquee_notification'] || '',
+      notice_marquee_text: settings['marquee_text'] || settings['notice_marquee_text'] || settings['marquee_notification'] || '',
+      marquee_notification: settings['marquee_text'] || settings['notice_marquee_text'] || settings['marquee_notification'] || '',
+      home_popup_banner_url: settings['home_popup_banner_url'] || '',
+      home_popup_banner_id: settings['home_popup_banner_id'] || '',
+      home_popup_banner_active: settings['home_popup_banner_active'] !== 'false' && (settings['home_popup_banner_url'] || '').trim().length > 0,
 
       // User Management & Section Configurations
       sec_registration_visibility: settings['sec_registration_visibility'] || 'Show',

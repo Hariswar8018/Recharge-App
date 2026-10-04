@@ -141,6 +141,17 @@ router.post('/settings', verifyAdminToken, async (req, res) => {
     if (updates.withdrawal_deduction_percent) updates.withdrawal_percentage = updates.withdrawal_deduction_percent;
     if (updates.withdrawal_percentage) updates.withdrawal_deduction_percent = updates.withdrawal_percentage;
 
+    if (updates.marquee_text !== undefined) {
+      updates.notice_marquee_text = updates.marquee_text;
+      updates.marquee_notification = updates.marquee_text;
+    } else if (updates.notice_marquee_text !== undefined) {
+      updates.marquee_text = updates.notice_marquee_text;
+      updates.marquee_notification = updates.notice_marquee_text;
+    } else if (updates.marquee_notification !== undefined) {
+      updates.marquee_text = updates.marquee_notification;
+      updates.notice_marquee_text = updates.marquee_notification;
+    }
+
     if (updates.captcha_enabled !== undefined) {
       const isVal = String(updates.captcha_enabled).toLowerCase() === 'true' || String(updates.captcha_enabled) === '1';
       updates.captcha_enabled = isVal ? 'true' : 'false';
@@ -1062,6 +1073,82 @@ router.post('/upload-qr', verifyAdminToken, async (req, res) => {
   } catch (err) {
     console.error('Error uploading QR code:', err);
     res.status(500).json({ error: 'Failed to upload QR code image' });
+  }
+});
+
+// POST Upload Push Image Banner Announcement (1:1 Ratio)
+router.post('/upload-banner', verifyAdminToken, async (req, res) => {
+  try {
+    const { imageBase64, imageUrl } = req.body;
+    let inputStr = imageBase64 || imageUrl || '';
+    let finalUrl = imageUrl || '';
+    const bannerId = `banner_${Date.now()}`;
+
+    if (inputStr && inputStr.includes('base64,')) {
+      const base64Data = inputStr.split('base64,')[1];
+      const fileName = `popup_banner_${Date.now()}.png`;
+      const uploadDir = path.join(__dirname, '../uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const uploadPath = path.join(uploadDir, fileName);
+      fs.writeFileSync(uploadPath, base64Data, 'base64');
+      const protocol = req.protocol || 'http';
+      const host = req.get('host') || 'localhost:5000';
+      finalUrl = `${protocol}://${host}/uploads/${fileName}`;
+    }
+
+    if (!finalUrl) {
+      return res.status(400).json({ error: 'Please provide an image file or URL' });
+    }
+
+    const updates = {
+      home_popup_banner_url: finalUrl,
+      home_popup_banner_id: bannerId,
+      home_popup_banner_active: 'true'
+    };
+
+    for (const [k, v] of Object.entries(updates)) {
+      const existing = await query('SELECT id FROM system_settings WHERE key_name = ?', [k]);
+      if (existing && existing.length > 0) {
+        await query('UPDATE system_settings SET val_value = ? WHERE key_name = ?', [v, k]);
+      } else {
+        await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);
+      }
+    }
+
+    res.json({
+      message: 'Image banner broadcast posted successfully',
+      home_popup_banner_url: finalUrl,
+      home_popup_banner_id: bannerId
+    });
+  } catch (err) {
+    console.error('Error uploading banner:', err);
+    res.status(500).json({ error: 'Failed to upload image banner' });
+  }
+});
+
+// POST Cancel / Delete Push Image Banner Announcement
+router.post('/cancel-banner', verifyAdminToken, async (req, res) => {
+  try {
+    const updates = {
+      home_popup_banner_active: 'false',
+      home_popup_banner_url: ''
+    };
+
+    for (const [k, v] of Object.entries(updates)) {
+      const existing = await query('SELECT id FROM system_settings WHERE key_name = ?', [k]);
+      if (existing && existing.length > 0) {
+        await query('UPDATE system_settings SET val_value = ? WHERE key_name = ?', [v, k]);
+      } else {
+        await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);
+      }
+    }
+
+    res.json({ message: 'Image banner announcement cancelled successfully' });
+  } catch (err) {
+    console.error('Error cancelling banner:', err);
+    res.status(500).json({ error: 'Failed to cancel image banner' });
   }
 });
 

@@ -334,7 +334,10 @@ async function initDb() {
         ['level_5_income', '3200'],
         ['level_6_members', '64'],
         ['level_6_income', '6400'],
-        ['upi_qr_url', '']
+        ['upi_qr_url', ''],
+        ['home_popup_banner_url', ''],
+        ['home_popup_banner_id', ''],
+        ['home_popup_banner_active', 'false']
       ];
       for (const [k, v] of defaultSettings) {
         await query('INSERT INTO system_settings (key_name, val_value) VALUES (?, ?)', [k, v]);

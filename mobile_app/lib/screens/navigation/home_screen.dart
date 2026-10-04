@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_me/share_me.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
 import '../../utils/date_formatter.dart';
@@ -131,7 +132,127 @@ class _HomeScreenState extends State<HomeScreen> {
         _referralLink = "https://play.google.com/store/apps/details?id=com.app.earnfarm";
         _isLoading = false;
       });
+
+      _checkAndShowImageBannerDialog();
     }
+  }
+
+  bool _bannerDialogShown = false;
+
+  Future<void> _checkAndShowImageBannerDialog() async {
+    if (_bannerDialogShown || !mounted) return;
+
+    final String bannerUrl = (_visibilitySettings['home_popup_banner_url'] ?? '').toString().trim();
+    final String bannerId = (_visibilitySettings['home_popup_banner_id'] ?? '').toString().trim();
+    final bool bannerActive = _visibilitySettings['home_popup_banner_active'] == true ||
+        _visibilitySettings['home_popup_banner_active'] == 'true';
+
+    if (!bannerActive || bannerUrl.isEmpty || bannerId.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final String? dismissedId = prefs.getString('dismissed_popup_banner_id');
+
+    if (dismissedId == bannerId) {
+      return;
+    }
+
+    _bannerDialogShown = true;
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.70),
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          elevation: 0,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.topRight,
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  await prefs.setString('dismissed_popup_banner_id', bannerId);
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                },
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.85,
+                  height: MediaQuery.of(context).size.width * 0.85,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      bannerUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: Colors.white,
+                          child: const Center(
+                            child: CircularProgressIndicator(color: AppTheme.primaryBlue),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.white,
+                        child: const Center(
+                          child: Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: -12,
+                right: -12,
+                child: GestureDetector(
+                  onTap: () async {
+                    await prefs.setString('dismissed_popup_banner_id', bannerId);
+                    if (ctx.mounted) Navigator.of(ctx).pop();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((_) async {
+      await prefs.setString('dismissed_popup_banner_id', bannerId);
+    });
   }
 
   double? parseDouble(dynamic val) {
@@ -601,7 +722,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.only(right: 50),
                                   child: Text(
-                                    "⚡ Welcome to SR Digital Seva    |    Grow your income with Smart Digital Services & Instant Micro Earnings! 🚀",
+                                    (_visibilitySettings['marquee_text'] ?? _visibilitySettings['notice_marquee_text'] ?? _visibilitySettings['marquee_notification'] ?? '').toString().trim().isNotEmpty
+                                        ? (_visibilitySettings['marquee_text'] ?? _visibilitySettings['notice_marquee_text'] ?? _visibilitySettings['marquee_notification']).toString().trim()
+                                        : "⚡ Welcome to SR Digital Seva    |    Grow your income with Smart Digital Services & Instant Micro Earnings! 🚀",
                                     style: const TextStyle(
                                       color: AppTheme.primaryBlue,
                                       fontSize: 11,
@@ -2065,7 +2188,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     double totalEarned = realGlobalIncome + realAffiliateIncome;
-    double progressVal = (totalEarned / 12600.0).clamp(0.0, 1.0);
+    double progressVal = (realGlobalIncome / 12600.0).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressVal * 100).toStringAsFixed(1)}%";
     final String visB = (_visibilitySettings['sec_business_income_visibility'] ?? 'Show').toString();
     final bool enabledB = _visibilitySettings['sec_business_income_enabled'] != false && _visibilitySettings['sec_business_income_enabled_bool'] != 'false';
@@ -2144,7 +2267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 1),
                           Text(
-                            "₹ ${totalEarned.toStringAsFixed(2)}",
+                            "₹ ${realGlobalIncome.toStringAsFixed(2)}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 26,

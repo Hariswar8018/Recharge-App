@@ -403,7 +403,18 @@
           :sendingNotification="sendingNotification"
           :notifFormError="notifFormError"
           :notifFormSuccess="notifFormSuccess"
+          :systemSettings="systemSettings"
+          :savingSettings="savingSettings"
+          :saveSettingsMsg="saveSettingsMsg"
+          :saveSettingsSuccess="saveSettingsSuccess"
+          :uploadingBanner="uploadingBanner"
+          :bannerMsg="bannerMsg"
+          :bannerSuccess="bannerSuccess"
           @send-notification="handleSendNotification($event)"
+          @delete-notification="handleDeleteNotification($event)"
+          @save-system-settings="saveSystemSettings"
+          @upload-banner="handleUploadBanner($event)"
+          @cancel-banner="handleCancelBanner"
         />
 
         <!-- TAB 9: CASHOUT & WITHDRAWALS MANAGEMENT -->
@@ -647,6 +658,9 @@ export default {
       savingSettings: false,
       saveSettingsMsg: '',
       saveSettingsSuccess: false,
+      uploadingBanner: false,
+      bannerMsg: '',
+      bannerSuccess: false,
       systemSettings: {
         join_amount: 1200,
         top_up_amount: 1200,
@@ -1293,6 +1307,82 @@ export default {
         this.notifFormError = e.message;
       } finally {
         this.sendingNotification = false;
+      }
+    },
+    async handleDeleteNotification(id) {
+      if (!confirm('Are you sure you want to delete this notification broadcast?')) return;
+      try {
+        const token = localStorage.getItem('adminToken') || '';
+        const res = await fetch(`${API_BASE_URL}/api/admin/notifications/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!res.ok) throw new Error('Failed to delete notification');
+        this.triggerSuccessToast('Notification deleted successfully!', 1500);
+        this.fetchNotifications();
+      } catch (e) {
+        alert(e.message || 'Failed to delete notification');
+      }
+    },
+    async handleUploadBanner(imageBase64) {
+      this.uploadingBanner = true;
+      this.bannerMsg = '';
+      this.bannerSuccess = false;
+      try {
+        const token = localStorage.getItem('adminToken') || '';
+        const res = await fetch(`${API_BASE_URL}/api/admin/upload-banner`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ imageBase64 })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to upload image banner');
+
+        this.systemSettings.home_popup_banner_url = data.home_popup_banner_url;
+        this.systemSettings.home_popup_banner_id = data.home_popup_banner_id;
+        this.systemSettings.home_popup_banner_active = 'true';
+
+        this.bannerMsg = '🚀 Image Banner popup broadcasted successfully to all users!';
+        this.bannerSuccess = true;
+        this.triggerSuccessToast('Banner Image Broadcasted Successfully!', 1500);
+      } catch (e) {
+        this.bannerMsg = e.message;
+        this.bannerSuccess = false;
+      } finally {
+        this.uploadingBanner = false;
+      }
+    },
+    async handleCancelBanner() {
+      if (!confirm('Are you sure you want to cancel and delete the active banner announcement?')) return;
+      this.uploadingBanner = true;
+      this.bannerMsg = '';
+      try {
+        const token = localStorage.getItem('adminToken') || '';
+        const res = await fetch(`${API_BASE_URL}/api/admin/cancel-banner`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to cancel banner announcement');
+
+        this.systemSettings.home_popup_banner_url = '';
+        this.systemSettings.home_popup_banner_active = 'false';
+
+        this.bannerMsg = 'Banner announcement cancelled successfully.';
+        this.bannerSuccess = true;
+        this.triggerSuccessToast('Banner Announcement Cancelled', 1500);
+      } catch (e) {
+        this.bannerMsg = e.message;
+        this.bannerSuccess = false;
+      } finally {
+        this.uploadingBanner = false;
       }
     },
     async handleSaveSystemSettings() {

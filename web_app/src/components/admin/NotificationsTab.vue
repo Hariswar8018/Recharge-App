@@ -1,7 +1,7 @@
 <template>
   <div class="notifications-pane">
     <div style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem;">
-      <!-- SENT NOTIFICATIONS HISTORY -->
+      <!-- LEFT SIDE: SENT NOTIFICATIONS HISTORY -->
       <div class="table-card">
         <div class="card-title-row">
           <h3>📢 Broadcast Notifications & Announcements</h3>
@@ -17,11 +17,12 @@
                 <th>Message Content</th>
                 <th>Target</th>
                 <th>Date Sent</th>
+                <th style="text-align: center;">Action</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="notifications.length === 0">
-                <td colspan="5" style="text-align: center; padding: 2rem; color: #64748b;">
+                <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
                   No broadcast notifications sent yet.
                 </td>
               </tr>
@@ -35,49 +36,178 @@
                   </span>
                 </td>
                 <td>{{ notif.createdAt ? String(notif.createdAt).substring(0, 16) : 'N/A' }}</td>
+                <td style="text-align: center;">
+                  <button 
+                    @click="$emit('delete-notification', notif.id)" 
+                    title="Delete Notification"
+                    style="background: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;"
+                  >
+                    🗑️ Delete
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- SEND BROADCAST NOTIFICATION FORM -->
-      <div class="form-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem;">
-        <h3 style="margin: 0 0 1rem; font-size: 1.05rem; font-weight: 800; color: #1e293b;">
-          📣 Send Push Announcement
-        </h3>
-
-        <form @submit.prevent="$emit('send-notification', notificationFormLocal)">
-          <div class="form-group" style="margin-bottom: 0.85rem;">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Target User Group</label>
-            <select v-model="notificationFormLocal.target_group" class="input-styled select-styled" style="width: 100%; box-sizing: border-box;">
-              <option value="ALL_USERS">📢 All App Members</option>
-              <option value="ACTIVE_USERS">🟢 Active Members Only</option>
-              <option value="PENDING_USERS">🟡 Pending Members</option>
-            </select>
+      <!-- RIGHT SIDE: MARQUEE TICKER, IMAGE POPUP BANNER & PUSH ANNOUNCEMENT FORMS -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- 1. PUSH UPLOAD IMAGE BANNER (1:1 RATIO) POPUP ANNOUNCEMENT -->
+        <div class="form-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+              <span>🖼️ Push Upload Image (1:1 Ratio)</span>
+            </h3>
+            <span 
+              v-if="isBannerActive" 
+              style="background: #dcfce7; color: #166534; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 12px; border: 1px solid #86efac;"
+            >
+              🟢 Banner Live
+            </span>
           </div>
 
-          <div class="form-group" style="margin-bottom: 0.85rem;">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Notification Title</label>
-            <input type="text" v-model="notificationFormLocal.title" placeholder="e.g. Cashback Offer Released!" class="input-styled" required style="width: 100%; box-sizing: border-box;" />
+          <p style="margin: 0 0 1rem; font-size: 0.78rem; color: #64748b; line-height: 1.4;">
+            Upload a square 1:1 image. It will appear as an overlay popup dialog box to all users on app home screen until dismissed.
+          </p>
+
+          <!-- IMAGE PREVIEW & UPLOAD CONTAINER -->
+          <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 6px;">Select 1:1 Image File</label>
+            <input 
+              type="file" 
+              ref="bannerFileInput"
+              accept="image/*" 
+              @change="handleBannerFileSelect" 
+              class="input-styled" 
+              style="width: 100%; box-sizing: border-box; font-size: 0.8rem; padding: 6px;"
+            />
           </div>
 
-          <div class="form-group" style="margin-bottom: 1.25rem;">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Message Content</label>
-            <textarea v-model="notificationFormLocal.message" placeholder="Type message body..." rows="4" class="input-styled" required style="width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+          <!-- 1:1 SQUARE PREVIEW -->
+          <div v-if="bannerPreviewBase64 || activeBannerUrl" style="margin-bottom: 1rem; text-align: center;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">
+              {{ bannerPreviewBase64 ? 'New Image Selected Preview (1:1):' : 'Current Active Live Banner (1:1):' }}
+            </div>
+            <div style="width: 140px; height: 140px; margin: 0 auto; border-radius: 12px; border: 2px solid #cbd5e1; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+              <img 
+                :src="bannerPreviewBase64 || activeBannerUrl" 
+                alt="Banner Preview" 
+                style="width: 100%; height: 100%; object-fit: cover;"
+              />
+            </div>
           </div>
 
-          <div v-if="notifFormError" style="color: #ef4444; font-size: 0.8rem; margin-bottom: 0.85rem; font-weight: bold;">
-            {{ notifFormError }}
-          </div>
-          <div v-if="notifFormSuccess" style="color: #16a34a; font-size: 0.8rem; margin-bottom: 0.85rem; font-weight: bold;">
-            {{ notifFormSuccess }}
+          <div v-if="bannerMsg" :style="{ color: bannerSuccess ? '#16a34a' : '#ef4444', fontSize: '0.8rem', marginBottom: '0.85rem', fontWeight: 'bold' }">
+            {{ bannerMsg }}
           </div>
 
-          <button type="submit" :disabled="sendingNotification" style="width: 100%; background: #2563eb; color: white; border: none; padding: 0.65rem; border-radius: 8px; font-weight: 800; cursor: pointer;">
-            {{ sendingNotification ? 'Sending...' : '🚀 Broadcast Now' }}
-          </button>
-        </form>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button 
+              type="button" 
+              @click="submitBannerUpload" 
+              :disabled="uploadingBanner || !bannerPreviewBase64"
+              :style="{ opacity: (!bannerPreviewBase64 || uploadingBanner) ? 0.6 : 1 }"
+              style="width: 100%; background: #2563eb; color: white; border: none; padding: 0.6rem; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.82rem;"
+            >
+              {{ uploadingBanner ? 'Broadcasting Banner...' : '🚀 Broadcast Image Banner Popup' }}
+            </button>
+
+            <button 
+              v-if="isBannerActive"
+              type="button" 
+              @click="$emit('cancel-banner')" 
+              :disabled="uploadingBanner"
+              style="width: 100%; background: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; padding: 0.55rem; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.8rem;"
+            >
+              ❌ Cancel / Delete Banner Announcement
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. MARQUEE NOTIFICATION TEXT BOX CARD -->
+        <div class="form-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem;">
+          <h3 style="margin: 0 0 0.4rem; font-size: 1.05rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+            <span>⚡ App Marquee Notification Ticker</span>
+          </h3>
+          <p style="margin: 0 0 1rem; font-size: 0.78rem; color: #64748b; line-height: 1.4;">
+            Sets the continuous scrolling announcement banner at the top of the App Home Screen. If empty, the default welcome banner is displayed.
+          </p>
+
+          <form @submit.prevent="$emit('save-system-settings')">
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Marquee Announcement Text</label>
+              <textarea 
+                v-model="systemSettings.marquee_text" 
+                placeholder="⚡ Welcome to SR Digital Seva | Grow your income..." 
+                rows="3" 
+                class="input-styled" 
+                style="width: 100%; box-sizing: border-box; resize: vertical;"
+              ></textarea>
+            </div>
+
+            <div v-if="saveSettingsMsg" :style="{ color: saveSettingsSuccess ? '#16a34a' : '#ef4444', fontSize: '0.8rem', marginBottom: '0.85rem', fontWeight: 'bold' }">
+              {{ saveSettingsMsg }}
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button 
+                type="button" 
+                @click="systemSettings.marquee_text = ''" 
+                style="flex: 1; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0.55rem; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.8rem;"
+              >
+                Clear
+              </button>
+              <button 
+                type="submit" 
+                :disabled="savingSettings" 
+                style="flex: 2; background: #16a34a; color: white; border: none; padding: 0.55rem; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.8rem;"
+              >
+                {{ savingSettings ? 'Saving...' : '💾 Save Marquee' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 3. SEND BROADCAST NOTIFICATION FORM -->
+        <div class="form-card" style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem;">
+          <h3 style="margin: 0 0 1rem; font-size: 1.05rem; font-weight: 800; color: #1e293b;">
+            📣 Send Push Announcement
+          </h3>
+
+          <form @submit.prevent="$emit('send-notification', notificationFormLocal)">
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Target User Group</label>
+              <select v-model="notificationFormLocal.target_group" class="input-styled select-styled" style="width: 100%; box-sizing: border-box;">
+                <option value="ALL_USERS">📢 All App Members</option>
+                <option value="ACTIVE_USERS">🟢 Active Members Only</option>
+                <option value="PENDING_USERS">🟡 Pending Members</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Notification Title</label>
+              <input type="text" v-model="notificationFormLocal.title" placeholder="e.g. Cashback Offer Released!" class="input-styled" required style="width: 100%; box-sizing: border-box;" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #475569;">Message Content</label>
+              <textarea v-model="notificationFormLocal.message" placeholder="Type message body..." rows="4" class="input-styled" required style="width: 100%; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
+
+            <div v-if="notifFormError" style="color: #ef4444; font-size: 0.8rem; margin-bottom: 0.85rem; font-weight: bold;">
+              {{ notifFormError }}
+            </div>
+            <div v-if="notifFormSuccess" style="color: #16a34a; font-size: 0.8rem; margin-bottom: 0.85rem; font-weight: bold;">
+              {{ notifFormSuccess }}
+            </div>
+
+            <button type="submit" :disabled="sendingNotification" style="width: 100%; background: #2563eb; color: white; border: none; padding: 0.65rem; border-radius: 8px; font-weight: 800; cursor: pointer;">
+              {{ sendingNotification ? 'Sending...' : '🚀 Broadcast Now' }}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -90,7 +220,14 @@ export default {
     notifications: { type: Array, default: () => [] },
     sendingNotification: { type: Boolean, default: false },
     notifFormError: { type: String, default: '' },
-    notifFormSuccess: { type: String, default: '' }
+    notifFormSuccess: { type: String, default: '' },
+    systemSettings: { type: Object, default: () => ({ marquee_text: '' }) },
+    savingSettings: { type: Boolean, default: false },
+    saveSettingsMsg: { type: String, default: '' },
+    saveSettingsSuccess: { type: Boolean, default: false },
+    uploadingBanner: { type: Boolean, default: false },
+    bannerMsg: { type: String, default: '' },
+    bannerSuccess: { type: Boolean, default: false }
   },
   data() {
     return {
@@ -98,8 +235,40 @@ export default {
         title: '',
         message: '',
         target_group: 'ALL_USERS'
-      }
+      },
+      bannerPreviewBase64: ''
     };
+  },
+  computed: {
+    activeBannerUrl() {
+      return (this.systemSettings && this.systemSettings.home_popup_banner_url) || '';
+    },
+    isBannerActive() {
+      if (!this.systemSettings) return false;
+      const url = this.systemSettings.home_popup_banner_url || '';
+      const act = this.systemSettings.home_popup_banner_active;
+      return url.trim().length > 0 && String(act) !== 'false';
+    }
+  },
+  methods: {
+    handleBannerFileSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        this.bannerPreviewBase64 = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    submitBannerUpload() {
+      if (!this.bannerPreviewBase64) {
+        alert('Please choose an image file first!');
+        return;
+      }
+      this.$emit('upload-banner', this.bannerPreviewBase64);
+      this.bannerPreviewBase64 = '';
+      if (this.$refs.bannerFileInput) this.$refs.bannerFileInput.value = '';
+    }
   }
 };
 </script>
