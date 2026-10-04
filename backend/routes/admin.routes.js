@@ -1061,7 +1061,7 @@ router.post('/upload-qr', verifyAdminToken, async (req, res) => {
 
     // Save into system_settings under both upi_qr_url and qr_image_url
     for (const k of ['upi_qr_url', 'qr_image_url']) {
-      const existing = await query('SELECT id FROM system_settings WHERE key_name = ?', [k]);
+      const existing = await query('SELECT key_name FROM system_settings WHERE key_name = ?', [k]);
       if (existing && existing.length > 0) {
         await query('UPDATE system_settings SET val_value = ? WHERE key_name = ?', [finalUrl, k]);
       } else {
@@ -1109,7 +1109,7 @@ router.post('/upload-banner', verifyAdminToken, async (req, res) => {
     };
 
     for (const [k, v] of Object.entries(updates)) {
-      const existing = await query('SELECT id FROM system_settings WHERE key_name = ?', [k]);
+      const existing = await query('SELECT key_name FROM system_settings WHERE key_name = ?', [k]);
       if (existing && existing.length > 0) {
         await query('UPDATE system_settings SET val_value = ? WHERE key_name = ?', [v, k]);
       } else {
@@ -1124,7 +1124,7 @@ router.post('/upload-banner', verifyAdminToken, async (req, res) => {
     });
   } catch (err) {
     console.error('Error uploading banner:', err);
-    res.status(500).json({ error: 'Failed to upload image banner' });
+    res.status(500).json({ error: err.message || 'Failed to upload image banner' });
   }
 });
 
@@ -1137,7 +1137,7 @@ router.post('/cancel-banner', verifyAdminToken, async (req, res) => {
     };
 
     for (const [k, v] of Object.entries(updates)) {
-      const existing = await query('SELECT id FROM system_settings WHERE key_name = ?', [k]);
+      const existing = await query('SELECT key_name FROM system_settings WHERE key_name = ?', [k]);
       if (existing && existing.length > 0) {
         await query('UPDATE system_settings SET val_value = ? WHERE key_name = ?', [v, k]);
       } else {
