@@ -22,29 +22,29 @@ router.post('/login', async (req, res) => {
 
   try {
     // Primary Admin Auto-Seeder & Auto-Healer on Login
-    if (email === 'srdigitalseva9@gmail.com' && password === 'Rajesh@1819') {
+    if (email === 'srdigitalseva99@gmail.com' && password === 'Rajesh@1819') {
       const salt = bcrypt.genSaltSync(10);
       const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
-      const checkUser = await query('SELECT * FROM users WHERE LOWER(email) = ?', ['srdigitalseva9@gmail.com']);
+      const checkUser = await query('SELECT * FROM users WHERE LOWER(email) = ?', ['srdigitalseva99@gmail.com']);
       if (!checkUser || checkUser.length === 0) {
         await query(
           'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
-          ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819', 'admin']
+          ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819', 'admin']
         );
       } else {
         await query(
           'UPDATE users SET mobileNumber = "9988494936", passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE LOWER(email) = ?',
-          [passwordHash, 'Rajesh@1819', 'srdigitalseva9@gmail.com']
+          [passwordHash, 'Rajesh@1819', 'srdigitalseva99@gmail.com']
         );
       }
 
       const token = jwt.sign(
-        { email: 'srdigitalseva9@gmail.com', role: 'admin' },
+        { email: 'srdigitalseva99@gmail.com', role: 'admin' },
         JWT_SECRET,
         { expiresIn: '7d' }
       );
-      return res.json({ token, email: 'srdigitalseva9@gmail.com' });
+      return res.json({ token, email: 'srdigitalseva99@gmail.com' });
     }
 
     // Standard lookup for other admin accounts
@@ -1176,8 +1176,8 @@ router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
-    // 1. Ensure Admin User (srdigitalseva9@gmail.com, role = "admin")
-    const existingAdmin = await query('SELECT * FROM users WHERE email = "srdigitalseva9@gmail.com"');
+    // 1. Ensure Admin User (srdigitalseva99@gmail.com, role = "admin")
+    const existingAdmin = await query('SELECT * FROM users WHERE email = "srdigitalseva99@gmail.com"');
     let adminUserId;
     if (existingAdmin && existingAdmin.length > 0) {
       adminUserId = existingAdmin[0].id;
@@ -1188,7 +1188,7 @@ router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
     } else {
       const res = await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-        ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
       );
       adminUserId = res.insertId || 1;
     }

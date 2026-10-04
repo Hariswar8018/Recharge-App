@@ -575,7 +575,7 @@ export default {
       currentTab: 'dashboard',
       mobileMenuOpen: false,
       profileDropdownOpen: false,
-      adminEmail: localStorage.getItem('adminEmail') || 'srdigitalseva9@gmail.com',
+      adminEmail: localStorage.getItem('adminEmail') || 'srdigitalseva99@gmail.com',
       expandedGroups: {
         users: true,
         financials: true,

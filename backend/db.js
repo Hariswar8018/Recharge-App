@@ -254,24 +254,24 @@ async function initDb() {
       )
     `);
 
-    // Seed single Admin user (srdigitalseva9@gmail.com with password Rajesh@1819)
+    // Seed single Admin user (srdigitalseva99@gmail.com with password Rajesh@1819)
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
     // Remove legacy admin accounts
-    await query('DELETE FROM users WHERE role = "admin" AND email != "srdigitalseva9@gmail.com"');
+    await query('DELETE FROM users WHERE role = "admin" AND email != "srdigitalseva99@gmail.com"');
 
-    const checkAdmin = await query('SELECT * FROM users WHERE email = ?', ['srdigitalseva9@gmail.com']);
+    const checkAdmin = await query('SELECT * FROM users WHERE email = ?', ['srdigitalseva99@gmail.com']);
     if (Array.isArray(checkAdmin) && checkAdmin.length === 0) {
       await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
-        ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819', 'admin']
+        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819', 'admin']
       );
       console.log('SR Digital Seva Admin user seeded.');
     } else {
       await query(
         'UPDATE users SET mobileNumber = "9988494936", passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE email = ?',
-        [passwordHash, 'Rajesh@1819', 'srdigitalseva9@gmail.com']
+        [passwordHash, 'Rajesh@1819', 'srdigitalseva99@gmail.com']
       );
     }
 

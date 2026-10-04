@@ -213,7 +213,7 @@ async function findSponsorUser(sponsorInput) {
 
     await query(
       'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-      ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+      ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
     ).catch(() => {});
 
     await query(
@@ -221,7 +221,7 @@ async function findSponsorUser(sponsorInput) {
       ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
     ).catch(() => {});
 
-    const masterUsers = await query('SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
+    const masterUsers = await query('SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva99@gmail.com" LIMIT 1');
     if (masterUsers && masterUsers.length > 0) return masterUsers[0];
   }
 

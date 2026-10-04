@@ -41,26 +41,26 @@ async function resetSystemData() {
     await query('DELETE FROM cycles');
     console.log('✓ Cleared all single leg queues & cycles');
 
-    // 6. Ensure Admin User (srdigitalseva9@gmail.com, role = "admin")
+    // 6. Ensure Admin User (srdigitalseva99@gmail.com, role = "admin")
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
-    const existingAdmin = await query('SELECT * FROM users WHERE email = "srdigitalseva9@gmail.com"');
+    const existingAdmin = await query('SELECT * FROM users WHERE email = "srdigitalseva99@gmail.com"');
     let adminUserId;
     if (existingAdmin && existingAdmin.length > 0) {
       adminUserId = existingAdmin[0].id;
       await query(
-        'UPDATE users SET fullName = "SR Digital Seva Admin", mobileNumber = "9988494936", role = "admin", status = "ACTIVE" WHERE id = ?',
+        'UPDATE users SET fullName = "SR Digital Seva Admin", email = "srdigitalseva99@gmail.com", mobileNumber = "9988494936", role = "admin", status = "ACTIVE" WHERE id = ?',
         [adminUserId]
       );
-      console.log(`✓ Preserved Admin user #${adminUserId}: srdigitalseva9@gmail.com`);
+      console.log(`✓ Preserved Admin user #${adminUserId}: srdigitalseva99@gmail.com`);
     } else {
       const res = await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-        ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
       );
       adminUserId = res.insertId || 1;
-      console.log(`✓ Created Admin user #${adminUserId}: srdigitalseva9@gmail.com`);
+      console.log(`✓ Created Admin user #${adminUserId}: srdigitalseva99@gmail.com`);
     }
 
     // 7. Ensure Top-Level Master App User (master@srdigitalseva.com, role = "user")
