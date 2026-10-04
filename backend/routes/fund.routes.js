@@ -8,6 +8,19 @@ const router = express.Router();
 
 // Helper to determine fund request status & cycle state for user
 async function getUserFundStatus(userId) {
+  let configuredTopUpAmount = '1,200';
+  try {
+    const sRows = await query('SELECT val_value FROM system_settings WHERE key_name IN ("top_up_amount", "join_amount", "fund_deposit_amount") AND val_value IS NOT NULL AND val_value != "" LIMIT 1');
+    if (sRows.length > 0 && sRows[0].val_value) {
+      const num = parseFloat(sRows[0].val_value);
+      if (!isNaN(num)) {
+        configuredTopUpAmount = num.toLocaleString('en-IN');
+      } else {
+        configuredTopUpAmount = sRows[0].val_value;
+      }
+    }
+  } catch (_) {}
+
   const allRequests = await query(
     'SELECT id, amount, utr, status, createdAt FROM fund_requests WHERE user_id = ? ORDER BY id DESC',
     [userId]
@@ -57,7 +70,7 @@ async function getUserFundStatus(userId) {
   return {
     canSubmit: true,
     statusState: 'AVAILABLE',
-    statusMessage: 'Next Request Available. Pay ₹1,200 via UPI and enter your 12-digit UTR.',
+    statusMessage: `Next Request Available. Pay ₹${configuredTopUpAmount} via UPI and enter your 12-digit UTR.`,
     lastRequest: lastReq || null,
     allRequests
   };

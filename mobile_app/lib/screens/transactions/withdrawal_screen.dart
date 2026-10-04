@@ -32,6 +32,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   String _status = "INACTIVE";
 
   double _minWithdrawal = 500.0;
+  double _maxWithdrawal = 50000.0;
   double _deductionPercent = 15.0;
   String _withdrawalDays = "Monday, Wednesday, Friday";
 
@@ -68,6 +69,9 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
     final String rawMin = (settings['min_withdrawal'] ?? settings['minimum_withdrawal'] ?? settings['min_withdrawal_amount'] ?? '500').toString().trim();
     final minW = double.tryParse(rawMin) ?? 500.0;
 
+    final String rawMax = (settings['max_withdrawal'] ?? settings['maximum_withdrawal'] ?? settings['max_withdrawal_amount'] ?? '50000').toString().trim();
+    final maxW = double.tryParse(rawMax) ?? 50000.0;
+
     final String rawDed = (settings['withdrawal_deduction_percent'] ?? settings['withdrawal_percentage'] ?? settings['withdrawal_deduction'] ?? '15').toString().trim();
     final dedP = double.tryParse(rawDed) ?? 15.0;
 
@@ -76,6 +80,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
     if (mounted) {
       setState(() {
         _minWithdrawal = minW;
+        _maxWithdrawal = maxW;
         _deductionPercent = dedP;
         _withdrawalDays = daysW;
       });
@@ -192,9 +197,9 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
       return;
     }
 
-    if (amtVal > 5000) {
+    if (amtVal > _maxWithdrawal) {
       setState(() {
-        _error = "Maximum withdrawal amount is ₹5000";
+        _error = "Maximum withdrawal amount is ₹${_maxWithdrawal.toStringAsFixed(0)}";
       });
       return;
     }
@@ -261,7 +266,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
   @override
   Widget build(BuildContext context) {
     final double amtVal = double.tryParse(_amountController.text.trim()) ?? 0.0;
-    final double processingFee = amtVal * 0.15; // 15% Fee
+    final double processingFee = amtVal * (_deductionPercent / 100.0);
     final double youWillReceive = amtVal - processingFee > 0 ? amtVal - processingFee : 0.0;
 
     return Scaffold(
@@ -481,9 +486,9 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                           final String text = _amountController.text.trim();
                           final double? parsed = double.tryParse(text);
                           final bool isTouched = text.isNotEmpty;
-                          final bool isValidAmount = parsed != null && parsed >= _minWithdrawal && parsed <= 50000;
+                          final bool isValidAmount = parsed != null && parsed >= _minWithdrawal && parsed <= _maxWithdrawal;
                           final bool isLessThanMin = parsed != null && parsed < _minWithdrawal;
-                          final bool isMoreThanMax = parsed != null && parsed > 50000;
+                          final bool isMoreThanMax = parsed != null && parsed > _maxWithdrawal;
 
                           Color borderColor = const Color(0xFFCBD5E1);
                           Widget? suffixIcon;
@@ -513,7 +518,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                                 padding: EdgeInsets.only(right: 12),
                                 child: Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 22),
                               );
-                              statusMsg = "Maximum withdrawal amount is ₹50000";
+                              statusMsg = "Maximum withdrawal amount is ₹${_maxWithdrawal.toStringAsFixed(0)}";
                               statusColor = const Color(0xFFDC2626);
                             }
                           }
@@ -801,7 +806,7 @@ class _WithdrawalScreenState extends State<WithdrawalScreen> {
                             ),
                             const SizedBox(height: 14),
                             _buildSummaryRow("Withdrawal Amount", "₹${amtVal.toStringAsFixed(2)}", isBold: true),
-                            _buildSummaryRow("Processing Fee (15%)", "- ₹${processingFee.toStringAsFixed(2)}", textColor: const Color(0xFFDC2626)),
+                            _buildSummaryRow("Processing Fee (${_deductionPercent.toStringAsFixed(0)}%)", "- ₹${processingFee.toStringAsFixed(2)}", textColor: const Color(0xFFDC2626)),
                             const Divider(color: Color(0xFFE2E8F0), height: 20),
                             _buildSummaryRow("You Will Receive", "₹${youWillReceive.toStringAsFixed(2)}", isBold: true, isLarge: true, textColor: const Color(0xFF22C55E)),
                             const SizedBox(height: 14),

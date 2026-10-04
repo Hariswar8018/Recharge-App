@@ -168,29 +168,29 @@ async function findSponsorUser(sponsorInput) {
   const last10 = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
   const numericId = parseInt(cleanSponsorId, 10);
 
-  // 1. Search by numeric ID
-  if (!isNaN(numericId) && numericId > 0 && numericId < 2147483647) {
-    const byId = await query(`SELECT id, fullName, mobileNumber, email FROM users WHERE id = ?`, [numericId]);
-    if (byId && byId.length > 0) return byId[0];
-  }
-
-  // 2. Search by mobile number
+  // 1. Search by mobile number FIRST (When user enters phone number as sponsor ID)
   if (last10.length === 10) {
     const byMobile = await query(
-      `SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber = ? OR mobileNumber = ? OR mobileNumber LIKE ?`,
+      `SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE mobileNumber = ? OR mobileNumber = ? OR mobileNumber LIKE ?`,
       [last10, `+91${last10}`, `%${last10}`]
     );
     if (byMobile && byMobile.length > 0) return byMobile[0];
   }
 
+  // 2. Search by numeric ID (If not matched by phone number)
+  if (!isNaN(numericId) && numericId > 0 && numericId < 2147483647) {
+    const byId = await query(`SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE id = ?`, [numericId]);
+    if (byId && byId.length > 0) return byId[0];
+  }
+
   // 3. Search by email
   if (cleanSponsorId.includes('@')) {
-    const byEmail = await query(`SELECT id, fullName, mobileNumber, email FROM users WHERE LOWER(email) = ?`, [cleanSponsorId.toLowerCase()]);
+    const byEmail = await query(`SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE LOWER(email) = ?`, [cleanSponsorId.toLowerCase()]);
     if (byEmail && byEmail.length > 0) return byEmail[0];
   }
 
   // 4. Fallback search
-  const fallback = await query(`SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber = ? OR email = ?`, [cleanSponsorId, cleanSponsorId.toLowerCase()]);
+  const fallback = await query(`SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE mobileNumber = ? OR email = ?`, [cleanSponsorId, cleanSponsorId.toLowerCase()]);
   if (fallback && fallback.length > 0) return fallback[0];
 
   // 5. Auto-heal / Seed Master Sponsor if missing or searching for master
@@ -204,29 +204,31 @@ async function findSponsorUser(sponsorInput) {
     cleanSponsorId === 'MASTER@SRDIGITALSEVA.COM'
   );
 
-    const allUsersCount = await query('SELECT COUNT(id) as count FROM users');
-    const countVal = (allUsersCount && allUsersCount[0]) ? allUsersCount[0].count : 0;
+  const allUsersCount = await query('SELECT COUNT(id) as count FROM users');
+  const countVal = (allUsersCount && allUsersCount[0]) ? allUsersCount[0].count : 0;
 
-    if (isMasterQuery || countVal === 0) {
-      const salt = bcrypt.genSaltSync(10);
-      const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
+  if (isMasterQuery || countVal === 0) {
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
-      await query(
-        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-        ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
-      ).catch(() => {});
+    await query(
+      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
+      ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+    ).catch(() => {});
 
-      await query(
-        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
-        ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
-      ).catch(() => {});
+    await query(
+      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
+      ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+    ).catch(() => {});
 
-      const masterUsers = await query('SELECT id, fullName, mobileNumber, email FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
-      if (masterUsers && masterUsers.length > 0) return masterUsers[0];
-    }
+    const masterUsers = await query('SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva9@gmail.com" LIMIT 1');
+    if (masterUsers && masterUsers.length > 0) return masterUsers[0];
+  }
 
-    return null;
+  return null;
 }
+
+router.findSponsorUser = findSponsorUser;
 
 // Check Sponsor ID for registration
 router.post('/check-sponsor', verifyAppToken, async (req, res) => {

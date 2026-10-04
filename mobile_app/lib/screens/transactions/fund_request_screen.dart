@@ -67,7 +67,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   String _lastPayeeVpa = "";
 
   double get configuredTopUpAmount {
-    final String rawVal = (_settings['top_up_amount'] ?? _settings['join_amount'] ?? '1200').toString().trim();
+    final String rawVal = (_settings['top_up_amount'] ?? _settings['join_amount'] ?? _settings['fund_deposit_amount'] ?? '1200').toString().trim();
     return double.tryParse(rawVal) ?? 1200.0;
   }
 
@@ -80,18 +80,16 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       final newQrUrl = (newSettings['upi_qr_url'] ?? newSettings['qr_image_url'] ?? '').toString().trim();
       final newVpa = (newSettings['upi_id'] ?? newSettings['upi_vpa_id'] ?? newSettings['upi_vpa'] ?? '').toString().trim();
 
-      final String rawTopUp = (newSettings['top_up_amount'] ?? newSettings['join_amount'] ?? '1200').toString().trim();
+      final String rawTopUp = (newSettings['top_up_amount'] ?? newSettings['join_amount'] ?? newSettings['fund_deposit_amount'] ?? '1200').toString().trim();
       final double topUpVal = double.tryParse(rawTopUp) ?? 1200.0;
 
-      if (_settings.isEmpty || _lastQrUrl != newQrUrl || _lastPayeeVpa != newVpa) {
-        _lastQrUrl = newQrUrl;
-        _lastPayeeVpa = newVpa;
-        if (mounted) {
-          setState(() {
-            _settings = newSettings;
-            _amountController.text = topUpVal.toInt().toString();
-          });
-        }
+      _lastQrUrl = newQrUrl;
+      _lastPayeeVpa = newVpa;
+      if (mounted) {
+        setState(() {
+          _settings = newSettings;
+          _amountController.text = (topUpVal % 1 == 0 ? topUpVal.toInt().toString() : topUpVal.toString());
+        });
       }
     } catch (_) {}
   }
@@ -651,7 +649,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
     if (!showInstructions) return const SizedBox.shrink();
     final text = instructionsText.trim().isNotEmpty
         ? instructionsText
-        : "Deposit amount is fixed at ₹1,200.\nOnly 12 Digit UTR number is allowed.\nFunds will be added after Admin approval.";
+        : "Deposit amount is fixed at ₹${configuredTopUpAmount % 1 == 0 ? configuredTopUpAmount.toInt().toString() : configuredTopUpAmount.toString()}.\nOnly 12 Digit UTR number is allowed.\nFunds will be added after Admin approval.";
     final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
 
     return Container(

@@ -18,8 +18,9 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
     const settings = {};
     settingsRows.forEach(row => { settings[row.key_name] = row.val_value; });
 
-    const minWithdraw = parseFloat(settings['min_withdrawal'] || settings['minimum_withdrawal'] || '500');
-    const feePercent = parseFloat(settings['withdrawal_deduction_percent'] || settings['withdrawal_percentage'] || '15');
+    const minWithdraw = parseFloat(settings['min_withdrawal'] || settings['minimum_withdrawal'] || settings['min_withdrawal_amount'] || '500');
+    const maxWithdraw = parseFloat(settings['max_withdrawal'] || settings['maximum_withdrawal'] || settings['max_withdrawal_amount'] || '50000');
+    const feePercent = parseFloat(settings['withdrawal_deduction_percent'] || settings['withdrawal_percentage'] || settings['withdrawal_deduction'] || '15');
     const allowedDaysStr = settings['withdrawal_days'] || 'Monday, Wednesday, Friday';
     
     // Check allowed days
@@ -33,6 +34,10 @@ router.post('/request', verifyAppToken, verifyUserToken, async (req, res) => {
 
     if (amt < minWithdraw) {
       return res.status(400).json({ error: `Minimum withdrawal amount is ₹${minWithdraw}` });
+    }
+
+    if (amt > maxWithdraw) {
+      return res.status(400).json({ error: `Maximum withdrawal amount is ₹${maxWithdraw}` });
     }
 
     // Enforce strict 1 withdrawal per day per user limit (even if rejected or approved)
