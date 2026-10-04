@@ -1,4 +1,5 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
+const bcrypt = require('bcryptjs');
 const { query } = require('./db');
 
 async function resetSystemData() {
@@ -40,23 +41,32 @@ async function resetSystemData() {
     await query('DELETE FROM cycles');
     console.log('✓ Cleared all single leg queues & cycles');
 
-    // 6. Identify the top-level user (lowest ID / earliest registered user)
-    const topUserRows = await query('SELECT id, email, fullName, mobileNumber FROM users ORDER BY id ASC LIMIT 1');
-    
-    if (topUserRows && topUserRows.length > 0) {
-      const topUser = topUserRows[0];
-      console.log(`Preserving top-level user: #${topUser.id} (${topUser.fullName} - ${topUser.email})`);
+    // 6. Create / Ensure Top-Level Master User "SR Admin"
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
-      // Delete all users except the top-level user
-      await query('DELETE FROM users WHERE id != ?', [topUser.id]);
-      console.log(`✓ Deleted all other users except top-level user #${topUser.id}`);
+    const existingTop = await query('SELECT * FROM users WHERE email = "srdigitalseva9@gmail.com" OR mobileNumber = "9988494936" ORDER BY id ASC LIMIT 1');
+    let topUserId;
 
-      // Reset wallet balances for preserved top-level user
-      await query('UPDATE users SET fund_wallet_balance = 0.00, main_wallet_balance = 0.00 WHERE id = ?', [topUser.id]);
-      console.log(`✓ Reset wallet balances to ₹0.00 for top-level user #${topUser.id}`);
+    if (existingTop && existingTop.length > 0) {
+      topUserId = existingTop[0].id;
+      await query(
+        'UPDATE users SET fullName = "SR Admin", role = "user", status = "ACTIVE", main_wallet_balance = 0.00, fund_wallet_balance = 0.00, sponsor_id = NULL WHERE id = ?',
+        [topUserId]
+      );
+      console.log(`✓ Preserved & updated top-level user #${topUserId}: SR Admin (9988494936)`);
     } else {
-      console.log('No users found in database to preserve.');
+      const res = await query(
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status, fund_wallet_balance, main_wallet_balance, sponsor_id) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "ACTIVE", "user", NULL)',
+        ['SR Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+      );
+      topUserId = res.insertId || 1;
+      console.log(`✓ Created top-level user #${topUserId}: SR Admin (9988494936)`);
     }
+
+    // Delete all other users except topUserId
+    await query('DELETE FROM users WHERE id != ?', [topUserId]);
+    console.log(`✓ Deleted all other users except top-level user #${topUserId}`);
 
     console.log('--- Database Reset Completed Successfully! ---');
     process.exit(0);

@@ -1173,14 +1173,29 @@ router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
     await query('DELETE FROM single_leg_queue');
     await query('DELETE FROM cycles');
 
-    const topUserRows = await query('SELECT id, email, fullName FROM users ORDER BY id ASC LIMIT 1');
-    if (topUserRows && topUserRows.length > 0) {
-      const topUser = topUserRows[0];
-      await query('DELETE FROM users WHERE id != ?', [topUser.id]);
-      await query('UPDATE users SET fund_wallet_balance = 0.00, main_wallet_balance = 0.00 WHERE id = ?', [topUser.id]);
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
+
+    const existingTop = await query('SELECT * FROM users WHERE email = "srdigitalseva9@gmail.com" OR mobileNumber = "9988494936" ORDER BY id ASC LIMIT 1');
+    let topUserId;
+
+    if (existingTop && existingTop.length > 0) {
+      topUserId = existingTop[0].id;
+      await query(
+        'UPDATE users SET fullName = "SR Admin", role = "user", status = "ACTIVE", main_wallet_balance = 0.00, fund_wallet_balance = 0.00, sponsor_id = NULL WHERE id = ?',
+        [topUserId]
+      );
+    } else {
+      const result = await query(
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status, fund_wallet_balance, main_wallet_balance, sponsor_id) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "ACTIVE", "user", NULL)',
+        ['SR Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+      );
+      topUserId = result.insertId || 1;
     }
 
-    res.json({ message: 'System database data reset successfully' });
+    await query('DELETE FROM users WHERE id != ?', [topUserId]);
+
+    res.json({ message: 'System database data reset successfully. Top-level user SR Admin preserved.' });
   } catch (err) {
     console.error('Error resetting system data:', err);
     res.status(500).json({ error: err.message || 'Failed to reset system data' });
