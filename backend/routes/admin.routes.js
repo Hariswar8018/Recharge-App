@@ -1152,6 +1152,30 @@ router.post('/cancel-banner', verifyAdminToken, async (req, res) => {
   }
 });
 
+// POST Reset System Data (Clears notifications, transactions, withdrawals, fund requests, cycles, queues, & all users except top-level user)
+router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
+  try {
+    await query('DELETE FROM notifications');
+    await query('DELETE FROM transactions');
+    await query('DELETE FROM withdrawals');
+    await query('DELETE FROM fund_requests');
+    await query('DELETE FROM single_leg_queue');
+    await query('DELETE FROM cycles');
+
+    const topUserRows = await query('SELECT id, email, fullName FROM users ORDER BY id ASC LIMIT 1');
+    if (topUserRows && topUserRows.length > 0) {
+      const topUser = topUserRows[0];
+      await query('DELETE FROM users WHERE id != ?', [topUser.id]);
+      await query('UPDATE users SET fund_wallet_balance = 0.00, main_wallet_balance = 0.00 WHERE id = ?', [topUser.id]);
+    }
+
+    res.json({ message: 'System database data reset successfully' });
+  } catch (err) {
+    console.error('Error resetting system data:', err);
+    res.status(500).json({ error: 'Failed to reset system data' });
+  }
+});
+
 // GET Admin Withdrawal Requests (Filters: status, search, startDate, endDate)
 router.get('/withdrawals', verifyAdminToken, async (req, res) => {
   try {

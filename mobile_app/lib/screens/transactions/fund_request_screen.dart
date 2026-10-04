@@ -647,9 +647,9 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
 
   Widget _buildInstructionsCard() {
     if (!showInstructions) return const SizedBox.shrink();
-    final text = instructionsText.trim().isNotEmpty
-        ? instructionsText
-        : "Deposit amount is fixed at ₹${configuredTopUpAmount % 1 == 0 ? configuredTopUpAmount.toInt().toString() : configuredTopUpAmount.toString()}.\nOnly 12 Digit UTR number is allowed.\nFunds will be added after Admin approval.";
+    final text = instructionsText.trim().isEmpty
+        ? instructionsText: 
+        "Deposit amount is fixed at ₹${configuredTopUpAmount % 1 == 0 ? configuredTopUpAmount.toInt().toString() : configuredTopUpAmount.toString()}.\nOnly 12 Digit UTR number is allowed.\nFunds will be added after Admin approval.\nIt may take some time for Approval";
     final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
 
     return Container(
