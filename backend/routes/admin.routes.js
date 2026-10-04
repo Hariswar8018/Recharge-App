@@ -159,6 +159,16 @@ router.post('/settings', verifyAdminToken, async (req, res) => {
       updates.captcha_section_visibility = 'Show';
     }
 
+    const activeTopUp = updates.top_up_amount || updates.join_amount || updates.fund_deposit_amount || updates.min_add_money;
+    if (activeTopUp !== undefined && activeTopUp !== null && String(activeTopUp).trim().length > 0) {
+      const amtStr = String(activeTopUp).trim();
+      updates.top_up_amount = amtStr;
+      updates.join_amount = amtStr;
+      updates.fund_deposit_amount = amtStr;
+      updates.min_add_money = amtStr;
+      updates.min_deposit = amtStr;
+    }
+
     for (const [key, val] of Object.entries(updates)) {
       const strVal = val !== null && val !== undefined ? String(val) : '';
       const existing = await query('SELECT key_name FROM system_settings WHERE key_name = ?', [key]);

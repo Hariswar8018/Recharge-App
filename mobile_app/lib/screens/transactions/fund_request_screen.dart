@@ -67,8 +67,10 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   String _lastPayeeVpa = "";
 
   double get configuredTopUpAmount {
-    final String rawVal = (_settings['top_up_amount'] ?? _settings['join_amount'] ?? _settings['fund_deposit_amount'] ?? '1200').toString().trim();
-    return double.tryParse(rawVal) ?? 1200.0;
+    final String rawVal = (_settings['top_up_amount'] ?? _settings['join_amount'] ?? _settings['fund_deposit_amount'] ?? _settings['min_add_money'] ?? '1200').toString().trim();
+    final double? parsed = double.tryParse(rawVal);
+    if (parsed != null && parsed > 0) return parsed;
+    return 1200.0;
   }
 
   Future<void> _loadSettings() async {
@@ -80,7 +82,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
       final newQrUrl = (newSettings['upi_qr_url'] ?? newSettings['qr_image_url'] ?? '').toString().trim();
       final newVpa = (newSettings['upi_id'] ?? newSettings['upi_vpa_id'] ?? newSettings['upi_vpa'] ?? '').toString().trim();
 
-      final String rawTopUp = (newSettings['top_up_amount'] ?? newSettings['join_amount'] ?? newSettings['fund_deposit_amount'] ?? '1200').toString().trim();
+      final String rawTopUp = (newSettings['top_up_amount'] ?? newSettings['join_amount'] ?? newSettings['fund_deposit_amount'] ?? newSettings['min_add_money'] ?? '1200').toString().trim();
       final double topUpVal = double.tryParse(rawTopUp) ?? 1200.0;
 
       _lastQrUrl = newQrUrl;
@@ -141,9 +143,7 @@ class _FundRequestScreenState extends State<FundRequestScreen> {
   }
 
   bool get statusMinAddMoney => _boolSetting('status_min_add_money', defaultValue: true);
-  double get minAddMoney => statusMinAddMoney
-      ? (double.tryParse(_stringSetting('min_add_money', defaultValue: '')) ?? configuredTopUpAmount)
-      : 0.0;
+  double get minAddMoney => statusMinAddMoney ? configuredTopUpAmount : 0.0;
 
   bool get statusMaxAddMoney => _boolSetting('status_max_add_money', defaultValue: true);
   double get maxAddMoney => statusMaxAddMoney
