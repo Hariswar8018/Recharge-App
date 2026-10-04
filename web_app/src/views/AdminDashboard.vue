@@ -412,7 +412,7 @@
           :bannerSuccess="bannerSuccess"
           @send-notification="handleSendNotification($event)"
           @delete-notification="handleDeleteNotification($event)"
-          @save-system-settings="saveSystemSettings"
+          @save-system-settings="handleSaveSystemSettings"
           @upload-banner="handleUploadBanner($event)"
           @cancel-banner="handleCancelBanner"
         />
@@ -1340,8 +1340,11 @@ export default {
           },
           body: JSON.stringify({ imageBase64 })
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to upload image banner');
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
+        if (!res.ok) {
+          throw new Error(data.error || data.message || `Server Error ${res.status}: ${res.statusText}`);
+        }
 
         this.systemSettings.home_popup_banner_url = data.home_popup_banner_url;
         this.systemSettings.home_popup_banner_id = data.home_popup_banner_id;
@@ -1349,10 +1352,12 @@ export default {
 
         this.bannerMsg = '🚀 Image Banner popup broadcasted successfully to all users!';
         this.bannerSuccess = true;
-        this.triggerSuccessToast('Banner Image Broadcasted Successfully!', 1500);
+        this.triggerSuccessToast('Banner Image Broadcasted Successfully!', 2000);
+        alert('🚀 Image Banner Popup broadcasted successfully to all users!');
       } catch (e) {
-        this.bannerMsg = e.message;
+        this.bannerMsg = e.message || 'Failed to upload image banner';
         this.bannerSuccess = false;
+        alert(`❌ Upload Failed: ${this.bannerMsg}`);
       } finally {
         this.uploadingBanner = false;
       }
@@ -1369,7 +1374,8 @@ export default {
             'Authorization': `Bearer ${token}`
           }
         });
-        const data = await res.json();
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
         if (!res.ok) throw new Error(data.error || 'Failed to cancel banner announcement');
 
         this.systemSettings.home_popup_banner_url = '';
@@ -1377,10 +1383,12 @@ export default {
 
         this.bannerMsg = 'Banner announcement cancelled successfully.';
         this.bannerSuccess = true;
-        this.triggerSuccessToast('Banner Announcement Cancelled', 1500);
+        this.triggerSuccessToast('Banner Announcement Cancelled', 2000);
+        alert('❌ Banner announcement cancelled and removed successfully.');
       } catch (e) {
         this.bannerMsg = e.message;
         this.bannerSuccess = false;
+        alert(`❌ Error: ${e.message}`);
       } finally {
         this.uploadingBanner = false;
       }
@@ -1398,14 +1406,18 @@ export default {
           },
           body: JSON.stringify(this.systemSettings)
         });
-        if (!res.ok) throw new Error('Failed to update system settings');
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
+        if (!res.ok) throw new Error(data.error || 'Failed to update system settings');
 
         this.saveSettingsMsg = 'All system settings saved successfully!';
         this.saveSettingsSuccess = true;
-        this.triggerSuccessToast('All System Settings Saved Successfully!', 1500);
+        this.triggerSuccessToast('All System Settings Saved Successfully!', 2000);
+        alert('💾 System Settings & Marquee Announcement Saved Successfully!');
       } catch (e) {
         this.saveSettingsMsg = e.message;
         this.saveSettingsSuccess = false;
+        alert(`❌ Failed to Save: ${e.message}`);
       } finally {
         this.savingSettings = false;
       }
