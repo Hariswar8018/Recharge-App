@@ -110,6 +110,27 @@
           </div>
         </div>
 
+        <!-- DANGER ZONE: SYSTEM DATABASE RESET -->
+        <div style="margin-top: 2rem; border-top: 1px solid #fee2e2; padding-top: 1.5rem; background: #fff5f5; padding: 1.25rem; border-radius: 10px; border: 1px solid #fca5a5;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #991b1b; display: flex; align-items: center; gap: 6px;">
+                <span>⚠️ Danger Zone — System Database Reset</span>
+              </h4>
+              <p style="margin: 4px 0 0; font-size: 0.8rem; color: #7f1d1d; line-height: 1.4;">
+                Clears all notifications, transactions, withdrawals, fund requests, single-leg cycles, and deletes all user accounts except the top-level user.
+              </p>
+            </div>
+            <button 
+              type="button" 
+              @click="$emit('reset-system-data')" 
+              style="background: #dc2626; color: white; border: none; padding: 0.65rem 1.4rem; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.85rem;"
+            >
+              ⚠️ Reset Database Data Now
+            </button>
+          </div>
+        </div>
+
         <div v-if="saveSettingsMsg" :style="{ color: saveSettingsSuccess ? '#16a34a' : '#ef4444', fontSize: '0.88rem', marginTop: '1.25rem', fontWeight: 'bold' }">
           {{ saveSettingsMsg }}
         </div>

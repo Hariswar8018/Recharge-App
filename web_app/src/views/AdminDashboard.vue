@@ -442,6 +442,7 @@
           @qr-file-change="onQrFileSelected($event)"
           @upload-qr="handleQrUpload"
           @save-system-settings="handleSaveSystemSettings"
+          @reset-system-data="handleResetSystemData"
         />
 
         <!-- MODAL 1: ADD / DEDUCT FUNDS MODAL -->
@@ -1420,6 +1421,29 @@ export default {
         alert(`❌ Failed to Save: ${e.message}`);
       } finally {
         this.savingSettings = false;
+      }
+    },
+    async handleResetSystemData() {
+      if (!confirm('⚠️ WARNING: This will permanently DELETE all notifications, transactions, withdrawals, fund requests, single leg cycles, and all user accounts except the primary top-level user.\n\nAre you sure you want to proceed with database reset?')) {
+        return;
+      }
+      try {
+        const token = localStorage.getItem('adminToken') || '';
+        const res = await fetch(`${API_BASE_URL}/api/admin/reset-system-data`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to reset system data');
+
+        alert('✅ System database data reset successfully! All notifications, transactions, withdrawals, fund requests, cycles, and non-top users have been cleared.');
+        this.fetchDashboardStats();
+        this.fetchUsers();
+        this.fetchNotifications();
+      } catch (e) {
+        alert(`❌ Error resetting system data: ${e.message}`);
       }
     },
     triggerSuccessToast(msg, duration = 1500) {
