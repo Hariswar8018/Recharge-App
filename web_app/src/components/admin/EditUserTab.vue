@@ -92,10 +92,10 @@
               <span style="font-size: 0.73rem; color: #64748b; margin-top: 2px;">Must be unique 10 chars starting with SRM (e.g. SRM1234567). Auto-generated if blank.</span>
             </div>
 
-            <!-- Sponsor ID (Editable) -->
+            <!-- Sponsor Mobile Number (Editable) -->
             <div class="form-group" style="display: flex; flex-direction: column; gap: 0.35rem;">
-              <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Parent Sponsor ID / Mobile</label>
-              <input type="text" v-model="editUserObj.sponsor_id" placeholder="Enter Parent Sponsor Mobile or ID" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
+              <label style="font-size: 0.85rem; font-weight: 700; color: #334155;">Parent Sponsor Mobile Number</label>
+              <input type="text" v-model="editUserObj.sponsor_id" placeholder="Enter Parent Sponsor 10-digit Mobile Number" class="input-styled" style="padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; outline: none; box-sizing: border-box; width: 100%;" />
             </div>
 
             <!-- Date of Joining (Editable) -->
@@ -229,7 +229,7 @@
               <div class="s-row" style="display: flex; justify-content: space-between;"><span>Email:</span><strong style="word-break: break-all;">{{ editUserObj.email || 'N/A' }}</strong></div>
               <div class="s-row" style="display: flex; justify-content: space-between;"><span>Status:</span><strong style="color: #16a34a;">{{ editUserObj.status || 'Active' }}</strong></div>
               <div class="s-row" style="display: flex; justify-content: space-between;"><span>Joining Date:</span><strong>{{ editUserObj.createdAt ? String(editUserObj.createdAt).substring(0,10) : 'N/A' }}</strong></div>
-              <div class="s-row" style="display: flex; justify-content: space-between;"><span>Sponsor ID:</span><strong>{{ editUserObj.sponsor_id || 'None' }}</strong></div>
+              <div class="s-row" style="display: flex; justify-content: space-between;"><span>Sponsor Mobile:</span><strong>{{ editUserObj.sponsor_mobile || editUserObj.sponsor_mobileNumber || (editUserObj.sponsor_id && String(editUserObj.sponsor_id).length >= 10 ? editUserObj.sponsor_id : (editUserObj.sponsor_name || editUserObj.sponsor_id || 'None')) }}</strong></div>
             </div>
           </div>
         </div>

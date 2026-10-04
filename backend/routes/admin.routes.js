@@ -887,6 +887,22 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
       }
     }
 
+    // Resolve Sponsor ID by Mobile Number, User Code, or ID
+    let finalSponsorId = existing[0].sponsor_id;
+    const inputSponsor = req.body.sponsor_id || req.body.sponsor_mobile || req.body.sponsor_mobileNumber;
+    if (inputSponsor !== undefined && inputSponsor !== null && String(inputSponsor).trim().length > 0) {
+      const authRoutes = require('./auth.routes');
+      const spUser = await authRoutes.findSponsorUser(inputSponsor);
+      if (spUser) {
+        finalSponsorId = spUser.id;
+      } else {
+        const parsedSponsorInt = parseInt(inputSponsor, 10);
+        if (!isNaN(parsedSponsorInt)) {
+          finalSponsorId = parsedSponsorInt;
+        }
+      }
+    }
+
     await query(
       `UPDATE users SET 
         fullName = ?, 
@@ -912,7 +928,7 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
         passwordHash,
         plainPassword,
         status || existing[0].status,
-        sponsor_id !== undefined && sponsor_id !== null ? sponsor_id : existing[0].sponsor_id,
+        finalSponsorId,
         finalUserCode,
         updatedCreatedAt,
         bank_name !== undefined ? bank_name : existing[0].bank_name,
@@ -925,8 +941,23 @@ router.put('/users/:userId', verifyAdminToken, async (req, res) => {
       ]
     );
 
+    let updatedSponsorMobile = 'None';
+    if (finalSponsorId) {
+      const spRows = await query('SELECT mobileNumber FROM users WHERE id = ?', [finalSponsorId]);
+      if (spRows && spRows.length > 0) updatedSponsorMobile = spRows[0].mobileNumber;
+    }
+
     const updated = await query('SELECT * FROM users WHERE id = ?', [userId]);
-    res.json({ message: 'User details updated successfully', user: updated[0] });
+    res.json({
+      message: 'User details updated successfully',
+      user: {
+        ...updated[0],
+        sponsor_mobile: updatedSponsorMobile,
+        sponsor_mobileNumber: updatedSponsorMobile
+      },
+      sponsor_mobile: updatedSponsorMobile,
+      sponsor_mobileNumber: updatedSponsorMobile
+    });
   } catch (err) {
     console.error('Error updating user details:', err);
     res.status(500).json({ error: 'Failed to update user details' });

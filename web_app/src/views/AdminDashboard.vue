@@ -927,8 +927,12 @@ export default {
         try { data = JSON.parse(text); } catch(e) { throw new Error(`Server response error (${res.status})`); }
         if (!res.ok) throw new Error(data.error || 'Failed to fetch user details');
         
+        const spMobile = data.sponsor_mobile || data.sponsor_mobileNumber || (data.sponsor_id && String(data.sponsor_id).length >= 10 ? String(data.sponsor_id) : '');
         this.editUserObj = {
           ...data,
+          sponsor_mobile: spMobile,
+          sponsor_mobileNumber: spMobile,
+          sponsor_id: spMobile || (data.sponsor_id ? String(data.sponsor_id) : ''),
           password: '',
           showPassword: false,
           bank_name: data.bank_name || '',
@@ -967,7 +971,9 @@ export default {
             mobileNumber: this.editUserObj.mobileNumber,
             password: this.editUserObj.password,
             status: this.editUserObj.status,
-            sponsor_id: this.editUserObj.sponsor_id,
+            sponsor_id: this.editUserObj.sponsor_id || this.editUserObj.sponsor_mobile,
+            sponsor_mobile: this.editUserObj.sponsor_mobile || this.editUserObj.sponsor_id,
+            user_code: this.editUserObj.user_code,
             createdAt: this.editUserObj.createdAt,
             bank_name: this.editUserObj.bank_name,
             account_holder: this.editUserObj.account_holder,
@@ -982,6 +988,13 @@ export default {
         try { data = JSON.parse(text); } catch(e) { throw new Error(`Server response error (${res.status})`); }
         if (!res.ok) throw new Error(data.error || 'Failed to update user details');
         
+        if (data.sponsor_mobile || data.user?.sponsor_mobile) {
+          const newSpMobile = data.sponsor_mobile || data.user?.sponsor_mobile;
+          this.editUserObj.sponsor_mobile = newSpMobile;
+          this.editUserObj.sponsor_mobileNumber = newSpMobile;
+          this.editUserObj.sponsor_id = newSpMobile;
+        }
+
         this.updateUserMsg = 'User details updated successfully!';
         this.updateUserSuccess = true;
         this.triggerSuccessToast('User Details Updated Successfully!', 1500);
