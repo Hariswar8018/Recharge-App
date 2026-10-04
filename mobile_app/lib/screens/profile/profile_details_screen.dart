@@ -71,9 +71,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           ? rawUserCode
           : "SRM${mobile.length >= 7 ? mobile.substring(mobile.length - 7) : '2411795'}";
 
-      final String sponsorDisplay = sponsorCode.isNotEmpty
-          ? sponsorCode
-          : ((sponsorMobile.isNotEmpty && sponsorMobile != "null") ? sponsorMobile : "None");
+      final String sponsorDisplay = (sponsorMobile.isNotEmpty && sponsorMobile != "null")
+          ? sponsorMobile
+          : (sponsorCode.isNotEmpty ? sponsorCode : (user['sponsor_id'] != null ? user['sponsor_id'].toString() : "None"));
 
       setState(() {
         _nameController.text = user['fullName'] ?? "Member";
@@ -198,8 +198,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                   _buildReadOnlyField("Mobile Number", _mobileController, Icons.phone_android),
                   _buildReadOnlyField("Email Address", _emailController, Icons.mail_outline),
                   _buildReadOnlyField("Member ID", _memberIdController, Icons.badge_outlined),
-                  _buildReadOnlyField("Sponser ID", _userSrmCodeController, Icons.qr_code_rounded),
-                 // _buildReadOnlyField("Sponsor ID", _sponsorIdController, Icons.people_outline),
+                  _buildReadOnlyField("User SRM Code", _userSrmCodeController, Icons.qr_code_rounded),
+                  _buildReadOnlyField("Sponser ID", _sponsorIdController, Icons.people_outline),
                   _buildReadOnlyField("Date of Joining", _dateJoiningController, Icons.calendar_today_outlined),
                   _buildReadOnlyField("Date of Activation", _dateActivationController, Icons.verified_outlined),
                 ],
