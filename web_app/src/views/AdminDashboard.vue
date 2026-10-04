@@ -541,6 +541,12 @@ import UserIncomeModal from '../components/admin/UserIncomeModal.vue';
 import UserProfileDrawer from '../components/admin/UserProfileDrawer.vue';
 
 const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:5000';
+    }
+  }
   return 'https://api.srdigitalseva.com';
 };
 const API_BASE_URL = getApiBaseUrl();
@@ -1442,9 +1448,16 @@ export default {
           },
           body: JSON.stringify({ reset_password: resetPass.trim() })
         });
+        const text = await res.text();
         let data = {};
-        try { data = await res.json(); } catch (_) {}
-        if (!res.ok) throw new Error(data.error || 'Failed to reset system data');
+        try {
+          data = JSON.parse(text);
+        } catch (_) {}
+
+        if (!res.ok) {
+          const errMsg = data.error || data.message || (text.includes('<!DOCTYPE') ? `Server endpoint returned HTML error (${res.status} ${res.statusText}). If deployed, please pull latest backend code to server.` : text);
+          throw new Error(errMsg);
+        }
 
         alert('✅ System database reset successfully! All notifications, transactions, withdrawals, fund requests, cycles, and non-top users have been cleared.');
         this.fetchDashboardStats();
