@@ -19,13 +19,29 @@ const routes = [
   },
   {
     path: '/admin-login',
-    alias: ['/admin-panel/login', '/admin/login', '/admin-panel', '/admin', '/admin/', '/admin-panel/'],
+    alias: [
+      '/admin-panel/login',
+      '/admin/login',
+      '/admin-panel',
+      '/admin',
+      '/admin/',
+      '/admin-panel/',
+      '/devansh/login',
+      '/devansh-login'
+    ],
     name: 'AdminLogin',
     component: AdminLogin
   },
   {
     path: '/admin-dashboard',
-    alias: ['/admin/dashboard', '/admin-panel/dashboard', '/admin-panel/settings'],
+    alias: [
+      '/devansh',
+      '/devansh/',
+      '/devansh/dashboard',
+      '/admin/dashboard',
+      '/admin-panel/dashboard',
+      '/admin-panel/settings'
+    ],
     name: 'AdminDashboard',
     component: AdminDashboard,
     meta: { requiresAdmin: true }
@@ -87,7 +103,11 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isAdminToken = localStorage.getItem('adminToken')
   if (to.matched.some(record => record.meta.requiresAdmin) && !isAdminToken) {
-    next('/admin-login')
+    if (to.path.startsWith('/devansh')) {
+      next('/devansh/login')
+    } else {
+      next('/admin-login')
+    }
   } else {
     next()
   }
