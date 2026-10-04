@@ -217,7 +217,7 @@ async function findSponsorUser(sponsorInput) {
     ).catch(() => {});
 
     await query(
-      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 10000.00, 10000.00, "ACTIVE", "user")',
+      'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "ACTIVE", "user")',
       ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
     ).catch(() => {});
 
