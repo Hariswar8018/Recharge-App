@@ -1176,26 +1176,44 @@ router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync('Rajesh@1819', salt);
 
-    const existingTop = await query('SELECT * FROM users WHERE email = "srdigitalseva9@gmail.com" OR mobileNumber = "9988494936" ORDER BY id ASC LIMIT 1');
-    let topUserId;
-
-    if (existingTop && existingTop.length > 0) {
-      topUserId = existingTop[0].id;
+    // 1. Ensure Admin User (srdigitalseva9@gmail.com, role = "admin")
+    const existingAdmin = await query('SELECT * FROM users WHERE email = "srdigitalseva9@gmail.com"');
+    let adminUserId;
+    if (existingAdmin && existingAdmin.length > 0) {
+      adminUserId = existingAdmin[0].id;
       await query(
-        'UPDATE users SET fullName = "SR Admin", role = "user", status = "ACTIVE", main_wallet_balance = 0.00, fund_wallet_balance = 0.00, sponsor_id = NULL WHERE id = ?',
-        [topUserId]
+        'UPDATE users SET fullName = "SR Digital Seva Admin", mobileNumber = "9988494936", role = "admin", status = "ACTIVE" WHERE id = ?',
+        [adminUserId]
       );
     } else {
-      const result = await query(
-        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status, fund_wallet_balance, main_wallet_balance, sponsor_id) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "ACTIVE", "user", NULL)',
-        ['SR Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+      const res = await query(
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
+        ['SR Digital Seva Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
       );
-      topUserId = result.insertId || 1;
+      adminUserId = res.insertId || 1;
     }
 
-    await query('DELETE FROM users WHERE id != ?', [topUserId]);
+    // 2. Ensure Top-Level Master App User (master@srdigitalseva.com, role = "user")
+    const existingMaster = await query('SELECT * FROM users WHERE email = "master@srdigitalseva.com"');
+    let masterUserId;
+    if (existingMaster && existingMaster.length > 0) {
+      masterUserId = existingMaster[0].id;
+      await query(
+        'UPDATE users SET fullName = "SR Digital Seva Master", mobileNumber = "9988494936", role = "user", status = "ACTIVE", main_wallet_balance = 0.00, fund_wallet_balance = 0.00, sponsor_id = NULL WHERE id = ?',
+        [masterUserId]
+      );
+    } else {
+      const res = await query(
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status, fund_wallet_balance, main_wallet_balance, sponsor_id) VALUES (?, ?, ?, ?, ?, "user", "ACTIVE", 0.00, 0.00, NULL)',
+        ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+      );
+      masterUserId = res.insertId;
+    }
 
-    res.json({ message: 'System database data reset successfully. Top-level user SR Admin preserved.' });
+    // 3. Delete all other users except adminUserId and masterUserId
+    await query('DELETE FROM users WHERE id NOT IN (?, ?)', [adminUserId, masterUserId]);
+
+    res.json({ message: 'System database data reset successfully. Top-level user SR Digital Seva Master preserved.' });
   } catch (err) {
     console.error('Error resetting system data:', err);
     res.status(500).json({ error: err.message || 'Failed to reset system data' });
