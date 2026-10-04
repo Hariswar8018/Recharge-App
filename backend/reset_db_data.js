@@ -57,7 +57,7 @@ async function resetSystemData() {
       console.log(`✓ Preserved & updated top-level user #${topUserId}: SR Admin (9988494936)`);
     } else {
       const res = await query(
-        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status, fund_wallet_balance, main_wallet_balance, sponsor_id) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "ACTIVE", "user", NULL)',
+        'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status, fund_wallet_balance, main_wallet_balance, sponsor_id) VALUES (?, ?, ?, ?, ?, "user", "ACTIVE", 0.00, 0.00, NULL)',
         ['SR Admin', 'srdigitalseva9@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
       );
       topUserId = res.insertId || 1;
