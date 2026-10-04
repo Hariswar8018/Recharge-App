@@ -1152,9 +1152,20 @@ router.post('/cancel-banner', verifyAdminToken, async (req, res) => {
   }
 });
 
-// POST Reset System Data (Clears notifications, transactions, withdrawals, fund requests, cycles, queues, & all users except top-level user)
+// POST Reset System Data (Requires 16-digit password matching process.env.SYSTEM_RESET_PASSWORD)
 router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
   try {
+    const { reset_password } = req.body;
+    const expectedPassword = (process.env.SYSTEM_RESET_PASSWORD || '').trim();
+
+    if (!expectedPassword || expectedPassword.length !== 16) {
+      return res.status(500).json({ error: 'SYSTEM_RESET_PASSWORD is not configured as a 16-digit key in environment (.env)' });
+    }
+
+    if (!reset_password || String(reset_password).trim() !== expectedPassword) {
+      return res.status(403).json({ error: 'Invalid 16-digit System Reset Password. Reset operation aborted.' });
+    }
+
     await query('DELETE FROM notifications');
     await query('DELETE FROM transactions');
     await query('DELETE FROM withdrawals');
@@ -1172,7 +1183,7 @@ router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
     res.json({ message: 'System database data reset successfully' });
   } catch (err) {
     console.error('Error resetting system data:', err);
-    res.status(500).json({ error: 'Failed to reset system data' });
+    res.status(500).json({ error: err.message || 'Failed to reset system data' });
   }
 });
 

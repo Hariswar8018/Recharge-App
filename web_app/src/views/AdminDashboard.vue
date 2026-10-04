@@ -1424,26 +1424,34 @@ export default {
       }
     },
     async handleResetSystemData() {
-      if (!confirm('⚠️ WARNING: This will permanently DELETE all notifications, transactions, withdrawals, fund requests, single leg cycles, and all user accounts except the primary top-level user.\n\nAre you sure you want to proceed with database reset?')) {
+      const resetPass = prompt(
+        '⚠️ DANGER ZONE SYSTEM RESET\n\nThis operation will permanently DELETE all notifications, transactions, withdrawals, fund requests, single leg cycles, and all user accounts except the primary top-level user.\n\nPlease enter the 16-digit System Reset Password (from .env) to confirm:'
+      );
+
+      if (!resetPass) {
         return;
       }
+
       try {
         const token = localStorage.getItem('adminToken') || '';
         const res = await fetch(`${API_BASE_URL}/api/admin/reset-system-data`, {
           method: 'POST',
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-          }
+          },
+          body: JSON.stringify({ reset_password: resetPass.trim() })
         });
-        const data = await res.json();
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
         if (!res.ok) throw new Error(data.error || 'Failed to reset system data');
 
-        alert('✅ System database data reset successfully! All notifications, transactions, withdrawals, fund requests, cycles, and non-top users have been cleared.');
+        alert('✅ System database reset successfully! All notifications, transactions, withdrawals, fund requests, cycles, and non-top users have been cleared.');
         this.fetchDashboardStats();
         this.fetchUsers();
         this.fetchNotifications();
       } catch (e) {
-        alert(`❌ Error resetting system data: ${e.message}`);
+        alert(`❌ Reset Operation Aborted: ${e.message}`);
       }
     },
     triggerSuccessToast(msg, duration = 1500) {

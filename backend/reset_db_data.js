@@ -1,7 +1,22 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '.env') });
 const { query } = require('./db');
 
 async function resetSystemData() {
   console.log('--- Starting Database Data Reset ---');
+
+  const passedPassword = (process.argv[2] || process.env.RESET_PASS || '').trim();
+  const expectedPassword = (process.env.SYSTEM_RESET_PASSWORD || '').trim();
+
+  if (!expectedPassword || expectedPassword.length !== 16) {
+    console.error('❌ ERROR: SYSTEM_RESET_PASSWORD is not configured as a 16-digit key in .env');
+    process.exit(1);
+  }
+
+  if (passedPassword !== expectedPassword) {
+    console.error('❌ ERROR: Invalid 16-digit System Reset Password provided. Reset operation aborted.');
+    console.log('Usage: node reset_db_data.js <16-digit-password>');
+    process.exit(1);
+  }
 
   try {
     // 1. Delete all notifications
