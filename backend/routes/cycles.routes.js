@@ -23,15 +23,22 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
 
     const { mobile } = req.body;
     let targetUser = user;
-    if (mobile) {
-      const targetRows = await query('SELECT * FROM users WHERE mobileNumber = ? OR id = ?', [mobile.toString().trim(), mobile.toString().trim()]);
-      if (targetRows.length > 0) {
-        targetUser = targetRows[0];
+    if (mobile && mobile.toString().trim()) {
+      const cleanTarget = mobile.toString().trim();
+      const digitsOnly = cleanTarget.replace(/\D/g, '');
+      const last10 = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
+      const targetRows = await query(
+        'SELECT * FROM users WHERE mobileNumber = ? OR mobileNumber = ? OR user_code = ? OR id = ? LIMIT 1',
+        [last10, cleanTarget, cleanTarget, isNaN(parseInt(cleanTarget, 10)) ? -1 : parseInt(cleanTarget, 10)]
+      );
+      if (!targetRows || targetRows.length === 0) {
+        return res.status(404).json({ error: `Member ID / Mobile number '${cleanTarget}' not found in registered users.` });
       }
+      targetUser = targetRows[0];
     }
 
     if (targetUser.status === 'ACTIVE') {
-      return res.status(400).json({ error: 'This user ID is already activated. Subscription is active.' });
+      return res.status(400).json({ error: `User ID / Mobile ${targetUser.mobileNumber} is already activated. Subscription is active.` });
     }
 
     if (parseFloat(user.fund_wallet_balance || 0) < joinAmount) {
@@ -55,11 +62,11 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
         [user.id, `-₹${joinAmount.toFixed(2)}`, dateStr]
       );
 
-      // 2. Credit Direct Sponsor Income to targetUser's sponsor
+      // 2. Credit Direct Sponsor Income (₹300) to targetUser's sponsor
       const sponsorIdToCredit = targetUser.sponsor_id || user.sponsor_id;
       if (sponsorIdToCredit) {
-        // Resolve numeric sponsor ID if stored as mobile
-        const spRows = await conn.execute('SELECT id FROM users WHERE id = ? OR mobileNumber = ?', [sponsorIdToCredit, sponsorIdToCredit]);
+        // Resolve sponsor by numeric ID or mobile number
+        const spRows = await conn.execute('SELECT id, mobileNumber FROM users WHERE id = ? OR mobileNumber = ?', [sponsorIdToCredit, sponsorIdToCredit]);
         const actualSponsorId = (spRows[0] && spRows[0].length > 0) ? spRows[0][0].id : sponsorIdToCredit;
 
         await conn.execute(
@@ -72,9 +79,18 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
         );
       }
 
-      // 3. Create cycle ID for targetUser
+      // 3. Record Company Maintenance Fee (₹300) per ₹1,200 join
+      const companyMaintenanceFee = parseFloat(settings['company_maintenance'] || '300');
+      try {
+        await conn.execute(
+          'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (0, "COMPANY", ?, "Company Maintenance", ?, "Success")',
+          [`+₹${companyMaintenanceFee.toFixed(2)}`, dateStr]
+        );
+      } catch (_) {}
+
+      // 4. Create cycle ID for targetUser
       const [existingCycles] = await conn.execute('SELECT COUNT(id) as count FROM cycles WHERE user_id = ?', [targetUser.id]);
-      const nextCycleNum = (existingCycles[0].count || 0) + 1;
+      const nextCycleNum = (existingCycles[0] && existingCycles[0].count ? existingCycles[0].count : 0) + 1;
       const cycleIdStr = `CYCLE-${String(nextCycleNum).padStart(4, '0')}`;
 
       const [cycleResult] = await conn.execute(
@@ -83,13 +99,20 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
       );
       const newCycleDbId = cycleResult.insertId;
 
-      // 4. Place targetUser cycle in Single Leg Queue
+      // 5. Place targetUser cycle in Single Leg Queue
       await conn.execute(
         'INSERT INTO single_leg_queue (cycle_id, user_id) VALUES (?, ?)',
         [newCycleDbId, targetUser.id]
       );
 
-      // 5. Increment counts & distribute 6-Level Single Leg Pool Income to preceding active cycles
+      // 6. 126-Member Single Leg 6-Level Business Plan distribution
+      // Cumulative thresholds:
+      // Level 5 (2 members)   -> ₹200
+      // Level 4 (6 members)   -> ₹400  (Cumulative: ₹600)
+      // Level 3 (14 members)  -> ₹800  (Cumulative: ₹1,400)
+      // Level 2 (30 members)  -> ₹1,600 (Cumulative: ₹3,000)
+      // Level 1 (62 members)  -> ₹3,200 (Cumulative: ₹6,200)
+      // Top User (126 members)-> ₹6,400 (Cumulative: ₹12,600)
       const [activeCycles] = await conn.execute(
         `SELECT c.id, c.user_id, c.members_count 
          FROM cycles c
@@ -99,19 +122,12 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
         [newCycleDbId]
       );
 
-      const l1 = parseInt(settings['level_1_members'] || '2');
-      const l2 = parseInt(settings['level_2_members'] || '4');
-      const l3 = parseInt(settings['level_3_members'] || '8');
-      const l4 = parseInt(settings['level_4_members'] || '16');
-      const l5 = parseInt(settings['level_5_members'] || '32');
-      const l6 = parseInt(settings['level_6_members'] || '64');
-
-      const c1 = l1;                   // 2
-      const c2 = c1 + l2;              // 6
-      const c3 = c2 + l3;              // 14
-      const c4 = c3 + l4;              // 30
-      const c5 = c4 + l5;              // 62
-      const c6 = c5 + l6;              // 126
+      const c1 = 2;    // Level 5: 2 members
+      const c2 = 6;    // Level 4: 2 + 4 = 6 members
+      const c3 = 14;   // Level 3: 6 + 8 = 14 members
+      const c4 = 30;   // Level 2: 14 + 16 = 30 members
+      const c5 = 62;   // Level 1: 30 + 32 = 62 members
+      const c6 = 126;  // Top User: 62 + 64 = 126 members
 
       for (const activeCycle of activeCycles) {
         const newMembersCount = activeCycle.members_count + 1;
@@ -124,23 +140,23 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
         let levelLabel = '';
 
         if (newMembersCount === c1) {
-          payout = parseFloat(settings['level_1_income'] || '300');
-          levelLabel = 'Single Leg Level 1 Income';
+          payout = 200.00;
+          levelLabel = 'Single Leg Level 5 Income (2 Members)';
         } else if (newMembersCount === c2) {
-          payout = parseFloat(settings['level_2_income'] || '400');
-          levelLabel = 'Single Leg Level 2 Income';
+          payout = 400.00;
+          levelLabel = 'Single Leg Level 4 Income (6 Members)';
         } else if (newMembersCount === c3) {
-          payout = parseFloat(settings['level_3_income'] || '800');
-          levelLabel = 'Single Leg Level 3 Income';
+          payout = 800.00;
+          levelLabel = 'Single Leg Level 3 Income (14 Members)';
         } else if (newMembersCount === c4) {
-          payout = parseFloat(settings['level_4_income'] || '1600');
-          levelLabel = 'Single Leg Level 4 Income';
+          payout = 1600.00;
+          levelLabel = 'Single Leg Level 2 Income (30 Members)';
         } else if (newMembersCount === c5) {
-          payout = parseFloat(settings['level_5_income'] || '3200');
-          levelLabel = 'Single Leg Level 5 Income';
+          payout = 3200.00;
+          levelLabel = 'Single Leg Level 1 Income (62 Members)';
         } else if (newMembersCount === c6) {
-          payout = parseFloat(settings['level_6_income'] || '6400');
-          levelLabel = 'Single Leg Level 6 Income';
+          payout = 6400.00;
+          levelLabel = 'Single Leg Top User Income (126 Members Complete)';
         }
 
         if (payout > 0) {
@@ -159,22 +175,32 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
             'UPDATE cycles SET status = "COMPLETED" WHERE id = ?',
             [activeCycle.id]
           );
+
+          // Record Company Level Pool Surplus (₹11,400) upon complete 126-member cycle
+          try {
+            await conn.execute(
+              'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (0, "COMPANY", "+₹11400.00", "Company Level Pool Surplus", ?, "Success")',
+              [dateStr]
+            );
+          } catch (_) {}
         }
       }
 
       return { cycleId: cycleIdStr };
     });
 
+    await invalidateCache(`user_profile_${user.id}`);
     await invalidateCache(`user_profile_${targetUser.id}`);
     await invalidateCache('admin_stats');
 
-    sendNotificationEmail(targetUser.email, "EarnFarm ID Activated - 6 Level Single-Leg Cycle Started!", `
+    sendNotificationEmail(targetUser.email, "SR Digital Seva - Account Activated!", `
       <h3>Hi ${targetUser.fullName},</h3>
       <p>We have successfully processed your plan payment of <strong>₹${joinAmount.toFixed(2)}</strong>.</p>
-      <p>Your subscription is active and your cycle ID <strong>${result.cycleId}</strong> has been placed in the single-leg monoline queue.</p>
+      <p>Your subscription is active and your cycle ID <strong>${result.cycleId}</strong> has been placed in the single-leg business plan.</p>
+      <p>Your Member ID is your registered Mobile Number: <strong>${targetUser.mobileNumber}</strong></p>
     `);
 
-    res.status(201).json({ message: 'Cycle activated successfully!', cycleId: result.cycleId });
+    res.status(201).json({ message: `ID ${targetUser.mobileNumber} activated successfully!`, cycleId: result.cycleId, memberId: targetUser.mobileNumber });
   } catch (err) {
     console.error('Cycle activation error:', err);
     res.status(500).json({ error: 'Failed to activate cycle: ' + (err.message || '') });

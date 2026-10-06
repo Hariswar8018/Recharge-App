@@ -47,8 +47,16 @@
                     <td style="padding: 8px 12px; color: #334155; font-weight: 600;">{{ d.mobileNumber }}</td>
                     <td style="padding: 8px 12px; color: #64748b;">{{ d.createdAt ? String(d.createdAt).substring(0,10) : 'N/A' }}</td>
                     <td style="padding: 8px 12px; text-align: right;">
-                      <span style="background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 12px; font-weight: 800; font-size: 0.75rem;">
-                        {{ (d.status || 'ACTIVE').toUpperCase() }}
+                      <span :style="{
+                        background: (d.status || '').toUpperCase() === 'ACTIVE' ? '#dcfce7' : '#fef3c7',
+                        color: (d.status || '').toUpperCase() === 'ACTIVE' ? '#15803d' : '#b45309',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontWeight: '800',
+                        fontSize: '0.75rem',
+                        border: (d.status || '').toUpperCase() === 'ACTIVE' ? '1px solid #86efac' : '1px solid #fde68a'
+                      }">
+                        {{ (d.status || 'PENDING').toUpperCase() === 'ACTIVE' ? '🟢 ACTIVE' : '🟡 PENDING' }}
                       </span>
                     </td>
                   </tr>

@@ -14,7 +14,17 @@
             <div style="font-weight: 800; color: #0f172a;">{{ user.fullName || 'User #' + user.id }}</div>
             <div style="font-size: 0.8rem; color: #64748b;">Mobile: {{ user.mobileNumber || 'N/A' }} | ID: #{{ user.id }}</div>
           </div>
-          <span class="badge-status-active">Active</span>
+          <span :style="{
+            background: (user.status || '').toUpperCase() === 'ACTIVE' ? '#dcfce7' : '#fef3c7',
+            color: (user.status || '').toUpperCase() === 'ACTIVE' ? '#15803d' : '#b45309',
+            padding: '2px 8px',
+            borderRadius: '12px',
+            fontWeight: '800',
+            fontSize: '0.75rem',
+            border: (user.status || '').toUpperCase() === 'ACTIVE' ? '1px solid #86efac' : '1px solid #fde68a'
+          }">
+            {{ (user.status || 'PENDING').toUpperCase() === 'ACTIVE' ? '🟢 Active' : '🟡 Pending' }}
+          </span>
         </div>
 
         <div class="form-group" style="margin-bottom: 1rem;">

@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _fullName = "Rajesh Reddy";
   double _mainWalletBalance = 0.00;
   double _fundWalletBalance = 0.00;
-  String _status = "ACTIVE";
+  String _status = "PENDING";
   bool _isLoading = true;
   int _membersCount = 0;
   String _activeCycleId = "";
@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         _fundWalletBalance = parseDouble(user['fund_wallet_balance']) ?? 0.00;
-        _status = user['status'] ?? "ACTIVE";
+        _status = (user['status'] ?? "PENDING").toString().toUpperCase();
         _cyclesHistory = cycles;
         _teamMembers = team;
         _transactions = txns;
@@ -487,14 +487,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            Icons.verified,
-                            color: Colors.greenAccent,
+                          Icon(
+                            _status == "ACTIVE" ? Icons.verified : Icons.hourglass_top,
+                            color: _status == "ACTIVE" ? Colors.greenAccent : Colors.amberAccent,
                             size: 14,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            "Status: $_status",
+                            _status == "ACTIVE" ? "Status: ACTIVE" : "Status: PENDING",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,
@@ -886,7 +886,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSubscriptionActivationView() {
-    String formattedId = "SRD${_userId.toString().padLeft(8, '0')}";
+    String formattedId = _mobileNumber.isNotEmpty ? _mobileNumber : (_userId > 0 ? _userId.toString() : "");
     final String rawJoin = (_visibilitySettings['join_amount'] ?? _visibilitySettings['top_up_amount'] ?? '1200').toString().trim();
     final double joinAmount = double.tryParse(rawJoin) ?? 1200.0;
 
@@ -1020,7 +1020,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
 
           // 2. Enter ID to Activate
-          _buildStepHeader("2. Enter ID to Activate", Icons.person_outline),
+          _buildStepHeader("2. Mobile Number (Member ID) to Activate", Icons.phone_android),
           TextFormField(
             initialValue: formattedId,
             readOnly: true,
@@ -1053,7 +1053,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               children: [
-                _buildDetailRow("ID", formattedId),
+                _buildDetailRow("Member ID (Mobile)", formattedId),
                 _buildDetailRow("Name", _fullName),
                 _buildDetailRow("Mobile Number", _mobileNumber),
                 _buildDetailRow("Email", _email),

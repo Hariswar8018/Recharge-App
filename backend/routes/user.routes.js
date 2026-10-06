@@ -53,6 +53,9 @@ router.get('/profile', verifyAppToken, verifyUserToken, async (req, res) => {
     }
 
     const user = users[0];
+    user.memberId = user.mobileNumber;
+    user.user_code = user.user_code || user.mobileNumber;
+    user.sponsor_mobileNumber = user.sponsor_mobileNumber || 'N/A';
     await setCache(cacheKey, user, 5);
     res.json(user);
   } catch (err) {
@@ -181,31 +184,31 @@ router.get('/transactions', verifyAppToken, verifyUserToken, async (req, res) =>
 
 // Lookup User by ID or Mobile Number (for sponsor confirmation or ID subscription check)
 router.get('/by-id/:id', verifyAppToken, async (req, res) => {
-  let targetId = req.params.id.toString().trim().toUpperCase();
-  if (targetId.startsWith('EARNFARMX7AQ96SD')) {
-    targetId = targetId.replace('EARNFARMX7AQ96SD', '');
-  } else if (targetId.startsWith('EARNFARM')) {
-    targetId = targetId.replace('EARNFARM', '');
-  } else if (targetId.startsWith('EARNKARO97US77')) {
-    targetId = targetId.replace('EARNKARO97US77', '');
-  } else if (targetId.startsWith('SRM')) {
-    targetId = targetId.replace('SRM', '');
-  } else if (targetId.startsWith('SRSPO')) {
-    targetId = targetId.replace('SRSPO', '');
+  const raw = (req.params.id || '').toString().trim();
+  if (!raw) {
+    return res.status(400).json({ error: 'User ID or mobile number is required' });
   }
-  // Remove leading zeros for numeric ID comparison
-  const numericId = parseInt(targetId, 10);
+
+  const digitsOnly = raw.replace(/\D/g, '');
+  const last10 = digitsOnly.length >= 10 ? digitsOnly.slice(-10) : digitsOnly;
+  const numericId = parseInt(raw.replace(/^SR[MD]0*/i, ''), 10);
 
   try {
     const users = await query(
-      'SELECT id, fullName, email, mobileNumber, status, main_wallet_balance, createdAt FROM users WHERE id = ? OR mobileNumber = ?',
-      [isNaN(numericId) ? targetId : numericId, targetId]
+      `SELECT id, fullName, email, mobileNumber, user_code, status, main_wallet_balance, fund_wallet_balance, createdAt 
+       FROM users 
+       WHERE mobileNumber = ? OR mobileNumber = ? OR mobileNumber LIKE ? OR id = ? OR user_code = ?
+       LIMIT 1`,
+      [last10, raw, `%${last10}`, isNaN(numericId) ? -1 : numericId, raw]
     );
-    if (users.length === 0) {
+    if (!users || users.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json(users[0]);
+    const user = users[0];
+    user.memberId = user.mobileNumber;
+    res.json(user);
   } catch (err) {
+    console.error('Failed to lookup user:', err);
     res.status(500).json({ error: 'Failed to lookup user' });
   }
 });

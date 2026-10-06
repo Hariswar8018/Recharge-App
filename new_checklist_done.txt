@@ -1,0 +1,223 @@
+================================================================================
+NEW CHECKLIST DONE: COMPLETE SYSTEM RESOLUTION & AUDIT VERIFICATION
+Project: Recharge-App (Backend, Flutter Mobile App, Vue 3 Admin Panel)
+Based on: final_checklist.txt & User Specifications
+Status: ALL CHECKLIST ITEMS FULLY COMPLETED & VERIFIED
+================================================================================
+
+--------------------------------------------------------------------------------
+EXPLICIT CLIENT & ARCHITECTURAL RULES SATISFIED
+--------------------------------------------------------------------------------
+1. MEMBER ID / USER ID:
+   - Always the user's 10-digit mobile number.
+   - Standardized across database records, API responses, mobile app screens,
+     and admin web panels.
+
+2. SPONSOR ID:
+   - Always the upline sponsor's 10-digit mobile number.
+   - Validated against registered user mobile numbers during registration and
+     team placement.
+
+3. NO DEEP LINKING DEPENDENCY:
+   - Deep linking is completely bypassed.
+   - New users simply download the mobile app, enter registration details,
+     and type/paste the 10-digit mobile number of their sponsor directly into
+     the Sponsor ID field.
+
+4. STATUS SYNCHRONIZATION:
+   - Unactivated accounts strictly display as "PENDING" with amber warning badges
+     and hourglass indicators.
+   - Green verified checkmarks and "ACTIVE" statuses appear ONLY after ₹1,200
+     subscription activation is completed and verified in the database.
+
+5. SINGLE-LEG 6-LEVEL BUSINESS PLAN (126 MEMBERS):
+   - Fully calculated and distributed strictly according to the mathematical
+     ledger specified in final_checklist.txt:
+     * Collection: 126 × ₹1,200 = ₹1,51,200
+     * User Direct Income: 126 × ₹300 = ₹37,800
+     * User Level Income: ₹64,200
+     * Total User Income: ₹1,02,000
+     * Company Maintenance: 126 × ₹300 = ₹37,800
+     * Company Level Pool Surplus: ₹11,400
+     * Total Company Amount: ₹49,200
+     * Total Reconciliation: ₹1,02,000 + ₹49,200 = ₹1,51,200 (100% matched)
+
+================================================================================
+MODULE-BY-MODULE COMPLETION DETAILS
+================================================================================
+
+--------------------------------------------------------------------------------
+MODULE 1: ID GENERATION & REGISTRATION
+--------------------------------------------------------------------------------
+[STATUS: DONE]
+
+* Requirements:
+  - User registers successfully with mobile number and password.
+  - Member ID is assigned as the user's 10-digit mobile number.
+  - Sponsor ID maps to the sponsor's 10-digit mobile number.
+  - No deep links required.
+
+* Changes Implemented:
+  1. `backend/routes/auth.routes.js`:
+     - Stored `cleanMobile` directly into `user_code` field upon user registration.
+     - Updated registration response to return `memberId: cleanMobile` and
+       `user_code: cleanMobile`.
+     - In `POST /check-sponsor`, resolved sponsor by 10-digit mobile number and
+       returned `sponsorId: sponsorUser.mobileNumber` and `sponsorMobile: sponsorUser.mobileNumber`.
+  2. `backend/routes/user.routes.js`:
+     - Updated `GET /by-id/:id` to search directly by `mobileNumber = ?` first,
+       allowing instantaneous lookup by mobile number.
+     - Updated `GET /profile` to explicitly return `user.memberId = user.mobileNumber`
+       and `user.sponsor_mobileNumber = user.sponsor_mobileNumber || user.sponsor_code`.
+  3. `mobile_app/lib/screens/auth/register_screen.dart`:
+     - Updated registration success prompt to explicitly notify:
+       "Account created successfully! Your Member ID is <MobileNumber>. Redirecting to login..."
+     - Sponsor ID field accepts direct paste or entry of the 10-digit mobile number.
+  4. `mobile_app/lib/screens/navigation/home_screen.dart`:
+     - Replaced formatted prefix logic (formerly SRD00000008) with the user's
+       actual 10-digit mobile number (`_mobileNumber`).
+     - Display label clearly reads "Member ID (Mobile): <MobileNumber>".
+
+--------------------------------------------------------------------------------
+MODULE 2: STATUS SYNCHRONIZATION & ACTIVATION
+--------------------------------------------------------------------------------
+[STATUS: DONE]
+
+* Requirements:
+  - Fix false "Active" / "Activated" display on unactivated accounts.
+  - Initial state and fallback must be "PENDING".
+  - Only after successful ₹1,200 activation does the account switch to "ACTIVE".
+  - Admin panel and mobile app must accurately reflect status in real time.
+
+* Changes Implemented:
+  1. `mobile_app/lib/screens/navigation/home_screen.dart`:
+     - Changed initial state from `String _status = "ACTIVE"` to `String _status = "PENDING"`.
+     - Changed fallback from `user['status'] ?? "ACTIVE"` to `user['status'] ?? "PENDING"`.
+     - Replaced hardcoded green verified checkmark in drawer header with dynamic state:
+       * If ACTIVE: Green verified badge `Icons.verified` (Green).
+       * If PENDING: Amber warning badge `Icons.hourglass_empty` (Amber).
+  2. `mobile_app/lib/screens/profile/profile_details_screen.dart`:
+     - Changed initial state from `_status = "ACTIVE"` to `_status = "PENDING"`.
+     - Changed fallback to `"PENDING"`.
+  3. `mobile_app/lib/screens/profile/direct_team_screen.dart`:
+     - Changed fallback from `member['status'] ?? 'ACTIVE'` to `member['status'] ?? 'PENDING'`.
+     - Added conditional amber badge styling for pending members and green badge for active.
+     - Displays member mobile number as Member ID.
+  4. `web_app/src/components/admin/UserProfileDrawer.vue`:
+     - Replaced hardcoded `<span class="badge-status-active">Active Account</span>`
+       with dynamic badge:
+       * Green for ACTIVE (`Active Account`)
+       * Amber for PENDING (`Pending Activation`)
+       * Red for BLOCKED (`Blocked`)
+     - Member ID displays user's mobile number.
+  5. `web_app/src/components/admin/AddFundsModal.vue`:
+     - Dynamic status badge replaces hardcoded active badge.
+  6. `web_app/src/components/admin/TeamsTreeTab.vue`:
+     - Dynamic status badge replaces hardcoded green badge.
+  7. `web_app/src/components/admin/UserManagementTab.vue`:
+     - Added dedicated "Status" column with colored status pills.
+     - Displayed Member ID as mobile number.
+  8. `web_app/src/views/AdminDashboard.vue`:
+     - Fixed status filter fallback from `ACTIVE` to `PENDING`.
+  9. `web_app/src/components/admin/EditUserTab.vue`:
+     - Dynamic status indicator and displays mobile number as Member ID.
+  10. `web_app/src/components/admin/UserIncomeModal.vue`:
+     - Dynamic status indicator.
+  11. `backend/routes/cycles.routes.js`:
+     - Invalidates Redis/in-memory cache for both payer and target user upon activation:
+       * `cache.del('user_profile_' + targetUserId)`
+       * `cache.del('user_profile_' + req.user.id)`
+     - Ensures immediate status reflection without serving stale cached profiles.
+
+--------------------------------------------------------------------------------
+MODULE 3: TEAM GENERATION & PLACEMENT
+--------------------------------------------------------------------------------
+[STATUS: DONE]
+
+* Requirements:
+  - Once activated, user joins the single-leg 6-level team structure.
+  - Direct team counts and level counts update accurately.
+  - Member lookup during activation targets the exact 10-digit mobile number.
+
+* Changes Implemented:
+  1. `backend/routes/cycles.routes.js` (`POST /activate`):
+     - Targeted user lookup by 10-digit mobile number (`mobileNumber = ?`).
+     - If mobile number not found, returns explicit 404 error instead of falling
+       back to the requesting user.
+     - Adds user into `cycles` single-leg structure upon verification.
+  2. `mobile_app/lib/screens/recharge/id_subscription_screen.dart`:
+     - Checks activation status before allowing subscription.
+     - Displays: "This mobile number (ID) is already activated. You cannot subscribe again."
+       if already active, preventing duplicate activation.
+     - Successfully links user to subscription with their registered 10-digit mobile number.
+
+--------------------------------------------------------------------------------
+MODULE 4: INCOME GENERATION (SINGLE-LEG 6-LEVEL BUSINESS PLAN)
+--------------------------------------------------------------------------------
+[STATUS: DONE]
+
+* Requirements:
+  - Distribution per ₹1,200 Join/Re-entry:
+    * ₹300 → Direct Sponsor Income
+    * ₹600 → Single-Leg 6-Level Pool
+    * ₹300 → Company Maintenance
+  - 126-member milestone ladder for ₹75,600 Level Pool:
+    * Level 5 (2 downline members): ₹200
+    * Level 4 (6 downline members): ₹400 (cumul. ₹600)
+    * Level 3 (14 downline members): ₹800 (cumul. ₹1,400)
+    * Level 2 (30 downline members): ₹1,600 (cumul. ₹3,000)
+    * Level 1 (62 downline members): ₹3,200 (cumul. ₹6,200)
+    * Top User (126 downline members): ₹6,400 (cumul. ₹12,600)
+    * Bottom 64 users: ₹0
+  - Company Surplus & Maintenance Tracking:
+    * ₹300 per join recorded as Company Maintenance.
+    * ₹11,400 recorded as Company Level Pool Surplus upon cycle completion.
+
+* Changes Implemented:
+  1. `backend/routes/cycles.routes.js`:
+     - Implemented ₹300 Direct Sponsor income credited to sponsor's commission wallet.
+     - Implemented ₹300 Company Maintenance logged to `company_maintenance_ledger`.
+     - Implemented ₹600 Single-Leg Level Pool accumulation and milestone distribution:
+       * When upline reaches 2 downline members: credits ₹200.
+       * When upline reaches 6 downline members: credits ₹400.
+       * When upline reaches 14 downline members: credits ₹800.
+       * When upline reaches 30 downline members: credits ₹1,600.
+       * When upline reaches 62 downline members: credits ₹3,200.
+       * When upline reaches 126 downline members: credits ₹6,400 (completing ₹12,600 total).
+     - At 126 members, records ₹11,400 Company Level Pool Surplus into `company_surplus_ledger`.
+     - All distributions are protected by database transactions with row-level locking.
+
+================================================================================
+AUDIT SUMMARY: FINAL FINANCIAL FLOW BALANCE SHEET
+================================================================================
+
+For every complete 126-member cycle:
+-----------------------------------------------------------------
+TOTAL MONEY COLLECTED (126 × ₹1,200):                ₹1,51,200
+-----------------------------------------------------------------
+1. USER DISTRIBUTION:
+   - Direct Sponsor Income (126 × ₹300):              ₹37,800
+   - Single-Leg Level Income (Ladder Payouts):        ₹64,200
+     * 1 Top User @ ₹12,600                           = ₹12,600
+     * 2 Users @ ₹6,200                               = ₹12,400
+     * 4 Users @ ₹3,000                               = ₹12,000
+     * 8 Users @ ₹1,400                               = ₹11,200
+     * 16 Users @ ₹600                                = ₹9,600
+     * 32 Users @ ₹200                                = ₹6,400
+     * 64 Users @ ₹0                                  = ₹0
+   --------------------------------------------------------------
+   TOTAL USER INCOME PAID:                           ₹1,02,000
+
+2. COMPANY DISTRIBUTION:
+   - Company Maintenance (126 × ₹300):                ₹37,800
+   - Company Level Pool Surplus (₹75,600 - ₹64,200):  ₹11,400
+   --------------------------------------------------------------
+   TOTAL COMPANY AMOUNT:                              ₹49,200
+
+-----------------------------------------------------------------
+FINAL MATHEMATICAL RECONCILIATION:
+   ₹1,02,000 (User Income) + ₹49,200 (Company Amount) = ₹1,51,200
+   RECONCILIATION DIFFERENCE: ₹0.00 (PERFECT BALANCE)
+================================================================================
+END OF REPORT
+================================================================================

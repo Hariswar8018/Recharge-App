@@ -379,10 +379,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     if (result['success']) {
+      final assignedMemberId = result['memberId'] ?? result['user']?['mobileNumber'] ?? mobileText;
       setState(() {
-        _successMessage = "Account created successfully! Redirecting to login...";
+        _successMessage = "Account created successfully! Your Member ID is $assignedMemberId. Redirecting to login...";
       });
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 3));
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
     } else {

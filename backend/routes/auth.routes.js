@@ -95,17 +95,8 @@ router.post('/register', verifyAppToken, async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync(password, salt);
 
-    // Auto-generate unique 10-digit SRM code (SRM + 7 digits)
-    let userCode = '';
-    for (let attempt = 0; attempt < 50; attempt++) {
-      const candidate = `SRM${Math.floor(1000000 + Math.random() * 9000000)}`;
-      const ex = await query('SELECT id FROM users WHERE user_code = ?', [candidate]);
-      if (!ex || ex.length === 0) {
-        userCode = candidate;
-        break;
-      }
-    }
-    if (!userCode) userCode = `SRM${Math.floor(1000000 + Math.random() * 9000000)}`;
+    // Member ID is always the 10-digit Mobile Number
+    const userCode = cleanMobile;
 
     await query(
       'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, device_model, app_version, sponsor_id, user_code) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "PENDING", ?, ?, ?, ?)',
@@ -117,22 +108,21 @@ router.post('/register', verifyAppToken, async (req, res) => {
     sendNotificationEmail(email.toLowerCase(), "Welcome to SR Digital Seva!", `
       <h3>Welcome, ${fullName}!</h3>
       <p>Your account was successfully registered.</p>
-      <p>Your Sponsor ID / User Code is: <strong>${userCode}</strong></p>
-      <p>Your Mobile Number / User ID is: <strong>${cleanMobile}</strong></p>
+      <p>Your Member ID / User ID is: <strong>${cleanMobile}</strong></p>
     `);
 
     if (sponsorIdVal) {
-      query('SELECT email, fullName FROM users WHERE id = ?', [sponsorIdVal]).then((sponsors) => {
+      query('SELECT email, fullName, mobileNumber FROM users WHERE id = ?', [sponsorIdVal]).then((sponsors) => {
         if (sponsors.length > 0) {
           sendNotificationEmail(sponsors[0].email, "New Affiliate Joined Your Team!", `
             <h3>Hi ${sponsors[0].fullName},</h3>
-            <p>A new member <strong>${fullName}</strong> has joined your team.</p>
+            <p>A new member <strong>${fullName}</strong> (Mobile: ${cleanMobile}) has joined your team.</p>
           `);
         }
       }).catch((e) => console.error('Sponsor query fail:', e));
     }
 
-    res.status(201).json({ message: 'User registered successfully', user_code: userCode });
+    res.status(201).json({ message: 'User registered successfully', user_code: cleanMobile, mobileNumber: cleanMobile, memberId: cleanMobile });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error occurred during registration' });
@@ -242,7 +232,7 @@ router.post('/check-sponsor', verifyAppToken, async (req, res) => {
     if (!sponsorUser) {
       return res.json({ valid: false, error: 'User Not Found' });
     }
-    return res.json({ valid: true, name: sponsorUser.fullName, sponsorId: sponsorUser.id });
+    return res.json({ valid: true, name: sponsorUser.fullName, sponsorId: sponsorUser.mobileNumber, sponsorMobile: sponsorUser.mobileNumber, sponsorDbId: sponsorUser.id });
   } catch (err) {
     console.error('Check sponsor error:', err);
     res.status(500).json({ valid: false, error: 'Server error checking sponsor ID' });

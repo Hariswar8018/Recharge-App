@@ -20,7 +20,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   final _dateJoiningController = TextEditingController();
   final _dateActivationController = TextEditingController();
   
-  String _memberStatus = "ACTIVE";
+  String _memberStatus = "PENDING";
   bool _isLoading = true;
   Timer? _refreshTimer;
 
@@ -84,7 +84,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         _sponsorIdController.text = sponsorDisplay;
         _dateJoiningController.text = formattedDate;
         _dateActivationController.text = formattedDate;
-        _memberStatus = (user['status'] ?? "ACTIVE").toUpperCase();
+        _memberStatus = (user['status'] ?? "PENDING").toString().toUpperCase();
         _isLoading = false;
       });
     } else {

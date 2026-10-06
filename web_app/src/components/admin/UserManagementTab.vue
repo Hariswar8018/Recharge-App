@@ -63,10 +63,10 @@
         <table class="nice-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
           <thead>
             <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700;">
-              <th style="padding: 0.75rem 1rem;">User ID</th>
+              <th style="padding: 0.75rem 1rem;">Member ID (Mobile)</th>
               <th style="padding: 0.75rem 1rem;">Full Name</th>
               <th style="padding: 0.75rem 1rem;">Email</th>
-              <th style="padding: 0.75rem 1rem;">Mobile Number</th>
+              <th style="padding: 0.75rem 1rem;">Status</th>
               <th style="padding: 0.75rem 1rem;">Main Wallet</th>
               <th style="padding: 0.75rem 1rem;">Fund Wallet</th>
               <th style="padding: 0.75rem 1rem;">Affiliate Downlines</th>
@@ -75,7 +75,7 @@
           </thead>
           <tbody>
             <tr v-if="filteredUsers.length === 0">
-              <td colspan="8" style="text-align: center; padding: 2.5rem; color: #64748b; font-weight: 600;">
+              <td colspan="9" style="text-align: center; padding: 2.5rem; color: #64748b; font-weight: 600;">
                 No registered users found matching your search.
               </td>
             </tr>
@@ -86,10 +86,22 @@
               @click="$emit('select-user', user)"
               style="border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.15s;"
             >
-              <td style="padding: 0.85rem 1rem; font-weight: 700; color: #2563eb;">#{{ user.id }}</td>
+              <td style="padding: 0.85rem 1rem; font-weight: 700; color: #2563eb;">{{ user.mobileNumber }} <span style="font-size: 0.75rem; color: #64748b;">(#{{ user.id }})</span></td>
               <td style="padding: 0.85rem 1rem; font-weight: 700; color: #0f172a;">{{ user.fullName }}</td>
               <td style="padding: 0.85rem 1rem; color: #64748b;">{{ user.email || 'N/A' }}</td>
-              <td style="padding: 0.85rem 1rem; font-weight: 600; color: #1e293b;">{{ user.mobileNumber }}</td>
+              <td style="padding: 0.85rem 1rem;">
+                <span :style="{
+                  background: (user.status || '').toUpperCase() === 'ACTIVE' ? '#dcfce7' : '#fef3c7',
+                  color: (user.status || '').toUpperCase() === 'ACTIVE' ? '#15803d' : '#b45309',
+                  padding: '3px 9px',
+                  borderRadius: '12px',
+                  fontWeight: '800',
+                  fontSize: '0.78rem',
+                  border: (user.status || '').toUpperCase() === 'ACTIVE' ? '1px solid #86efac' : '1px solid #fde68a'
+                }">
+                  {{ (user.status || 'PENDING').toUpperCase() === 'ACTIVE' ? '🟢 Active' : '🟡 Pending' }}
+                </span>
+              </td>
               <td style="padding: 0.85rem 1rem; font-weight: 700; color: #2563eb;">₹ {{ parseFloat(user.main_wallet_balance || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</td>
               <td style="padding: 0.85rem 1rem; font-weight: 700; color: #16a34a;">₹ {{ parseFloat(user.fund_wallet_balance || 0).toLocaleString('en-IN', {minimumFractionDigits:2}) }}</td>
               <td style="padding: 0.85rem 1rem;">

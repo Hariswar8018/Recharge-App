@@ -9,8 +9,19 @@
         <div class="drawer-user-pill">
           <div class="avatar-large">{{ user.fullName ? user.fullName[0].toUpperCase() : 'U' }}</div>
           <div>
-            <h4 style="word-break: break-word; margin: 0 0 4px;">{{ user.fullName }}</h4>
-            <span class="badge-status-active">Active Account</span>
+            <h4 style="word-break: break-word; margin: 0 0 2px;">{{ user.fullName }}</h4>
+            <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">ID / Mobile: <strong>{{ user.mobileNumber || 'N/A' }}</strong></div>
+            <span :style="{
+              background: (user.status || '').toUpperCase() === 'ACTIVE' ? '#dcfce7' : '#fef3c7',
+              color: (user.status || '').toUpperCase() === 'ACTIVE' ? '#15803d' : '#b45309',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              fontWeight: '800',
+              fontSize: '0.75rem',
+              border: (user.status || '').toUpperCase() === 'ACTIVE' ? '1px solid #86efac' : '1px solid #fde68a'
+            }">
+              {{ (user.status || 'PENDING').toUpperCase() === 'ACTIVE' ? '🟢 Active Account' : '🟡 Pending / Unactivated' }}
+            </span>
           </div>
         </div>
 

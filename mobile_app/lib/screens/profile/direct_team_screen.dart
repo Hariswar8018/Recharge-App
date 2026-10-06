@@ -97,9 +97,16 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                             final member = _directMembers[index];
                             final rawName = member['fullName'] ?? member['name'] ?? 'Member';
                             final mobile = member['mobileNumber'] ?? member['mobile'] ?? 'N/A';
-                            final status = (member['status'] ?? 'ACTIVE').toString().toUpperCase();
+                            final status = (member['status'] ?? 'PENDING').toString().toUpperCase();
                             final isActive = status == 'ACTIVE';
+                            final isPending = status == 'PENDING';
                             final createdAt = member['createdAt']?.toString().substring(0, 10) ?? member['created_at']?.toString() ?? 'N/A';
+
+                            final Color avatarBg = isActive ? const Color(0xFFDCFCE7) : (isPending ? const Color(0xFFFEF3C7) : const Color(0xFFFEE2E2));
+                            final Color avatarIconCol = isActive ? const Color(0xFF16A34A) : (isPending ? const Color(0xFFD97706) : const Color(0xFFEF4444));
+                            final Color badgeBg = isActive ? const Color(0xFFDCFCE7) : (isPending ? const Color(0xFFFEF3C7) : const Color(0xFFFEE2E2));
+                            final Color badgeBorder = isActive ? const Color(0xFF86EFAC) : (isPending ? const Color(0xFFFDE68A) : const Color(0xFFFCA5A5));
+                            final Color badgeText = isActive ? const Color(0xFF15803D) : (isPending ? const Color(0xFFB45309) : const Color(0xFFB91C1C));
 
                             return Container(
                               padding: const EdgeInsets.all(16),
@@ -119,10 +126,10 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                                 children: [
                                   CircleAvatar(
                                     radius: 22,
-                                    backgroundColor: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                                    backgroundColor: avatarBg,
                                     child: Icon(
                                       Icons.person,
-                                      color: isActive ? const Color(0xFF16A34A) : const Color(0xFFEF4444),
+                                      color: avatarIconCol,
                                     ),
                                   ),
                                   const SizedBox(width: 14),
@@ -144,8 +151,8 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                                             const Icon(Icons.phone_android, size: 13, color: Colors.grey),
                                             const SizedBox(width: 4),
                                             Text(
-                                              mobile,
-                                              style: const TextStyle(color: Color(0xFF475569), fontSize: 12),
+                                              "Member ID: $mobile",
+                                              style: const TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.w600),
                                             ),
                                           ],
                                         ),
@@ -162,16 +169,16 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                                      color: badgeBg,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: isActive ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5),
+                                        color: badgeBorder,
                                       ),
                                     ),
                                     child: Text(
-                                      status,
+                                      isActive ? "🟢 ACTIVE" : "🟡 PENDING",
                                       style: TextStyle(
-                                        color: isActive ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
+                                        color: badgeText,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 11,
                                       ),

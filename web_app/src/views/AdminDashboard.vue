@@ -763,7 +763,7 @@ export default {
       }
 
       if (this.userStatusFilter && this.userStatusFilter !== 'ALL') {
-        list = list.filter(u => (u.status || 'ACTIVE').toUpperCase() === this.userStatusFilter.toUpperCase());
+        list = list.filter(u => (u.status || 'PENDING').toUpperCase() === this.userStatusFilter.toUpperCase());
       }
 
       if (this.userSortBy === 'oldest') {

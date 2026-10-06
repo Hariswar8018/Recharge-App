@@ -106,8 +106,16 @@
                   <td style="padding: 0.65rem 0.85rem; font-weight: 700; color: #2563eb;">₹ {{ parseFloat(member.main_wallet_balance || 0).toFixed(2) }}</td>
                   <td style="padding: 0.65rem 0.85rem; color: #64748b;">{{ member.createdAt ? String(member.createdAt).substring(0, 10) : 'N/A' }}</td>
                   <td style="padding: 0.65rem 0.85rem; text-align: right;">
-                    <span style="background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 12px; font-weight: 800; font-size: 0.75rem;">
-                      {{ (member.status || 'ACTIVE').toUpperCase() }}
+                    <span :style="{
+                      background: (member.status || '').toUpperCase() === 'ACTIVE' ? '#dcfce7' : '#fef3c7',
+                      color: (member.status || '').toUpperCase() === 'ACTIVE' ? '#15803d' : '#b45309',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontWeight: '800',
+                      fontSize: '0.75rem',
+                      border: (member.status || '').toUpperCase() === 'ACTIVE' ? '1px solid #86efac' : '1px solid #fde68a'
+                    }">
+                      {{ (member.status || 'PENDING').toUpperCase() === 'ACTIVE' ? '🟢 ACTIVE' : '🟡 PENDING' }}
                     </span>
                   </td>
                 </tr>

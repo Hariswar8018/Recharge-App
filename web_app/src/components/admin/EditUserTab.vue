@@ -219,10 +219,10 @@
             </div>
             <h3 class="user-name-title" style="margin: 0 0 0.75rem; font-size: 1.1rem; font-weight: 800; color: #0f172a;">{{ editUserObj.fullName || 'User Profile' }}</h3>
             <div class="summary-details-list" style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.83rem; text-align: left;">
-              <div class="s-row" style="display: flex; justify-content: space-between;"><span>User ID:</span><strong>#{{ editUserObj.id || editUserObj.mobileNumber }}</strong></div>
+              <div class="s-row" style="display: flex; justify-content: space-between;"><span>Member ID (Mobile):</span><strong>{{ editUserObj.mobileNumber || ('#' + editUserObj.id) }}</strong></div>
               <div class="s-row" style="display: flex; justify-content: space-between;"><span>Mobile:</span><strong>{{ editUserObj.mobileNumber }}</strong></div>
               <div class="s-row" style="display: flex; justify-content: space-between;"><span>Email:</span><strong style="word-break: break-all;">{{ editUserObj.email || 'N/A' }}</strong></div>
-              <div class="s-row" style="display: flex; justify-content: space-between;"><span>Status:</span><strong style="color: #16a34a;">{{ editUserObj.status || 'Active' }}</strong></div>
+              <div class="s-row" style="display: flex; justify-content: space-between;"><span>Status:</span><strong :style="{ color: (editUserObj.status || '').toUpperCase() === 'ACTIVE' ? '#16a34a' : '#d97706' }">{{ (editUserObj.status || 'PENDING').toUpperCase() === 'ACTIVE' ? '🟢 Active' : '🟡 Pending' }}</strong></div>
               <div class="s-row" style="display: flex; justify-content: space-between;"><span>Joining Date:</span><strong>{{ editUserObj.createdAt ? String(editUserObj.createdAt).substring(0,10) : 'N/A' }}</strong></div>
               <div class="s-row" style="display: flex; justify-content: space-between;"><span>Sponsor Mobile:</span><strong>{{ editUserObj.sponsor_mobile || editUserObj.sponsor_mobileNumber || (editUserObj.sponsor_id && String(editUserObj.sponsor_id).length >= 10 ? editUserObj.sponsor_id : (editUserObj.sponsor_name || editUserObj.sponsor_id || 'None')) }}</strong></div>
             </div>
