@@ -353,7 +353,7 @@ router.get('/dashboard', verifyAdminToken, async (req, res) => {
   try {
     let stats = await getCache('admin_stats');
     if (!stats) {
-      const totalUsersResult = await query('SELECT COUNT(id) as count FROM users WHERE role != "admin" OR role IS NULL');
+      const totalUsersResult = await query('SELECT COUNT(id) as count FROM users WHERE role NOT IN ("admin", "superadmin", "support") OR role IS NULL');
       const walletsResult = await query(
         'SELECT COALESCE(SUM(fund_wallet_balance), 0) as fundTotal, COALESCE(SUM(main_wallet_balance), 0) as mainTotal FROM users'
       );
@@ -375,7 +375,7 @@ router.get('/dashboard', verifyAdminToken, async (req, res) => {
     const usersList = await query(
       `SELECT u.*, (SELECT COUNT(d.id) FROM users d WHERE d.sponsor_id = u.id) as downlineCount 
        FROM users u 
-       WHERE u.role != "admin" OR u.role IS NULL 
+       WHERE u.role NOT IN ("admin", "superadmin", "support") OR u.role IS NULL 
        ORDER BY u.id DESC LIMIT ? OFFSET ?`,
       [limit, offset]
     );
@@ -411,7 +411,7 @@ router.get('/teams', verifyAdminToken, async (req, res) => {
               s.fullName as sponsorName, s.email as sponsorEmail
        FROM users u
        LEFT JOIN users s ON u.sponsor_id = s.id
-       WHERE u.role != "admin" OR u.role IS NULL
+       WHERE u.role NOT IN ("admin", "superadmin", "support") OR u.role IS NULL
        ORDER BY u.id DESC`
     );
 
@@ -668,7 +668,7 @@ router.post('/users/:userId/update-password', verifyAdminToken, async (req, res)
 // GET List System Admins
 router.get('/system-admins', verifyAdminToken, async (req, res) => {
   try {
-    const admins = await query('SELECT id, fullName, email, mobileNumber, role, createdAt FROM users WHERE role = "admin" ORDER BY id DESC');
+    const admins = await query('SELECT id, fullName, email, mobileNumber, role, createdAt FROM users WHERE role IN ("admin", "superadmin", "support") ORDER BY id DESC');
     res.json(admins);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch admins list' });
@@ -686,11 +686,12 @@ router.post('/create-admin', verifyAdminToken, async (req, res) => {
     if (existing.length > 0) {
       return res.status(400).json({ error: 'Email already exists' });
     }
+    const adminRole = (role && ['admin', 'superadmin', 'support'].includes(role.toLowerCase())) ? role.toLowerCase() : 'admin';
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync(password.trim(), salt);
     await query(
       'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
-      [fullName.trim(), email.toLowerCase().trim(), mobileNumber || '0000000000', passwordHash, password.trim(), role || 'admin']
+      [fullName.trim(), email.toLowerCase().trim(), mobileNumber || '0000000000', passwordHash, password.trim(), adminRole]
     );
     res.status(201).json({ message: 'System admin created successfully' });
   } catch (err) {
@@ -699,15 +700,40 @@ router.post('/create-admin', verifyAdminToken, async (req, res) => {
   }
 });
 
+// PUT Update System Admin Password
+router.put('/system-admins/:id/update-password', verifyAdminToken, async (req, res) => {
+  const adminId = req.params.id;
+  const { password } = req.body;
+  if (!password || !password.trim()) {
+    return res.status(400).json({ error: 'New password is required' });
+  }
+  try {
+    const existing = await query('SELECT id FROM users WHERE id = ? AND role IN ("admin", "superadmin", "support")', [adminId]);
+    if (!existing || existing.length === 0) {
+      return res.status(404).json({ error: 'Admin account not found' });
+    }
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(password.trim(), salt);
+    await query(
+      'UPDATE users SET passwordHash = ?, plain_password = ? WHERE id = ?',
+      [passwordHash, password.trim(), adminId]
+    );
+    res.json({ message: 'Admin password updated successfully' });
+  } catch (err) {
+    console.error('Update admin password error:', err);
+    res.status(500).json({ error: 'Failed to update admin password' });
+  }
+});
+
 // DELETE System Admin
 router.delete('/system-admins/:id', verifyAdminToken, async (req, res) => {
   try {
     const adminId = req.params.id;
-    const admins = await query('SELECT COUNT(id) as count FROM users WHERE role = "admin"');
+    const admins = await query('SELECT COUNT(id) as count FROM users WHERE role IN ("admin", "superadmin", "support")');
     if (admins[0].count <= 1) {
       return res.status(400).json({ error: 'Cannot delete the master admin account.' });
     }
-    await query('DELETE FROM users WHERE id = ? AND role = "admin"', [adminId]);
+    await query('DELETE FROM users WHERE id = ? AND role IN ("admin", "superadmin", "support")', [adminId]);
     res.json({ message: 'Admin account removed successfully.' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to remove admin' });
