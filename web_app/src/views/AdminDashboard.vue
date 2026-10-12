@@ -1483,8 +1483,10 @@ export default {
     handleLogout() {
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminEmail');
-      const logoutPath = (this.$route && this.$route.path && this.$route.path.startsWith('/devansh')) || window.location.pathname.startsWith('/devansh') ? '/devansh/login' : '/admin/login';
-      this.$router.push(logoutPath);
+      this.$emit('logout');
+      if (this.$route && this.$route.path !== '/devansh') {
+        this.$router.push('/devansh');
+      }
     }
   }
 };

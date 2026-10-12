@@ -15,9 +15,6 @@
         <router-link to="/" class="btn btn-primary">
           &larr; Back to Home
         </router-link>
-        <router-link to="/admin-dashboard" class="btn btn-secondary">
-          🛡️ Admin Dashboard
-        </router-link>
       </div>
     </div>
   </div>

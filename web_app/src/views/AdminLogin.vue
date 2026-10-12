@@ -68,8 +68,10 @@ export default {
   },
   mounted() {
     if (localStorage.getItem('adminToken')) {
-      const targetPath = (this.$route.path.startsWith('/devansh') || window.location.pathname.startsWith('/devansh')) ? '/devansh' : '/admin-dashboard';
-      this.$router.push(targetPath);
+      this.$emit('login-success');
+      if (this.$route && this.$route.path !== '/devansh') {
+        this.$router.push('/devansh');
+      }
       return;
     }
     if (this.$route.query.expired === 'true' || this.$route.query.msg) {
@@ -114,8 +116,10 @@ export default {
         localStorage.setItem('adminEmail', data.email);
 
         // Redirect to Dashboard
-        const targetPath = (this.$route.path.startsWith('/devansh') || window.location.pathname.startsWith('/devansh')) ? '/devansh' : '/admin-dashboard';
-        this.$router.push(targetPath);
+        this.$emit('login-success');
+        if (this.$route && this.$route.path !== '/devansh') {
+          this.$router.push('/devansh');
+        }
       } catch (err) {
         if (err.name === 'TypeError' && (err.message === 'Failed to fetch' || err.message.includes('fetch'))) {
           this.error = `Failed to fetch API endpoint (${API_BASE_URL}/api/admin/login).\nPossible Cause: Internet connection issue, server offline, invalid SSL certificate, or CORS policy restrictions.`;

@@ -285,6 +285,19 @@ FINAL BALANCE CHECK:
    - Dynamic action button: "ACTIVATE NEW CYCLE (₹1,200)"
    - Proper lookup without false-positive activation errors
 
+
+================================================================================
+5. WEB ADMIN ROUTE RESTRICTION
+================================================================================
+- Request: Only https://srdigitalseva.com/devansh should open Admin, not /admin or /admin-dashboard.
+- Changes:
+  1. web_app/src/views/AdminPortal.vue: Created dedicated single-entry wrapper that dynamically displays AdminLogin when unauthenticated and AdminDashboard when authenticated.
+  2. web_app/src/router/index.js: Routed /devansh (and /devansh/) to AdminPortal. Completely eliminated /admin, /admin-dashboard, /admin-login, and /admin-panel routes so unauthorized requests hit 404 NotFound.
+  3. web_app/src/views/AdminLogin.vue & AdminDashboard.vue: Updated redirects, login callbacks, and logout callbacks to use /devansh.
+  4. web_app/src/views/NotFound.vue: Removed "Admin Dashboard" button from 404 page so it does not leak any admin routes.
+  5. Built production bundle with `npm run build` cleanly.
+
 ================================================================================
 END OF CURRENT STATUS REPORT
 ================================================================================
+

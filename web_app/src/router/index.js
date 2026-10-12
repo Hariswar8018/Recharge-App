@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LandingPage from '../views/LandingPage.vue'
-import AdminLogin from '../views/AdminLogin.vue'
-import AdminDashboard from '../views/AdminDashboard.vue'
+import AdminPortal from '../views/AdminPortal.vue'
 import ContactUs from '../views/ContactUs.vue'
 import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 import TermsConditions from '../views/TermsConditions.vue'
@@ -18,39 +17,10 @@ const routes = [
     component: LandingPage
   },
   {
-    path: '/admin-login',
-    alias: [
-      '/admin-panel/login',
-      '/admin/login',
-      '/admin-panel',
-      '/admin',
-      '/admin/',
-      '/admin-panel/',
-      '/devansh/login',
-      '/devansh-login'
-    ],
-    name: 'AdminLogin',
-    component: AdminLogin
-  },
-  {
-    path: '/admin-dashboard',
-    alias: [
-      '/devansh',
-      '/devansh/',
-      '/devansh/dashboard',
-      '/admin/dashboard',
-      '/admin-panel/dashboard',
-      '/admin-panel/settings'
-    ],
-    name: 'AdminDashboard',
-    component: AdminDashboard,
-    meta: { requiresAdmin: true }
-  },
-  {
-    path: '/admin-settings',
-    name: 'AdminSettings',
-    component: AdminDashboard,
-    meta: { requiresAdmin: true }
+    path: '/devansh',
+    alias: ['/devansh/', '/devansh/dashboard', '/devansh/login'],
+    name: 'AdminPortal',
+    component: AdminPortal
   },
   {
     path: '/contact',
@@ -99,18 +69,16 @@ const router = createRouter({
   routes
 })
 
-// Route guard to check authentication
+// Route guard to check authentication for any protected routes
 router.beforeEach((to, from, next) => {
-  const isAdminToken = localStorage.getItem('adminToken')
-  if (to.matched.some(record => record.meta.requiresAdmin) && !isAdminToken) {
-    if (to.path.startsWith('/devansh')) {
-      next('/devansh/login')
-    } else {
-      next('/admin-login')
+  if (to.matched.some(record => record.meta && record.meta.requiresAdmin)) {
+    const isAdminToken = localStorage.getItem('adminToken')
+    if (!isAdminToken) {
+      next('/devansh')
+      return
     }
-  } else {
-    next()
   }
+  next()
 })
 
 export default router
