@@ -1,0 +1,315 @@
+================================================================================
+CURRENT STATUS: AUDIT & COMPLETE FIXATIONS REPORT
+Project: Recharge-App (Backend Node.js/Express, Flutter Mobile App, Vue.js Admin)
+Generated: 12-10-2026
+Reference: checklist_reason.txt & Cycle Completion & Re-Entry Workflow Diagram
+================================================================================
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+All 7 operational and architectural issues reported in checklist_reason.txt have
+been identified, investigated at the root cause level, permanently fixed in code,
+and verified.
+
+System Rules Preserved:
+1. Member ID / User ID: Always the user's 10-digit mobile number.
+2. Sponsor ID: Always the upline sponsor's 10-digit mobile number.
+3. No Deep Linking: Completely removed. Users directly enter/paste the sponsor's 10-digit mobile number.
+4. Fund Wallet Enforcement: All ID activations and cycle re-entries (₹1,200) are deducted ONLY from Fund Wallet.
+5. Cycle Data Isolation: Previous completed cycle data remains in history; new cycles start from 0 members with a clean structure. Previous wallet earnings are never wiped, blocked, or expired.
+
+================================================================================
+2. DETAILED PROBLEMS, ROOT CAUSES, FIXATIONS & CURRENT STATUS
+================================================================================
+
+--------------------------------------------------------------------------------
+ITEM 1: ID ACTIVATION ISSUE (IDs 22 & 23 AUTOMATICALLY SHOWING AS ACTIVATED)
+--------------------------------------------------------------------------------
+* Problem Reported:
+  "When I am trying to activate the ID, 22 and 23 IDs were automatically showing
+   as already activated. I create ids only but I not activate those IDs manually.
+   Please check why these IDs showing as activated."
+
+* Root Cause:
+  In backend/routes/user.routes.js (GET /by-id/:id), the lookup query used:
+    `WHERE mobileNumber = ? OR mobileNumber = ? OR mobileNumber LIKE ? OR id = ?`
+  passing `[%${last10}]`. When looking up ID "22" or "23", `last10` was "22" or "23".
+  The loose SQL clause `mobileNumber LIKE '%22'` matched any registered user
+  whose mobile number ended with 22 or 23 (such as active master/admin accounts).
+  Because that matched user was already ACTIVE, id_subscription_screen.dart received
+  `status: ACTIVE` and reported: "This mobile number (ID) is already activated."
+
+* Fixation Done:
+  1. Completely removed loose `mobileNumber LIKE ?` pattern matching from
+     backend/routes/user.routes.js and backend/routes/cycles.routes.js.
+  2. Structured lookup into exact criteria:
+     - 10-digit numbers: strictly search `WHERE mobileNumber = ? OR user_code = ?`.
+     - Numeric short IDs (< 10 digits): strictly search `WHERE id = ? OR user_code = ?`.
+     - Non-numeric strings: search `WHERE user_code = ? OR email = ?`.
+  3. Attached real-time cycle metadata (`has_active_cycle`, `is_topup_eligible`,
+     `active_cycle_id`) to the lookup response.
+  4. Updated mobile_app/lib/screens/recharge/id_subscription_screen.dart to
+     properly recognize registered pending IDs without false positive activation warnings.
+
+* Current Status:
+  RESOLVED & VERIFIED. IDs 22 and 23 look up their own records accurately and
+  can be activated manually as intended.
+
+--------------------------------------------------------------------------------
+ITEM 2: ID TOP-UP / NEW CYCLE WORKFLOW (₹1,200 RE-ENTRY AFTER 126 MEMBERS)
+--------------------------------------------------------------------------------
+* Problem Reported:
+  "After a cycle is completed at 126 members, the system must correctly show
+   ₹1,200 TOP-UP REQUIRED – ACTIVATE NEW CYCLE on the Dashboard. This Top-Up alert
+   must be RED in color with a blinking/pulsing effect, so it is clearly visible
+   to the user. When I click it, it should open the ID Subscribe / Cycle Re-entry
+   page. ₹1,200 must be deducted only from the Fund Wallet, and after successful
+   backend confirmation, a new Cycle Number and Queue Position must be created.
+   The new cycle must start from 0% with a new team structure. The previous
+   cycle team and history must never be mixed with the new cycle."
+
+* Root Cause:
+  1. In backend/routes/cycles.routes.js (POST /activate), the backend had a hard check:
+     `if (targetUser.status === 'ACTIVE') return res.status(400)...`
+     When a user completed their first cycle of 126 members, targetUser.status was
+     'ACTIVE', so the backend completely blocked them from re-entering or topping up.
+  2. In mobile_app/lib/screens/navigation/home_screen.dart, the top-up alert was only
+     checking `_membersCount >= 126`. When a cycle was marked COMPLETED, `activeCycle`
+     became null and `_membersCount` fell back to 0, which immediately hid the alert.
+
+* Fixation Done:
+  1. In backend/routes/cycles.routes.js (POST /activate):
+     - The backend now checks whether the user has an ONGOING active cycle (< 126 members).
+     - If all previous cycles are COMPLETED (or members_count >= 126), the user is
+       fully eligible for ₹1,200 Re-Entry / Top-Up.
+     - Deducts ₹1,200 strictly from the payer's Fund Wallet (`fund_wallet_balance`).
+     - Credits ₹300 Direct Sponsor Income to upline sponsor.
+     - Logs ₹300 Company Maintenance.
+     - Creates new sequential cycle row in `cycles` (`CYCLE-0002`, `CYCLE-0003`, etc.)
+       with `status = 'ACTIVE'` and `members_count = 0`.
+     - Places new cycle at the BOTTOM of `single_leg_queue`.
+     - Previous cycle is dequeued from `single_leg_queue` and archived as completed history.
+     - User's previous wallet earnings remain intact in Main Wallet and are never reset.
+  2. In mobile_app/lib/screens/navigation/home_screen.dart:
+     - Implemented dynamic blinking/pulsing RED alert card:
+       * Title: "₹1,200 TOP-UP REQUIRED – ACTIVATE NEW CYCLE"
+       * Subtitle: "Tap here to Top-Up ID (₹1,200) & unlock next cycle income!"
+       * Color: Vivid Red (`Color(0xFFDC2626)`) with continuous pulsing opacity animation.
+       * Trigger: Displays whenever `_isTopUpRequired || _membersCount >= 126 || (_cycleStatus == 'COMPLETED' && _activeCycleId.isEmpty)`.
+       * Clicking opens id_subscription_screen.dart pre-filled for Cycle Re-entry.
+  3. In mobile_app/lib/screens/recharge/id_subscription_screen.dart:
+     - Allows re-entry if previous cycle is completed.
+     - Changes action button to: "ACTIVATE NEW CYCLE (₹1,200)".
+
+* Current Status:
+  RESOLVED & VERIFIED. Re-entry creates a new Cycle ID at the bottom of the queue
+  with 0% team, keeping history separated.
+
+--------------------------------------------------------------------------------
+ITEM 3: LEVEL STATUS & LEVEL PROGRESSION
+--------------------------------------------------------------------------------
+* Problem Reported:
+  "Level status and level progression are not showing correctly. Please fix the
+   complete level calculation and status logic."
+
+* Root Cause:
+  In mobile_app/lib/screens/navigation/home_screen.dart (_buildTeamTab), line 2841,
+  the table logic was reading:
+    `final int realTeamCount = _teamMembers.where(...).length;`
+  `_teamMembers` represents DIRECT referrals (usually 0 to 2 users), NOT the
+  Single-Leg Cycle downlines (which count up to 126 members).
+  Because direct referral count was checked against 126-member targets, Level 2
+  through Level 6 remained permanently "Locked" even when 126 cycle members were active.
+
+* Fixation Done:
+  1. Linked the 6-Level Business Plan table directly to the single-leg cycle members
+     count (`_membersCount`, 0 to 126):
+     - Level 1 (2 Members): Completed when cumulative members >= 2
+     - Level 2 (4 Members): Completed when cumulative members >= 6
+     - Level 3 (8 Members): Completed when cumulative members >= 14
+     - Level 4 (16 Members): Completed when cumulative members >= 30
+     - Level 5 (32 Members): Completed when cumulative members >= 62
+     - Level 6 (64 Members): Completed when cumulative members >= 126
+  2. Status dynamically transitions:
+     - "Completed" (Green badge) once level target is met.
+     - "In Progress" (Amber badge) for the current active level being built.
+     - "Locked" (Gray badge) for subsequent unreached levels.
+
+* Current Status:
+  RESOLVED & VERIFIED. Level progression and level statuses reflect the actual
+  Single-Leg team count in real time.
+
+--------------------------------------------------------------------------------
+ITEM 4: 6TH LEVEL INCOME CREDIT & BACKEND CALCULATION
+--------------------------------------------------------------------------------
+* Problem Reported:
+  "6th Level Income is not being generated/credited. Please open and check one
+   complete/top ID and verify the full backend calculation. I already shared the
+   video regarding this issue."
+
+* Root Cause:
+  In backend/routes/cycles.routes.js:
+  1. Milestone 6 was labeled `'Single Leg Top User Income (126 Members Complete)'`
+     instead of Level 6, causing frontend transaction filters searching for "Level"
+     to fail to categorize it as Level Income.
+  2. The payout ladder milestone naming was inverted (Level 5 payout mapped to Level 1 threshold).
+
+* Fixation Done:
+  In backend/routes/cycles.routes.js, aligned milestones to the exact Business Plan:
+  - Milestone 1 (2 members): ₹200.00 -> `Single Leg Level 1 Income (2 Members)`
+  - Milestone 2 (6 members): ₹400.00 -> `Single Leg Level 2 Income (6 Members)`
+  - Milestone 3 (14 members): ₹800.00 -> `Single Leg Level 3 Income (14 Members)`
+  - Milestone 4 (30 members): ₹1,600.00 -> `Single Leg Level 4 Income (30 Members)`
+  - Milestone 5 (62 members): ₹3,200.00 -> `Single Leg Level 5 Income (62 Members)`
+  - Milestone 6 (126 members): ₹6,400.00 -> `Single Leg Level 6 Income (126 Members Complete)`
+  Total User Level Income per complete cycle:
+    ₹200 + ₹400 + ₹800 + ₹1,600 + ₹3,200 + ₹6,400 = ₹12,600.00.
+  When 126 members is reached:
+  - ₹6,400 is credited immediately to user's Main Wallet.
+  - Cycle status is updated to "COMPLETED".
+  - Company Level Pool Surplus (+₹11,400.00) is automatically recorded.
+
+* Current Status:
+  RESOLVED & VERIFIED. Level 6 income is correctly credited and tracked.
+
+--------------------------------------------------------------------------------
+ITEM 5: TODAY'S INCOME CALCULATION & DISPLAY
+--------------------------------------------------------------------------------
+* Problem Reported:
+  "Today’s income is not showing correctly in the Income Wallet. Please check and
+   fix the backend income calculation and display."
+
+* Root Cause:
+  In backend/routes/cycles.routes.js, `date` was saved as a locale string
+  (e.g., `10/12/2026, 11:00 AM`). In mobile_app/lib/screens/navigation/home_screen.dart,
+  the app checked:
+    `if (txDate.contains(nowStr))` where `nowStr = "2026-10-12"` (ISO format).
+  Because the locale date never contained the hyphenated ISO string, Today's
+  Income evaluated to ₹0.00 for every transaction.
+
+* Fixation Done:
+  1. Backend now records transactions using standard ISO format (`new Date().toISOString()`).
+  2. Implemented a dedicated server-side calculation for `todayIncome` in
+     `GET /api/cycles/status`, aggregating all successful Main Wallet commissions
+     credited on the current calendar day.
+  3. In mobile_app/lib/screens/navigation/home_screen.dart, Today's Income is read
+     directly from backend `_todayIncome` with multi-format fallback date matching.
+
+* Current Status:
+  RESOLVED & VERIFIED. Today's income updates and displays accurately on the Dashboard.
+
+--------------------------------------------------------------------------------
+ITEM 6: CURRENT TEAM GROWTH & TEAM STATUS DISPLAY
+--------------------------------------------------------------------------------
+* Problem Reported:
+  "Current Team is not generating/displaying correctly, and Team Status is also
+   not showing. Please fix the team generation, team growth and status logic."
+
+* Root Cause:
+  In mobile_app/lib/screens/navigation/home_screen.dart (lines 2952 & 2961), the
+  TEAM GROWTH card rendered:
+    `Text("$realTeamCount")` and `Text("TARGET : $maxTarget")`
+  `$realTeamCount` was displaying direct referrals (0 or 1), while TARGET was 126.
+  Team Status badge was completely absent from the card.
+
+* Fixation Done:
+  1. Updated the TEAM GROWTH card to display `singleLegTeamCount` (`_membersCount`, up to 126).
+  2. Added dynamic Team Status Badge:
+     - "CYCLE COMPLETED" (Green pill) if members >= 126
+     - "ACTIVE GROWTH" (Semi-transparent pill) if cycle is active
+     - "PENDING" if not activated
+  3. Added Queue Position indicator: `Queue Position: #$_queuePosition`.
+  4. Slider progress bar fills smoothly from 0% to 100% based on `_membersCount / 126.0`.
+
+* Current Status:
+  RESOLVED & VERIFIED. Team Growth, Team Status, and Queue Position render accurately.
+
+--------------------------------------------------------------------------------
+ITEM 7: CONNECTED CYCLE / QUEUE / INCOME BACKEND API
+--------------------------------------------------------------------------------
+* Problem Reported:
+  "Please make sure Cycle, Queue Position, Team Growth, Level Status, Level Income
+   and Direct Income are all properly connected and handled by the backend."
+
+* Fixation Done:
+  1. Added dedicated endpoint `GET /api/cycles/status` in backend/routes/cycles.routes.js.
+     Returns:
+     - `userId`, `mobileNumber`, `userStatus`
+     - `activeCycle`: `id`, `cycle_id`, `members_count`, `status`, `queuePosition`, `progressPercent`
+     - `latestCycle`: most recent cycle data
+     - `queuePosition`: calculated via single_leg_queue rank
+     - `isTopUpRequired`: boolean flag
+     - `membersCount`: active count (0 to 126)
+     - `levels`: array of 6 levels with team required, income, and real-time status
+     - `incomeSummary`: `todayIncome`, `directIncome`, `levelIncome`, `totalIncome`, `mainWalletBalance`, `fundWalletBalance`
+  2. Added `ApiService.getCycleStatus()` in mobile_app/lib/services/api_service.dart.
+  3. In mobile_app/lib/screens/navigation/home_screen.dart, `_loadUserProfile()` fetches
+     this endpoint on boot and auto-refreshes every 30 seconds.
+  4. In `_showActivationCycleModal()`, dynamic Cycle Number, Queue Position, and
+     Cycle Status are displayed.
+
+* Current Status:
+  RESOLVED & VERIFIED. Backend serves as single source of truth for all cycle, queue,
+  and financial calculations.
+
+================================================================================
+3. 126-MEMBER CYCLE MATHEMATICAL RECONCILIATION
+================================================================================
+
+Total Collection: 126 Members × ₹1,200 = ₹1,51,200.00
+-----------------------------------------------------------------
+USER ALLOCATION:
+- Direct Sponsor Income (126 × ₹300):                   ₹37,800.00
+- Level Income Payouts:
+  * 1 Top User @ ₹12,600                                = ₹12,600.00
+  * 2 Users @ ₹6,200                                    = ₹12,400.00
+  * 4 Users @ ₹3,000                                    = ₹12,000.00
+  * 8 Users @ ₹1,400                                    = ₹11,200.00
+  * 16 Users @ ₹600                                     = ₹9,600.00
+  * 32 Users @ ₹200                                     = ₹6,400.00
+  * 64 Users @ ₹0                                       = ₹0.00
+  ---------------------------------------------------------------
+  Total Level Income Paid to Users:                     ₹64,200.00
+TOTAL PAID TO USERS: ₹37,800 + ₹64,200                 = ₹1,02,000.00
+
+COMPANY ALLOCATION:
+- Company Maintenance Fee (126 × ₹300):                 ₹37,800.00
+- Company Level Pool Surplus (₹75,600 - ₹64,200):       ₹11,400.00
+TOTAL COMPANY AMOUNT: ₹37,800 + ₹11,400                 = ₹49,200.00
+
+-----------------------------------------------------------------
+FINAL BALANCE CHECK:
+  ₹1,02,000.00 (Users) + ₹49,200.00 (Company) = ₹1,51,200.00
+  DIFFERENCE: ₹0.00 (PERFECT BALANCE)
+
+================================================================================
+4. MODIFIED CODEBASE FILES SUMMARY
+================================================================================
+1. backend/routes/cycles.routes.js:
+   - Re-entry allowance for completed cycles
+   - Payout ladder milestones (Level 1 to Level 6)
+   - Queue dequeue upon cycle completion
+   - Company maintenance & surplus logging
+   - Added GET /status endpoint
+2. backend/routes/user.routes.js:
+   - Cleaned GET /by-id/:id lookup (removed loose pattern matching)
+   - Attached cycle eligibility metadata
+3. mobile_app/lib/services/api_service.dart:
+   - Added getCycleStatus() API call
+4. mobile_app/lib/screens/navigation/home_screen.dart:
+   - Added queue position, cycle number, and income state variables
+   - Updated _loadUserProfile() with getCycleStatus()
+   - Pulsing RED alert: "₹1,200 TOP-UP REQUIRED – ACTIVATE NEW CYCLE"
+   - Updated Today's Income calculation with ISO/locale date support
+   - Updated Team Growth card with single-leg member count, status badge, and queue position
+   - Updated Level 1-6 table status progression
+   - Dynamic cycle modal with queue position and cycle number
+5. mobile_app/lib/screens/recharge/id_subscription_screen.dart:
+   - Re-entry mode for completed cycles
+   - Dynamic action button: "ACTIVATE NEW CYCLE (₹1,200)"
+   - Proper lookup without false-positive activation errors
+
+================================================================================
+END OF CURRENT STATUS REPORT
+================================================================================

@@ -194,18 +194,58 @@ router.get('/by-id/:id', verifyAppToken, async (req, res) => {
   const numericId = parseInt(raw.replace(/^SR[MD]0*/i, ''), 10);
 
   try {
-    const users = await query(
-      `SELECT id, fullName, email, mobileNumber, user_code, status, main_wallet_balance, fund_wallet_balance, createdAt 
-       FROM users 
-       WHERE mobileNumber = ? OR mobileNumber = ? OR mobileNumber LIKE ? OR id = ? OR user_code = ?
-       LIMIT 1`,
-      [last10, raw, `%${last10}`, isNaN(numericId) ? -1 : numericId, raw]
-    );
+    let users = [];
+    if (digitsOnly.length === 10) {
+      users = await query(
+        `SELECT id, fullName, email, mobileNumber, user_code, status, main_wallet_balance, fund_wallet_balance, createdAt 
+         FROM users 
+         WHERE mobileNumber = ? OR user_code = ? LIMIT 1`,
+        [digitsOnly, digitsOnly]
+      );
+    } else if (digitsOnly.length > 10) {
+      users = await query(
+        `SELECT id, fullName, email, mobileNumber, user_code, status, main_wallet_balance, fund_wallet_balance, createdAt 
+         FROM users 
+         WHERE mobileNumber = ? OR mobileNumber = ? OR user_code = ? LIMIT 1`,
+        [last10, digitsOnly, raw]
+      );
+    } else if (!isNaN(numericId) && numericId > 0) {
+      users = await query(
+        `SELECT id, fullName, email, mobileNumber, user_code, status, main_wallet_balance, fund_wallet_balance, createdAt 
+         FROM users 
+         WHERE id = ? OR user_code = ? LIMIT 1`,
+        [numericId, raw]
+      );
+    } else {
+      users = await query(
+        `SELECT id, fullName, email, mobileNumber, user_code, status, main_wallet_balance, fund_wallet_balance, createdAt 
+         FROM users 
+         WHERE user_code = ? OR email = ? LIMIT 1`,
+        [raw, raw.toLowerCase()]
+      );
+    }
+
     if (!users || users.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
     const user = users[0];
     user.memberId = user.mobileNumber;
+
+    // Fetch cycle info to determine if user has an ongoing active cycle or is eligible for Re-entry
+    const userCycles = await query(
+      'SELECT id, cycle_id, status, members_count FROM cycles WHERE user_id = ? ORDER BY id DESC',
+      [user.id]
+    );
+    const activeCycle = userCycles.find(c => c.status === 'ACTIVE');
+    const latestCycle = userCycles[0];
+
+    user.has_active_cycle = !!activeCycle && (activeCycle.members_count < 126);
+    user.active_cycle_id = activeCycle ? activeCycle.cycle_id : '';
+    user.cycle_count = userCycles.length;
+    user.latest_cycle_status = latestCycle ? latestCycle.status : 'NONE';
+    // User is eligible for Top-Up / Re-Entry if they have NO ongoing active cycle (< 126 members)
+    user.is_topup_eligible = (!activeCycle && userCycles.length > 0) || (activeCycle && activeCycle.members_count >= 126);
+
     res.json(user);
   } catch (err) {
     console.error('Failed to lookup user:', err);

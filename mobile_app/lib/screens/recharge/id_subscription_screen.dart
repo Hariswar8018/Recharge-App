@@ -23,6 +23,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
   bool _isSubmitting = false;
   String _lookupUserName = "Raju Reddy";
   bool _isUserRegistered = true;
+  bool _isReentry = false;
   String? _mobileErrorMsg;
 
   @override
@@ -46,6 +47,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
       setState(() {
         _lookupUserName = "";
         _isUserRegistered = false;
+        _isReentry = false;
         _mobileErrorMsg = null;
       });
       return;
@@ -55,6 +57,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
       setState(() {
         _lookupUserName = "";
         _isUserRegistered = false;
+        _isReentry = false;
         _mobileErrorMsg = "Please enter only numbers (0-9).";
       });
       return;
@@ -64,6 +67,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
       setState(() {
         _lookupUserName = "";
         _isUserRegistered = false;
+        _isReentry = false;
         _mobileErrorMsg = "Please enter 10 digit mobile number.";
       });
       return;
@@ -73,6 +77,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
       setState(() {
         _lookupUserName = "";
         _isUserRegistered = false;
+        _isReentry = false;
         _mobileErrorMsg = "Please enter only 10 digit mobile number.";
       });
       return;
@@ -84,7 +89,8 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
         if (res['success'] == true && res['user'] != null) {
           final u = res['user'];
           final String status = (u['status'] ?? '').toString().toUpperCase();
-          final bool isAlreadyActive = status == 'ACTIVE' || u['is_active'] == 1 || u['is_active'] == true;
+          final bool hasActiveOngoingCycle = u['has_active_cycle'] == true;
+          final bool isTopUpEligible = u['is_topup_eligible'] == true;
 
           String jDate = "28-08-2025";
           final rawDate = u['created_at'] ?? u['createdAt'];
@@ -95,7 +101,8 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
             } catch (_) {}
           }
 
-          if (isAlreadyActive) {
+          if (hasActiveOngoingCycle) {
+            final cycleId = u['active_cycle_id'] ?? 'Current Cycle';
             setState(() {
               _lookupUserName = "";
               _userMobile = u['mobileNumber'] ?? u['mobile'] ?? text;
@@ -103,24 +110,27 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
               _userEmail = u['email'] ?? "user@gmail.com";
               _joiningDate = jDate;
               _isUserRegistered = false;
-              _mobileErrorMsg = "This mobile number (ID) is already activated. You cannot subscribe again.";
+              _isReentry = false;
+              _mobileErrorMsg = "Active cycle ($cycleId) is already in progress. Re-entry is available once 126 members are completed.";
             });
             return;
           }
 
           setState(() {
-            _lookupUserName = u['fullName'] ?? u['name'] ?? "Raju Reddy";
+            _lookupUserName = u['fullName'] ?? u['name'] ?? "User";
             _userMobile = u['mobileNumber'] ?? u['mobile'] ?? text;
             _userName = _lookupUserName;
-            _userEmail = u['email'] ?? "ravikanth@gmail.com";
+            _userEmail = u['email'] ?? "user@gmail.com";
             _joiningDate = jDate;
             _isUserRegistered = true;
+            _isReentry = isTopUpEligible || (status == 'ACTIVE' && !hasActiveOngoingCycle);
             _mobileErrorMsg = null;
           });
         } else {
           setState(() {
             _lookupUserName = "";
             _isUserRegistered = false;
+            _isReentry = false;
             _mobileErrorMsg = "This mobile number is not registered. Please enter a valid registered number.";
           });
         }
@@ -770,7 +780,7 @@ class _IdSubscriptionScreenState extends State<IdSubscriptionScreen> {
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          "SUBSCRIBE NOW",
+                                          _isReentry ? "ACTIVATE NEW CYCLE (₹${_joinAmount.toStringAsFixed(0)})" : "SUBSCRIBE NOW",
                                           style: TextStyle(
                                             color: canSubmit ? Colors.white : const Color(0xFF64748B),
                                             fontSize: 15,

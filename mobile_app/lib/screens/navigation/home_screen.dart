@@ -49,6 +49,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _healthCheckTimer;
   Map<String, dynamic> _visibilitySettings = {};
 
+  int _queuePosition = 0;
+  int _cycleNumber = 1;
+  String _cycleStatus = "";
+  bool _isTopUpRequired = false;
+  double _todayIncome = 0.0;
+  double _levelIncome = 0.0;
+  double _directIncome = 0.0;
+  List<dynamic> _backendLevels = [];
+
   Timer? _autoRefreshTimer;
 
   @override
@@ -86,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final team = await ApiService.getTeam();
     final txns = await ApiService.getTransactions();
     final visibility = await ApiService.getVisibility(forceRefresh: true);
+    final cycleStatusRes = await ApiService.getCycleStatus();
 
     dynamic activeCycle;
     try {
@@ -122,13 +132,38 @@ class _HomeScreenState extends State<HomeScreen> {
         _teamMembers = team;
         _transactions = txns;
 
-        if (activeCycle != null) {
-          _activeCycleId = activeCycle['cycle_id'] ?? "";
-          _membersCount = activeCycle['members_count'] ?? 0;
+        if (cycleStatusRes['success'] == true) {
+          _queuePosition = cycleStatusRes['queuePosition'] ?? 0;
+          _isTopUpRequired = cycleStatusRes['isTopUpRequired'] == true;
+          _membersCount = cycleStatusRes['membersCount'] ?? 0;
+          _backendLevels = (cycleStatusRes['levels'] as List<dynamic>?) ?? [];
+          final activeC = cycleStatusRes['activeCycle'];
+          if (activeC != null) {
+            _activeCycleId = activeC['cycle_id'] ?? "";
+            _cycleStatus = activeC['status'] ?? "ACTIVE";
+          } else {
+            final latestC = cycleStatusRes['latestCycle'];
+            _activeCycleId = "";
+            _cycleStatus = latestC != null ? (latestC['status'] ?? "COMPLETED") : "";
+          }
+          _cycleNumber = cycleStatusRes['cycleCount'] ?? (cycles.isNotEmpty ? cycles.length : 1);
+          final incSummary = cycleStatusRes['incomeSummary'] ?? {};
+          _todayIncome = parseDouble(incSummary['todayIncome']) ?? 0.0;
+          _levelIncome = parseDouble(incSummary['levelIncome']) ?? 0.0;
+          _directIncome = parseDouble(incSummary['directIncome']) ?? 0.0;
         } else {
-          _activeCycleId = "";
-          _membersCount = 0;
+          if (activeCycle != null) {
+            _activeCycleId = activeCycle['cycle_id'] ?? "";
+            _membersCount = activeCycle['members_count'] ?? 0;
+            _cycleStatus = activeCycle['status'] ?? "ACTIVE";
+          } else {
+            _activeCycleId = "";
+            _membersCount = 0;
+            _cycleStatus = cycles.isNotEmpty ? "COMPLETED" : "PENDING";
+          }
+          _isTopUpRequired = _membersCount >= 126 || (_cycleStatus == 'COMPLETED' && cycles.isNotEmpty);
         }
+
         _referralLink = "https://play.google.com/store/apps/details?id=com.app.earnfarm";
         _isLoading = false;
       });
@@ -1295,11 +1330,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      "TOP-UP REQUIRED! (126 Members Reached)",
+                      "₹1,200 TOP-UP REQUIRED – ACTIVATE NEW CYCLE",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
                         fontSize: 13,
+                        letterSpacing: 0.3,
                       ),
                     ),
                     SizedBox(height: 2),
@@ -1382,7 +1418,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 0: HOME VIEW ---
   Widget _buildHomeTab() {
-    final bool isTopUpRequired = _membersCount >= 126;
+    final bool isTopUpRequired = _isTopUpRequired || _membersCount >= 126 || (_cycleStatus == 'COMPLETED' && _activeCycleId.isEmpty);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -2157,31 +2193,37 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 1: BUSINESS VIEW ---
   Widget _buildBusinessTab() {
-    double realGlobalIncome = 0.0;
-    double realAffiliateIncome = 0.0;
-    double todayIncome = 0.0;
+    double realGlobalIncome = _levelIncome > 0 ? _levelIncome : 0.0;
+    double realAffiliateIncome = _directIncome > 0 ? _directIncome : 0.0;
+    double todayIncome = _todayIncome;
 
-    final String nowStr = DateTime.now().toLocal().toString().substring(0, 10);
+    if (realGlobalIncome == 0.0 && realAffiliateIncome == 0.0) {
+      final String nowIso = DateTime.now().toLocal().toString().substring(0, 10);
+      final nowD = DateTime.now();
+      final String nowSlash = "${nowD.month}/${nowD.day}/${nowD.year}";
+      final String nowSlashAlt = "${nowD.day}/${nowD.month}/${nowD.year}";
 
-    for (var tx in _transactions) {
-      final String status = (tx['status'] ?? '').toString().toLowerCase();
-      if (status == 'success' || status == 'approved' || status == 'completed') {
-        final String type = (tx['type'] ?? '').toString();
-        final double rawAmt = parseDouble(tx['amount']?.toString().replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
+      for (var tx in _transactions) {
+        final String status = (tx['status'] ?? '').toString().toLowerCase();
+        if (status == 'success' || status == 'approved' || status == 'completed') {
+          final String type = (tx['type'] ?? '').toString();
+          final double rawAmt = parseDouble(tx['amount']?.toString().replaceAll(RegExp(r'[^\d.]'), '')) ?? 0.0;
 
-        final bool isGlobal = type.contains('Level') || type.contains('Global') || type.contains('Cycle');
-        final bool isAffiliate = type.contains('Direct') || type.contains('Affiliate') || type.contains('Referral');
+          final bool isGlobal = type.contains('Level') || type.contains('Global') || type.contains('Cycle') || type.contains('Top User');
+          final bool isAffiliate = type.contains('Direct') || type.contains('Affiliate') || type.contains('Referral') || type.contains('Sponsor');
 
-        if (isGlobal) {
-          realGlobalIncome += rawAmt;
-        } else if (isAffiliate) {
-          realAffiliateIncome += rawAmt;
-        }
+          if (isGlobal) {
+            realGlobalIncome += rawAmt;
+          } else if (isAffiliate) {
+            realAffiliateIncome += rawAmt;
+          }
 
-        if (isGlobal || isAffiliate) {
-          final String txDate = (tx['date'] ?? '').toString();
-          if (txDate.contains(nowStr)) {
-            todayIncome += rawAmt;
+          if (isGlobal || isAffiliate) {
+            final String txDate = (tx['date'] ?? '').toString();
+            final String txCreatedAt = (tx['createdAt'] ?? '').toString();
+            if (txDate.contains(nowIso) || txDate.contains(nowSlash) || txDate.contains(nowSlashAlt) || txCreatedAt.contains(nowIso)) {
+              todayIncome += rawAmt;
+            }
           }
         }
       }
@@ -2838,30 +2880,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTeamTab() {
-    final int realTeamCount = _teamMembers.where((m) => (m['status'] ?? '').toString().toUpperCase() == 'ACTIVE').length;
-    final int m1 = int.tryParse((_visibilitySettings['level_1_members'] ?? '2').toString()) ?? 2;
-    final int m2 = int.tryParse((_visibilitySettings['level_2_members'] ?? '4').toString()) ?? 4;
-    final int m3 = int.tryParse((_visibilitySettings['level_3_members'] ?? '8').toString()) ?? 8;
-    final int m4 = int.tryParse((_visibilitySettings['level_4_members'] ?? '16').toString()) ?? 16;
-    final int m5 = int.tryParse((_visibilitySettings['level_5_members'] ?? '32').toString()) ?? 32;
-    final int m6 = int.tryParse((_visibilitySettings['level_6_members'] ?? '64').toString()) ?? 64;
+    final int singleLegTeamCount = _membersCount;
+    const int m1 = 2;
+    const int m2 = 4;
+    const int m3 = 8;
+    const int m4 = 16;
+    const int m5 = 32;
+    const int m6 = 64;
 
-    final double i1 = double.tryParse((_visibilitySettings['level_1_income'] ?? '300').toString()) ?? 300.0;
-    final double i2 = double.tryParse((_visibilitySettings['level_2_income'] ?? '400').toString()) ?? 400.0;
-    final double i3 = double.tryParse((_visibilitySettings['level_3_income'] ?? '800').toString()) ?? 800.0;
-    final double i4 = double.tryParse((_visibilitySettings['level_4_income'] ?? '1600').toString()) ?? 1600.0;
-    final double i5 = double.tryParse((_visibilitySettings['level_5_income'] ?? '3200').toString()) ?? 3200.0;
-    final double i6 = double.tryParse((_visibilitySettings['level_6_income'] ?? '6400').toString()) ?? 6400.0;
+    const double i1 = 200.0;
+    const double i2 = 400.0;
+    const double i3 = 800.0;
+    const double i4 = 1600.0;
+    const double i5 = 3200.0;
+    const double i6 = 6400.0;
 
-    final int cum1 = m1;
-    final int cum2 = cum1 + m2;
-    final int cum3 = cum2 + m3;
-    final int cum4 = cum3 + m4;
-    final int cum5 = cum4 + m5;
-    final int cum6 = cum5 + m6;
-    final int maxTarget = cum6 > 0 ? cum6 : 126;
+    const int cum1 = 2;
+    const int cum2 = 6;
+    const int cum3 = 14;
+    const int cum4 = 30;
+    const int cum5 = 62;
+    const int cum6 = 126;
+    const int maxTarget = 126;
 
-    final double progressRatio = (realTeamCount / (maxTarget * 1.0)).clamp(0.0, 1.0);
+    final double progressRatio = (singleLegTeamCount / (maxTarget * 1.0)).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressRatio * 100).toStringAsFixed(1)}%";
     final String visG = (_visibilitySettings['sec_global_cycle_visibility'] ?? 'Show').toString();
     final bool enabledG = _visibilitySettings['sec_global_cycle_enabled'] != false && _visibilitySettings['sec_global_cycle_enabled_bool'] != 'false';
@@ -2949,7 +2991,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 1),
                           Text(
-                            "$realTeamCount",
+                            "$singleLegTeamCount",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 26,
@@ -2957,14 +2999,47 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            "TARGET : $maxTarget",
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              const Text(
+                                "TARGET: 126",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: singleLegTeamCount >= 126 ? Colors.green.shade600 : Colors.white24,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  singleLegTeamCount >= 126
+                                      ? "CYCLE COMPLETED"
+                                      : (_activeCycleId.isNotEmpty ? "ACTIVE GROWTH" : "PENDING"),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
+                          if (_queuePosition > 0) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              "Queue Position: #$_queuePosition",
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 8),
                           // Custom slider-style progress indicator inside right column
                           LayoutBuilder(
@@ -3084,9 +3159,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   final int prevCumTarget = i > 0 ? (levelData[i - 1]['cumTarget'] as int) : 0;
 
                   String statusStr;
-                  if (realTeamCount >= cumTarget) {
+                  if (singleLegTeamCount >= cumTarget) {
                     statusStr = "Completed";
-                  } else if (i == 0 || realTeamCount >= prevCumTarget) {
+                  } else if (singleLegTeamCount > prevCumTarget || (i == 0 && singleLegTeamCount > 0)) {
+                    statusStr = "In Progress";
+                  } else if (i == 0 && singleLegTeamCount == 0 && _activeCycleId.isNotEmpty) {
                     statusStr = "In Progress";
                   } else {
                     statusStr = "Locked";
@@ -3378,7 +3455,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: _buildProfileSubMetric(
                           "Activation Cycle",
-                          "Cycle 1",
+                          _cycleNumber > 0 ? "Cycle $_cycleNumber" : "Cycle 1",
                           Icons.autorenew_rounded,
                           onTap: () => _showActivationCycleModal(context),
                         ),
@@ -3692,9 +3769,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text("Current Cycle", style: TextStyle(fontWeight: FontWeight.w600)),
-                  Text("Cycle 1", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0052CC))),
+                children: [
+                  const Text("Current Cycle", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    _activeCycleId.isNotEmpty ? _activeCycleId : (_cycleNumber > 0 ? "Cycle $_cycleNumber" : "None"),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0052CC)),
+                  ),
                 ],
               ),
             ),
@@ -3708,9 +3788,37 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text("Cycle Status", style: TextStyle(fontWeight: FontWeight.w600)),
-                  Text("Active", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF16A34A))),
+                children: [
+                  const Text("Queue Position", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    _queuePosition > 0 ? "#$_queuePosition" : "N/A",
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0A369D)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Cycle Status", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    _membersCount >= 126 || _cycleStatus == "COMPLETED"
+                        ? "Completed (Top-Up Required)"
+                        : (_activeCycleId.isNotEmpty ? "Active" : "Pending"),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: _activeCycleId.isNotEmpty ? const Color(0xFF16A34A) : Colors.red,
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -610,6 +610,20 @@ class ApiService {
     return [];
   }
 
+  // Get Comprehensive Cycle Status (Queue, Levels, TopUp, Income)
+  static Future<Map<String, dynamic>> getCycleStatus() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/cycles/status'),
+        headers: await _getHeaders(requireAuth: true),
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+    } catch (_) {}
+    return {'success': false};
+  }
+
   // Submit Withdrawal Request
   static Future<Map<String, dynamic>> submitWithdrawal(double amount) async {
     try {
