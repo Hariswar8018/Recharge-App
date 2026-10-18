@@ -226,12 +226,27 @@ async function initDb() {
       )
     `);
 
-    // Single Leg Queue Table
+    // Single Leg Queue Table (kept for backward-compatible position tracking)
     await query(`
       CREATE TABLE IF NOT EXISTS single_leg_queue (
         id INT AUTO_INCREMENT PRIMARY KEY,
         cycle_id INT NOT NULL,
         user_id INT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 2x2 Auto-Fill Spillover Matrix Positions Table
+    await query(`
+      CREATE TABLE IF NOT EXISTS matrix_positions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        cycle_id INT NOT NULL,
+        user_id INT NOT NULL,
+        matrix_index INT NOT NULL,
+        parent_cycle_id INT DEFAULT NULL,
+        parent_user_id INT DEFAULT NULL,
+        leg VARCHAR(10) DEFAULT 'L',
+        level INT NOT NULL DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);

@@ -36,10 +36,11 @@ async function resetSystemData() {
     await query('DELETE FROM fund_requests');
     console.log('✓ Cleared all fund requests');
 
-    // 5. Delete all single leg queues & cycles
+    // 5. Delete all single leg queues, matrix positions & cycles
     await query('DELETE FROM single_leg_queue');
+    await query('DELETE FROM matrix_positions');
     await query('DELETE FROM cycles');
-    console.log('✓ Cleared all single leg queues & cycles');
+    console.log('✓ Cleared all single leg queues, matrix positions & cycles');
 
     // 6. Ensure Admin User (srdigitalseva99@gmail.com, role = "admin")
     const salt = bcrypt.genSaltSync(10);

@@ -1197,6 +1197,7 @@ router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
     await query('DELETE FROM withdrawals');
     await query('DELETE FROM fund_requests');
     await query('DELETE FROM single_leg_queue');
+    await query('DELETE FROM matrix_positions');
     await query('DELETE FROM cycles');
 
     const salt = bcrypt.genSaltSync(10);

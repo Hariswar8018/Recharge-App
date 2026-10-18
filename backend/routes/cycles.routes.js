@@ -134,105 +134,121 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
       );
       const newCycleDbId = cycleResult.insertId;
 
-      // 6. Place targetUser cycle at the BOTTOM of the Single Leg Queue
-      const [queueResult] = await conn.execute(
+      // 6. Place targetUser cycle in the 2x2 Auto-Fill Spillover Matrix (Breadth-First Order)
+      // Determine next sequential matrix_index
+      const [maxRows] = await conn.execute(
+        'SELECT MAX(matrix_index) as maxIndex FROM matrix_positions'
+      );
+      const currentMaxIndex = (maxRows && maxRows[0] && maxRows[0].maxIndex != null)
+        ? Number(maxRows[0].maxIndex)
+        : 0;
+
+      const myMatrixIndex = currentMaxIndex + 1;
+      let parentCycleId = null;
+      let parentUserId = null;
+      let leg = 'L';
+      let depthLevel = 0;
+
+      if (myMatrixIndex > 1) {
+        const parentMatrixIndex = Math.floor(myMatrixIndex / 2);
+        leg = (myMatrixIndex % 2 === 0) ? 'L' : 'R';
+        depthLevel = Math.floor(Math.log2(myMatrixIndex));
+
+        const [parentRows] = await conn.execute(
+          'SELECT cycle_id, user_id FROM matrix_positions WHERE matrix_index = ? LIMIT 1',
+          [parentMatrixIndex]
+        );
+        if (parentRows && parentRows.length > 0) {
+          parentCycleId = parentRows[0].cycle_id;
+          parentUserId = parentRows[0].user_id;
+        }
+      }
+
+      // Record placement in matrix_positions table
+      await conn.execute(
+        'INSERT INTO matrix_positions (cycle_id, user_id, matrix_index, parent_cycle_id, parent_user_id, leg, level) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [newCycleDbId, targetUser.id, myMatrixIndex, parentCycleId, parentUserId, leg, depthLevel]
+      );
+
+      // Keep single_leg_queue entry for backward compatibility
+      await conn.execute(
         'INSERT INTO single_leg_queue (cycle_id, user_id) VALUES (?, ?)',
         [newCycleDbId, targetUser.id]
       );
-      const myQueueId = queueResult.insertId;
 
-      // Calculate queue position of this newly inserted cycle
-      const [posRows] = await conn.execute(
-        'SELECT COUNT(*) as count FROM single_leg_queue WHERE id < ?',
-        [myQueueId]
-      );
-      const queuePosition = (posRows[0]?.count || 0) + 1;
+      const queuePosition = myMatrixIndex;
 
-      // 7. Single Leg 6-Level Business Plan distribution for cycles ahead in the queue
-      // Milestones:
-      // Level 1: 2 members  -> ₹200
-      // Level 2: 6 members  -> ₹400  (Cumulative: ₹600)
-      // Level 3: 14 members -> ₹800  (Cumulative: ₹1,400)
-      // Level 4: 30 members -> ₹1,600 (Cumulative: ₹3,000)
-      // Level 5: 62 members -> ₹3,200 (Cumulative: ₹6,200)
-      // Level 6: 126 members -> ₹6,400 (Cumulative: ₹12,600 - Cycle Completed!)
-      const [activeCycles] = await conn.execute(
-        `SELECT c.id, c.user_id, c.members_count 
-         FROM cycles c
-         JOIN single_leg_queue q ON c.id = q.cycle_id
-         WHERE c.status = 'ACTIVE' AND c.id != ?
-         ORDER BY q.id ASC`,
-        [newCycleDbId]
-      );
+      // 7. 2x2 Auto-Fill Spillover Matrix 6-Level Income Distribution
+      // As defined in the client business plan:
+      // Level 1: 2 members  -> ₹100 per member (Total ₹200)
+      // Level 2: 4 members  -> ₹100 per member (Total ₹400)
+      // Level 3: 8 members  -> ₹100 per member (Total ₹800)
+      // Level 4: 16 members -> ₹100 per member (Total ₹1,600)
+      // Level 5: 32 members -> ₹100 per member (Total ₹3,200)
+      // Level 6: 64 members -> ₹100 per member (Total ₹6,400)
+      // Total Level Pool Collection = ₹600 per join (from 126 members = ₹75,600)
+      // Total Level Income per complete 126-member cycle = ₹12,600
+      let currIndex = myMatrixIndex;
+      for (let depth = 1; depth <= 6; depth++) {
+        const uplineIndex = Math.floor(currIndex / 2);
+        if (uplineIndex < 1) break;
 
-      const c1 = 2;    // Level 1: 2 members
-      const c2 = 6;    // Level 2: 2 + 4 = 6 members
-      const c3 = 14;   // Level 3: 6 + 8 = 14 members
-      const c4 = 30;   // Level 4: 14 + 16 = 30 members
-      const c5 = 62;   // Level 5: 30 + 32 = 62 members
-      const c6 = 126;  // Level 6: 62 + 64 = 126 members
-
-      for (const activeCycle of activeCycles) {
-        const newMembersCount = activeCycle.members_count + 1;
-        await conn.execute(
-          'UPDATE cycles SET members_count = ? WHERE id = ?',
-          [newMembersCount, activeCycle.id]
+        const [uplineRows] = await conn.execute(
+          `SELECT mp.cycle_id, mp.user_id, c.status, c.members_count 
+           FROM matrix_positions mp 
+           JOIN cycles c ON mp.cycle_id = c.id 
+           WHERE mp.matrix_index = ? LIMIT 1`,
+          [uplineIndex]
         );
 
-        let payout = 0;
-        let levelLabel = '';
+        if (uplineRows && uplineRows.length > 0) {
+          const upline = uplineRows[0];
+          // Only active cycles with < 126 members receive level income
+          if (upline.status === 'ACTIVE' && Number(upline.members_count) < 126) {
+            const newMembersCount = Number(upline.members_count) + 1;
+            const payout = 100.00; // ₹100 per member in 2x2 matrix level pool
 
-        if (newMembersCount === c1) {
-          payout = 200.00;
-          levelLabel = 'Single Leg Level 1 Income (2 Members)';
-        } else if (newMembersCount === c2) {
-          payout = 400.00;
-          levelLabel = 'Single Leg Level 2 Income (6 Members)';
-        } else if (newMembersCount === c3) {
-          payout = 800.00;
-          levelLabel = 'Single Leg Level 3 Income (14 Members)';
-        } else if (newMembersCount === c4) {
-          payout = 1600.00;
-          levelLabel = 'Single Leg Level 4 Income (30 Members)';
-        } else if (newMembersCount === c5) {
-          payout = 3200.00;
-          levelLabel = 'Single Leg Level 5 Income (62 Members)';
-        } else if (newMembersCount === c6) {
-          payout = 6400.00;
-          levelLabel = 'Single Leg Level 6 Income (126 Members Complete)';
-        }
-
-        if (payout > 0) {
-          await conn.execute(
-            'UPDATE users SET main_wallet_balance = main_wallet_balance + ? WHERE id = ?',
-            [payout, activeCycle.user_id]
-          );
-          await conn.execute(
-            'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", ?, ?, ?, "Success")',
-            [activeCycle.user_id, `+₹${payout.toFixed(2)}`, levelLabel, dateIso]
-          );
-        }
-
-        if (newMembersCount >= c6) {
-          // Cycle Completed at 126 members
-          await conn.execute(
-            'UPDATE cycles SET status = "COMPLETED", members_count = ? WHERE id = ?',
-            [c6, activeCycle.id]
-          );
-          // Dequeue from single leg queue (Queue Position resets, old cycle moves to history)
-          await conn.execute(
-            'DELETE FROM single_leg_queue WHERE cycle_id = ?',
-            [activeCycle.id]
-          );
-
-          // Record Company Level Pool Surplus (₹11,400) upon complete 126-member cycle
-          try {
+            // Increment downline count for upline cycle
             await conn.execute(
-              'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (0, "COMPANY", "+₹11400.00", "Company Level Pool Surplus", ?, "Success")',
-              [dateIso]
+              'UPDATE cycles SET members_count = ? WHERE id = ?',
+              [newMembersCount, upline.cycle_id]
             );
-          } catch (_) {}
+
+            // Credit ₹100 Level Income to upline's main wallet
+            await conn.execute(
+              'UPDATE users SET main_wallet_balance = main_wallet_balance + ? WHERE id = ?',
+              [payout, upline.user_id]
+            );
+
+            // Transaction log
+            await conn.execute(
+              'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", "+₹100.00", ?, ?, "Success")',
+              [upline.user_id, `Matrix Level ${depth} Income`, dateIso]
+            );
+
+            // Check if upline cycle is completed (126 members reached across 6 levels)
+            if (newMembersCount >= 126) {
+              await conn.execute(
+                'UPDATE cycles SET status = "COMPLETED", members_count = 126 WHERE id = ?',
+                [upline.cycle_id]
+              );
+              await conn.execute(
+                'DELETE FROM single_leg_queue WHERE cycle_id = ?',
+                [upline.cycle_id]
+              );
+
+              // Record Company Level Pool Surplus (₹11,400) upon complete 126-member cycle
+              try {
+                await conn.execute(
+                  'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (0, "COMPANY", "+₹11400.00", "Company Level Pool Surplus", ?, "Success")',
+                  [dateIso]
+                );
+              } catch (_) {}
+            }
+          }
         }
+
+        currIndex = uplineIndex;
       }
 
       return {
@@ -250,7 +266,7 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
     sendNotificationEmail(targetUser.email, "SR Digital Seva - Account Activated!", `
       <h3>Hi ${targetUser.fullName},</h3>
       <p>We have successfully processed your plan payment of <strong>₹${joinAmount.toFixed(2)}</strong>.</p>
-      <p>Your cycle ID <strong>${result.cycleId}</strong> has been placed in the single-leg business plan at Queue Position #${result.queuePosition}.</p>
+      <p>Your cycle ID <strong>${result.cycleId}</strong> has been placed in the 2×2 Auto-Fill Spillover Matrix at Position #${result.queuePosition}.</p>
       <p>Your Member ID is your registered Mobile Number: <strong>${targetUser.mobileNumber}</strong></p>
     `);
 
@@ -282,11 +298,16 @@ router.get('/status', verifyAppToken, verifyUserToken, async (req, res) => {
 
     let queuePosition = 0;
     if (activeCycle) {
-      const qRows = await query('SELECT id FROM single_leg_queue WHERE cycle_id = ? LIMIT 1', [activeCycle.id]);
-      if (qRows.length > 0) {
-        const queueEntryId = qRows[0].id;
-        const posRows = await query('SELECT COUNT(*) as count FROM single_leg_queue WHERE id < ?', [queueEntryId]);
-        queuePosition = (posRows[0]?.count || 0) + 1;
+      const posRows = await query('SELECT matrix_index FROM matrix_positions WHERE cycle_id = ? LIMIT 1', [activeCycle.id]);
+      if (posRows.length > 0) {
+        queuePosition = posRows[0].matrix_index;
+      } else {
+        const qRows = await query('SELECT id FROM single_leg_queue WHERE cycle_id = ? LIMIT 1', [activeCycle.id]);
+        if (qRows.length > 0) {
+          const queueEntryId = qRows[0].id;
+          const countRows = await query('SELECT COUNT(*) as count FROM single_leg_queue WHERE id < ?', [queueEntryId]);
+          queuePosition = (countRows[0]?.count || 0) + 1;
+        }
       }
     }
 
