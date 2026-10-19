@@ -66,11 +66,7 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                                 fontSize: 15,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            const Text(
-                              "Level-1 Direct Referrals Only",
-                              style: TextStyle(color: Colors.white70, fontSize: 12),
-                            ),
+                            
                           ],
                         ),
                       ),
@@ -96,11 +92,27 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                           itemBuilder: (context, index) {
                             final member = _directMembers[index];
                             final rawName = member['fullName'] ?? member['name'] ?? 'Member';
-                            final mobile = member['mobileNumber'] ?? member['mobile'] ?? 'N/A';
+                            final rawPhone = member['mobileNumber'] ??
+                                member['mobile'] ??
+                                member['phone'] ??
+                                member['phoneNumber'] ??
+                                member['phone_number'] ??
+                                member['mobilenumber'] ??
+                                member['memberId'];
+                            final String userPhoneNumber = (rawPhone != null &&
+                                    rawPhone.toString().trim().isNotEmpty &&
+                                    rawPhone.toString().trim() != 'null')
+                                ? rawPhone.toString().trim()
+                                : 'N/A';
                             final status = (member['status'] ?? 'PENDING').toString().toUpperCase();
                             final isActive = status == 'ACTIVE';
                             final isPending = status == 'PENDING';
-                            final createdAt = member['createdAt']?.toString().substring(0, 10) ?? member['created_at']?.toString() ?? 'N/A';
+                            final rawCreated = member['createdAt'] ?? member['created_at'];
+                            String createdAt = 'N/A';
+                            if (rawCreated != null) {
+                              final str = rawCreated.toString();
+                              createdAt = str.length >= 10 ? str.substring(0, 10) : str;
+                            }
 
                             final Color avatarBg = isActive ? const Color(0xFFDCFCE7) : (isPending ? const Color(0xFFFEF3C7) : const Color(0xFFFEE2E2));
                             final Color avatarIconCol = isActive ? const Color(0xFF16A34A) : (isPending ? const Color(0xFFD97706) : const Color(0xFFEF4444));
@@ -148,10 +160,10 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                                         const SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            const Icon(Icons.phone_android, size: 13, color: Colors.grey),
+                                            const Icon(Icons.phone_android, size: 13, color: Color(0xFF0A369D)),
                                             const SizedBox(width: 4),
                                             Text(
-                                              "Member ID: $mobile",
+                                              "Member ID: $userPhoneNumber",
                                               style: const TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.w600),
                                             ),
                                           ],

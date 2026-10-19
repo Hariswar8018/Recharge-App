@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
-import '../../api.dart';
 import '../../widgets/processing_dialog.dart';
 
 class PaymentCheckoutScreen extends StatefulWidget {
@@ -26,8 +24,7 @@ class PaymentCheckoutScreen extends StatefulWidget {
 }
 
 class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
-  late Razorpay _razorpay;
-  String _paymentStatus = "Awaiting Payment Initiator";
+  String _paymentStatus = "Ready to proceed with payment";
   bool _isLoading = false;
   String _clientId = "";
 
@@ -35,46 +32,9 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
   void initState() {
     super.initState();
     _clientId = "CLI${DateTime.now().millisecondsSinceEpoch}";
-
-    _razorpay = Razorpay();
-    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
-    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
-    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
-  @override
-  void dispose() {
-    _razorpay.clear();
-    super.dispose();
-  }
-
-  void _startPayment() {
-    setState(() {
-      _paymentStatus = "Processing in Payment Gateway...";
-    });
-
-    var options = {
-      'key': Api.razorpayapi_key,
-      'amount': (widget.amount * 100).toInt(),
-      'currency': 'INR',
-      'name': 'SR Digital Seva',
-      'description': '${widget.providerName} Recharge',
-      'prefill': {
-        'contact': widget.number,
-        'email': 'customer@srdigitalseva.com'
-      }
-    };
-
-    try {
-      _razorpay.open(options);
-    } catch (e) {
-      setState(() {
-        _paymentStatus = "Checkout opening error: $e";
-      });
-    }
-  }
-
-  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+  void _startPayment() async {
     showProcessingDialog(context, "Processing Telecom Recharge...");
     if (!mounted) return;
 
@@ -87,7 +47,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
       final result = await ApiService.triggerRazorpaySandboxPayment(
         -widget.amount,
         "${widget.providerName} Recharge",
-        "MAIN"
+        "MAIN",
       );
 
       if (!mounted) return;
@@ -95,40 +55,42 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
 
       setState(() {
         _isLoading = false;
-        _paymentStatus = result['success'] 
-            ? "SUCCESS: Recharge Complete!" 
+        _paymentStatus = result['success'] == true
+            ? "SUCCESS: Recharge Complete!"
             : "PENDING: Awaiting Operator Callback";
       });
 
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
-        title: Row(
-          children: const [
-            Icon(Icons.check_circle, color: Colors.green),
-            SizedBox(width: 8),
-            Text("Recharge Initiated", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 8),
+              Text("Recharge Initiated", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+            ],
+          ),
+          content: Text(
+            "Recharge transaction for ${widget.providerName} success!\n\nPay ID: $_clientId",
+            style: const TextStyle(height: 1.4),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.popUntil(context, ModalRoute.withName('/home'));
+              },
+              style: ElevatedButton.styleFrom(
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
+              ),
+              child: const Text("Go to Home"),
+            )
           ],
         ),
-        content: Text(
-          "Recharge transaction for ${widget.providerName} success!\n\nBill payment api not integrated.\nPay ID: ${response.paymentId}",
-          style: const TextStyle(height: 1.4),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.popUntil(context, ModalRoute.withName('/home'));
-            },
-            style: ElevatedButton.styleFrom(shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4)))),
-            child: const Text("Go to Home"),
-          )
-        ],
-      ),
-    );
+      );
     } catch (e) {
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -140,23 +102,13 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
     }
   }
 
-  void _handlePaymentError(PaymentFailureResponse response) {
-    setState(() {
-      _paymentStatus = "FAILED: ${response.message} (Code: ${response.code})";
-    });
-  }
-
-  void _handleExternalWallet(ExternalWalletResponse response) {
-    debugPrint("External wallet selected");
-  }
-
   void _cancelCheckout() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4))),
-        title: Row(
-          children: const [
+        title: const Row(
+          children: [
             Icon(Icons.warning, color: Colors.orange),
             SizedBox(width: 8),
             Text("Cancel Recharge?"),
@@ -184,11 +136,13 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
     setState(() {
       _paymentStatus = "Querying operator logs for Client ID: $_clientId";
     });
-    
+
     Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _paymentStatus = "Status: SUCCESS. Transaction registered under Client ID: $_clientId";
-      });
+      if (mounted) {
+        setState(() {
+          _paymentStatus = "Status: SUCCESS. Transaction registered under Client ID: $_clientId";
+        });
+      }
     });
   }
 
@@ -227,7 +181,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardLightBlue.withOpacity(0.5),
+                  color: AppTheme.cardLightBlue.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(

@@ -145,7 +145,12 @@ router.get('/team', verifyAppToken, verifyUserToken, async (req, res) => {
        ORDER BY u.id DESC`,
       [req.user.id]
     );
-    res.json(team);
+    const formattedTeam = (team || []).map(m => ({
+      ...m,
+      mobileNumber: m.mobileNumber || m.mobilenumber || m.mobile || m.phone || 'N/A',
+      memberId: m.mobileNumber || m.mobilenumber || m.mobile || m.phone || m.id || 'N/A'
+    }));
+    res.json(formattedTeam);
   } catch (err) {
     console.error('Error fetching user team:', err);
     res.status(500).json({ error: 'Failed to load team network' });

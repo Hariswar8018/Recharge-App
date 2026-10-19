@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_me/share_me.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_theme.dart';
@@ -773,6 +772,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+                    
                     Expanded(
                       child: SingleChildScrollView(child: _buildTabContent()),
                     ),
@@ -1326,11 +1326,11 @@ class _HomeScreenState extends State<HomeScreen> {
               const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
               const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: const [
                     Text(
-                      "₹1,200 TOP-UP REQUIRED – ACTIVATE NEW CYCLE",
+                      "TOP UP TO ACTIVATE NEW CYCLE ",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -1338,14 +1338,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         letterSpacing: 0.3,
                       ),
                     ),
-                    SizedBox(height: 2),
-                    Text(
-                      "Tap here to Top-Up ID (₹1,200) & unlock next cycle income!",
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 11,
-                      ),
-                    ),
+                    Icon(Icons.arrow_forward_ios, color: Colors.white30, size: 16,),
+                    Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                    Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
                   ],
                 ),
               ),
