@@ -210,25 +210,15 @@ async function sendFcmNotification({ title, body, imageUrl, data = {}, tokens = 
   }
 
   let topicResult = null;
-  try {
-    topicResult = await fcm.send(topicMessage);
-    console.log('📢 [FCM] Successfully broadcast push notification to topic "all":', topicResult);
-  } catch (err) {
-    console.error('❌ [FCM] Error sending topic message:', err.message);
-  }
-
-  try {
-    await fcm.send({ ...topicMessage, topic: 'notifications' });
-  } catch (_) {}
-
-  // If specific device tokens are provided, send multicast batch
   let multicastResult = null;
+
+  // If specific device tokens are targeted (e.g. Active or Pending segment), send directly to tokens
   if (Array.isArray(tokens) && tokens.length > 0) {
     const validTokens = [...new Set(tokens.filter(t => typeof t === 'string' && t.trim() !== ''))];
     if (validTokens.length > 0) {
       try {
         const multicastMsg = {
-          tokens: validTokens.slice(0, 500), // Firebase max batch is 500
+          tokens: validTokens.slice(0, 500),
           notification: topicMessage.notification,
           data: topicMessage.data,
           android: topicMessage.android
@@ -238,6 +228,14 @@ async function sendFcmNotification({ title, body, imageUrl, data = {}, tokens = 
       } catch (err) {
         console.error('❌ [FCM] Error sending multicast message:', err.message);
       }
+    }
+  } else {
+    // General broadcast: send exactly once to topic 'all'
+    try {
+      topicResult = await fcm.send(topicMessage);
+      console.log('📢 [FCM] Successfully broadcast push notification to topic "all":', topicResult);
+    } catch (err) {
+      console.error('❌ [FCM] Error sending topic message:', err.message);
     }
   }
 

@@ -66,6 +66,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class FcmService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  static final Set<String> _recentMessageIds = <String>{};
   static bool _initialized = false;
 
   static Future<void> initialize() async {
@@ -125,9 +126,9 @@ class FcmService {
         sound: true,
       );
 
-      // 7. Subscribe to broadcast topics
+      // 7. Subscribe to broadcast topics (Use only 'all' to prevent duplicate deliveries)
       await _messaging.subscribeToTopic('all');
-      await _messaging.subscribeToTopic('notifications');
+      await _messaging.unsubscribeFromTopic('notifications').catchError((_) {});
 
       // 8. Fetch and register device FCM token
       await syncTokenWithBackend();
@@ -140,7 +141,17 @@ class FcmService {
       // 10. FOREGROUND MESSAGE LISTENER: Display Heads-Up Banner when app is OPEN!
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         if (kDebugMode) {
-          print('FCM Foreground message received: ${message.notification?.title} - ${message.notification?.body}');
+          print('FCM Foreground message received: ${message.messageId} - ${message.notification?.title}');
+        }
+
+        // Deduplicate messages by messageId
+        final msgId = message.messageId ?? '${message.notification?.title}_${message.sentTime?.millisecondsSinceEpoch}';
+        if (_recentMessageIds.contains(msgId)) {
+          return;
+        }
+        _recentMessageIds.add(msgId);
+        if (_recentMessageIds.length > 50) {
+          _recentMessageIds.remove(_recentMessageIds.first);
         }
 
         final notification = message.notification;

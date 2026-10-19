@@ -258,22 +258,20 @@ router.post('/notifications', verifyAdminToken, async (req, res) => {
       );
     }
 
-    // Collect targeted device FCM tokens from users table if any
+    // Collect targeted device FCM tokens only if a specific sub-group is selected
     let userTokens = [];
-    try {
-      let tokenSql = 'SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""';
-      if (target_group === 'ACTIVE_USERS') {
-        tokenSql += ' AND status = "ACTIVE"';
-      } else if (target_group === 'PENDING_USERS') {
-        tokenSql += ' AND status != "ACTIVE"';
-      }
-      const tokenRows = await query(tokenSql);
-      userTokens = tokenRows.map(r => r.fcm_token).filter(Boolean);
-      if (userTokens.length === 0) {
-        const fallbackRows = await query('SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""');
-        userTokens = fallbackRows.map(r => r.fcm_token).filter(Boolean);
-      }
-    } catch (_) {}
+    if (target_group && target_group !== 'ALL_USERS') {
+      try {
+        let tokenSql = 'SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""';
+        if (target_group === 'ACTIVE_USERS') {
+          tokenSql += ' AND status = "ACTIVE"';
+        } else if (target_group === 'PENDING_USERS') {
+          tokenSql += ' AND status != "ACTIVE"';
+        }
+        const tokenRows = await query(tokenSql);
+        userTokens = tokenRows.map(r => r.fcm_token).filter(Boolean);
+      } catch (_) {}
+    }
 
     // Send real-time FCM Push Notification (broadcasts to topic "all" & individual device tokens)
     const fcmResult = await sendFcmNotification({
@@ -319,21 +317,20 @@ router.post('/send-notification', verifyAdminToken, async (req, res) => {
       );
     }
 
+    // Collect targeted device FCM tokens only if a specific sub-group is selected
     let userTokens = [];
-    try {
-      let tokenSql = 'SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""';
-      if (target_group === 'ACTIVE_USERS') {
-        tokenSql += ' AND status = "ACTIVE"';
-      } else if (target_group === 'PENDING_USERS') {
-        tokenSql += ' AND status != "ACTIVE"';
-      }
-      const tokenRows = await query(tokenSql);
-      userTokens = tokenRows.map(r => r.fcm_token).filter(Boolean);
-      if (userTokens.length === 0) {
-        const fallbackRows = await query('SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""');
-        userTokens = fallbackRows.map(r => r.fcm_token).filter(Boolean);
-      }
-    } catch (_) {}
+    if (target_group && target_group !== 'ALL_USERS') {
+      try {
+        let tokenSql = 'SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""';
+        if (target_group === 'ACTIVE_USERS') {
+          tokenSql += ' AND status = "ACTIVE"';
+        } else if (target_group === 'PENDING_USERS') {
+          tokenSql += ' AND status != "ACTIVE"';
+        }
+        const tokenRows = await query(tokenSql);
+        userTokens = tokenRows.map(r => r.fcm_token).filter(Boolean);
+      } catch (_) {}
+    }
 
     const fcmResult = await sendFcmNotification({
       title,
