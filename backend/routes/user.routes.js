@@ -2,7 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { query } = require('../db');
 const { getCache, setCache, invalidateCache } = require('../cache');
-const { verifyAppToken, verifyUserToken } = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
+const { verifyAppToken, verifyUserToken, JWT_SECRET } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -82,14 +83,35 @@ router.post('/update', verifyAppToken, verifyUserToken, async (req, res) => {
 });
 
 // Register or update User FCM Device Token for push notifications
-router.post('/fcm-token', verifyAppToken, verifyUserToken, async (req, res) => {
-  const { fcm_token } = req.body;
+router.post('/fcm-token', verifyAppToken, async (req, res) => {
+  const { fcm_token, mobileNumber } = req.body;
   if (!fcm_token || typeof fcm_token !== 'string') {
     return res.status(400).json({ error: 'Valid fcm_token is required' });
   }
+
+  const cleanToken = fcm_token.trim();
+
   try {
-    await query('UPDATE users SET fcm_token = ? WHERE id = ?', [fcm_token.trim(), req.user.id]);
-    res.json({ success: true, message: 'FCM device token updated successfully' });
+    let userId = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        userId = decoded.id;
+      } catch (_) {}
+    }
+
+    if (userId) {
+      await query('UPDATE users SET fcm_token = ? WHERE id = ?', [cleanToken, userId]);
+    } else if (mobileNumber) {
+      await query('UPDATE users SET fcm_token = ? WHERE mobileNumber = ?', [cleanToken, String(mobileNumber).trim()]);
+    } else {
+      await query('UPDATE users SET fcm_token = ? WHERE fcm_token IS NULL OR fcm_token = ""', [cleanToken]);
+    }
+
+    console.log(`📱 [FCM] Device token registered: ${cleanToken.substring(0, 20)}... (User ID: ${userId || 'anonymous'})`);
+    res.json({ success: true, message: 'FCM device token registered successfully' });
   } catch (err) {
     console.error('Failed to update user FCM token:', err);
     res.status(500).json({ error: 'Failed to update FCM device token' });

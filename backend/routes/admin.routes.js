@@ -255,6 +255,10 @@ router.post('/notifications', verifyAdminToken, async (req, res) => {
       }
       const tokenRows = await query(tokenSql);
       userTokens = tokenRows.map(r => r.fcm_token).filter(Boolean);
+      if (userTokens.length === 0) {
+        const fallbackRows = await query('SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""');
+        userTokens = fallbackRows.map(r => r.fcm_token).filter(Boolean);
+      }
     } catch (_) {}
 
     // Send real-time FCM Push Notification (broadcasts to topic "all" & individual device tokens)
@@ -311,6 +315,10 @@ router.post('/send-notification', verifyAdminToken, async (req, res) => {
       }
       const tokenRows = await query(tokenSql);
       userTokens = tokenRows.map(r => r.fcm_token).filter(Boolean);
+      if (userTokens.length === 0) {
+        const fallbackRows = await query('SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""');
+        userTokens = fallbackRows.map(r => r.fcm_token).filter(Boolean);
+      }
     } catch (_) {}
 
     const fcmResult = await sendFcmNotification({

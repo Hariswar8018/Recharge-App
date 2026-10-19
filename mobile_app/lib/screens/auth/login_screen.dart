@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../services/fcm_service.dart';
 import '../../widgets/social_footer.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -194,6 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (result['success']) {
+      FcmService.syncTokenWithBackend();
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/home');
     } else {

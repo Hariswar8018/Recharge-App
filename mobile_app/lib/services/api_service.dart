@@ -922,11 +922,11 @@ class ApiService {
   static Future<bool> updateFcmToken(String fcmToken) async {
     try {
       final token = await getToken();
-      if (token == null) return false;
       final workingBase = await getWorkingBaseUrl();
+      final headers = await _getHeaders(requireAuth: token != null);
       final response = await http.post(
         Uri.parse('$workingBase/api/user/fcm-token'),
-        headers: await _getHeaders(requireAuth: true),
+        headers: headers,
         body: jsonEncode({'fcm_token': fcmToken}),
       );
       return response.statusCode == 200;

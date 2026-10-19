@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_theme.dart';
 import '../../services/api_service.dart';
+import '../../services/fcm_service.dart';
 import '../../utils/date_formatter.dart';
 import '../../widgets/background_container.dart';
 import '../../widgets/processing_dialog.dart';
@@ -63,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadUserProfile();
+    FcmService.syncTokenWithBackend();
     _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (mounted) {
         _loadUserProfile();

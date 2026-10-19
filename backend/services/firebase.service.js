@@ -125,6 +125,10 @@ async function sendFcmNotification({ title, body, imageUrl, data = {}, tokens = 
     console.error('❌ [FCM] Error sending topic message:', err.message);
   }
 
+  try {
+    await fcm.send({ ...topicMessage, topic: 'notifications' });
+  } catch (_) {}
+
   // If specific device tokens are provided, send multicast batch
   let multicastResult = null;
   if (Array.isArray(tokens) && tokens.length > 0) {

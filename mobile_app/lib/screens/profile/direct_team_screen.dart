@@ -164,7 +164,7 @@ class _DirectTeamScreenState extends State<DirectTeamScreen> {
                                             const SizedBox(width: 4),
                                             Text(
                                               "Member ID: $userPhoneNumber",
-                                              style: const TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.w600),
+                                              style: const TextStyle(color: Color(0xFF475569), fontSize: 10, fontWeight: FontWeight.w600),
                                             ),
                                           ],
                                         ),
