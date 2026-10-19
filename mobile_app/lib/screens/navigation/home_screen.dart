@@ -3941,37 +3941,37 @@ class _BlinkingTopUpCardWidgetState extends State<_BlinkingTopUpCardWidget>
             borderRadius: BorderRadius.circular(16),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color.lerp(const Color(0xFF0A1E4A), const Color(0xFF1E3A8A), glow)!,
-                    Color.lerp(const Color(0xFF1E40AF), const Color(0xFF2563EB), glow)!,
-                    Color.lerp(const Color(0xFF1D4ED8), const Color(0xFF3B82F6), glow)!,
+                    Color.lerp(const Color(0xFF991B1B), const Color(0xFFDC2626), glow)!,
+                    Color.lerp(const Color(0xFFDC2626), const Color(0xFFEF4444), glow)!,
+                    Color.lerp(const Color(0xFFB91C1C), const Color(0xFFDC2626), glow)!,
                   ],
                 ),
                 border: Border.all(
                   color: Color.lerp(
-                    const Color(0xFF60A5FA).withValues(alpha: 0.35),
-                    const Color(0xFFBAE6FD),
+                    const Color(0xFFFCA5A5).withValues(alpha: 0.35),
+                    const Color(0xFFFEE2E2),
                     glow,
                   )!,
                   width: 1.5 + (0.8 * glow),
                 ),
                 boxShadow: [
-                  // Core saturated blue glow (1s ON, 1s OFF)
+                  // Core saturated red glow (1s ON, 1s OFF)
                   BoxShadow(
-                    color: const Color(0xFF2563EB).withValues(alpha: 0.2 + (0.65 * glow)),
+                    color: const Color(0xFFDC2626).withValues(alpha: 0.25 + (0.65 * glow)),
                     blurRadius: 8 + (16 * glow),
                     spreadRadius: 1 + (3 * glow),
                     offset: const Offset(0, 2),
                   ),
-                  // Outer ambient sky-blue aura
+                  // Outer ambient red aura
                   BoxShadow(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.1 + (0.45 * glow)),
+                    color: const Color(0xFFF87171).withValues(alpha: 0.15 + (0.45 * glow)),
                     blurRadius: 18 + (22 * glow),
                     spreadRadius: 0.5 + (2.5 * glow),
                   ),
@@ -3979,146 +3979,52 @@ class _BlinkingTopUpCardWidgetState extends State<_BlinkingTopUpCardWidget>
               ),
               child: Row(
                 children: [
-                  // Glowing Badge Icon
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.12 + (0.16 * glow)),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3 + (0.4 * glow)),
-                        width: 1.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF60A5FA).withValues(alpha: 0.4 * glow),
-                          blurRadius: 10 * glow,
-                          spreadRadius: 1 * glow,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.bolt_rounded,
-                      color: Colors.amberAccent,
-                      size: 24,
-                    ),
+                  // First Icon: Warning
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.white,
+                    size: 28,
                   ),
                   const SizedBox(width: 10),
-                  // Text Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            const Flexible(
-                              child: Text(
-                                "TOP UP REQUIRED",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 12.5,
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 5),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                              decoration: BoxDecoration(
-                                color: Colors.amberAccent,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                "ACTIVE CYCLE",
-                                style: TextStyle(
-                                  color: Color(0xFF0F172A),
-                                  fontSize: 8.5,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          "Top-up ID to unlock rewards & spillover",
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.88),
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                  // Exact Text
+                  const Expanded(
+                    child: Text(
+                      "TOP UP REQUIRED TO ACTIVATE NEW CYCLE",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12.5,
+                        letterSpacing: 0.3,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  // Visual Linking Indicator: Pulsing arrow pointing directly to Top-Up action
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Transform.translate(
-                        offset: Offset(_arrowSlideAnimation.value, 0),
-                        child: Opacity(
-                          opacity: _arrowOpacityAnimation.value,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: Color.lerp(Colors.white38, Colors.cyanAccent, glow),
-                                size: 12,
-                              ),
-                              Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: Color.lerp(Colors.white70, Colors.white, glow),
-                                size: 14,
-                              ),
-                            ],
+                  const SizedBox(width: 8),
+                  // Arrow forward at the full corner with sliding animation
+                  Transform.translate(
+                    offset: Offset(_arrowSlideAnimation.value, 0),
+                    child: Opacity(
+                      opacity: _arrowOpacityAnimation.value,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Color.lerp(Colors.white30, Colors.white60, glow),
+                            size: 13,
                           ),
-                        ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Color.lerp(Colors.white60, Colors.white, glow),
+                            size: 15,
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.white,
+                            size: 17,
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 6),
-                      // Prominent Clickable Top-Up Button
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF60A5FA).withValues(alpha: 0.3 + (0.5 * glow)),
-                              blurRadius: 8 + (8 * glow),
-                              spreadRadius: 1 + (2 * glow),
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "TOP-UP",
-                              style: TextStyle(
-                                color: Color(0xFF0052CC),
-                                fontWeight: FontWeight.w900,
-                                fontSize: 11.5,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                            SizedBox(width: 3),
-                            Icon(
-                              Icons.arrow_circle_right_rounded,
-                              color: Color(0xFF0052CC),
-                              size: 15,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
