@@ -1290,67 +1290,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBlinkingTopUpCard() {
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0.35, end: 1.0),
-      duration: const Duration(milliseconds: 700),
-      builder: (context, opacity, child) {
-        return Opacity(
-          opacity: opacity,
-          child: child,
-        );
-      },
-      onEnd: () {
-        if (mounted) setState(() {});
-      },
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const IdSubscriptionScreen()),
-          ).then((_) => _loadUserProfile());
-        },
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFDC2626),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.red.withOpacity(0.4),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: const [
-                    Text(
-                      "TOP UP TO ACTIVATE NEW CYCLE ",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white30, size: 16,),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
-                    Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, color: Colors.white, size: 20),
-            ],
-          ),
-        ),
-      ),
+    return _BlinkingTopUpCardWidget(
+      onTap: _navigateToSubscription,
     );
   }
 
@@ -1415,7 +1356,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 0: HOME VIEW ---
   Widget _buildHomeTab() {
-    final bool isTopUpRequired = _isTopUpRequired || _membersCount >= 126 || (_cycleStatus == 'COMPLETED' && _activeCycleId.isEmpty);
+    final bool isTopUpRequired = _status != 'ACTIVE' || _isTopUpRequired || _membersCount >= 126 || (_cycleStatus == 'COMPLETED' && _activeCycleId.isEmpty);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -3933,6 +3874,258 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _BlinkingTopUpCardWidget extends StatefulWidget {
+  final VoidCallback onTap;
+  const _BlinkingTopUpCardWidget({required this.onTap});
+
+  @override
+  State<_BlinkingTopUpCardWidget> createState() => _BlinkingTopUpCardWidgetState();
+}
+
+class _BlinkingTopUpCardWidgetState extends State<_BlinkingTopUpCardWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _glowAnimation;
+  late Animation<double> _arrowSlideAnimation;
+  late Animation<double> _arrowOpacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    // 1 second ON, 1 second OFF continuously (2-second cycle)
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _glowAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _arrowSlideAnimation = Tween<double>(begin: -4.0, end: 5.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _arrowOpacityAnimation = Tween<double>(begin: 0.35, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final double glow = _glowAnimation.value;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color.lerp(const Color(0xFF0A1E4A), const Color(0xFF1E3A8A), glow)!,
+                    Color.lerp(const Color(0xFF1E40AF), const Color(0xFF2563EB), glow)!,
+                    Color.lerp(const Color(0xFF1D4ED8), const Color(0xFF3B82F6), glow)!,
+                  ],
+                ),
+                border: Border.all(
+                  color: Color.lerp(
+                    const Color(0xFF60A5FA).withValues(alpha: 0.35),
+                    const Color(0xFFBAE6FD),
+                    glow,
+                  )!,
+                  width: 1.5 + (0.8 * glow),
+                ),
+                boxShadow: [
+                  // Core saturated blue glow (1s ON, 1s OFF)
+                  BoxShadow(
+                    color: const Color(0xFF2563EB).withValues(alpha: 0.2 + (0.65 * glow)),
+                    blurRadius: 8 + (16 * glow),
+                    spreadRadius: 1 + (3 * glow),
+                    offset: const Offset(0, 2),
+                  ),
+                  // Outer ambient sky-blue aura
+                  BoxShadow(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.1 + (0.45 * glow)),
+                    blurRadius: 18 + (22 * glow),
+                    spreadRadius: 0.5 + (2.5 * glow),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Glowing Badge Icon
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.12 + (0.16 * glow)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3 + (0.4 * glow)),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF60A5FA).withValues(alpha: 0.4 * glow),
+                          blurRadius: 10 * glow,
+                          spreadRadius: 1 * glow,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.bolt_rounded,
+                      color: Colors.amberAccent,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Text Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            const Flexible(
+                              child: Text(
+                                "TOP UP REQUIRED",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12.5,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: Colors.amberAccent,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                "ACTIVE CYCLE",
+                                style: TextStyle(
+                                  color: Color(0xFF0F172A),
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          "Top-up ID to unlock rewards & spillover",
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  // Visual Linking Indicator: Pulsing arrow pointing directly to Top-Up action
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Transform.translate(
+                        offset: Offset(_arrowSlideAnimation.value, 0),
+                        child: Opacity(
+                          opacity: _arrowOpacityAnimation.value,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Color.lerp(Colors.white38, Colors.cyanAccent, glow),
+                                size: 12,
+                              ),
+                              Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Color.lerp(Colors.white70, Colors.white, glow),
+                                size: 14,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      // Prominent Clickable Top-Up Button
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF60A5FA).withValues(alpha: 0.3 + (0.5 * glow)),
+                              blurRadius: 8 + (8 * glow),
+                              spreadRadius: 1 + (2 * glow),
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "TOP-UP",
+                              style: TextStyle(
+                                color: Color(0xFF0052CC),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 11.5,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            SizedBox(width: 3),
+                            Icon(
+                              Icons.arrow_circle_right_rounded,
+                              color: Color(0xFF0052CC),
+                              size: 15,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
