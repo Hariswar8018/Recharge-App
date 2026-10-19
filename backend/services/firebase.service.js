@@ -43,22 +43,23 @@ function getServiceAccount() {
             val = val.slice(1, -1).trim();
           }
         }
+
+        // Check for base64 encoded JSON
+        if (!val.startsWith('{') && val.length > 100) {
+          try {
+            const decoded = Buffer.from(val, 'base64').toString('utf8').trim();
+            if (decoded.startsWith('{')) {
+              const parsed = JSON.parse(decoded);
+              if (parsed && parsed.project_id) return parsed;
+            }
+          } catch (_) {}
+        }
       }
       if (typeof val === 'string') {
         val = JSON.parse(val);
       }
       if (typeof val === 'object' && val !== null && val.project_id) {
         return val;
-      }
-      // Check for base64 encoded JSON
-      if (typeof val === 'string' && !val.startsWith('{') && val.length > 100) {
-        try {
-          const decoded = Buffer.from(val, 'base64').toString('utf8').trim();
-          if (decoded.startsWith('{')) {
-            const parsed = JSON.parse(decoded);
-            if (parsed && parsed.project_id) return parsed;
-          }
-        } catch (_) {}
       }
 
       // Try regex field extraction if JSON parsing failed
