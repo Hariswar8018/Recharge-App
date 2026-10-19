@@ -371,7 +371,51 @@ FINAL BALANCE CHECK:
   IMPLEMENTED, SIMULATED & 100% VERIFIED.
 
 ================================================================================
+7. FIREBASE CLOUD MESSAGING (FCM) & TOP-LEVEL ID MIGRATION (7989293968)
+================================================================================
+* Requests Handled:
+  1. FCM Push Notifications on Admin notification creation using project `earnfarm`
+     with `SERVICE_JSON` in `backend/.env`.
+  2. Migrated top-level master ID / sponsor ID from `9988494936` to `7989293968`.
+
+* Fixation Done:
+  1. FlutterFire & Mobile App FCM Setup (mobile_app):
+     - Executed `flutterfire configure --project=earnfarm` successfully.
+     - Generated `lib/firebase_options.dart` and `android/app/google-services.json`.
+     - Integrated `firebase_core` (5.0.0) and `firebase_messaging` (17.0.0).
+     - Created `mobile_app/lib/services/fcm_service.dart` handling background messages,
+       permission requests, topic subscriptions ('all', 'notifications'), and token syncing.
+     - Updated `mobile_app/lib/main.dart` with `WidgetsFlutterBinding.ensureInitialized()`
+       and `await FcmService.initialize()`.
+     - Added `POST_NOTIFICATIONS` permission to `android/app/src/main/AndroidManifest.xml`.
+     - Added `updateFcmToken` in `mobile_app/lib/services/api_service.dart`.
+
+  2. Backend FCM Integration (backend):
+     - Installed `firebase-admin` (v13.6.0).
+     - Created `backend/services/firebase.service.js` loading `SERVICE_JSON` from `backend/.env`.
+     - Verified initialization for project `earnfarm` and tested topic broadcast successfully.
+     - Updated `backend/routes/admin.routes.js` `POST /api/admin/notifications` and
+       `POST /api/admin/send-notification` to automatically broadcast push notifications
+       to topic "all" and active device tokens whenever a notification is sent from admin.
+     - Added `POST /api/user/fcm-token` route in `backend/routes/user.routes.js`.
+     - Added `fcm_token` column to `users` and `featured_image` to `notifications` in `backend/db.js`.
+
+  3. Top-Level Master ID Migration to 7989293968:
+     - Migrated master/admin phone from `9988494936` to `7989293968` across:
+       * `backend/routes/auth.routes.js` (registration sponsor fallback and lookup)
+       * `backend/routes/admin.routes.js` (admin login and reset seeder)
+       * `backend/reset_db_data.js` (system database reset script)
+       * `backend/db.js` (schema initialization and auto-seed)
+       * Updated existing database users table records (`SR Digital Seva Admin` & `SR Digital Seva Master`)
+       * Mobile app support links in `login_screen.dart`, `forgot_password_screen.dart`,
+         `register_screen.dart`, and `policy_screen.dart`.
+
+* Current Status:
+  IMPLEMENTED, CONFIGURED, TESTED & 100% VERIFIED.
+
+================================================================================
 END OF CURRENT STATUS REPORT
 ================================================================================
+
 
 

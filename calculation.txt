@@ -1,0 +1,237 @@
+================================================================================
+SR DIGITAL SEVA - ADMIN PANEL CALCULATION REFERENCE (CALCULATION.TXT)
+================================================================================
+Document Purpose:
+This document details exactly how all numeric values, totals, and metrics are
+calculated across the Admin Portal, including:
+1. Dashboard Overview Tab
+2. Platform Transactions Ledger Tab
+3. Payout & Withdrawal Management Tab
+4. Balance Dashboard & Wallet Flow Architecture
+
+================================================================================
+1. DASHBOARD OVERVIEW TAB (PLATFORM METRICS)
+================================================================================
+The Dashboard Overview displays 6 key metric cards and operational graphs.
+Here is how each number is queried from the database and processed by the frontend:
+
+--- CARD 1: REGISTERED APP USERS ---
+* Backend Database Query:
+    SELECT COUNT(id) as count 
+    FROM users 
+    WHERE role NOT IN ('admin', 'superadmin', 'support') OR role IS NULL;
+* Purpose:
+    Counts every member account registered in the system, excluding admin staff.
+* Current Frontend Display:
+    `{{ users.length }}` (Calculated in DashboardOverviewTab.vue from the `users` array).
+
+--- CARD 2: ACTIVE ID SUBSCRIPTIONS ---
+* Frontend Calculation Formula:
+    `activeUsersCount = users.filter(u => (u.status || 'ACTIVE').toUpperCase() === 'ACTIVE').length`
+* Purpose:
+    Counts the number of members whose status is 'ACTIVE' (IDs that have paid
+    the ₹1,200 activation fee and have an active subscription).
+* Status Definition:
+    - 'ACTIVE'   -> Paid member (ID activated)
+    - 'PENDING'  -> Registered member who has not yet activated their ID
+    - 'BLOCKED'  -> Account restricted by administrator
+
+--- CARD 3: MAIN WALLET POOL / INCOME ---
+* Backend Database Aggregation:
+    SELECT COALESCE(SUM(main_wallet_balance), 0) as mainTotal FROM users;
+* Frontend Calculation Formula:
+    `totalMainWallet = users.reduce((sum, u) => sum + (parseFloat(u.main_wallet_balance) || 0), 0)`
+* Purpose:
+    Represents the total liability/balance held across all users' Main Wallets.
+    Main Wallet holds earned income (Direct Sponsor Income ₹300, Matrix Level Income
+    ₹100/member, Captcha earnings, and Withdrawal refunds).
+
+--- CARD 4: FUND WALLET POOL / DEPOSITS ---
+* Backend Database Aggregation:
+    SELECT COALESCE(SUM(fund_wallet_balance), 0) as fundTotal FROM users;
+* Frontend Calculation Formula:
+    `totalFundWallet = users.reduce((sum, u) => sum + (parseFloat(u.fund_wallet_balance) || 0), 0)`
+* Purpose:
+    Represents the total unspent deposit balance held across all users' Fund Wallets.
+    Fund Wallet is used strictly for plan activations (₹1,200 Top-Up / ID Activation).
+
+--- CARD 5: TOTAL SYSTEM TRANSACTIONS ---
+* Backend Database Query:
+    SELECT COUNT(id) as count FROM transactions;
+* Purpose:
+    Counts total audit records in the platform general ledger.
+* Current Frontend Display:
+    `{{ transactions.length }}` (Count of transaction rows currently loaded in state).
+
+--- CARD 6: PENDING FUND REQUESTS ---
+* Backend Database Query:
+    SELECT COUNT(id) as count FROM fund_requests WHERE status = 'PENDING';
+* Purpose:
+    Counts user Add Money requests that have uploaded a UTR / payment proof
+    and are waiting for Admin verification and manual approval.
+
+--- OPERATIONAL GRAPHS ---
+1. Financial Growth & Transaction Trends:
+   Aggregates transaction timestamps by week/day to show transaction activity.
+2. Wallet Liquidity Distribution (Donut Chart):
+   Visualizes the ratio between Main Wallet (Income) and Fund Wallet (Deposits):
+     Main Wallet % = [ totalMainWallet / (totalMainWallet + totalFundWallet) ] * 100
+     Fund Wallet % = [ totalFundWallet / (totalMainWallet + totalFundWallet) ] * 100
+
+================================================================================
+2. PLATFORM TRANSACTIONS LEDGER TAB (AUDIT & FINANCIAL SUMMARY)
+================================================================================
+Located under Admin Portal -> Wallet & Financials -> Platform Transactions
+Component: TransactionsTab.vue | API: GET /api/admin/transactions
+
+--- BACKEND DATA EXTRACTION & NUMERIC NORMALIZATION ---
+In `backend/routes/admin.routes.js`:
+1. Strips currency symbols and signs:
+     `cleanAmt = rawAmt.replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim()`
+     `numAmt = parseFloat(cleanAmt) || 0`
+2. Determines Debit vs Credit direction (`is_debit` flag):
+     `isDebit = rawAmt.includes('-') || type.toLowerCase().includes('debit') || ...`
+
+--- STAT CARD CALCULATIONS IN FRONTEND ---
+
+1. Total Records:
+     `totalRecords = filteredTxns.length`
+     Count of all transactions matching the active filters (Wallet, Status, Type, Date, Search).
+
+2. Total Ledger Volume (Turnover):
+     `totalVolume = filteredTxns.reduce((sum, tx) => sum + (parseFloat(tx.numeric_amount || tx.amount) || 0), 0)`
+     The gross sum of money moved through all filtered transactions regardless of direction.
+
+3. Total Credits (Money In / Rewards):
+     `totalCredits = filteredTxns.filter(tx => !tx.is_debit).reduce((sum, tx) => sum + (parseFloat(tx.numeric_amount || tx.amount) || 0), 0)`
+     Includes: Fund deposits, Direct Sponsor Income (+₹300), Matrix Level Income (+₹100),
+     and Admin manual credits.
+
+4. Total Debits (Cashouts / Deductions):
+     `totalDebits = filteredTxns.filter(tx => tx.is_debit).reduce((sum, tx) => sum + (parseFloat(tx.numeric_amount || tx.amount) || 0), 0)`
+     Includes: User Cashout Requests (-₹amt), ID Activation deductions (-₹1,200),
+     and Admin manual debits.
+
+--- TAX & INVOICE BREAKDOWN (FOR ₹1,200 ID ACTIVATIONS) ---
+When generating individual PDF invoices or monthly bulk Excel reports:
+* Total Transaction Amount: ₹1,200.00
+* Taxable Base Value (SAC 998439):
+    Base Value = Total / 1.18 = ₹1,200 / 1.18 = ₹1,016.95
+* CGST (9%):
+    ₹1,016.95 * 0.09 = ₹91.53
+* SGST (9%):
+    ₹1,016.95 * 0.09 = ₹91.53
+* Total GST (18%):
+    ₹91.53 + ₹91.53 = ₹183.05 (₹1,016.95 + ₹183.05 = ₹1,200.00)
+
+================================================================================
+3. PAYOUT & WITHDRAWAL MANAGEMENT TAB
+================================================================================
+Located under Admin Portal -> Wallet & Financials -> Payout & Withdrawals
+Component: WithdrawalsTab.vue | API: GET /api/admin/withdrawals
+
+--- WITHDRAWAL RULES & DEDUCTION FORMULA ---
+When a user requests a withdrawal in the mobile app:
+1. Eligibility:
+   - Must be an ACTIVE ID (`status === 'ACTIVE'`).
+   - Allowed only on configured withdrawal days (Default: Monday, Wednesday, Friday).
+   - Only 1 withdrawal per user per day.
+   - Minimum Withdrawal Amount: ₹500.00.
+2. 15% System Deduction Fee:
+   - Gross Requested Amount (`amount`): e.g., ₹1,000.00
+   - Deduction Fee (15%):
+       `deduction = (amount * 15) / 100` = ₹150.00
+   - Net Transfer to Member's Bank Account (`net_amount`):
+       `net_amount = amount - deduction` = ₹850.00
+3. Immediate Balance Lock:
+   Upon request submission, `main_wallet_balance` is deducted upfront by the full ₹1,000:
+     `UPDATE users SET main_wallet_balance = main_wallet_balance - 1000 WHERE id = ?`
+
+--- ADMIN STAT CARDS CALCULATIONS ---
+
+1. Total Cashout Requests:
+     Count: `requests.length`
+     Sum:   `totalAmount = requests.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0)`
+
+2. Pending Payouts (Awaiting Bank Transfer & Approval):
+     Count: `requests.filter(r => r.status === 'PENDING').length`
+     Sum:   `requests.filter(r => r.status === 'PENDING').reduce((sum, r) => sum + parseFloat(r.amount || 0), 0)`
+
+3. Approved Payouts (Settled Bank Transfers):
+     Count: `requests.filter(r => r.status === 'APPROVED').length`
+     Sum:   `requests.filter(r => r.status === 'APPROVED').reduce((sum, r) => sum + parseFloat(r.amount || 0), 0)`
+
+4. Rejected Payouts (Failed/Cancelled):
+     Count: `requests.filter(r => r.status === 'REJECTED').length`
+     Sum:   `requests.filter(r => r.status === 'REJECTED').reduce((sum, r) => sum + parseFloat(r.amount || 0), 0)`
+
+--- ACTION MECHANICS ---
+* On Admin APPROVAL:
+    - Status set to 'APPROVED' with timestamp `processed_at`.
+    - No wallet deduction needed because balance was already deducted upfront.
+* On Admin REJECTION:
+    - Status set to 'REJECTED' with `rejection_reason`.
+    - Full Gross Amount (`refundAmt = r.amount`) is REFUNDED back to user's Main Wallet:
+        `UPDATE users SET main_wallet_balance = main_wallet_balance + refundAmt WHERE id = ?`
+    - Transaction logged: `INSERT INTO transactions ... amount = "+₹refundAmt", type = "Withdrawal Refund (...) "`
+
+================================================================================
+4. BALANCE DASHBOARD & WALLET FLOW ARCHITECTURE
+================================================================================
+The platform operates on two distinct user wallets and one company pool:
+
+--- 1. FUND WALLET (DEPOSIT & ACTIVATION WALLET) ---
+* Purpose:
+    Used exclusively to hold deposited money to activate accounts or top-up cycles.
+* Credits (+):
+    - Approved Add Money requests (via UPI QR or Razorpay).
+    - Admin manual fund credit (`Admin Fund Credit`).
+* Debits (-):
+    - Plan Activation / Top-Up (-₹1,200.00 per cycle).
+    - Admin manual fund debit (`Admin Fund Debit`).
+* Balance Equation:
+    Fund Wallet Balance = [Total Approved Deposits] + [Admin Fund Credits] - [Activations (N * ₹1,200)] - [Admin Fund Debits]
+
+--- 2. MAIN WALLET (INCOME WALLET) ---
+* Purpose:
+    Used to hold all affiliate earnings, bonuses, and cycle income.
+* Credits (+):
+    - Direct Sponsor Income: +₹300.00 instantly whenever a direct downline activates.
+    - 2×2 Matrix Level Income: +₹100.00 per member across up to 6 matrix levels.
+    - Captcha / Bonus Task rewards.
+    - Withdrawal Refunds (if bank transfer rejected by admin).
+    - Admin manual credit adjustments.
+* Debits (-):
+    - Cashout / Withdrawal Requests (-amount upfront).
+    - Admin manual debit adjustments.
+* Balance Equation:
+    Main Wallet Balance = [Direct Income] + [Matrix Level Income] + [Refunds/Bonus] - [Withdrawal Requests] ± [Admin Adjustments]
+
+--- 3. COMPANY LEVEL POOL & EARNING ALLOCATION (PER 126-MEMBER CYCLE) ---
+For every complete 2×2 Matrix Cycle of 126 members (Total Inflow = 126 × ₹1,200 = ₹1,51,200):
+* Direct Sponsor Income Paid (126 × ₹300):            ₹37,800.00
+* Level Income Paid to All Users in Matrix:          ₹64,200.00
+    - Top ID (Level 0): 126 members × ₹100          = ₹12,600.00
+    - Level 1 (2 IDs): 62 members × ₹100 × 2        = ₹12,400.00
+    - Level 2 (4 IDs): 30 members × ₹100 × 4        = ₹12,000.00
+    - Level 3 (8 IDs): 14 members × ₹100 × 8        = ₹11,200.00
+    - Level 4 (16 IDs): 6 members × ₹100 × 16       = ₹9,600.00
+    - Level 5 (32 IDs): 2 members × ₹100 × 32       = ₹6,400.00
+    - Level 6 (64 IDs): 0 members × ₹100 × 64       = ₹0.00
+    ----------------------------------------------------------
+    Total Level Income Paid:                         ₹64,200.00
+
+* Total Paid to Users:                               ₹1,02,000.00
+
+* Company Share:
+    - Company Maintenance Collection (126 × ₹300):    ₹37,800.00
+    - Level Pool Surplus (₹75,600 collection - ₹64,200 payout): ₹11,400.00
+    ----------------------------------------------------------
+    Total Company Earnings:                           ₹49,200.00
+
+* Final Verification:
+    ₹1,02,000.00 (Users) + ₹49,200.00 (Company) = ₹1,51,200.00 (Exact 100% balance).
+
+================================================================================
+END OF CALCULATION REFERENCE
+================================================================================

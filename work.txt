@@ -1,0 +1,203 @@
+================================================================================
+SR DIGITAL SEVA - ADMIN CALCULATION AUDIT & ISSUES REPORT (WORK.TXT)
+================================================================================
+Document Purpose:
+This document details all discovered discrepancies, bugs, and potential calculation
+flaws in the Admin Panel that can cause incorrect metrics or misleading numbers.
+
+================================================================================
+CRITICAL ISSUE 1: OVERVIEW METRIC CARDS CALCULATED ON PAGINATED ARRAY (ONLY 10 USERS!)
+================================================================================
+* Where It Occurs:
+  - Frontend: `web_app/src/components/admin/DashboardOverviewTab.vue` (Cards 1, 2, 3, 4, 5)
+  - Parent View: `web_app/src/views/AdminDashboard.vue` (`fetchDashboardData()`)
+  - Backend API: `backend/routes/admin.routes.js` (`GET /api/admin/dashboard`)
+
+* The Bug:
+  1. The backend endpoint `GET /api/admin/dashboard` computes full platform totals:
+       `stats = { totalUsers, totalFundWallet, totalMainWallet, totalTransactions }`
+     AND it also returns a paginated slice of users:
+       `usersList` with `LIMIT 10 OFFSET 0`
+     AND recent transactions:
+       `rawTransactions` with `LIMIT 15`.
+  2. In `AdminDashboard.vue`:
+       `if (data.users) this.users = data.users;`
+       `if (data.transactions) this.transactions = data.transactions;`
+     Notice that `data.stats` is COMPLETELY DISCARDED!
+  3. In `DashboardOverviewTab.vue`, the cards compute:
+     - Registered App Users:  `{{ users.length }}`        -> Always shows 10!
+     - Active Subscriptions:  `{{ activeUsersCount }}`   -> Counts only among those 10!
+     - Main Wallet Pool:      `{{ totalMainWallet }}`     -> Sums only those 10 users!
+     - Fund Wallet Pool:      `{{ totalFundWallet }}`     -> Sums only those 10 users!
+     - Total Transactions:    `{{ transactions.length }}` -> Always shows 15!
+
+* The Impact:
+  As soon as the platform has more than 10 users, the Admin Dashboard Overview will
+  drastically underreport users, balances, and transactions. If there are 1,000 users,
+  the dashboard will still show only 10 users and the balance of only those 10 users.
+
+* Required Fix:
+  In `AdminDashboard.vue`, store `this.stats = data.stats;` and pass `stats` into
+  `DashboardOverviewTab.vue`.
+  In `DashboardOverviewTab.vue`, read:
+  - Registered App Users:  `stats.totalUsers`
+  - Total Main Wallet:     `stats.totalMainWallet`
+  - Total Fund Wallet:     `stats.totalFundWallet`
+  - Total Transactions:    `stats.totalTransactions`
+  - Active Subscriptions:  Add `stats.activeUsers` query to backend `GET /dashboard`.
+
+================================================================================
+CRITICAL ISSUE 2: HARDCODED SVG DONUT CHART (75% MAIN / 25% FUND)
+================================================================================
+* Where It Occurs:
+  - Frontend: `web_app/src/components/admin/DashboardOverviewTab.vue` (lines 166-180)
+
+* The Bug:
+  The "Wallet Liquidity Distribution" donut chart has hardcoded SVG stroke values:
+    `<circle stroke-dasharray="188 63" ... />`
+    `<circle stroke-dasharray="63 188" ... />`
+    `<span>🟢 Main Wallet</span> <strong>75%</strong>`
+    `<span>🟣 Fund Wallet</span> <strong>25%</strong>`
+  It NEVER calculates the actual ratio between Main Wallet and Fund Wallet.
+
+* The Impact:
+  The donut chart will always say 75% Main Wallet and 25% Fund Wallet, regardless of
+  actual balances in the database.
+
+* Required Fix:
+  Calculate dynamic percentage based on real balances:
+    `mainPercent = totalPool > 0 ? ((totalMain / totalPool) * 100).toFixed(0) : 0`
+    `fundPercent = totalPool > 0 ? (100 - mainPercent) : 0`
+  Update the SVG stroke-dasharray and legend dynamically.
+
+================================================================================
+CRITICAL ISSUE 3: WITHDRAWAL REFUNDS INCORRECTLY COUNTED AS "DEBIT" IN LEDGER
+================================================================================
+* Where It Occurs:
+  - Backend API: `backend/routes/admin.routes.js` (`GET /api/admin/transactions`)
+  - Frontend: `web_app/src/components/admin/TransactionsTab.vue` (`totalDebits` vs `totalCredits`)
+
+* The Bug:
+  In `admin.routes.js`:
+    ```javascript
+    const isDebit = rawAmt.includes('-') || (tx.type && (
+      tx.type.toLowerCase().includes('debit') ||
+      tx.type.toLowerCase().includes('withdrawal') ||
+      tx.type.toLowerCase().includes('cashout') ||
+      tx.type.toLowerCase().includes('recharge')
+    ));
+    ```
+  When an admin REJECTS a withdrawal, the refund transaction is recorded as:
+    `amount: "+₹1000.00"`
+    `type: "Withdrawal Refund (Invalid Bank Details)"`
+  Because `tx.type.toLowerCase().includes('withdrawal')` is TRUE, the backend flags
+  `is_debit = true`, EVEN THOUGH IT IS A REFUND (+₹1,000)!
+  In `TransactionsTab.vue`:
+    `totalDebits` sums all `tx.is_debit`.
+
+* The Impact:
+  Money refunded back to the user is counted as a DEBIT (money going out) instead of
+  a CREDIT (money returned/restored). This inflates Total Debits and deflates Total Credits.
+
+* Required Fix:
+  Check for refund or explicit '+' before classifying as debit:
+  ```javascript
+  const isPositive = rawAmt.startsWith('+') || (!rawAmt.startsWith('-') && !rawAmt.includes('-'));
+  const isRefund = tx.type && tx.type.toLowerCase().includes('refund');
+  const isDebit = !isRefund && !isPositive && (rawAmt.includes('-') || ...);
+  ```
+
+================================================================================
+CRITICAL ISSUE 4: TRANSACTIONS TAB CALCULATES STATS FROM A TRUNCATED BATCH (LIMIT 2000)
+================================================================================
+* Where It Occurs:
+  - Frontend: `web_app/src/components/admin/TransactionsTab.vue` (`fetchTransactions()`)
+
+* The Bug:
+  `fetchTransactions()` calls:
+    `GET https://api.srdigitalseva.com/api/admin/transactions?limit=2000`
+  The cards `Total Records`, `Total Ledger Volume`, `Total Credits`, and `Total Debits`
+  are computed on `this.filteredTxns.reduce(...)`.
+  If the platform has 5,000 transactions, the backend only returns the newest 2,000.
+  Transactions #2001 to #5000 are omitted from the calculation.
+
+* The Impact:
+  The admin sees "Total Records: 2000" and the ledger volume is truncated to only the
+  most recent 2,000 rows, omitting historical transaction turnover.
+
+* Required Fix:
+  The backend `GET /api/admin/transactions` should return a summary object with
+  database-level `COUNT(*)`, `SUM(credit)`, and `SUM(debit)` queries across the
+  entire table, alongside the paginated records.
+
+================================================================================
+CRITICAL ISSUE 5: WITHDRAWAL MANAGEMENT CARDS SHOW GROSS INSTEAD OF NET PAYOUT
+================================================================================
+* Where It Occurs:
+  - Frontend: `web_app/src/components/admin/WithdrawalsTab.vue` (`approvedAmount`, `pendingAmount`)
+
+* The Bug:
+  In `WithdrawalsTab.vue`:
+    `approvedAmount = requests.filter(r => r.status === 'APPROVED').reduce((sum, r) => sum + parseFloat(r.amount || 0), 0)`
+  `r.amount` is the GROSS requested amount (e.g. ₹1,000.00).
+  The actual amount transferred by the company to the user's bank account is
+  `r.net_amount` (₹850.00, after 15% deduction).
+
+* The Impact:
+  1. If an admin approves ₹1,00,000 in withdrawals, the card shows `₹1,00,000 Settled`.
+  2. However, the company bank account was only debited ₹85,000 (net).
+  3. When reconciling company bank statements against the Admin Portal, there is an
+     apparent ₹15,000 mismatch because the card does not display the Net Amount or
+     break down the 15% admin deduction fee.
+
+* Required Fix:
+  Display both Gross and Net Amount on the cards, or show:
+  - Approved Gross Amount: ₹1,00,000
+  - 15% Deduction Retained: ₹15,000
+  - Net Bank Transfer: ₹85,000
+
+================================================================================
+CRITICAL ISSUE 6: USER INCOME MODAL INCLUDES ADMIN FUND CREDITS AS AFFILIATE INCOME
+================================================================================
+* Where It Occurs:
+  - Backend API: `backend/routes/admin.routes.js` (`GET /users/:userId/income`)
+
+* The Bug:
+  When admin inspects a user's income breakdown via User Income Modal, the code checks:
+    ```javascript
+    if (!isDebit && cleanAmt > 0) {
+      if (tType.includes('direct') || tType.includes('sponsor')) {
+        directIncome += cleanAmt;
+      } else if (tType.includes('level') || tType.includes('single leg') || tType.includes('pool')) {
+        singleLegIncome += cleanAmt;
+      } else {
+        otherIncome += cleanAmt;
+      }
+    }
+    const totalIncome = directIncome + singleLegIncome + otherIncome;
+    ```
+  If an admin manually credited ₹5,000 to the user's wallet (`Admin Fund Credit`),
+  this is added to `otherIncome` and increases the user's `totalIncome`.
+
+* The Impact:
+  Admin wallet corrections/manual deposits are reported as affiliate business earnings,
+  distorting the member's actual earnings from referrals and matrix levels.
+
+* Required Fix:
+  Exclude `Admin Fund Credit` and `Deposit` from affiliate `totalIncome`, or classify
+  them separately under "Manual Adjustments / Deposits" rather than "Earned Income".
+
+================================================================================
+SUMMARY OF ACTION ITEMS FOR ADMIN CALCULATION INTEGRITY
+================================================================================
+1. [Dashboard Overview] Connect metric cards directly to `data.stats` (total database counts)
+   instead of paginated `users.length` (10) and `transactions.length` (15).
+2. [Dashboard Overview] Make Donut Chart dynamic based on actual wallet totals.
+3. [Transactions Tab] Fix `is_debit` heuristic so `Withdrawal Refund` is marked as CREDIT (+).
+4. [Transactions Tab] Add full-database aggregation endpoint so stats don't truncate at 2,000 rows.
+5. [Withdrawals Tab] Add Net Payout vs 15% Deduction breakdown in metrics.
+6. [User Income Modal] Separate manual admin wallet deposits from affiliate earned income.
+
+================================================================================
+END OF WORK.TXT
+================================================================================

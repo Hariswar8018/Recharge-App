@@ -8,6 +8,7 @@ const { JWT_SECRET, verifyAdminToken } = require('../middleware/auth');
 
 const fs = require('fs');
 const path = require('path');
+const { sendFcmNotification } = require('../services/firebase.service');
 
 const router = express.Router();
 
@@ -30,11 +31,11 @@ router.post('/login', async (req, res) => {
       if (!checkUser || checkUser.length === 0) {
         await query(
           'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
-          ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819', 'admin']
+          ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '7989293968', passwordHash, 'Rajesh@1819', 'admin']
         );
       } else {
         await query(
-          'UPDATE users SET mobileNumber = "9988494936", passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE LOWER(email) = ?',
+          'UPDATE users SET mobileNumber = "7989293968", passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE LOWER(email) = ?',
           [passwordHash, 'Rajesh@1819', 'srdigitalseva99@gmail.com']
         );
       }
@@ -221,31 +222,115 @@ router.get('/gateway-status', verifyAdminToken, async (req, res) => {
   }
 });
 
-// POST Admin Notification Broadcast
+// POST Admin Notification Broadcast with FCM Push
 router.post('/notifications', verifyAdminToken, async (req, res) => {
-  const { title, message } = req.body;
+  const { title, message, featured_image, imageUrl, target_group } = req.body;
   if (!title || !message) {
     return res.status(400).json({ error: 'Title and Message are required.' });
   }
 
   try {
-    await query('INSERT INTO notifications (title, message) VALUES (?, ?)', [title, message]);
-    res.status(201).json({ message: 'Notification broadcasted successfully.' });
+    const finalImage = featured_image || imageUrl || null;
+    let notifRes;
+    try {
+      notifRes = await query(
+        'INSERT INTO notifications (title, message, featured_image) VALUES (?, ?, ?)',
+        [title, message, finalImage]
+      );
+    } catch (_) {
+      notifRes = await query(
+        'INSERT INTO notifications (title, message) VALUES (?, ?)',
+        [title, message]
+      );
+    }
+
+    // Collect targeted device FCM tokens from users table if any
+    let userTokens = [];
+    try {
+      let tokenSql = 'SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""';
+      if (target_group === 'ACTIVE_USERS') {
+        tokenSql += ' AND status = "ACTIVE"';
+      } else if (target_group === 'PENDING_USERS') {
+        tokenSql += ' AND status != "ACTIVE"';
+      }
+      const tokenRows = await query(tokenSql);
+      userTokens = tokenRows.map(r => r.fcm_token).filter(Boolean);
+    } catch (_) {}
+
+    // Send real-time FCM Push Notification (broadcasts to topic "all" & individual device tokens)
+    const fcmResult = await sendFcmNotification({
+      title,
+      body: message,
+      imageUrl: finalImage,
+      data: {
+        notification_id: notifRes && notifRes.insertId ? String(notifRes.insertId) : '',
+        target_group: target_group || 'ALL_USERS'
+      },
+      tokens: userTokens
+    });
+
+    res.status(201).json({
+      message: 'Notification broadcasted and FCM push sent successfully.',
+      notificationId: notifRes && notifRes.insertId ? notifRes.insertId : null,
+      fcm: fcmResult
+    });
   } catch (err) {
+    console.error('Failed to create notification broadcast:', err);
     res.status(500).json({ error: 'Failed to create notification' });
   }
 });
 
 router.post('/send-notification', verifyAdminToken, async (req, res) => {
-  const { title, message } = req.body;
+  const { title, message, featured_image, imageUrl, target_group } = req.body;
   if (!title || !message) {
     return res.status(400).json({ error: 'Title and Message are required.' });
   }
 
   try {
-    await query('INSERT INTO notifications (title, message) VALUES (?, ?)', [title, message]);
-    res.status(201).json({ message: 'Notification broadcasted successfully.' });
+    const finalImage = featured_image || imageUrl || null;
+    let notifRes;
+    try {
+      notifRes = await query(
+        'INSERT INTO notifications (title, message, featured_image) VALUES (?, ?, ?)',
+        [title, message, finalImage]
+      );
+    } catch (_) {
+      notifRes = await query(
+        'INSERT INTO notifications (title, message) VALUES (?, ?)',
+        [title, message]
+      );
+    }
+
+    let userTokens = [];
+    try {
+      let tokenSql = 'SELECT DISTINCT fcm_token FROM users WHERE fcm_token IS NOT NULL AND fcm_token != ""';
+      if (target_group === 'ACTIVE_USERS') {
+        tokenSql += ' AND status = "ACTIVE"';
+      } else if (target_group === 'PENDING_USERS') {
+        tokenSql += ' AND status != "ACTIVE"';
+      }
+      const tokenRows = await query(tokenSql);
+      userTokens = tokenRows.map(r => r.fcm_token).filter(Boolean);
+    } catch (_) {}
+
+    const fcmResult = await sendFcmNotification({
+      title,
+      body: message,
+      imageUrl: finalImage,
+      data: {
+        notification_id: notifRes && notifRes.insertId ? String(notifRes.insertId) : '',
+        target_group: target_group || 'ALL_USERS'
+      },
+      tokens: userTokens
+    });
+
+    res.status(201).json({
+      message: 'Notification broadcasted and FCM push sent successfully.',
+      notificationId: notifRes && notifRes.insertId ? notifRes.insertId : null,
+      fcm: fcmResult
+    });
   } catch (err) {
+    console.error('Failed to create notification broadcast:', err);
     res.status(500).json({ error: 'Failed to create notification' });
   }
 });
@@ -1209,13 +1294,13 @@ router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
     if (existingAdmin && existingAdmin.length > 0) {
       adminUserId = existingAdmin[0].id;
       await query(
-        'UPDATE users SET fullName = "SR Digital Seva Admin", mobileNumber = "9988494936", role = "admin", status = "ACTIVE" WHERE id = ?',
+        'UPDATE users SET fullName = "SR Digital Seva Admin", mobileNumber = "7989293968", role = "admin", status = "ACTIVE" WHERE id = ?',
         [adminUserId]
       );
     } else {
       const res = await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '7989293968', passwordHash, 'Rajesh@1819']
       );
       adminUserId = res.insertId || 1;
     }
@@ -1226,13 +1311,13 @@ router.post('/reset-system-data', verifyAdminToken, async (req, res) => {
     if (existingMaster && existingMaster.length > 0) {
       masterUserId = existingMaster[0].id;
       await query(
-        'UPDATE users SET fullName = "SR Digital Seva Master", mobileNumber = "9988494936", role = "user", status = "ACTIVE", main_wallet_balance = 0.00, fund_wallet_balance = 0.00, sponsor_id = NULL WHERE id = ?',
+        'UPDATE users SET fullName = "SR Digital Seva Master", mobileNumber = "7989293968", role = "user", status = "ACTIVE", main_wallet_balance = 0.00, fund_wallet_balance = 0.00, sponsor_id = NULL WHERE id = ?',
         [masterUserId]
       );
     } else {
       const res = await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status, fund_wallet_balance, main_wallet_balance, sponsor_id) VALUES (?, ?, ?, ?, ?, "user", "ACTIVE", 0.00, 0.00, NULL)',
-        ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ['SR Digital Seva Master', 'master@srdigitalseva.com', '7989293968', passwordHash, 'Rajesh@1819']
       );
       masterUserId = res.insertId;
     }

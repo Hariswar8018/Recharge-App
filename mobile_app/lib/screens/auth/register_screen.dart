@@ -957,7 +957,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Expanded(
                           child: InkWell(
                             onTap: () async {
-                              final uri = Uri.parse("https://wa.me/919988494936");
+                              final uri = Uri.parse("https://wa.me/917989293968");
                               if (await canLaunchUrl(uri)) {
                                 await launchUrl(uri, mode: LaunchMode.externalApplication);
                               }

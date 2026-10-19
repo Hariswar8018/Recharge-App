@@ -81,6 +81,21 @@ router.post('/update', verifyAppToken, verifyUserToken, async (req, res) => {
   }
 });
 
+// Register or update User FCM Device Token for push notifications
+router.post('/fcm-token', verifyAppToken, verifyUserToken, async (req, res) => {
+  const { fcm_token } = req.body;
+  if (!fcm_token || typeof fcm_token !== 'string') {
+    return res.status(400).json({ error: 'Valid fcm_token is required' });
+  }
+  try {
+    await query('UPDATE users SET fcm_token = ? WHERE id = ?', [fcm_token.trim(), req.user.id]);
+    res.json({ success: true, message: 'FCM device token updated successfully' });
+  } catch (err) {
+    console.error('Failed to update user FCM token:', err);
+    res.status(500).json({ error: 'Failed to update FCM device token' });
+  }
+});
+
 // Change User Password
 router.post('/change-password', verifyAppToken, verifyUserToken, async (req, res) => {
   const { oldPassword, newPassword } = req.body;

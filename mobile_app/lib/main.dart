@@ -12,8 +12,11 @@ import 'screens/transactions/transaction_history_screen.dart';
 import 'screens/transactions/withdrawal_screen.dart';
 import 'screens/recharge/id_subscription_screen.dart';
 import 'constants/app_theme.dart';
+import 'services/fcm_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FcmService.initialize();
   runApp(const MyApp());
 }
 

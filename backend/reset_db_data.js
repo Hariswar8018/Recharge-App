@@ -51,14 +51,14 @@ async function resetSystemData() {
     if (existingAdmin && existingAdmin.length > 0) {
       adminUserId = existingAdmin[0].id;
       await query(
-        'UPDATE users SET fullName = "SR Digital Seva Admin", email = "srdigitalseva99@gmail.com", mobileNumber = "9988494936", role = "admin", status = "ACTIVE" WHERE id = ?',
+        'UPDATE users SET fullName = "SR Digital Seva Admin", email = "srdigitalseva99@gmail.com", mobileNumber = "7989293968", role = "admin", status = "ACTIVE" WHERE id = ?',
         [adminUserId]
       );
       console.log(`✓ Preserved Admin user #${adminUserId}: srdigitalseva99@gmail.com`);
     } else {
       const res = await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '7989293968', passwordHash, 'Rajesh@1819']
       );
       adminUserId = res.insertId || 1;
       console.log(`✓ Created Admin user #${adminUserId}: srdigitalseva99@gmail.com`);
@@ -70,14 +70,14 @@ async function resetSystemData() {
     if (existingMaster && existingMaster.length > 0) {
       masterUserId = existingMaster[0].id;
       await query(
-        'UPDATE users SET fullName = "SR Digital Seva Master", mobileNumber = "9988494936", role = "user", status = "ACTIVE", main_wallet_balance = 0.00, fund_wallet_balance = 0.00, sponsor_id = NULL WHERE id = ?',
+        'UPDATE users SET fullName = "SR Digital Seva Master", mobileNumber = "7989293968", role = "user", status = "ACTIVE", main_wallet_balance = 0.00, fund_wallet_balance = 0.00, sponsor_id = NULL WHERE id = ?',
         [masterUserId]
       );
       console.log(`✓ Preserved Top-Level Master user #${masterUserId}: SR Digital Seva Master`);
     } else {
       const res = await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status, fund_wallet_balance, main_wallet_balance, sponsor_id) VALUES (?, ?, ?, ?, ?, "user", "ACTIVE", 0.00, 0.00, NULL)',
-        ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ['SR Digital Seva Master', 'master@srdigitalseva.com', '7989293968', passwordHash, 'Rajesh@1819']
       );
       masterUserId = res.insertId;
       console.log(`✓ Created Top-Level Master user #${masterUserId}: SR Digital Seva Master`);

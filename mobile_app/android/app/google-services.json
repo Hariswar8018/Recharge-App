@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "780807208029",
+    "project_id": "earnfarm",
+    "storage_bucket": "earnfarm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:780807208029:android:5e751da5eba27d079121b4",
+        "android_client_info": {
+          "package_name": "com.app.earnfarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "780807208029-uvkjujh5l2toa6l71kiho4g5tkehqfh4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZKwWvqayktpBQRto5iEa86hsr2PHvA68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "780807208029-uvkjujh5l2toa6l71kiho4g5tkehqfh4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

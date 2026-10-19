@@ -265,9 +265,17 @@ async function initDb() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         message TEXT NOT NULL,
+        featured_image TEXT DEFAULT NULL,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    try {
+      await query('ALTER TABLE users ADD COLUMN fcm_token VARCHAR(255) NULL');
+    } catch (_) {}
+    try {
+      await query('ALTER TABLE notifications ADD COLUMN featured_image TEXT NULL');
+    } catch (_) {}
 
     // Seed single Admin user (srdigitalseva99@gmail.com with password Rajesh@1819)
     const salt = bcrypt.genSaltSync(10);
@@ -280,24 +288,28 @@ async function initDb() {
     if (Array.isArray(checkAdmin) && checkAdmin.length === 0) {
       await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, ?, "ACTIVE")',
-        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819', 'admin']
+        ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '7989293968', passwordHash, 'Rajesh@1819', 'admin']
       );
       console.log('SR Digital Seva Admin user seeded.');
     } else {
       await query(
-        'UPDATE users SET mobileNumber = "9988494936", passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE email = ?',
+        'UPDATE users SET mobileNumber = "7989293968", passwordHash = ?, plain_password = ?, role = "admin", status = "ACTIVE" WHERE email = ?',
         [passwordHash, 'Rajesh@1819', 'srdigitalseva99@gmail.com']
       );
     }
 
-    // Seed Top-Level Master User for Mobile Registration Sponsor ID (Mobile: 9988494936)
+    // Seed Top-Level Master User for Mobile Registration Sponsor ID (Mobile: 7989293968)
     const checkMaster = await query('SELECT * FROM users WHERE email = "master@srdigitalseva.com"');
     if (Array.isArray(checkMaster) && checkMaster.length === 0) {
       await query(
         'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "ACTIVE", "user")',
-        ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+        ['SR Digital Seva Master', 'master@srdigitalseva.com', '7989293968', passwordHash, 'Rajesh@1819']
       );
-      console.log('Master Top-Level User seeded (Mobile: 9988494936).');
+      console.log('Master Top-Level User seeded (Mobile: 7989293968).');
+    } else {
+      await query(
+        'UPDATE users SET mobileNumber = "7989293968" WHERE email = "master@srdigitalseva.com" OR mobileNumber = "9988494936"'
+      );
     }
 
     // Seed default system settings

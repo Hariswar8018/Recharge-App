@@ -185,6 +185,8 @@ async function findSponsorUser(sponsorInput) {
 
   // 5. Auto-heal / Seed Master Sponsor if missing or searching for master
   const isMasterQuery = (
+    cleanSponsorId === '7989293968' ||
+    last10 === '7989293968' ||
     cleanSponsorId === '9988494936' ||
     last10 === '9988494936' ||
     cleanSponsorId === '8093426959' ||
@@ -203,15 +205,15 @@ async function findSponsorUser(sponsorInput) {
 
     await query(
       'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, role, status) VALUES (?, ?, ?, ?, ?, "admin", "ACTIVE")',
-      ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '9988494936', passwordHash, 'Rajesh@1819']
+      ['SR Digital Seva Admin', 'srdigitalseva99@gmail.com', '7989293968', passwordHash, 'Rajesh@1819']
     ).catch(() => {});
 
     await query(
       'INSERT INTO users (fullName, email, mobileNumber, passwordHash, plain_password, fund_wallet_balance, main_wallet_balance, status, role) VALUES (?, ?, ?, ?, ?, 0.00, 0.00, "ACTIVE", "user")',
-      ['SR Digital Seva Master', 'master@srdigitalseva.com', '9988494936', passwordHash, 'Rajesh@1819']
+      ['SR Digital Seva Master', 'master@srdigitalseva.com', '7989293968', passwordHash, 'Rajesh@1819']
     ).catch(() => {});
 
-    const masterUsers = await query('SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE mobileNumber LIKE "%9988494936%" OR email = "srdigitalseva99@gmail.com" LIMIT 1');
+    const masterUsers = await query('SELECT id, fullName, mobileNumber, email, user_code FROM users WHERE mobileNumber LIKE "%7989293968%" OR email = "srdigitalseva99@gmail.com" LIMIT 1');
     if (masterUsers && masterUsers.length > 0) return masterUsers[0];
   }
 
