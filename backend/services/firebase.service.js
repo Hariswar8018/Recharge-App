@@ -7,7 +7,15 @@ let isInitialized = false;
 let messaging = null;
 
 function getServiceAccount() {
-  // 1. Check local or deployed service-account.json file (Most reliable on cPanel / hosting)
+  // 1. Check embedded credentials module (Most reliable, completely immune to hosting/cPanel env truncation)
+  try {
+    const creds = require('./firebase-credentials');
+    if (creds && creds.project_id && creds.private_key) {
+      return creds;
+    }
+  } catch (_) {}
+
+  // 2. Check local or deployed service-account.json file
   const candidatePaths = [
     path.resolve(__dirname, '../service-account.json'),
     path.resolve(process.cwd(), 'service-account.json'),
