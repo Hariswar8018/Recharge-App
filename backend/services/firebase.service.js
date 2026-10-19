@@ -7,14 +7,80 @@ let isInitialized = false;
 let messaging = null;
 
 function getServiceAccount() {
-  // 1. Direct environment variable parse
-  if (process.env.SERVICE_JSON) {
+  // 1. Check local or deployed service-account.json file (Most reliable on cPanel / hosting)
+  const candidatePaths = [
+    path.resolve(__dirname, '../service-account.json'),
+    path.resolve(process.cwd(), 'service-account.json'),
+    '/home/wpzumbof/backend/service-account.json'
+  ];
+
+  for (const p of candidatePaths) {
     try {
-      return JSON.parse(process.env.SERVICE_JSON);
+      if (fs.existsSync(p)) {
+        const raw = fs.readFileSync(p, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.project_id) {
+          return parsed;
+        }
+      }
     } catch (_) {}
   }
 
-  // 2. Regex extraction from backend/.env (handles unescaped multi-line JSON)
+  // 2. Direct environment variable parse
+  if (process.env.SERVICE_JSON) {
+    try {
+      let val = process.env.SERVICE_JSON;
+      if (typeof val === 'object' && val !== null && val.project_id) {
+        return val;
+      }
+      if (typeof val === 'string') {
+        val = val.trim();
+        // Remove enclosing quotes if cPanel stored them
+        if ((val.startsWith("'") && val.endsWith("'")) || (val.startsWith('"') && val.endsWith('"'))) {
+          try {
+            val = JSON.parse(val);
+          } catch (_) {
+            val = val.slice(1, -1).trim();
+          }
+        }
+      }
+      if (typeof val === 'string') {
+        val = JSON.parse(val);
+      }
+      if (typeof val === 'object' && val !== null && val.project_id) {
+        return val;
+      }
+      // Check for base64 encoded JSON
+      if (typeof val === 'string' && !val.startsWith('{') && val.length > 100) {
+        try {
+          const decoded = Buffer.from(val, 'base64').toString('utf8').trim();
+          if (decoded.startsWith('{')) {
+            const parsed = JSON.parse(decoded);
+            if (parsed && parsed.project_id) return parsed;
+          }
+        } catch (_) {}
+      }
+
+      // Try regex field extraction if JSON parsing failed
+      if (typeof val === 'string') {
+        const extracted = extractCredentialsFromRaw(val);
+        if (extracted) return extracted;
+      }
+    } catch (err) {
+      console.warn('⚠️ [FCM] Could not parse process.env.SERVICE_JSON:', err.message);
+    }
+  }
+
+  // 3. Base64 environment variable check (SERVICE_ACCOUNT_B64)
+  if (process.env.SERVICE_ACCOUNT_B64) {
+    try {
+      const decoded = Buffer.from(process.env.SERVICE_ACCOUNT_B64.trim(), 'base64').toString('utf8').trim();
+      const parsed = JSON.parse(decoded);
+      if (parsed && parsed.project_id) return parsed;
+    } catch (_) {}
+  }
+
+  // 4. Regex extraction from backend/.env (handles unescaped multi-line JSON)
   try {
     const envPath = path.resolve(__dirname, '../.env');
     if (fs.existsSync(envPath)) {
@@ -25,19 +91,36 @@ function getServiceAccount() {
         if (jsonStr.startsWith('"') && jsonStr.endsWith('"')) {
           jsonStr = jsonStr.slice(1, -1);
         }
-        return JSON.parse(jsonStr);
+        try {
+          const parsed = JSON.parse(jsonStr);
+          if (parsed && parsed.project_id) return parsed;
+        } catch (_) {
+          const extracted = extractCredentialsFromRaw(jsonStr);
+          if (extracted) return extracted;
+        }
       }
     }
   } catch (_) {}
 
-  // 3. Fallback to service-account.json if present
+  return null;
+}
+
+function extractCredentialsFromRaw(str) {
   try {
-    const jsonPath = path.resolve(__dirname, '../service-account.json');
-    if (fs.existsSync(jsonPath)) {
-      return JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+    const projectIdMatch = str.match(/"project_id"\s*:\s*"([^"]+)"/);
+    const clientEmailMatch = str.match(/"client_email"\s*:\s*"([^"]+)"/);
+    const privateKeyMatch = str.match(/"private_key"\s*:\s*"([\s\S]*?)(?="\s*,\s*"client_email"|"\s*,\s*"client_id"|"\s*\})/);
+    if (projectIdMatch && clientEmailMatch && privateKeyMatch) {
+      let key = privateKeyMatch[1];
+      key = key.replace(/\\n/g, '\n');
+      return {
+        type: 'service_account',
+        project_id: projectIdMatch[1],
+        client_email: clientEmailMatch[1],
+        private_key: key
+      };
     }
   } catch (_) {}
-
   return null;
 }
 
@@ -158,5 +241,6 @@ async function sendFcmNotification({ title, body, imageUrl, data = {}, tokens = 
 
 module.exports = {
   initFirebase,
+  getServiceAccount,
   sendFcmNotification
 };

@@ -2,6 +2,7 @@
 backend/node_modules/
 backend/db.json
 backend/.env
+backend/service-account.json
 
 # Vue.js web app specific
 web_app/node_modules/

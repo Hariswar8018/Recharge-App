@@ -8,9 +8,23 @@ const { JWT_SECRET, verifyAdminToken } = require('../middleware/auth');
 
 const fs = require('fs');
 const path = require('path');
-const { sendFcmNotification } = require('../services/firebase.service');
+const { sendFcmNotification, initFirebase, getServiceAccount } = require('../services/firebase.service');
 
 const router = express.Router();
+
+// Public / Diagnostic FCM Status Check
+router.get('/fcm-status', (req, res) => {
+  const fcm = initFirebase();
+  const serviceAccount = getServiceAccount();
+  res.json({
+    fcm_initialized: !!fcm,
+    project_id: serviceAccount ? serviceAccount.project_id : null,
+    client_email: serviceAccount ? serviceAccount.client_email : null,
+    has_private_key: serviceAccount ? !!serviceAccount.private_key : false,
+    env_service_json_exists: !!process.env.SERVICE_JSON,
+    env_service_json_length: process.env.SERVICE_JSON ? process.env.SERVICE_JSON.length : 0
+  });
+});
 
 // Admin Login
 router.post('/login', async (req, res) => {
