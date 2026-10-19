@@ -3024,17 +3024,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
-                          if (_queuePosition > 0) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              "Queue Position: #$_queuePosition",
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                          
                           const SizedBox(height: 8),
                           // Custom slider-style progress indicator inside right column
                           LayoutBuilder(
