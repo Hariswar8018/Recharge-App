@@ -441,6 +441,22 @@ async function initDb() {
       console.error('Error auto-syncing fund requests and transactions:', e);
     }
 
+    try {
+      await query(`
+        UPDATE transactions 
+        SET type = CASE
+          WHEN type LIKE '%Level 1%' THEN 'Level 1 Income'
+          WHEN type LIKE '%Level 2%' THEN 'Level 2 Income'
+          WHEN type LIKE '%Level 3%' THEN 'Level 3 Income'
+          WHEN type LIKE '%Level 4%' THEN 'Level 4 Income'
+          WHEN type LIKE '%Level 5%' THEN 'Level 5 Income'
+          WHEN type LIKE '%Level 6%' THEN 'Level 6 Income'
+          ELSE type
+        END
+        WHERE type LIKE '%Level%' AND (type LIKE '%Single Leg%' OR type LIKE '%Matrix%' OR type LIKE '%Members%')
+      `);
+    } catch (_) {}
+
     console.log('Database initialization complete.');
   } catch (err) {
     console.error('Error during database migration:', err);

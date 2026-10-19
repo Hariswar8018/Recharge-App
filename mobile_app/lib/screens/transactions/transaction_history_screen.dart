@@ -56,7 +56,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     if (!mounted) return;
     setState(() {
       _allTransactions = list.map((item) {
-        final type = item['type'] as String? ?? 'Transaction';
+        String type = (item['type'] as String? ?? 'Transaction').trim();
+        final levelMatch = RegExp(r'Level\s*([1-6])', caseSensitive: false).firstMatch(type);
+        if (levelMatch != null) {
+          type = "Level ${levelMatch.group(1)} Income";
+        }
         final amount = item['amount'] as String? ?? '0.00';
         final rawDate = item['date'] ?? item['createdAt'] ?? '';
         final istDate = DateFormatter.formatToIST(rawDate);

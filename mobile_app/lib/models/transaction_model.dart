@@ -43,8 +43,8 @@ final List<TransactionModel> sampleTransactionsList = [
   ),
   TransactionModel(
     id: "2",
-    title: "Single-Leg Income",
-    type: "Single-Leg Income",
+    title: "Level 1 Income",
+    type: "Level 1 Income",
     descLine1: "₹200 received from Level 1 – Cycle 1",
     descLine2: "First Level Income Added to Main Wallet",
     amount: "200.00",

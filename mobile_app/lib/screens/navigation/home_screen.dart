@@ -1957,7 +1957,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       itemBuilder: (context, index) {
                         final tx = _transactions[index];
-                        final type = tx['type'] as String? ?? 'Transaction';
+                        final rawType = (tx['type'] as String? ?? 'Transaction').trim();
+                        final levelMatch = RegExp(r'Level\s*([1-6])', caseSensitive: false).firstMatch(rawType);
+                        final type = levelMatch != null ? "Level ${levelMatch.group(1)} Income" : rawType;
                         final rawAmount = (tx['amount'] as String? ?? '0.00').replaceAll(RegExp(r'[+\-₹?\s]|Rs\.?|INR', caseSensitive: false), '').trim();
                         final amount = "₹ $rawAmount";
                         final rawDate = tx['date'] ?? tx['createdAt'] ?? '';

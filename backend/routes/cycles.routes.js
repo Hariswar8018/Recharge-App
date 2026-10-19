@@ -223,7 +223,7 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
             // Transaction log
             await conn.execute(
               'INSERT INTO transactions (user_id, wallet_type, amount, type, date, status) VALUES (?, "MAIN", "+₹100.00", ?, ?, "Success")',
-              [upline.user_id, `Matrix Level ${depth} Income`, dateIso]
+              [upline.user_id, `Level ${depth} Income`, dateIso]
             );
 
             // Check if upline cycle is completed (126 members reached across 6 levels)

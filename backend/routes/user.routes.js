@@ -184,10 +184,18 @@ router.get('/transactions', verifyAppToken, verifyUserToken, async (req, res) =>
       };
     });
 
-    const cleanedTxns = txns.map(t => ({
-      ...t,
-      amount: String(t.amount || '').replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim()
-    }));
+    const cleanedTxns = txns.map(t => {
+      let typeStr = t.type || 'Transaction';
+      const levelMatch = typeStr.match(/Level\s*([1-6])/i);
+      if (levelMatch) {
+        typeStr = `Level ${levelMatch[1]} Income`;
+      }
+      return {
+        ...t,
+        type: typeStr,
+        amount: String(t.amount || '').replace(/[\+\?\-\₹\s]|Rs\.?|INR/gi, '').trim()
+      };
+    });
 
     const allTxns = [...pendingAndRejectedTxns, ...cleanedTxns].sort((a, b) => {
       const timeA = new Date(a.createdAt || a.date).getTime();
