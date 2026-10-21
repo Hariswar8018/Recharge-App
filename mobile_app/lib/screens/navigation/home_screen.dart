@@ -1356,7 +1356,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- TAB 0: HOME VIEW ---
   Widget _buildHomeTab() {
-    final bool isTopUpRequired = _status != 'ACTIVE' || _isTopUpRequired || _membersCount >= 126 || (_cycleStatus == 'COMPLETED' && _activeCycleId.isEmpty);
+    final bool isTopUpRequired = _membersCount >= 126 ||
+        (_isTopUpRequired && (_membersCount >= 126 || (_cyclesHistory.isNotEmpty && _activeCycleId.isEmpty)));
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -3745,7 +3746,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         : (_activeCycleId.isNotEmpty ? "Active" : "Pending"),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 12,
                       color: _activeCycleId.isNotEmpty ? const Color(0xFF16A34A) : Colors.red,
                     ),
                   ),
@@ -3983,9 +3984,9 @@ class _BlinkingTopUpCardWidgetState extends State<_BlinkingTopUpCardWidget>
                   const Icon(
                     Icons.warning_amber_rounded,
                     color: Colors.white,
-                    size: 28,
+                    size: 22,
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 5),
                   // Exact Text
                   const Expanded(
                     child: Text(
@@ -3993,12 +3994,12 @@ class _BlinkingTopUpCardWidgetState extends State<_BlinkingTopUpCardWidget>
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 12.5,
+                        fontSize: 10,
                         letterSpacing: 0.3,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 2),
                   // Arrow forward at the full corner with sliding animation
                   Transform.translate(
                     offset: Offset(_arrowSlideAnimation.value, 0),
@@ -4007,11 +4008,7 @@ class _BlinkingTopUpCardWidgetState extends State<_BlinkingTopUpCardWidget>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            color: Color.lerp(Colors.white30, Colors.white60, glow),
-                            size: 13,
-                          ),
+                          
                           Icon(
                             Icons.arrow_forward_ios_rounded,
                             color: Color.lerp(Colors.white60, Colors.white, glow),
@@ -4020,7 +4017,7 @@ class _BlinkingTopUpCardWidgetState extends State<_BlinkingTopUpCardWidget>
                           const Icon(
                             Icons.arrow_forward_ios_rounded,
                             color: Colors.white,
-                            size: 17,
+                            size: 15,
                           ),
                         ],
                       ),
