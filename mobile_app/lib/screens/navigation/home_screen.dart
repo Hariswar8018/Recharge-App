@@ -56,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double _todayIncome = 0.0;
   double _levelIncome = 0.0;
   double _directIncome = 0.0;
+  double _cycleIncome = 0.0;
   List<dynamic> _backendLevels = [];
 
   Timer? _autoRefreshTimer;
@@ -152,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _todayIncome = parseDouble(incSummary['todayIncome']) ?? 0.0;
           _levelIncome = parseDouble(incSummary['levelIncome']) ?? 0.0;
           _directIncome = parseDouble(incSummary['directIncome']) ?? 0.0;
+          _cycleIncome = parseDouble(incSummary['cycleIncome'] ?? cycleStatusRes['cycleIncome']) ?? (_membersCount * 100.0);
         } else {
           if (activeCycle != null) {
             _activeCycleId = activeCycle['cycle_id'] ?? "";
@@ -163,6 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _cycleStatus = cycles.isNotEmpty ? "COMPLETED" : "PENDING";
           }
           _isTopUpRequired = _membersCount >= 126 || (_cycleStatus == 'COMPLETED' && cycles.isNotEmpty);
+          _cycleIncome = _isTopUpRequired ? 12600.0 : (_membersCount * 100.0);
         }
 
         _referralLink = "https://play.google.com/store/apps/details?id=com.app.earnfarm";
@@ -2171,7 +2174,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     double totalEarned = realGlobalIncome + realAffiliateIncome;
-    double progressVal = (realGlobalIncome / 12600.0).clamp(0.0, 1.0);
+
+    // Current Cycle values: Reset cycle income from ₹12,600 to ₹0.00 and progress to 0.0% at start of new cycle
+    double currentCycleIncome = _isTopUpRequired
+        ? 12600.0
+        : (_activeCycleId.isNotEmpty && _membersCount == 0 ? 0.0 : (_cycleIncome > 0 ? _cycleIncome : (_membersCount * 100.0)));
+    currentCycleIncome = currentCycleIncome.clamp(0.0, 12600.0);
+    double progressVal = (currentCycleIncome / 12600.0).clamp(0.0, 1.0);
     final String percentDisplay = "${(progressVal * 100).toStringAsFixed(1)}%";
     final String visB = (_visibilitySettings['sec_business_income_visibility'] ?? 'Show').toString();
     final bool enabledB = _visibilitySettings['sec_business_income_enabled'] != false && _visibilitySettings['sec_business_income_enabled_bool'] != 'false';
@@ -2250,7 +2259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 1),
                           Text(
-                            "₹ ${realGlobalIncome.toStringAsFixed(2)}",
+                            "₹ ${currentCycleIncome.toStringAsFixed(2)}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 26,

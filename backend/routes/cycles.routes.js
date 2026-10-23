@@ -375,6 +375,10 @@ router.get('/status', verifyAppToken, verifyUserToken, async (req, res) => {
       }
     }
 
+    const cycleIncome = activeCycle
+      ? Math.min(12600, (Number(activeCycle.members_count) || 0) * 100)
+      : (isTopUpRequired ? 12600 : 0);
+
     res.json({
       success: true,
       userId: user.id,
@@ -387,6 +391,7 @@ router.get('/status', verifyAppToken, verifyUserToken, async (req, res) => {
         status: activeCycle.status,
         queuePosition: queuePosition,
         progressPercent: Math.min(100, (activeCycle.members_count / 126) * 100).toFixed(1),
+        cycleIncome: parseFloat(((Number(activeCycle.members_count) || 0) * 100).toFixed(2)),
       } : null,
       latestCycle: latestCycle ? {
         id: latestCycle.id,
@@ -398,12 +403,14 @@ router.get('/status', verifyAppToken, verifyUserToken, async (req, res) => {
       queuePosition,
       isTopUpRequired,
       membersCount,
+      cycleIncome: parseFloat(cycleIncome.toFixed(2)),
       levels,
       incomeSummary: {
         todayIncome: parseFloat(todayIncome.toFixed(2)),
         directIncome: parseFloat(directIncome.toFixed(2)),
         levelIncome: parseFloat(levelIncome.toFixed(2)),
         totalIncome: parseFloat((directIncome + levelIncome).toFixed(2)),
+        cycleIncome: parseFloat(cycleIncome.toFixed(2)),
         mainWalletBalance: parseFloat(user.main_wallet_balance || 0),
         fundWalletBalance: parseFloat(user.fund_wallet_balance || 0),
       }
