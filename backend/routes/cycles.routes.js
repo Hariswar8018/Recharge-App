@@ -85,10 +85,6 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
         'UPDATE cycles SET status = "COMPLETED" WHERE user_id = ? AND status = "ACTIVE"',
         [targetUser.id]
       );
-      await conn.execute(
-        'DELETE FROM single_leg_queue WHERE user_id = ?',
-        [targetUser.id]
-      );
 
       // 2. Count existing cycles to generate sequential cycle number
       const [existingCycles] = await conn.execute('SELECT COUNT(id) as count FROM cycles WHERE user_id = ?', [targetUser.id]);
@@ -230,10 +226,6 @@ router.post('/activate', verifyAppToken, verifyUserToken, async (req, res) => {
             if (newMembersCount >= 126) {
               await conn.execute(
                 'UPDATE cycles SET status = "COMPLETED", members_count = 126 WHERE id = ?',
-                [upline.cycle_id]
-              );
-              await conn.execute(
-                'DELETE FROM single_leg_queue WHERE cycle_id = ?',
                 [upline.cycle_id]
               );
 
